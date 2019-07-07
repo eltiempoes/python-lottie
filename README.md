@@ -36,6 +36,29 @@ Seems a gzip compressed json, with a modified version of this format:
 https://github.com/airbnb/lottie-web/tree/master/docs/json
 
 
+### Making your own exporters converters
+
+#### Lottie format
+
+If you can get the source image into lottie format, that's 90% of the work done.
+
+I've ripped the format schema into Python classes in lib/tgs.py which *should*
+output the correct json. Eg:
+
+    foo = tgs.Animation()
+    # ...
+    json.dump(foo.to_dict(), output_file)
+
+#### TGS changes
+
+Nothing major, just ensure the root JSON object has `tgs: 1`
+
+#### Gzipping
+
+The tgs file is the JSON described above compressed into a gzip,
+and renamed to .tgs
+
+
 License
 -------
 
