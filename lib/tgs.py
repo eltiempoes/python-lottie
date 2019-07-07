@@ -1,0 +1,1508 @@
+import enum
+
+
+def _to_dict(v):
+    if isinstance(v, Tgs):
+        return v.to_dict()
+    elif isinstance(v, bool):
+        return int(v)
+    elif isinstance(v, list):
+        return list(map(_to_dict, v))
+
+
+class Tgs:
+    def to_dict(self):
+        raise NotImplementedError
+
+
+class TgsEnum(enum.Enum, Tgs):
+    def to_dict(self):
+        return self.value
+
+
+class TgsObject(Tgs):
+    def to_dict(self):
+        return {
+            exp: getattr(self, name)
+            for name, exp in self._properties.items()
+        }
+
+
+class Animation(TgsObject):
+    _props = {
+        "tgs": "tgs",
+        "in_point": "ip",
+        "out_point": "op",
+        "frame_rate": "fr",
+        "width": "w",
+        "threedimensional": "ddd",
+        "height": "h",
+        "version": "v",
+        "name": "nm",
+        "layers": "layers",
+        "assets": "assets",
+        "chars": "chars",
+    }
+
+    def __init__(self):
+        self.tgs = 1
+        # In Point of the Time Ruler. Sets the initial Frame of the animation.
+        self.in_point = 0
+        # Out Point of the Time Ruler. Sets the final Frame of the animation
+        self.out_point = 0
+        # Frame Rate
+        self.frame_rate = 0
+        # Composition Width
+        self.width = 512
+        # Composition has 3-D layers
+        self.threedimensional = False
+        # Composition Height
+        self.height = 512
+        # Bodymovin Version
+        self.version = "5.5.2"
+        # Composition name
+        self.name = ""
+        # List of Composition Layers
+        self.layers = []
+        # source items that can be used in multiple places. Comps and Images for now.
+        self.assets = []
+        # source chars for text layers
+        self.chars = []
+
+
+class Fill(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "effects": "ef",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect List of properties.
+        self.effects = []
+
+
+class Stroke(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "effects": "ef",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect List of properties.
+        self.effects = []
+
+
+class DropDown(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "value": "v",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect value.
+        self.value = Value()
+
+
+class Tritone(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "effects": "ef",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect List of properties.
+        self.effects = []
+
+
+class Group(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "effects": "ef",
+        "enabled": "en",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect List of properties.
+        self.effects = []
+        # Enabled AE property value
+        self.enabled = 0
+
+
+class Color(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "value": "v",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect value.
+        self.value = MultiDimensional()
+
+
+class ProLevels(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "effects": "ef",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # ffect List of properties.
+        self.effects = []
+
+
+class Angle(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "value": "v",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions. NOT USED. EQUALS SLIDER.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect value.
+        self.value = Value()
+
+
+class Slider(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "value": "v",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect value.
+        self.value = Value()
+
+
+class CheckBox(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "value": "v",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect value.
+        self.value = Value()
+
+
+class Point(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "value": "v",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect value.
+        self.value = []
+
+
+class Tint(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "effects": "ef",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect List of properties.
+        self.effects = []
+
+
+class Layer(TgsObject):
+    _props = {
+        "effect_index": "ix",
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "value": "v",
+    }
+
+    def __init__(self):
+        # Effect Index. Used for expressions. NOT USED. EQUALS SLIDER.
+        self.effect_index = 0
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Effect type.
+        self.type = 0
+        # Effect value.
+        self.value = Value()
+
+
+class Image(TgsObject):
+    _props = {
+        "height": "h",
+        "width": "w",
+        "id": "id",
+        "image_name": "p",
+        "image_path": "u",
+    }
+
+    def __init__(self):
+        # Image Height
+        self.height = 0
+        # Image Width
+        self.width = 0
+        # Image ID
+        self.id = ""
+        # Image name
+        self.image_name = ""
+        # Image path
+        self.image_path = ""
+
+
+class Chars(TgsObject):
+    _props = {
+        "character": "ch",
+        "font_family": "fFamily",
+        "font_size": "size",
+        "font_style": "style",
+        "width": "w",
+        "character_data": "data",
+    }
+
+    def __init__(self):
+        # Character Value
+        self.character = ""
+        # Character Font Family
+        self.font_family = ""
+        # Character Font Size
+        self.font_size = ""
+        # Character Font Style
+        self.font_style = ""
+        # Character Width
+        self.width = 0
+        # Character Data
+        self.character_data = None
+
+
+class Precomp(TgsObject):
+    _props = {
+        "id": "id",
+        "layers": "layers",
+    }
+
+    def __init__(self):
+        # Precomp ID
+        self.id = ""
+        # List of Precomp Layers
+        self.layers = []
+
+
+class ShapeKeyframed(TgsObject):
+    _props = {
+        "keyframes": "k",
+        "expression": "x",
+        "property_index": "ix",
+        "in_tangent": "ti",
+        "out_tangent": "to",
+    }
+
+    def __init__(self):
+        # Property Value keyframes
+        self.keyframes = []
+        # Property Expression. An AE expression that modifies the value.
+        self.expression = ""
+        # Property Index. Used for expressions.
+        self.property_index = ""
+        # In Spatial Tangent. Only for spatial properties. Array of numbers.
+        self.in_tangent = []
+        # Out Spatial Tangent. Only for spatial properties. Array of numbers.
+        self.out_tangent = []
+
+
+class Shape(TgsObject):
+    _props = {
+        "value": "k",
+        "expression": "x",
+        "property_index": "ix",
+        "animated": "a",
+    }
+
+    def __init__(self):
+        # Property Value
+        self.value = ShapeProp()
+        # Property Expression. An AE expression that modifies the value.
+        self.expression = ""
+        # Property Index. Used for expressions.
+        self.property_index = ""
+        # Defines if property is animated
+        self.animated = 0
+
+
+class OffsetKeyframe(TgsObject):
+    _props = {
+        "start": "s",
+        "time": "t",
+        "in_value": "i",
+        "out_value": "o",
+    }
+
+    def __init__(self):
+        # Start value of keyframe segment.
+        self.start = []
+        # Start time of keyframe segment.
+        self.time = 0
+        # Bezier curve interpolation in value.
+        self.in_value = None
+        # Bezier curve interpolation out value.
+        self.out_value = None
+
+
+class DoubleKeyframe(TgsObject):
+    _props = {
+        "start": "s",
+        "time": "t",
+        "in_value": "i",
+        "out_value": "o",
+    }
+
+    def __init__(self):
+        # Start value of keyframe segment.
+        self.start = 0
+        # Start time of keyframe segment.
+        self.time = 0
+        # Bezier curve interpolation in value.
+        self.in_value = None
+        # Bezier curve interpolation out value.
+        self.out_value = None
+
+
+class ValueKeyframe(TgsObject):
+    _props = {
+        "start": "s",
+        "time": "t",
+        "in_value": "i",
+    }
+
+    def __init__(self):
+        # Start value of keyframe segment.
+        self.start = 0
+        # Start time of keyframe segment.
+        self.time = 0
+        # Bezier curve interpolation in value.
+        self.in_value = None
+
+
+class MultiDimensionalKeyframed(TgsObject):
+    _props = {
+        "keyframes": "k",
+        "expression": "x",
+        "property_index": "ix",
+        "in_tangent": "ti",
+        "out_tangent": "to",
+    }
+
+    def __init__(self):
+        # Property Value keyframes
+        self.keyframes = []
+        # Property Expression. An AE expression that modifies the value.
+        self.expression = ""
+        # Property Index. Used for expressions.
+        self.property_index = ""
+        # In Spatial Tangent. Only for spatial properties. Array of numbers.
+        self.in_tangent = []
+        # Out Spatial Tangent. Only for spatial properties. Array of numbers.
+        self.out_tangent = []
+
+
+class ShapePropKeyframe(TgsObject):
+    _props = {
+        "start": "s",
+        "time": "t",
+        "in_value": "i",
+        "out_value": "o",
+    }
+
+    def __init__(self):
+        # Start value of keyframe segment.
+        self.start = []
+        # Start time of keyframe segment.
+        self.time = 0
+        # Bezier curve interpolation in value.
+        self.in_value = None
+        # Bezier curve interpolation out value.
+        self.out_value = None
+
+
+class ShapeProp(TgsObject):
+    _props = {
+        "closed": "c",
+        "in_point": "i",
+        "out_point": "o",
+        "vertices": "v",
+    }
+
+    def __init__(self):
+        # Closed property of shape
+        self.closed = None
+        # Bezier curve In points. Array of 2 dimensional arrays.
+        self.in_point = []
+        # Bezier curve Out points. Array of 2 dimensional arrays.
+        self.out_point = []
+        # Bezier curve Vertices. Array of 2 dimensional arrays.
+        self.vertices = []
+
+
+class Value(TgsObject):
+    _props = {
+        "value": "k",
+        "expression": "x",
+        "property_index": "ix",
+    }
+
+    def __init__(self):
+        # Property Value
+        self.value = 0
+        # Property Expression. An AE expression that modifies the value.
+        self.expression = ""
+        # Property Index. Used for expressions.
+        self.property_index = ""
+
+
+class ValueKeyframed(TgsObject):
+    _props = {
+        "keyframes": "k",
+        "expression": "x",
+        "property_index": "ix",
+    }
+
+    def __init__(self):
+        # Property Value keyframes
+        self.keyframes = []
+        # Property Expression. An AE expression that modifies the value.
+        self.expression = ""
+        # Property Index. Used for expressions.
+        self.property_index = ""
+
+
+class MultiDimensional(TgsObject):
+    _props = {
+        "value": "k",
+        "expression": "x",
+        "property_index": "ix",
+    }
+
+    def __init__(self):
+        # Property Value
+        self.value = []
+        # Property Expression. An AE expression that modifies the value.
+        self.expression = ""
+        # Property Index. Used for expressions.
+        self.property_index = ""
+
+
+class Rect(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "direction": "d",
+        "type": "ty",
+        "position": "p",
+        "size": "s",
+        "rounded_corners": "r",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        self.direction = 0
+        # Shape content type.
+        self.type = ""
+        # Rect's position
+        self.position = MultiDimensional()
+        # Rect's size
+        self.size = MultiDimensional()
+        # Rect's rounded corners
+        self.rounded_corners = Value()
+
+
+class Fill(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "opacity": "o",
+        "color": "c",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Shape content type.
+        self.type = ""
+        # Fill Opacity
+        self.opacity = Value()
+        # Fill Color
+        self.color = MultiDimensional()
+
+
+class Trim(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "start": "s",
+        "end": "e",
+        "offset": "o",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Shape content type.
+        self.type = ""
+        # Trim Start.
+        self.start = Value()
+        # Trim End.
+        self.end = Value()
+        # Trim Offset.
+        self.offset = Value()
+
+
+class Repeater(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "copies": "c",
+        "offset": "o",
+        "composite": "m",
+        "transform": "tr",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Shape content type.
+        self.type = ""
+        # Number of Copies
+        self.copies = Value()
+        # Offset of Copies
+        self.offset = Value()
+        # Composite of copies
+        self.composite = Composite()
+        # Transform values for each repeater copy
+        self.transform = Transform()
+
+
+class GFill(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "opacity": "o",
+        "start_point": "s",
+        "end_point": "e",
+        "type": "t",
+        "highlight_length": "h",
+        "highlight_angle": "a",
+        "gradient_colors": "g",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Shape content type.
+        self.type = ""
+        # Fill Opacity
+        self.opacity = Value()
+        # Gradient Start Point
+        self.start_point = MultiDimensional()
+        # Gradient End Point
+        self.end_point = MultiDimensional()
+        # Gradient Type
+        self.type = 1 # 1: Linear, 2: Radial
+        # Gradient Highlight Length. Only if type is Radial
+        self.highlight_length = Value()
+        # Highlight Angle. Only if type is Radial
+        self.highlight_angle = Value()
+        # Gradient Colors
+        self.gradient_colors = None
+
+
+class Stroke(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "line_cap": "lc",
+        "line_join": "lj",
+        "miter_limit": "ml",
+        "opacity": "o",
+        "width": "w",
+        "color": "c",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Shape content type.
+        self.type = ""
+        # Stroke Line Cap
+        self.line_cap = LineCap()
+        # Stroke Line Join
+        self.line_join = LineJoin()
+        # Stroke Miter Limit. Only if Line Join is set to Miter.
+        self.miter_limit = 0
+        # Stroke Opacity
+        self.opacity = Value()
+        # Stroke Width
+        self.width = Value()
+        # Stroke Color
+        self.color = MultiDimensional()
+
+
+class Round(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "radius": "r",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Shape content type.
+        self.type = ""
+        # Rounded Corner Radius
+        self.radius = Value()
+
+
+class Shape(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "direction": "d",
+        "type": "ty",
+        "vertices": "ks",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        self.direction = 0
+        # Shape content type.
+        self.type = ""
+        # Shape's vertices
+        self.vertices = Shape()
+
+
+class Transform(TgsObject):
+    _props = {
+        "name": "nm",
+        "anchor_point": "a",
+        "position": "p",
+        "scale": "s",
+        "rotation": "r",
+        "opacity": "o",
+        "skew": "sk",
+        "skew_axis": "sa",
+    }
+
+    def __init__(self):
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Shape Transform Anchor Point
+        self.anchor_point = MultiDimensional()
+        # Shape Transform Position
+        self.position = MultiDimensional()
+        # Shape Transform Scale
+        self.scale = MultiDimensional()
+        # Shape Transform Rotation
+        self.rotation = Value()
+        # Shape Transform Opacity
+        self.opacity = Value()
+        # Shape Transform Skew
+        self.skew = Value()
+        # Shape Transform Skew Axis
+        self.skew_axis = Value()
+
+
+class Group(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "number_of_properties": "np",
+        "items": "it",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Shape content type.
+        self.type = ""
+        # Group number of properties. Used for expressions.
+        self.number_of_properties = 0
+        # Group list of items
+        self.items = []
+
+
+class Star(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "direction": "d",
+        "type": "ty",
+        "position": "p",
+        "inner_radius": "ir",
+        "inner_roundness": "is",
+        "outer_radius": "or",
+        "outer_roundness": "os",
+        "rotation": "r",
+        "points": "pt",
+        "star_type": "sy",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        self.direction = 0
+        # Shape content type.
+        self.type = ""
+        # Star's position
+        self.position = MultiDimensional()
+        # Star's inner radius. (Star only)
+        self.inner_radius = Value()
+        # Star's inner roundness. (Star only)
+        self.inner_roundness = Value()
+        # Star's outer radius.
+        self.outer_radius = Value()
+        # Star's outer roundness.
+        self.outer_roundness = Value()
+        # Star's rotation.
+        self.rotation = Value()
+        # Star's number of points.
+        self.points = Value()
+        # Star's type. Polygon or Star.
+        self.star_type = 1 # 1: Star, 2: Polygon
+
+
+class Ellipse(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "direction": "d",
+        "type": "ty",
+        "position": "p",
+        "size": "s",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        self.direction = 0
+        # Shape content type.
+        self.type = ""
+        # Ellipse's position
+        self.position = MultiDimensional()
+        # Ellipse's size
+        self.size = MultiDimensional()
+
+
+class Merge(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "merge_mode": "mm",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Shape content type. THIS FEATURE IS NOT SUPPORTED. It's exported because if you export it, they will come.
+        self.type = ""
+        # Merge Mode
+        self.merge_mode = 0
+
+
+class GStroke(TgsObject):
+    _props = {
+        "match_name": "mn",
+        "name": "nm",
+        "type": "ty",
+        "opacity": "o",
+        "start_point": "s",
+        "end_point": "e",
+        "type": "t",
+        "highlight_length": "h",
+        "highlight_angle": "a",
+        "gradient_colors": "g",
+        "stroke_width": "w",
+        "line_cap": "lc",
+        "line_join": "lj",
+        "miter_limit": "ml",
+    }
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = ""
+        # Shape content type.
+        self.type = ""
+        # Stroke Opacity
+        self.opacity = Value()
+        # Gradient Start Point
+        self.start_point = MultiDimensional()
+        # Gradient End Point
+        self.end_point = MultiDimensional()
+        # Gradient Type
+        self.type = 1 # 1: Linear, 2: Radial
+        # Gradient Highlight Length. Only if type is Radial
+        self.highlight_length = Value()
+        # Highlight Angle. Only if type is Radial
+        self.highlight_angle = Value()
+        # Gradient Colors
+        self.gradient_colors = None
+        # Gradient Stroke Width
+        self.stroke_width = Value()
+        # Gradient Stroke Line Cap
+        self.line_cap = LineCap()
+        # Gradient Stroke Line Join
+        self.line_join = LineJoin()
+        # Gradient Stroke Miter Limit. Only if Line Join is set to Miter.
+        self.miter_limit = 0
+
+
+class Null(TgsObject):
+    _props = {
+        "type": "ty",
+        "transform": "ks",
+        "auto_orient": "ao",
+        "threedimensional": "ddd",
+        "index": "ind",
+        "css_class": "cl",
+        "layer_html_id": "ln",
+        "in_point": "ip",
+        "out_point": "op",
+        "start_time": "st",
+        "name": "nm",
+        "effects": "ef",
+        "stretch": "sr",
+        "parent": "parent",
+    }
+
+    def __init__(self):
+        # Type of layer: Null.
+        self.type = 0
+        # Transform properties
+        self.transform = Transform()
+        # Auto-Orient along path AE property.
+        self.auto_orient = False
+        # 3d layer flag
+        self.threedimensional = False
+        # Layer index in AE. Used for parenting and expressions.
+        self.index = 0
+        # Parsed layer name used as html class on SVG/HTML renderer
+        self.css_class = ""
+        # Parsed layer name used as html id on SVG/HTML renderer
+        self.layer_html_id = ""
+        # In Point of layer. Sets the initial frame of the layer.
+        self.in_point = 0
+        # Out Point of layer. Sets the final frame of the layer.
+        self.out_point = 0
+        # Start Time of layer. Sets the start time of the layer.
+        self.start_time = 0
+        # After Effects Layer Name. Used for expressions.
+        self.name = 0
+        # List of Effects
+        self.effects = []
+        # Layer Time Stretching
+        self.stretch = 0
+        # Layer Parent. Uses ind of parent.
+        self.parent = 0
+
+
+class Text(TgsObject):
+    _props = {
+        "type": "ty",
+        "transform": "ks",
+        "auto_orient": "ao",
+        "blend_mode": "bm",
+        "threedimensional": "ddd",
+        "index": "ind",
+        "css_class": "cl",
+        "layer_html_id": "ln",
+        "in_point": "ip",
+        "out_point": "op",
+        "start_time": "st",
+        "name": "nm",
+        "has_masks": "hasMask",
+        "masks_properties": "masksProperties",
+        "effects": "ef",
+        "stretch": "sr",
+        "parent": "parent",
+        "text_data": "t",
+    }
+
+    def __init__(self):
+        # Type of layer: Text.
+        self.type = 0
+        # Transform properties
+        self.transform = Transform()
+        # Auto-Orient along path AE property.
+        self.auto_orient = False
+        # Blend Mode
+        self.blend_mode = BlendMode()
+        # 3d layer flag
+        self.threedimensional = False
+        # Layer index in AE. Used for parenting and expressions.
+        self.index = 0
+        # Parsed layer name used as html class on SVG/HTML renderer
+        self.css_class = ""
+        # Parsed layer name used as html id on SVG/HTML renderer
+        self.layer_html_id = ""
+        # In Point of layer. Sets the initial frame of the layer.
+        self.in_point = 0
+        # Out Point of layer. Sets the final frame of the layer.
+        self.out_point = 0
+        # Start Time of layer. Sets the start time of the layer.
+        self.start_time = 0
+        # After Effects Layer Name. Used for expressions.
+        self.name = 0
+        # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
+        self.has_masks = 0
+        # List of Masks
+        self.masks_properties = []
+        # Auto-Orient along path AE property.
+        self.effects = False
+        # Layer Time Stretching
+        self.stretch = 0
+        # Layer Parent. Uses ind of parent.
+        self.parent = 0
+        # Text Data
+        self.text_data = None
+
+
+class Shape(TgsObject):
+    _props = {
+        "type": "ty",
+        "transform": "ks",
+        "auto_orient": "ao",
+        "blend_mode": "bm",
+        "threedimensional": "ddd",
+        "index": "ind",
+        "css_class": "cl",
+        "layer_html_id": "ln",
+        "in_point": "ip",
+        "out_point": "op",
+        "start_time": "st",
+        "name": "nm",
+        "has_masks": "hasMask",
+        "masks_properties": "masksProperties",
+        "effects": "ef",
+        "stretch": "sr",
+        "parent": "parent",
+        "items": "it",
+    }
+
+    def __init__(self):
+        # Type of layer: Shape.
+        self.type = 0
+        # Transform properties
+        self.transform = Transform()
+        # Auto-Orient along path AE property.
+        self.auto_orient = False
+        # Blend Mode
+        self.blend_mode = BlendMode()
+        # 3d layer flag
+        self.threedimensional = False
+        # Layer index in AE. Used for parenting and expressions.
+        self.index = 0
+        # Parsed layer name used as html class on SVG/HTML renderer
+        self.css_class = ""
+        # Parsed layer name used as html id on SVG/HTML renderer
+        self.layer_html_id = ""
+        # In Point of layer. Sets the initial frame of the layer.
+        self.in_point = 0
+        # Out Point of layer. Sets the final frame of the layer.
+        self.out_point = 0
+        # Start Time of layer. Sets the start time of the layer.
+        self.start_time = 0
+        # After Effects Layer Name. Used for expressions.
+        self.name = 0
+        # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
+        self.has_masks = 0
+        # List of Masks
+        self.masks_properties = []
+        # List of Effects
+        self.effects = []
+        # Layer Time Stretching
+        self.stretch = 0
+        # Layer Parent. Uses ind of parent.
+        self.parent = 0
+        # Shape list of items
+        self.items = []
+
+
+class Image(TgsObject):
+    _props = {
+        "type": "ty",
+        "transform": "ks",
+        "auto_orient": "ao",
+        "blend_mode": "bm",
+        "threedimensional": "ddd",
+        "index": "ind",
+        "css_class": "cl",
+        "layer_html_id": "ln",
+        "in_point": "ip",
+        "out_point": "op",
+        "start_time": "st",
+        "name": "nm",
+        "has_masks": "hasMask",
+        "masks_properties": "masksProperties",
+        "effects": "ef",
+        "stretch": "sr",
+        "parent": "parent",
+        "reference_id": "refId",
+    }
+
+    def __init__(self):
+        # Type of layer: Image.
+        self.type = 0
+        # Transform properties
+        self.transform = Transform()
+        # Auto-Orient along path AE property.
+        self.auto_orient = False
+        # Blend Mode
+        self.blend_mode = BlendMode()
+        # 3d layer flag
+        self.threedimensional = False
+        # Layer index in AE. Used for parenting and expressions.
+        self.index = 0
+        # Parsed layer name used as html class on SVG/HTML renderer
+        self.css_class = ""
+        # Parsed layer name used as html id on SVG/HTML renderer
+        self.layer_html_id = ""
+        # In Point of layer. Sets the initial frame of the layer.
+        self.in_point = 0
+        # Out Point of layer. Sets the final frame of the layer.
+        self.out_point = 0
+        # Start Time of layer. Sets the start time of the layer.
+        self.start_time = 0
+        # After Effects Layer Name. Used for expressions.
+        self.name = 0
+        # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
+        self.has_masks = 0
+        # List of Masks
+        self.masks_properties = []
+        # List of Effects
+        self.effects = []
+        # Layer Time Stretching
+        self.stretch = 0
+        # Layer Parent. Uses ind of parent.
+        self.parent = 0
+        # id pointing to the source image defined on 'assets' object
+        self.reference_id = ""
+
+
+class PreComp(TgsObject):
+    _props = {
+        "type": "ty",
+        "transform": "ks",
+        "auto_orient": "ao",
+        "blend_mode": "bm",
+        "threedimensional": "ddd",
+        "index": "ind",
+        "css_class": "cl",
+        "layer_html_id": "ln",
+        "in_point": "ip",
+        "out_point": "op",
+        "start_time": "st",
+        "name": "nm",
+        "has_masks": "hasMask",
+        "masks_properties": "masksProperties",
+        "effects": "ef",
+        "stretch": "sr",
+        "parent": "parent",
+        "reference_id": "refId",
+        "time_remapping": "tm",
+    }
+
+    def __init__(self):
+        # Type of layer: Precomp.
+        self.type = 0
+        # Transform properties
+        self.transform = Transform()
+        # Auto-Orient along path AE property.
+        self.auto_orient = False
+        # Blend Mode
+        self.blend_mode = BlendMode()
+        # 3d layer flag
+        self.threedimensional = False
+        # Layer index in AE. Used for parenting and expressions.
+        self.index = 0
+        # Parsed layer name used as html class on SVG/HTML renderer
+        self.css_class = ""
+        # Parsed layer name used as html id on SVG/HTML renderer
+        self.layer_html_id = ""
+        # In Point of layer. Sets the initial frame of the layer.
+        self.in_point = 0
+        # Out Point of layer. Sets the final frame of the layer.
+        self.out_point = 0
+        # Start Time of layer. Sets the start time of the layer.
+        self.start_time = 0
+        # After Effects Layer Name. Used for expressions.
+        self.name = 0
+        # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
+        self.has_masks = 0
+        # List of Masks
+        self.masks_properties = []
+        # List of Effects
+        self.effects = []
+        # Layer Time Stretching
+        self.stretch = 0
+        # Layer Parent. Uses ind of parent.
+        self.parent = 0
+        # id pointing to the source composition defined on 'assets' object
+        self.reference_id = ""
+        # Comp's Time remapping
+        self.time_remapping = ValueKeyframed()
+
+
+class Solid(TgsObject):
+    _props = {
+        "type": "ty",
+        "transform": "ks",
+        "auto_orient": "ao",
+        "blend_mode": "bm",
+        "threedimensional": "ddd",
+        "index": "ind",
+        "css_class": "cl",
+        "layer_html_id": "ln",
+        "in_point": "ip",
+        "out_point": "op",
+        "start_time": "st",
+        "name": "nm",
+        "has_masks": "hasMask",
+        "masks_properties": "masksProperties",
+        "effects": "ef",
+        "stretch": "sr",
+        "parent": "parent",
+        "solid_color": "sc",
+        "solid_height": "sh",
+        "solid_width": "sw",
+    }
+
+    def __init__(self):
+        # Type of layer: Solid.
+        self.type = 0
+        # Transform properties
+        self.transform = Transform()
+        # Auto-Orient along path AE property.
+        self.auto_orient = False
+        # Blend Mode
+        self.blend_mode = BlendMode()
+        # 3d layer flag
+        self.threedimensional = False
+        # Layer index in AE. Used for parenting and expressions.
+        self.index = 0
+        # Parsed layer name used as html class on SVG/HTML renderer
+        self.css_class = ""
+        # Parsed layer name used as html id on SVG/HTML renderer
+        self.layer_html_id = ""
+        # In Point of layer. Sets the initial frame of the layer.
+        self.in_point = 0
+        # Out Point of layer. Sets the final frame of the layer.
+        self.out_point = 0
+        # Start Time of layer. Sets the start time of the layer.
+        self.start_time = 0
+        # After Effects Layer Name. Used for expressions.
+        self.name = 0
+        # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
+        self.has_masks = 0
+        # List of Masks
+        self.masks_properties = []
+        # Auto-Orient along path AE property.
+        self.effects = False
+        # Layer Time Stretching
+        self.stretch = 0
+        # Layer Parent. Uses ind of parent.
+        self.parent = 0
+        # Color of the solid in hex
+        self.solid_color = ""
+        # Height of the solid.
+        self.solid_height = 0
+        # Width of the solid.
+        self.solid_width = 0
+
+
+class LineJoin(TgsEnum):
+    Miter = 1
+    Round = 2
+    Bevel = 3
+
+
+class TestBased(TgsEnum):
+    Characters = 1
+    CharacterExcludingSpaces = 2
+    Words = 3
+    Lines = 4
+
+
+class Composite(TgsEnum):
+    Above = 1
+    Below = 2
+
+
+class Transform(TgsObject):
+    _props = {
+        "anchor_point": "a",
+        "position": "p",
+        "scale": "s",
+        "rotation": "r",
+        "opacity": "o",
+        "position_x": "px",
+        "position_y": "py",
+        "position_z": "pz",
+        "skew": "sk",
+        "skew_axis": "sa",
+    }
+
+    def __init__(self):
+        # Transform Anchor Point
+        self.anchor_point = MultiDimensional()
+        # Transform Position
+        self.position = MultiDimensional()
+        # Transform Scale
+        self.scale = MultiDimensional()
+        # Transform Rotation
+        self.rotation = Value()
+        # Transform Opacity
+        self.opacity = Value()
+        # Transform Position X
+        self.position_x = Value()
+        # Transform Position Y
+        self.position_y = Value()
+        # Transform Position Z
+        self.position_z = Value()
+        # Transform Skew
+        self.skew = Value()
+        # Transform Skew Axis
+        self.skew_axis = Value()
+
+
+class Mask(TgsObject):
+    _props = {
+        "inverted": "inv",
+        "name": "nm",
+        "points": "pt",
+        "opacity": "o",
+        "mode": "mode",
+    }
+
+    def __init__(self):
+        # Inverted Mask flag
+        self.inverted = None
+        # Mask name. Used for expressions and effects.
+        self.name = ""
+        # Mask vertices
+        self.points = Shape()
+        # Mask opacity.
+        self.opacity = Const()
+        # Mask mode. Not all mask types are supported.
+        self.mode = ""
+
+
+class TextShape(TgsEnum):
+    Square = 1
+    RampUp = 2
+    RampDown = 3
+    Triangle = 4
+    Round = 5
+    Smooth = 6
+
+
+class LineCap(TgsEnum):
+    Butt = 1
+    Round = 2
+    Square = 3
+
+
+class TextGrouping(TgsEnum):
+    Characters = 1
+    Word = 2
+    Line = 3
+    All = 4
+
+
+class BlendMode(TgsEnum):
+    Normal = 0
+    Multiply = 1
+    Screen = 2
+    Overlay = 3
+    Darken = 4
+    Lighten = 5
+    ColorDodge = 6
+    ColorBurn = 7
+    HardLight = 8
+    SoftLight = 9
+    Difference = 10
+    Exclusion = 11
+    Hue = 12
+    Saturation = 13
+    Color = 14
+    Luminosity = 15
+
