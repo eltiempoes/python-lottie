@@ -1,0 +1,33 @@
+Telegram Animated Stickers Tools
+================================
+
+
+Scripts
+-------
+
+* bin/extract.py Will extract a tgs file into a pretty printed JSON
+
+
+Requirements
+------------
+
+Python 3.
+
+
+Reverse Engineering
+-------------------
+
+I had to reverse engineer the format because Telegram couldn't be bothered
+providing the specs
+
+
+License
+-------
+
+AGPLv3+ https://www.gnu.org/licenses/agpl-3.0.en.html
+
+
+Credits
+-------
+
+Copyright 2019 (C) Mattia Basaglia
