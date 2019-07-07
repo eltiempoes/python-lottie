@@ -18,7 +18,10 @@ Reverse Engineering
 -------------------
 
 I had to reverse engineer the format because Telegram couldn't be bothered
-providing the specs
+providing the specs.
+
+Seems a gzip compressed json, with a modified version of this format:
+https://github.com/airbnb/lottie-web/tree/master/docs/json
 
 
 License
