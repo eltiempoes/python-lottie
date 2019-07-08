@@ -7,7 +7,9 @@
       "extended_name": "Keyframes",
       "items": {
         "type": "object",
-        "$ref": "#/properties/shapePropKeyframe"
+        "oneOf": [
+            {"$ref": "#/properties/shapePropKeyframe"}
+        ]
       },
       "type": "array"
     },

@@ -7,7 +7,9 @@
       "extended_name": "Start",
       "items": {
         "type": "object",
-        "$ref": "#/properties/shapeProp"
+        "oneOf": [
+            {"$ref": "#/properties/shapeProp"}
+        ]
       },
       "type": "array"
     },

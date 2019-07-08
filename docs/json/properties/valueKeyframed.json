@@ -8,7 +8,9 @@
       "type": "array",
       "items": {
         "type": "object",
-        "$ref": "#/properties/valueKeyframe"
+        "oneOf": [{
+            "$ref": "#/properties/valueKeyframe"
+        }]
       }
     },
     "x": {

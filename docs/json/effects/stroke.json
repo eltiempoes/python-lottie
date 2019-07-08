@@ -27,41 +27,43 @@
       "title": "Effects",
       "description": "Effect List of properties.",
       "type": "array",
-      "items": [
-        {
-          "$ref": "#/effects/color"
-        },
-        {
-          "$ref": "#/effects/checkbox"
-        },
-        {
-          "$ref": "#/effects/checkbox"
-        },
-        {
-          "$ref": "#/effects/color"
-        },
-        {
-          "$ref": "#/effects/slider"
-        },
-        {
-          "$ref": "#/effects/slider"
-        },
-        {
-          "$ref": "#/effects/slider"
-        },
-        {
-          "$ref": "#/effects/slider"
-        },
-        {
-          "$ref": "#/effects/slider"
-        },
-        {
-          "$ref": "#/effects/dropDown"
-        },
-        {
-          "$ref": "#/effects/dropDown"
-        }
-      ]
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/effects/color"
+          },
+          {
+            "$ref": "#/effects/checkbox"
+          },
+          {
+            "$ref": "#/effects/checkbox"
+          },
+          {
+            "$ref": "#/effects/color"
+          },
+          {
+            "$ref": "#/effects/slider"
+          },
+          {
+            "$ref": "#/effects/slider"
+          },
+          {
+            "$ref": "#/effects/slider"
+          },
+          {
+            "$ref": "#/effects/slider"
+          },
+          {
+            "$ref": "#/effects/slider"
+          },
+          {
+            "$ref": "#/effects/dropDown"
+          },
+          {
+            "$ref": "#/effects/dropDown"
+          }
+        ]
+      }
     }
   }
 }

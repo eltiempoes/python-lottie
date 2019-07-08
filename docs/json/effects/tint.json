@@ -27,7 +27,7 @@
       "title": "Effects",
       "description": "Effect List of properties.",
       "type": "array",
-      "items": [
+      "items": {"oneOf": [
         {
           "$ref": "#/effects/color"
         },
@@ -37,7 +37,7 @@
         {
           "$ref": "#/effects/slider"
         }
-      ]
+      ]}
     }
   }
 }

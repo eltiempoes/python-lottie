@@ -27,7 +27,7 @@
       "title": "Effects",
       "description": "ffect List of properties.",
       "type": "array",
-      "items": [
+      "items": {"oneOf": [
         {
           "$ref": "#/effects/dropDown"
         },
@@ -124,7 +124,7 @@
         {
           "$ref": "#/effects/slider"
         }
-      ]
+      ]}
     }
   }
 }

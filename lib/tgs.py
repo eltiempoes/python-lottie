@@ -25,7 +25,17 @@ class TgsObject(Tgs):
         return {
             exp: getattr(self, name)
             for name, exp in self._properties.items()
+            if getattr(self, name) is not None
         }
+
+
+class Index:
+    def __init__(self):
+            self._i = 0
+
+    def __next__(self):
+            self._i += 1
+            return self._i
 
 
 class Animation(TgsObject):
@@ -63,14 +73,14 @@ class Animation(TgsObject):
         # Composition name
         self.name = ""
         # List of Composition Layers
-        self.layers = []
+        self.layers = [] # ShapeLayer, SolidLayer, CompLayer, ImageLayer, NullLayer, TextLayer
         # source items that can be used in multiple places. Comps and Images for now.
-        self.assets = []
+        self.assets = [] # Image, Precomp
         # source chars for text layers
-        self.chars = []
+        self.chars = [] # Chars
 
 
-class Fill(TgsObject):
+class FillEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -87,12 +97,12 @@ class Fill(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Effect type.
-        self.type = 0
+        self.type = 21
         # Effect List of properties.
-        self.effects = []
+        self.effects = [] # PointEffect, DropDownEffect, ColorEffect, DropDownEffect, SliderEffect, SliderEffect, SliderEffect
 
 
-class Stroke(TgsObject):
+class StrokeEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -109,12 +119,12 @@ class Stroke(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Effect type.
-        self.type = 0
+        self.type = 22
         # Effect List of properties.
-        self.effects = []
+        self.effects = [] # ColorEffect, CheckboxEffect, CheckboxEffect, ColorEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, DropDownEffect, DropDownEffect
 
 
-class DropDown(TgsObject):
+class DropDownEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -131,12 +141,12 @@ class DropDown(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Effect type.
-        self.type = 0
+        self.type = 7
         # Effect value.
         self.value = Value()
 
 
-class Tritone(TgsObject):
+class TritoneEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -153,12 +163,12 @@ class Tritone(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Effect type.
-        self.type = 0
+        self.type = 23
         # Effect List of properties.
-        self.effects = []
+        self.effects = [] # ColorEffect, ColorEffect, ColorEffect, SliderEffect
 
 
-class Group(TgsObject):
+class GroupEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -176,14 +186,14 @@ class Group(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Effect type.
-        self.type = 0
+        self.type = 5
         # Effect List of properties.
-        self.effects = []
+        self.effects = [] # IndexEffect
         # Enabled AE property value
         self.enabled = 0
 
 
-class Color(TgsObject):
+class ColorEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -200,12 +210,12 @@ class Color(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Effect type.
-        self.type = 0
+        self.type = 2
         # Effect value.
         self.value = MultiDimensional()
 
 
-class ProLevels(TgsObject):
+class ProLevelsEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -222,12 +232,12 @@ class ProLevels(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Effect type.
-        self.type = 0
+        self.type = 23
         # ffect List of properties.
-        self.effects = []
+        self.effects = [] # DropDownEffect, NoValueEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect
 
 
-class Angle(TgsObject):
+class AngleEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -244,12 +254,12 @@ class Angle(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Effect type.
-        self.type = 0
+        self.type = 1
         # Effect value.
         self.value = Value()
 
 
-class Slider(TgsObject):
+class SliderEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -271,7 +281,7 @@ class Slider(TgsObject):
         self.value = Value()
 
 
-class CheckBox(TgsObject):
+class CheckBoxEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -288,12 +298,12 @@ class CheckBox(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Effect type.
-        self.type = 0
+        self.type = 7
         # Effect value.
         self.value = Value()
 
 
-class Point(TgsObject):
+class PointEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -310,12 +320,12 @@ class Point(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Effect type.
-        self.type = 0
+        self.type = 2
         # Effect value.
-        self.value = []
+        self.value = [] # MultiDimensional, MultiDimensionalKeyframed
 
 
-class Tint(TgsObject):
+class TintEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -332,12 +342,12 @@ class Tint(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Effect type.
-        self.type = 0
+        self.type = 20
         # Effect List of properties.
-        self.effects = []
+        self.effects = [] # ColorEffect, ColorEffect, SliderEffect
 
 
-class Layer(TgsObject):
+class LayerEffect(TgsObject):
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -416,7 +426,7 @@ class Precomp(TgsObject):
         # Precomp ID
         self.id = ""
         # List of Precomp Layers
-        self.layers = []
+        self.layers = [] # ShapeLayer, SolidLayer, CompLayer, ImageLayer, NullLayer, TextLayer
 
 
 class ShapeKeyframed(TgsObject):
@@ -430,7 +440,7 @@ class ShapeKeyframed(TgsObject):
 
     def __init__(self):
         # Property Value keyframes
-        self.keyframes = []
+        self.keyframes = [] # ShapePropKeyframe
         # Property Expression. An AE expression that modifies the value.
         self.expression = ""
         # Property Index. Used for expressions.
@@ -470,7 +480,7 @@ class OffsetKeyframe(TgsObject):
 
     def __init__(self):
         # Start value of keyframe segment.
-        self.start = []
+        self.start = [] # number
         # Start time of keyframe segment.
         self.time = 0
         # Bezier curve interpolation in value.
@@ -525,7 +535,7 @@ class MultiDimensionalKeyframed(TgsObject):
 
     def __init__(self):
         # Property Value keyframes
-        self.keyframes = []
+        self.keyframes = [] # OffsetKeyframe
         # Property Expression. An AE expression that modifies the value.
         self.expression = ""
         # Property Index. Used for expressions.
@@ -546,7 +556,7 @@ class ShapePropKeyframe(TgsObject):
 
     def __init__(self):
         # Start value of keyframe segment.
-        self.start = []
+        self.start = [] # ShapeProp
         # Start time of keyframe segment.
         self.time = 0
         # Bezier curve interpolation in value.
@@ -567,11 +577,11 @@ class ShapeProp(TgsObject):
         # Closed property of shape
         self.closed = None
         # Bezier curve In points. Array of 2 dimensional arrays.
-        self.in_point = []
+        self.in_point = [] # array
         # Bezier curve Out points. Array of 2 dimensional arrays.
-        self.out_point = []
+        self.out_point = [] # array
         # Bezier curve Vertices. Array of 2 dimensional arrays.
-        self.vertices = []
+        self.vertices = [] # array
 
 
 class Value(TgsObject):
@@ -599,7 +609,7 @@ class ValueKeyframed(TgsObject):
 
     def __init__(self):
         # Property Value keyframes
-        self.keyframes = []
+        self.keyframes = [] # ValueKeyframe
         # Property Expression. An AE expression that modifies the value.
         self.expression = ""
         # Property Index. Used for expressions.
@@ -641,7 +651,7 @@ class Rect(TgsObject):
         # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
         # Shape content type.
-        self.type = ""
+        self.type = 'rc'
         # Rect's position
         self.position = MultiDimensional()
         # Rect's size
@@ -665,7 +675,7 @@ class Fill(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape content type.
-        self.type = ""
+        self.type = 'fl'
         # Fill Opacity
         self.opacity = Value()
         # Fill Color
@@ -688,7 +698,7 @@ class Trim(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape content type.
-        self.type = ""
+        self.type = 'tm'
         # Trim Start.
         self.start = Value()
         # Trim End.
@@ -714,13 +724,13 @@ class Repeater(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape content type.
-        self.type = ""
+        self.type = 'rp'
         # Number of Copies
         self.copies = Value()
         # Offset of Copies
         self.offset = Value()
         # Composite of copies
-        self.composite = Composite()
+        self.composite = Composite.default()
         # Transform values for each repeater copy
         self.transform = Transform()
 
@@ -733,7 +743,7 @@ class GFill(TgsObject):
         "opacity": "o",
         "start_point": "s",
         "end_point": "e",
-        "type": "t",
+        "gradient_type": "t",
         "highlight_length": "h",
         "highlight_angle": "a",
         "gradient_colors": "g",
@@ -745,7 +755,7 @@ class GFill(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape content type.
-        self.type = ""
+        self.type = 'gf'
         # Fill Opacity
         self.opacity = Value()
         # Gradient Start Point
@@ -753,7 +763,7 @@ class GFill(TgsObject):
         # Gradient End Point
         self.end_point = MultiDimensional()
         # Gradient Type
-        self.type = 1 # 1: Linear, 2: Radial
+        self.gradient_type = 1 # 1: Linear, 2: Radial
         # Gradient Highlight Length. Only if type is Radial
         self.highlight_length = Value()
         # Highlight Angle. Only if type is Radial
@@ -781,11 +791,11 @@ class Stroke(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape content type.
-        self.type = ""
+        self.type = 'st'
         # Stroke Line Cap
-        self.line_cap = LineCap()
+        self.line_cap = LineCap.default()
         # Stroke Line Join
-        self.line_join = LineJoin()
+        self.line_join = LineJoin.default()
         # Stroke Miter Limit. Only if Line Join is set to Miter.
         self.miter_limit = 0
         # Stroke Opacity
@@ -810,7 +820,7 @@ class Round(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape content type.
-        self.type = ""
+        self.type = 'rd'
         # Rounded Corner Radius
         self.radius = Value()
 
@@ -832,7 +842,7 @@ class Shape(TgsObject):
         # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
         # Shape content type.
-        self.type = ""
+        self.type = 'sh'
         # Shape's vertices
         self.vertices = Shape()
 
@@ -883,11 +893,11 @@ class Group(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape content type.
-        self.type = ""
+        self.type = 'gr'
         # Group number of properties. Used for expressions.
         self.number_of_properties = 0
         # Group list of items
-        self.items = []
+        self.items = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, Transform
 
 
 class Star(TgsObject):
@@ -914,7 +924,7 @@ class Star(TgsObject):
         # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
         # Shape content type.
-        self.type = ""
+        self.type = 'sr'
         # Star's position
         self.position = MultiDimensional()
         # Star's inner radius. (Star only)
@@ -951,7 +961,7 @@ class Ellipse(TgsObject):
         # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
         # Shape content type.
-        self.type = ""
+        self.type = 'el'
         # Ellipse's position
         self.position = MultiDimensional()
         # Ellipse's size
@@ -972,7 +982,7 @@ class Merge(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape content type. THIS FEATURE IS NOT SUPPORTED. It's exported because if you export it, they will come.
-        self.type = ""
+        self.type = 'mm'
         # Merge Mode
         self.merge_mode = 0
 
@@ -985,7 +995,7 @@ class GStroke(TgsObject):
         "opacity": "o",
         "start_point": "s",
         "end_point": "e",
-        "type": "t",
+        "gradient_type": "t",
         "highlight_length": "h",
         "highlight_angle": "a",
         "gradient_colors": "g",
@@ -1001,7 +1011,7 @@ class GStroke(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape content type.
-        self.type = ""
+        self.type = 'gs'
         # Stroke Opacity
         self.opacity = Value()
         # Gradient Start Point
@@ -1009,7 +1019,7 @@ class GStroke(TgsObject):
         # Gradient End Point
         self.end_point = MultiDimensional()
         # Gradient Type
-        self.type = 1 # 1: Linear, 2: Radial
+        self.gradient_type = 1 # 1: Linear, 2: Radial
         # Gradient Highlight Length. Only if type is Radial
         self.highlight_length = Value()
         # Highlight Angle. Only if type is Radial
@@ -1019,14 +1029,14 @@ class GStroke(TgsObject):
         # Gradient Stroke Width
         self.stroke_width = Value()
         # Gradient Stroke Line Cap
-        self.line_cap = LineCap()
+        self.line_cap = LineCap.default()
         # Gradient Stroke Line Join
-        self.line_join = LineJoin()
+        self.line_join = LineJoin.default()
         # Gradient Stroke Miter Limit. Only if Line Join is set to Miter.
         self.miter_limit = 0
 
 
-class Null(TgsObject):
+class NullLayer(TgsObject):
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1046,7 +1056,7 @@ class Null(TgsObject):
 
     def __init__(self):
         # Type of layer: Null.
-        self.type = 0
+        self.type = 3
         # Transform properties
         self.transform = Transform()
         # Auto-Orient along path AE property.
@@ -1068,14 +1078,14 @@ class Null(TgsObject):
         # After Effects Layer Name. Used for expressions.
         self.name = 0
         # List of Effects
-        self.effects = []
+        self.effects = [] # IndexEffect
         # Layer Time Stretching
         self.stretch = 0
         # Layer Parent. Uses ind of parent.
         self.parent = 0
 
 
-class Text(TgsObject):
+class TextLayer(TgsObject):
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1105,7 +1115,7 @@ class Text(TgsObject):
         # Auto-Orient along path AE property.
         self.auto_orient = False
         # Blend Mode
-        self.blend_mode = BlendMode()
+        self.blend_mode = BlendMode.default()
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
@@ -1125,7 +1135,7 @@ class Text(TgsObject):
         # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
         self.has_masks = 0
         # List of Masks
-        self.masks_properties = []
+        self.masks_properties = [] # Mask
         # Auto-Orient along path AE property.
         self.effects = False
         # Layer Time Stretching
@@ -1136,7 +1146,7 @@ class Text(TgsObject):
         self.text_data = None
 
 
-class Shape(TgsObject):
+class ShapeLayer(TgsObject):
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1160,13 +1170,13 @@ class Shape(TgsObject):
 
     def __init__(self):
         # Type of layer: Shape.
-        self.type = 0
+        self.type = 4
         # Transform properties
         self.transform = Transform()
         # Auto-Orient along path AE property.
         self.auto_orient = False
         # Blend Mode
-        self.blend_mode = BlendMode()
+        self.blend_mode = BlendMode.default()
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
@@ -1186,18 +1196,18 @@ class Shape(TgsObject):
         # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
         self.has_masks = 0
         # List of Masks
-        self.masks_properties = []
+        self.masks_properties = [] # Mask
         # List of Effects
-        self.effects = []
+        self.effects = [] # IndexEffect
         # Layer Time Stretching
         self.stretch = 0
         # Layer Parent. Uses ind of parent.
         self.parent = 0
         # Shape list of items
-        self.items = []
+        self.items = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, Repeater
 
 
-class Image(TgsObject):
+class ImageLayer(TgsObject):
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1221,13 +1231,13 @@ class Image(TgsObject):
 
     def __init__(self):
         # Type of layer: Image.
-        self.type = 0
+        self.type = 2
         # Transform properties
         self.transform = Transform()
         # Auto-Orient along path AE property.
         self.auto_orient = False
         # Blend Mode
-        self.blend_mode = BlendMode()
+        self.blend_mode = BlendMode.default()
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
@@ -1247,9 +1257,9 @@ class Image(TgsObject):
         # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
         self.has_masks = 0
         # List of Masks
-        self.masks_properties = []
+        self.masks_properties = [] # Mask
         # List of Effects
-        self.effects = []
+        self.effects = [] # IndexEffect
         # Layer Time Stretching
         self.stretch = 0
         # Layer Parent. Uses ind of parent.
@@ -1258,7 +1268,7 @@ class Image(TgsObject):
         self.reference_id = ""
 
 
-class PreComp(TgsObject):
+class PreCompLayer(TgsObject):
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1289,7 +1299,7 @@ class PreComp(TgsObject):
         # Auto-Orient along path AE property.
         self.auto_orient = False
         # Blend Mode
-        self.blend_mode = BlendMode()
+        self.blend_mode = BlendMode.default()
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
@@ -1309,9 +1319,9 @@ class PreComp(TgsObject):
         # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
         self.has_masks = 0
         # List of Masks
-        self.masks_properties = []
+        self.masks_properties = [] # Mask
         # List of Effects
-        self.effects = []
+        self.effects = [] # IndexEffect
         # Layer Time Stretching
         self.stretch = 0
         # Layer Parent. Uses ind of parent.
@@ -1319,10 +1329,10 @@ class PreComp(TgsObject):
         # id pointing to the source composition defined on 'assets' object
         self.reference_id = ""
         # Comp's Time remapping
-        self.time_remapping = ValueKeyframed()
+        self.time_remapping = ValueKeyframed.default()
 
 
-class Solid(TgsObject):
+class SolidLayer(TgsObject):
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1354,7 +1364,7 @@ class Solid(TgsObject):
         # Auto-Orient along path AE property.
         self.auto_orient = False
         # Blend Mode
-        self.blend_mode = BlendMode()
+        self.blend_mode = BlendMode.default()
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
@@ -1374,7 +1384,7 @@ class Solid(TgsObject):
         # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
         self.has_masks = 0
         # List of Masks
-        self.masks_properties = []
+        self.masks_properties = [] # Mask
         # Auto-Orient along path AE property.
         self.effects = False
         # Layer Time Stretching
@@ -1394,6 +1404,10 @@ class LineJoin(TgsEnum):
     Round = 2
     Bevel = 3
 
+    @classmethod
+    def default(cls):
+        return cls.Round
+
 
 class TestBased(TgsEnum):
     Characters = 1
@@ -1401,10 +1415,18 @@ class TestBased(TgsEnum):
     Words = 3
     Lines = 4
 
+    @classmethod
+    def default(cls):
+        return cls.Characters
+
 
 class Composite(TgsEnum):
     Above = 1
     Below = 2
+
+    @classmethod
+    def default(cls):
+        return cls.Above
 
 
 class Transform(TgsObject):
@@ -1474,11 +1496,19 @@ class TextShape(TgsEnum):
     Round = 5
     Smooth = 6
 
+    @classmethod
+    def default(cls):
+        return cls.Square
+
 
 class LineCap(TgsEnum):
     Butt = 1
     Round = 2
     Square = 3
+
+    @classmethod
+    def default(cls):
+        return cls.Round
 
 
 class TextGrouping(TgsEnum):
@@ -1486,6 +1516,10 @@ class TextGrouping(TgsEnum):
     Word = 2
     Line = 3
     All = 4
+
+    @classmethod
+    def default(cls):
+        return cls.Characters
 
 
 class BlendMode(TgsEnum):
@@ -1506,3 +1540,6 @@ class BlendMode(TgsEnum):
     Color = 14
     Luminosity = 15
 
+    @classmethod
+    def default(cls):
+        return cls.Normal

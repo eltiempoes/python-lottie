@@ -26,29 +26,32 @@
     "ef": {
       "title": "Effects",
       "description": "Effect List of properties.",
-      "items": [
-        {
-          "$ref": "#/effects/point"
-        },
-        {
-          "$ref": "#/effects/dropDown"
-        },
-        {
-          "$ref": "#/effects/color"
-        },
-        {
-          "$ref": "#/effects/dropDown"
-        },
-        {
-          "$ref": "#/effects/slider"
-        },
-        {
-          "$ref": "#/effects/slider"
-        },
-        {
-          "$ref": "#/effects/slider"
-        }
-      ],
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/effects/point"
+          },
+          {
+            "$ref": "#/effects/dropDown"
+          },
+          {
+            "$ref": "#/effects/color"
+          },
+          {
+            "$ref": "#/effects/dropDown"
+          },
+          {
+            "$ref": "#/effects/slider"
+          },
+          {
+            "$ref": "#/effects/slider"
+          },
+          {
+            "$ref": "#/effects/slider"
+          }
+        ],
+        "type": "object"
+      },
       "type": "array"
     }
   }
