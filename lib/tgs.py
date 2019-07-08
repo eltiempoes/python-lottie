@@ -35,7 +35,7 @@ class TgsObject(Tgs):
 
 class Index:
     def __init__(self):
-            self._i = 0
+            self._i = -1
 
     def __next__(self):
             self._i += 1
@@ -55,7 +55,7 @@ class Animation(TgsObject):
         "name": "nm",
         "layers": "layers",
         "assets": "assets",
-        "chars": "chars",
+        #"chars": "chars",
     }
 
     def __init__(self):
@@ -81,7 +81,7 @@ class Animation(TgsObject):
         # source items that can be used in multiple places. Comps and Images for now.
         self.assets = [] # Image, Precomp
         # source chars for text layers
-        self.chars = [] # Chars
+        #self.chars = [] # Chars
 
 
 class FillEffect(TgsObject):
@@ -591,8 +591,9 @@ class ShapeProp(TgsObject):
 class Value(TgsObject):
     _props = {
         "value": "k",
-        "expression": "x",
+        #"expression": "x",
         "property_index": "ix",
+        "animated": "a",
     }
 
     def __init__(self, value=0):
@@ -602,6 +603,7 @@ class Value(TgsObject):
         self.expression = ""
         # Property Index. Used for expressions.
         self.property_index = 0
+        self.animated = False
 
 
 class ValueKeyframed(TgsObject):
@@ -623,8 +625,9 @@ class ValueKeyframed(TgsObject):
 class MultiDimensional(TgsObject):
     _props = {
         "value": "k",
-        "expression": "x",
+        #"expression": "x",
         "property_index": "ix",
+        "animated": "a",
     }
 
     def __init__(self, value=None):
@@ -634,6 +637,7 @@ class MultiDimensional(TgsObject):
         self.expression = ""
         # Property Index. Used for expressions.
         self.property_index = 0
+        self.animated = False
 
 
 class Rect(TgsObject):
@@ -1158,18 +1162,19 @@ class ShapeLayer(TgsObject):
         "blend_mode": "bm",
         "threedimensional": "ddd",
         "index": "ind",
-        "css_class": "cl",
-        "layer_html_id": "ln",
+        #"css_class": "cl",
+        #"layer_html_id": "ln",
         "in_point": "ip",
         "out_point": "op",
         "start_time": "st",
         "name": "nm",
-        "has_masks": "hasMask",
-        "masks_properties": "masksProperties",
-        "effects": "ef",
+        #"has_masks": "hasMask",
+        #"masks_properties": "masksProperties",
+        #"effects": "ef",
         "stretch": "sr",
         "parent": "parent",
         "items": "shapes", # "it" in the JSON schema...
+        "markers": "markers", # ?
     }
 
     def __init__(self):
@@ -1196,7 +1201,7 @@ class ShapeLayer(TgsObject):
         # Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
         # After Effects Layer Name. Used for expressions.
-        self.name = 0
+        self.name = ""
         # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
         self.has_masks = 0
         # List of Masks
@@ -1209,6 +1214,7 @@ class ShapeLayer(TgsObject):
         self.parent = None
         # Shape list of items
         self.items = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, Repeater
+        self.markers = []
 
 
 class ImageLayer(TgsObject):
@@ -1440,11 +1446,11 @@ class Transform(TgsObject):
         "scale": "s",
         "rotation": "r",
         "opacity": "o",
-        "position_x": "px",
-        "position_y": "py",
-        "position_z": "pz",
-        "skew": "sk",
-        "skew_axis": "sa",
+        #"position_x": "px",
+        #"position_y": "py",
+        #"position_z": "pz",
+        #"skew": "sk",
+        #"skew_axis": "sa",
     }
 
     def __init__(self):
