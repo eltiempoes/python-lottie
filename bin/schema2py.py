@@ -7,7 +7,9 @@ def ucfirst(x):
     return x[0].upper() + x[1:]
 
 
-def schema2py(out, filename, data):
+def schema2py(out, filename, data, limit):
+    if limit and class_name(filename) not in limit:
+        return
     if data["type"] == "number":
         return schema2enum(out, filename, data)
     if data["type"] == "object":
@@ -188,6 +190,7 @@ def class_name(filename):
 
 schema_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "json")
 outfile = sys.stdout
+limit = sys.argv[1:]
 
 for root, _, files in os.walk(schema_path):
     for file in files:
@@ -196,4 +199,4 @@ for root, _, files in os.walk(schema_path):
             data = json.load(fp)
         if not data:
             continue
-        schema2py(outfile, filepath, data)
+        schema2py(outfile, filepath, data, limit)

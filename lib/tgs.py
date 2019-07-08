@@ -65,7 +65,7 @@ class Animation(TgsObject):
         # Out Point of the Time Ruler. Sets the final Frame of the animation
         self.out_point = 0
         # Frame Rate
-        self.frame_rate = 0
+        self.frame_rate = 60
         # Composition Width
         self.width = 512
         # Composition has 3-D layers
@@ -448,7 +448,7 @@ class ShapeKeyframed(TgsObject):
         # Property Expression. An AE expression that modifies the value.
         self.expression = ""
         # Property Index. Used for expressions.
-        self.property_index = ""
+        self.property_index = 0
         # In Spatial Tangent. Only for spatial properties. Array of numbers.
         self.in_tangent = []
         # Out Spatial Tangent. Only for spatial properties. Array of numbers.
@@ -469,7 +469,7 @@ class Shape(TgsObject):
         # Property Expression. An AE expression that modifies the value.
         self.expression = ""
         # Property Index. Used for expressions.
-        self.property_index = ""
+        self.property_index = 0
         # Defines if property is animated
         self.animated = 0
 
@@ -543,7 +543,7 @@ class MultiDimensionalKeyframed(TgsObject):
         # Property Expression. An AE expression that modifies the value.
         self.expression = ""
         # Property Index. Used for expressions.
-        self.property_index = ""
+        self.property_index = 0
         # In Spatial Tangent. Only for spatial properties. Array of numbers.
         self.in_tangent = []
         # Out Spatial Tangent. Only for spatial properties. Array of numbers.
@@ -601,7 +601,7 @@ class Value(TgsObject):
         # Property Expression. An AE expression that modifies the value.
         self.expression = ""
         # Property Index. Used for expressions.
-        self.property_index = ""
+        self.property_index = 0
 
 
 class ValueKeyframed(TgsObject):
@@ -617,7 +617,7 @@ class ValueKeyframed(TgsObject):
         # Property Expression. An AE expression that modifies the value.
         self.expression = ""
         # Property Index. Used for expressions.
-        self.property_index = ""
+        self.property_index = 0
 
 
 class MultiDimensional(TgsObject):
@@ -633,7 +633,7 @@ class MultiDimensional(TgsObject):
         # Property Expression. An AE expression that modifies the value.
         self.expression = ""
         # Property Index. Used for expressions.
-        self.property_index = ""
+        self.property_index = 0
 
 
 class Rect(TgsObject):
@@ -1080,13 +1080,13 @@ class NullLayer(TgsObject):
         # Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
         # After Effects Layer Name. Used for expressions.
-        self.name = 0
+        self.name = ""
         # List of Effects
         self.effects = [] # IndexEffect
         # Layer Time Stretching
         self.stretch = 0
         # Layer Parent. Uses ind of parent.
-        self.parent = 0
+        self.parent = None
 
 
 class TextLayer(TgsObject):
@@ -1145,7 +1145,7 @@ class TextLayer(TgsObject):
         # Layer Time Stretching
         self.stretch = 0
         # Layer Parent. Uses ind of parent.
-        self.parent = 0
+        self.parent = None
         # Text Data
         self.text_data = None
 
@@ -1206,7 +1206,7 @@ class ShapeLayer(TgsObject):
         # Layer Time Stretching
         self.stretch = 0
         # Layer Parent. Uses ind of parent.
-        self.parent = 0
+        self.parent = None
         # Shape list of items
         self.items = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, Repeater
 
@@ -1267,7 +1267,7 @@ class ImageLayer(TgsObject):
         # Layer Time Stretching
         self.stretch = 0
         # Layer Parent. Uses ind of parent.
-        self.parent = 0
+        self.parent = None
         # id pointing to the source image defined on 'assets' object
         self.reference_id = ""
 
@@ -1329,7 +1329,7 @@ class PreCompLayer(TgsObject):
         # Layer Time Stretching
         self.stretch = 0
         # Layer Parent. Uses ind of parent.
-        self.parent = 0
+        self.parent = None
         # id pointing to the source composition defined on 'assets' object
         self.reference_id = ""
         # Comp's Time remapping
@@ -1394,7 +1394,7 @@ class SolidLayer(TgsObject):
         # Layer Time Stretching
         self.stretch = 0
         # Layer Parent. Uses ind of parent.
-        self.parent = 0
+        self.parent = None
         # Color of the solid in hex
         self.solid_color = ""
         # Height of the solid.
