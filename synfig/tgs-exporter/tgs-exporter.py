@@ -56,7 +56,7 @@ def gen_group_layer(toplottie, lottie, layer, num_layers):
 
 
 def gen_layer(lottie, child, num_layers):
-    shape_layer = {"star", "circle", "rectangle", "simple_circle"}
+    shape_layer = {"star", "circle", "rectangle", "simple_circle", "region", "outline"}
     solid_layer = {"SolidColor"}
     image_layer = {"import"}
     group_layer = {"group"}
@@ -66,7 +66,7 @@ def gen_layer(lottie, child, num_layers):
         return None
 
     if child.attrib["type"] not in supported_layers:  # Only supported layers
-        sys.stderr.write("Unsupported layer type: %s" % child.attrib["type"])
+        sys.stderr.write("Unsupported layer type: %s\n" % child.attrib["type"])
         return None
 
     lottie["layers"].insert(0, {})
@@ -125,7 +125,7 @@ def export_tgs(file_name):
     with gzip.open(out_filename, "wb") as fil:
         json.dump(structure, codecs.getwriter('utf-8')(fil))
 
-    #json.dump(structure, sys.stderr, indent=4)
+    json.dump(structure, sys.stderr, indent=4)
 
 
 if len(sys.argv) < 2:

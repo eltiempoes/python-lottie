@@ -10,6 +10,7 @@ from shapes.star import gen_shapes_star
 from shapes.circle import gen_shapes_circle
 from shapes.fill import gen_shapes_fill
 from shapes.rectangle import gen_shapes_rectangle
+from shapes.spline import gen_shapes_spline
 from helpers.blendMode import get_blend
 sys.path.append("..")
 
@@ -47,6 +48,8 @@ def gen_layer_shape(lottie, layer, idx):
         gen_shapes_circle(lottie["shapes"][0], layer, index.inc())
     elif layer.attrib["type"] == "rectangle":
         gen_shapes_rectangle(lottie["shapes"][0], layer, index.inc())
+    elif layer.attrib["type"] in {"region", "outline"}:
+        gen_shapes_spline(lottie["shapes"][0], layer, index.inc())
 
     lottie["shapes"].append({})  # For the fill or color
     gen_shapes_fill(lottie["shapes"][1], layer)
