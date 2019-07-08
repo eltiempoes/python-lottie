@@ -474,25 +474,6 @@ class Shape(TgsObject):
         self.animated = 0
 
 
-class OffsetKeyframe(TgsObject):
-    _props = {
-        "start": "s",
-        "time": "t",
-        "in_value": "i",
-        "out_value": "o",
-    }
-
-    def __init__(self):
-        # Start value of keyframe segment.
-        self.start = [] # number
-        # Start time of keyframe segment.
-        self.time = 0
-        # Bezier curve interpolation in value.
-        self.in_value = None
-        # Bezier curve interpolation out value.
-        self.out_value = None
-
-
 class DoubleKeyframe(TgsObject):
     _props = {
         "start": "s",
@@ -510,44 +491,6 @@ class DoubleKeyframe(TgsObject):
         self.in_value = None
         # Bezier curve interpolation out value.
         self.out_value = None
-
-
-class ValueKeyframe(TgsObject):
-    _props = {
-        "start": "s",
-        "time": "t",
-        "in_value": "i",
-    }
-
-    def __init__(self):
-        # Start value of keyframe segment.
-        self.start = 0
-        # Start time of keyframe segment.
-        self.time = 0
-        # Bezier curve interpolation in value.
-        self.in_value = None
-
-
-class MultiDimensionalKeyframed(TgsObject):
-    _props = {
-        "keyframes": "k",
-        "expression": "x",
-        "property_index": "ix",
-        "in_tangent": "ti",
-        "out_tangent": "to",
-    }
-
-    def __init__(self):
-        # Property Value keyframes
-        self.keyframes = [] # OffsetKeyframe
-        # Property Expression. An AE expression that modifies the value.
-        self.expression = ""
-        # Property Index. Used for expressions.
-        self.property_index = 0
-        # In Spatial Tangent. Only for spatial properties. Array of numbers.
-        self.in_tangent = []
-        # Out Spatial Tangent. Only for spatial properties. Array of numbers.
-        self.out_tangent = []
 
 
 class ShapePropKeyframe(TgsObject):
@@ -622,10 +565,25 @@ class ValueKeyframed(TgsObject):
         self.property_index = 0
 
 
+class ValueKeyframe(TgsObject):
+    _props = {
+        "start": "s",
+        "time": "t",
+        "in_value": "i",
+    }
+
+    def __init__(self):
+        # Start value of keyframe segment.
+        self.start = 0
+        # Start time of keyframe segment.
+        self.time = 0
+        # Bezier curve interpolation in value.
+        self.in_value = None
+
+
 class MultiDimensional(TgsObject):
     _props = {
         "value": "k",
-        #"expression": "x",
         "property_index": "ix",
         "animated": "a",
     }
@@ -633,11 +591,69 @@ class MultiDimensional(TgsObject):
     def __init__(self, value=None):
         # Property Value
         self.value = value or []
-        # Property Expression. An AE expression that modifies the value.
-        self.expression = ""
         # Property Index. Used for expressions.
-        self.property_index = 0
+        self.property_index = None
         self.animated = False
+
+
+class MultiDimensionalKeyframed(TgsObject):
+    _props = {
+        "keyframes": "k",
+        #"expression": "x",
+        "property_index": "ix",
+        "animated": "a",
+    }
+
+    def __init__(self):
+        # Property Value keyframes
+        self.keyframes = [] # OffsetKeyframe
+        # Property Index. Used for expressions.
+        self.property_index = None
+        self.animated = True
+
+
+class OffsetKeyframe(TgsObject):
+    _props = {
+        "start": "s",
+        "end": "e",
+        "time": "t",
+        "in_value": "i",
+        "out_value": "o",
+        "in_tangent": "ti",
+        "out_tangent": "to",
+        "h": "h",
+    }
+
+    def __init__(self, time=0, start=None, end=None):
+        # Start value of keyframe segment.
+        self.start = start # number
+        self.end = end # number
+        # Start time of keyframe segment.
+        self.time = time
+        # Bezier curve interpolation in value.
+        self.in_value = KeyframeBexierPoint(0, 0)
+        # Bezier curve interpolation out value.
+        self.out_value = KeyframeBexierPoint(0, 0)
+        self.h = 1 #???
+        # TODO see calc_tangent in the exporter
+        # In Spatial Tangent. Only for spatial properties. Array of numbers.
+        self.in_tangent = [1, 1]
+        # Out Spatial Tangent. Only for spatial properties. Array of numbers.
+        self.out_tangent = [0, 0]
+
+
+
+
+
+class KeyframeBexierPoint(TgsObject):
+    _props = {
+        "x": "x",
+        "y": "y",
+    }
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
 
 class Rect(TgsObject):
@@ -951,10 +967,11 @@ class Star(TgsObject):
         self.star_type = 1 # 1: Star, 2: Polygon
 
 
+# manually checked
 class Ellipse(TgsObject):
     _props = {
         #"match_name": "mn",
-        #"name": "nm",
+        "name": "nm",
         "index": "ix",
         "direction": "d",
         "type": "ty",
@@ -964,9 +981,9 @@ class Ellipse(TgsObject):
 
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
-        self.match_name = ""
+        #self.match_name = None
         # After Effect's Name. Used for expressions.
-        self.name = ""
+        self.name = None
         # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
         # Shape content type.
@@ -975,7 +992,7 @@ class Ellipse(TgsObject):
         self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Ellipse's size
         self.size = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
-        self.index = 0
+        self.index = None
 
 
 class Merge(TgsObject):

@@ -12,7 +12,13 @@ an.layers.append(layer)
 
 circle = layer.add_shape(tgs.Ellipse())
 circle.size.value = [153, 100]
-circle.position.value = [222, 206]
+#circle.position.value = [222, 206]
+circle.position = tgs.MultiDimensionalKeyframed()
+circle.position.keyframes = [
+    tgs.OffsetKeyframe(0, [222, 0], [222, 206]),
+    tgs.OffsetKeyframe(10, [222, 206], [422, 206]),
+    tgs.OffsetKeyframe(30, [422, 206]),
+]
 
 fill = layer.add_shape(tgs.Fill())
 fill.color.value = [1, 0, 0]
