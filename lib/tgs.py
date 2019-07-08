@@ -1175,7 +1175,7 @@ class ShapeLayer(TgsObject):
         #"effects": "ef",
         "stretch": "sr",
         "parent": "parent",
-        "items": "shapes", # "it" in the JSON schema...
+        "shapes": "shapes", # "it" in the JSON schema...
         "markers": "markers", # ?
     }
 
@@ -1215,9 +1215,12 @@ class ShapeLayer(TgsObject):
         # Layer Parent. Uses ind of parent.
         self.parent = None
         # Shape list of items
-        self.items = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, Repeater
+        self.shapes = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, Repeater
         self.markers = []
 
+    def add_shape(self, shape):
+        self.shapes.append(shape)
+        return shape
 
 class ImageLayer(TgsObject):
     _props = {
