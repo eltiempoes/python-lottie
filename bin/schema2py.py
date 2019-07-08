@@ -131,6 +131,12 @@ class ClassProp:
                 else:
                     self.value = "%s()" % clsname
 
+                if len(data["oneOf"]) > 1:
+                    self.value_comment = ", ".join(
+                        class_name(oo["$ref"])
+                        for oo in data["oneOf"]
+                    )
+
     def write_init(self, out, indent):
         out.write(indent)
         out.write("# %s\n" % self.raw["description"])
@@ -168,9 +174,6 @@ def schema2class(out, filename, data, ei=""):
         p.write_init(out, " "*8+ei)
 
 
-
-
-
 def class_name(filename):
     bits = os.path.splitext(filename)[0].rsplit("/", 2)
     name = ucfirst(bits.pop())
@@ -192,4 +195,3 @@ for root, _, files in os.walk(schema_path):
         if not data:
             continue
         schema2py(outfile, filepath, data)
-

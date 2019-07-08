@@ -143,7 +143,7 @@ class DropDownEffect(TgsObject):
         # Effect type.
         self.type = 7
         # Effect value.
-        self.value = Value()
+        self.value = Value() # Value, ValueKeyframed
 
 
 class TritoneEffect(TgsObject):
@@ -212,7 +212,7 @@ class ColorEffect(TgsObject):
         # Effect type.
         self.type = 2
         # Effect value.
-        self.value = MultiDimensional()
+        self.value = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
 
 
 class ProLevelsEffect(TgsObject):
@@ -256,7 +256,7 @@ class AngleEffect(TgsObject):
         # Effect type.
         self.type = 1
         # Effect value.
-        self.value = Value()
+        self.value = Value() # Value, ValueKeyframed
 
 
 class SliderEffect(TgsObject):
@@ -278,7 +278,7 @@ class SliderEffect(TgsObject):
         # Effect type.
         self.type = 0
         # Effect value.
-        self.value = Value()
+        self.value = Value() # Value, ValueKeyframed
 
 
 class CheckBoxEffect(TgsObject):
@@ -300,7 +300,7 @@ class CheckBoxEffect(TgsObject):
         # Effect type.
         self.type = 7
         # Effect value.
-        self.value = Value()
+        self.value = Value() # Value, ValueKeyframed
 
 
 class PointEffect(TgsObject):
@@ -653,11 +653,11 @@ class Rect(TgsObject):
         # Shape content type.
         self.type = 'rc'
         # Rect's position
-        self.position = MultiDimensional()
+        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Rect's size
-        self.size = MultiDimensional()
+        self.size = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Rect's rounded corners
-        self.rounded_corners = Value()
+        self.rounded_corners = Value() # Value, ValueKeyframed
 
 
 class Fill(TgsObject):
@@ -677,9 +677,9 @@ class Fill(TgsObject):
         # Shape content type.
         self.type = 'fl'
         # Fill Opacity
-        self.opacity = Value()
+        self.opacity = Value() # Value, ValueKeyframed
         # Fill Color
-        self.color = MultiDimensional()
+        self.color = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
 
 
 class Trim(TgsObject):
@@ -700,11 +700,11 @@ class Trim(TgsObject):
         # Shape content type.
         self.type = 'tm'
         # Trim Start.
-        self.start = Value()
+        self.start = Value() # Value, ValueKeyframed
         # Trim End.
-        self.end = Value()
+        self.end = Value() # Value, ValueKeyframed
         # Trim Offset.
-        self.offset = Value()
+        self.offset = Value() # Value, ValueKeyframed
 
 
 class Repeater(TgsObject):
@@ -726,9 +726,9 @@ class Repeater(TgsObject):
         # Shape content type.
         self.type = 'rp'
         # Number of Copies
-        self.copies = Value()
+        self.copies = Value() # Value, ValueKeyframed
         # Offset of Copies
-        self.offset = Value()
+        self.offset = Value() # Value, ValueKeyframed
         # Composite of copies
         self.composite = Composite.default()
         # Transform values for each repeater copy
@@ -757,17 +757,17 @@ class GFill(TgsObject):
         # Shape content type.
         self.type = 'gf'
         # Fill Opacity
-        self.opacity = Value()
+        self.opacity = Value() # Value, ValueKeyframed
         # Gradient Start Point
-        self.start_point = MultiDimensional()
+        self.start_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Gradient End Point
-        self.end_point = MultiDimensional()
+        self.end_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Gradient Type
         self.gradient_type = 1 # 1: Linear, 2: Radial
         # Gradient Highlight Length. Only if type is Radial
-        self.highlight_length = Value()
+        self.highlight_length = Value() # Value, ValueKeyframed
         # Highlight Angle. Only if type is Radial
-        self.highlight_angle = Value()
+        self.highlight_angle = Value() # Value, ValueKeyframed
         # Gradient Colors
         self.gradient_colors = None
 
@@ -799,11 +799,11 @@ class Stroke(TgsObject):
         # Stroke Miter Limit. Only if Line Join is set to Miter.
         self.miter_limit = 0
         # Stroke Opacity
-        self.opacity = Value()
+        self.opacity = Value() # Value, ValueKeyframed
         # Stroke Width
-        self.width = Value()
+        self.width = Value() # Value, ValueKeyframed
         # Stroke Color
-        self.color = MultiDimensional()
+        self.color = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
 
 
 class Round(TgsObject):
@@ -822,7 +822,7 @@ class Round(TgsObject):
         # Shape content type.
         self.type = 'rd'
         # Rounded Corner Radius
-        self.radius = Value()
+        self.radius = Value() # Value, ValueKeyframed
 
 
 class Shape(TgsObject):
@@ -844,7 +844,7 @@ class Shape(TgsObject):
         # Shape content type.
         self.type = 'sh'
         # Shape's vertices
-        self.vertices = Shape()
+        self.vertices = Shape() # Shape, ShapeKeyframed
 
 
 class Transform(TgsObject):
@@ -863,19 +863,19 @@ class Transform(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape Transform Anchor Point
-        self.anchor_point = MultiDimensional()
+        self.anchor_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Shape Transform Position
-        self.position = MultiDimensional()
+        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Shape Transform Scale
-        self.scale = MultiDimensional()
+        self.scale = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Shape Transform Rotation
-        self.rotation = Value()
+        self.rotation = Value() # Value, ValueKeyframed
         # Shape Transform Opacity
-        self.opacity = Value()
+        self.opacity = Value() # Value, ValueKeyframed
         # Shape Transform Skew
-        self.skew = Value()
+        self.skew = Value() # Value, ValueKeyframed
         # Shape Transform Skew Axis
-        self.skew_axis = Value()
+        self.skew_axis = Value() # Value, ValueKeyframed
 
 
 class Group(TgsObject):
@@ -926,19 +926,19 @@ class Star(TgsObject):
         # Shape content type.
         self.type = 'sr'
         # Star's position
-        self.position = MultiDimensional()
+        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Star's inner radius. (Star only)
-        self.inner_radius = Value()
+        self.inner_radius = Value() # Value, ValueKeyframed
         # Star's inner roundness. (Star only)
-        self.inner_roundness = Value()
+        self.inner_roundness = Value() # Value, ValueKeyframed
         # Star's outer radius.
-        self.outer_radius = Value()
+        self.outer_radius = Value() # Value, ValueKeyframed
         # Star's outer roundness.
-        self.outer_roundness = Value()
+        self.outer_roundness = Value() # Value, ValueKeyframed
         # Star's rotation.
-        self.rotation = Value()
+        self.rotation = Value() # Value, ValueKeyframed
         # Star's number of points.
-        self.points = Value()
+        self.points = Value() # Value, ValueKeyframed
         # Star's type. Polygon or Star.
         self.star_type = 1 # 1: Star, 2: Polygon
 
@@ -963,9 +963,9 @@ class Ellipse(TgsObject):
         # Shape content type.
         self.type = 'el'
         # Ellipse's position
-        self.position = MultiDimensional()
+        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Ellipse's size
-        self.size = MultiDimensional()
+        self.size = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
 
 
 class Merge(TgsObject):
@@ -1013,21 +1013,21 @@ class GStroke(TgsObject):
         # Shape content type.
         self.type = 'gs'
         # Stroke Opacity
-        self.opacity = Value()
+        self.opacity = Value() # Value, ValueKeyframed
         # Gradient Start Point
-        self.start_point = MultiDimensional()
+        self.start_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Gradient End Point
-        self.end_point = MultiDimensional()
+        self.end_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Gradient Type
         self.gradient_type = 1 # 1: Linear, 2: Radial
         # Gradient Highlight Length. Only if type is Radial
-        self.highlight_length = Value()
+        self.highlight_length = Value() # Value, ValueKeyframed
         # Highlight Angle. Only if type is Radial
-        self.highlight_angle = Value()
+        self.highlight_angle = Value() # Value, ValueKeyframed
         # Gradient Colors
         self.gradient_colors = None
         # Gradient Stroke Width
-        self.stroke_width = Value()
+        self.stroke_width = Value() # Value, ValueKeyframed
         # Gradient Stroke Line Cap
         self.line_cap = LineCap.default()
         # Gradient Stroke Line Join
@@ -1445,25 +1445,25 @@ class Transform(TgsObject):
 
     def __init__(self):
         # Transform Anchor Point
-        self.anchor_point = MultiDimensional()
+        self.anchor_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Transform Position
-        self.position = MultiDimensional()
+        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Transform Scale
-        self.scale = MultiDimensional()
+        self.scale = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Transform Rotation
-        self.rotation = Value()
+        self.rotation = Value() # Value, ValueKeyframed
         # Transform Opacity
-        self.opacity = Value()
+        self.opacity = Value() # Value, ValueKeyframed
         # Transform Position X
-        self.position_x = Value()
+        self.position_x = Value() # Value, ValueKeyframed
         # Transform Position Y
-        self.position_y = Value()
+        self.position_y = Value() # Value, ValueKeyframed
         # Transform Position Z
-        self.position_z = Value()
+        self.position_z = Value() # Value, ValueKeyframed
         # Transform Skew
-        self.skew = Value()
+        self.skew = Value() # Value, ValueKeyframed
         # Transform Skew Axis
-        self.skew_axis = Value()
+        self.skew_axis = Value() # Value, ValueKeyframed
 
 
 class Mask(TgsObject):
@@ -1481,9 +1481,9 @@ class Mask(TgsObject):
         # Mask name. Used for expressions and effects.
         self.name = ""
         # Mask vertices
-        self.points = Shape()
+        self.points = Shape() # Shape, ShapeKeyframed
         # Mask opacity.
-        self.opacity = Const()
+        self.opacity = Const() # Const, ConstKeyframed
         # Mask mode. Not all mask types are supported.
         self.mode = ""
 
