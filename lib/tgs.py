@@ -670,8 +670,8 @@ class Rect(TgsObject):
 
 class Fill(TgsObject):
     _props = {
-        "match_name": "mn",
-        "name": "nm",
+        #"match_name": "mn",
+        #"name": "nm",
         "type": "ty",
         "opacity": "o",
         "color": "c",
@@ -685,7 +685,7 @@ class Fill(TgsObject):
         # Shape content type.
         self.type = 'fl'
         # Fill Opacity
-        self.opacity = Value() # Value, ValueKeyframed
+        self.opacity = Value(100) # Value, ValueKeyframed
         # Fill Color
         self.color = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
 
@@ -765,7 +765,7 @@ class GFill(TgsObject):
         # Shape content type.
         self.type = 'gf'
         # Fill Opacity
-        self.opacity = Value() # Value, ValueKeyframed
+        self.opacity = Value(100) # Value, ValueKeyframed
         # Gradient Start Point
         self.start_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Gradient End Point
@@ -807,7 +807,7 @@ class Stroke(TgsObject):
         # Stroke Miter Limit. Only if Line Join is set to Miter.
         self.miter_limit = 0
         # Stroke Opacity
-        self.opacity = Value() # Value, ValueKeyframed
+        self.opacity = Value(100) # Value, ValueKeyframed
         # Stroke Width
         self.width = Value() # Value, ValueKeyframed
         # Stroke Color
@@ -879,7 +879,7 @@ class TransformShape(TgsObject):
         # Shape Transform Rotation
         self.rotation = Value(0) # Value, ValueKeyframed
         # Shape Transform Opacity
-        self.opacity = Value(1) # Value, ValueKeyframed
+        self.opacity = Value(1001) # Value, ValueKeyframed
         # Shape Transform Skew
         self.skew = Value(0) # Value, ValueKeyframed
         # Shape Transform Skew Axis
@@ -953,8 +953,9 @@ class Star(TgsObject):
 
 class Ellipse(TgsObject):
     _props = {
-        "match_name": "mn",
-        "name": "nm",
+        #"match_name": "mn",
+        #"name": "nm",
+        "index": "ix",
         "direction": "d",
         "type": "ty",
         "position": "p",
@@ -974,6 +975,7 @@ class Ellipse(TgsObject):
         self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Ellipse's size
         self.size = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.index = 0
 
 
 class Merge(TgsObject):
@@ -1021,7 +1023,7 @@ class GStroke(TgsObject):
         # Shape content type.
         self.type = 'gs'
         # Stroke Opacity
-        self.opacity = Value() # Value, ValueKeyframed
+        self.opacity = Value(100) # Value, ValueKeyframed
         # Gradient Start Point
         self.start_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
         # Gradient End Point
@@ -1209,7 +1211,7 @@ class ShapeLayer(TgsObject):
         # List of Effects
         self.effects = [] # IndexEffect
         # Layer Time Stretching
-        self.stretch = 0
+        self.stretch = 1
         # Layer Parent. Uses ind of parent.
         self.parent = None
         # Shape list of items
@@ -1463,7 +1465,7 @@ class Transform(TgsObject):
         # Transform Rotation
         self.rotation = Value(0) # Value, ValueKeyframed
         # Transform Opacity
-        self.opacity = Value(1) # Value, ValueKeyframed
+        self.opacity = Value(100) # Value, ValueKeyframed
         # Transform Position X
         self.position_x = Value(0) # Value, ValueKeyframed
         # Transform Position Y
