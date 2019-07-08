@@ -1,5 +1,5 @@
+# pylint: disable=line-too-long
 """
-settings.py
 This module contains all the global variables and constants
 """
 
@@ -14,13 +14,14 @@ DEFAULT_HEIGHT = 270
 DEFAULT_NAME = "Synfig Animation"
 DEFAULT_3D = 0
 DEFAULT_BLEND = 0
-LAYER_NULL_TYPE = 0
 LAYER_SHAPE_TYPE = 4
 LAYER_SHAPE_NAME = "Shape Layer "
 LAYER_SOLID_TYPE = 1
 LAYER_SOLID_NAME = "Solid Layer "
 LAYER_IMAGE_TYPE = 2
 LAYER_IMAGE_NAME = "Image Layer "
+LAYER_PRECOMP_TYPE = 0
+LAYER_PRECOMP_NAME = "Pre Comp Layer "
 LAYER_DEFAULT_STRETCH = 1
 LAYER_DEFAULT_AUTO_ORIENT = 0
 OPACITY_CONSTANT = 100
@@ -29,6 +30,9 @@ NO_INFO = "no_info"
 DEFAULT_ROTATION = 0
 DEFAULT_OPACITY = 100
 DEFAULT_DIRECTION = 1
+DEFAULT_POSITION = [0, 0]
+DEFAULT_ANCHOR = [0, 0, 0]
+DEFAULT_SCALE = [100, 100, 100]
 GAMMA = 2.2
 PIX_PER_UNIT = 0
 TANGENT_FACTOR = 3.0
@@ -44,6 +48,13 @@ EFFECTS_INVERT = 7  # same as All mask, don't know why
 EFFECTS_HFEATHER = 0    # horizontal feather
 EFFECTS_VFEATHER = 0    # vertical feather
 EFFECTS_OPACITY = 0     # Opacity ty = 0
+MASK_ADDITIVE = "a"
+INSIDE_PRECOMP = False  # specifies if we are inside a precomp or not
+ADDITIONAL_PRECOMP_WIDTH = 0
+ADDITIONAL_PRECOMP_HEIGHT = 0
+NOT_SUPPORTED_TEXT = "Layer '%s' is not supported yet. For more information, contact us on Synfig forums or Github page"
+NOT_ACTIVE_TEXT = "Layer '%s' is not active"
+EXCLUDE_FROM_RENDERING = "Layer '%s' is excluded from rendering"
 
 
 def init():
@@ -66,3 +77,5 @@ def init():
     num_images = Count()
     global file_name
     file_name = {}
+    global num_precomp
+    num_precomp = Count()

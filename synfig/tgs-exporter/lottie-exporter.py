@@ -12,8 +12,6 @@ import os
 import json
 import sys
 import logging
-import gzip
-import codecs
 from lxml import etree
 from canvas import gen_canvas
 from layers.driver import gen_layers
@@ -66,7 +64,49 @@ def parse(file_name):
     settings.lottie_format["layers"] = []
     gen_layers(settings.lottie_format["layers"], root, len(root) - 1)
 
-    return settings.lottie_format
+    lottie_string = json.dumps(settings.lottie_format)
+    return write_to(file_name, "json", lottie_string)
+
+
+def gen_html(file_name):
+    """
+    Generates an HTML file which will allow end user to easily playback
+    animation in a web browser
+
+    Args:
+        file_name (str) : Stores the HTML file name
+
+    Returns:
+        (None)
+    """
+
+    # Take only the file name, to take relative file path
+    store_file_name = os.path.basename(file_name)
+
+    html_text = \
+"""<!DOCTYPE html>
+<html style="width: 100%;height: 100%">
+<head>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.3/lottie.js"></script>
+</head>
+<body style="background-color:#ccc; margin: 0px;height: 100%; font-family: sans-serif;font-size: 10px">
+
+<div style="width:100%;height:100%;background-color:#333;" id="bodymovin"></div>
+
+<script>
+    var animData = {{
+        container: document.getElementById('bodymovin'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path:'{file_name}'
+    }};
+    var anim = bodymovin.loadAnimation(animData);
+</script>
+</body>
+</html>"""
+
+    write_to(file_name, "html", html_text.format(file_name=store_file_name))
 
 
 def init_logs():
@@ -86,18 +126,10 @@ def init_logs():
     logging.getLogger().setLevel(logging.DEBUG)
 
 
-def export_tgs(file_name):
-    structure = parse(file_name)
-    structure["tgs"] = 1
-    basename = os.path.splitext(file_name)[0]
-    out_filename = basename + ".tgs"
-    with gzip.open(out_filename, "wb") as fil:
-        json.dump(structure, codecs.getwriter('utf-8')(fil))
-
-
 if len(sys.argv) < 2:
     sys.exit()
 else:
     settings.init()
     FILE_NAME = sys.argv[1]
-    export_tgs(FILE_NAME)
+    new_file_name = parse(FILE_NAME)
+    gen_html(new_file_name)

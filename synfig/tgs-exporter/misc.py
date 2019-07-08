@@ -1,8 +1,10 @@
+# pylint: disable=line-too-long
 """
 misc.py
-Some miscellaneous functions will be provided here
+Some miscellaneous functions and classes will be provided here
 """
 
+import math
 import settings
 
 
@@ -32,6 +34,102 @@ class Count:
         """
         self.idx += 1
         return self.idx
+
+
+class Hermite:
+    """
+    To keep the hermite curve stored inside this
+    """
+    def __init__(self, p1, p2, t1, t2):
+        """
+        Args:
+            p1 (float)  : First control point of bezier curve
+            p2 (float)  : Fourth control point
+            t1 (float)  : Second control point
+            t2 (float)  : Third control point
+
+        Returns:
+            (None)
+        """
+        self.p1 = p1
+        self.p2 = p2
+        self.t1 = t1
+        self.t2 = t2
+        self.sync()
+
+    def sync(self):
+        """
+        Calculates the coefficients and variables required in calculation of
+        derivative and value of the curve at time t.
+        Here p1, p2, t1, t2 are control points of bezier curve and a, b, c, d
+        are control points of hermite
+        """
+        self.a = self.p1
+        self.b = self.p1 + self.t1/3
+        self.c = self.p2 - self.t2/3
+        self.d = self.p2
+
+        self.coeff0 = self.a
+        self.coeff1 = self.b*3- self.a*3
+        self.coeff2 = self.c*3 - self.b*6 + self.a*3
+        self.coeff3 = self.d - self.c*3 + self.b*3 - self.a
+
+    def derivative(self, x):
+        """
+        Calculates the derivative of the curve at x
+
+        Args:
+            x (float) : Time at which the derivative is needed
+
+        Returns:
+            (float) : The value of the derivative at time x
+        """
+        y = 1 - x
+        ret = ((self.b - self.a) * y * y + (self.c - self.b) * x * y * 2 + (self.d - self.c) * x * x) * 3
+        return ret
+
+    def value(self, t):
+        """
+        Calculates the value of the curve at time t
+
+        Args:
+            t (float) : Time at which the value is needed
+
+        Returns:
+            (float) : Value of the curve at time t
+        """
+        ret = self.coeff0 + (self.coeff1 + (self.coeff2 + (self.coeff3)*t)*t)*t
+        return ret
+
+
+class Matrix2:
+    """
+    Will store a Matrix 2X2
+    """
+    def __init__(self, m00=1.0, m01=0.0, m10=0.0, m11=1.0):
+        self.m00 = m00
+        self.m01 = m01
+        self.m10 = m10
+        self.m11 = m11
+
+    def set_rotate(self, angle):
+        """
+        This will serve as a rotation matrix with angle `angle`
+        """
+        c = math.cos(angle)
+        s = math.sin(angle)
+        self.m00, self.m01 = c, s
+        self.m10, self.m11 = -s, c
+
+    def get_transformed(self, v):
+        """
+        Rotate or transform a vector using this Matrix
+        """
+        ret = Vector()
+        x, y = v[0], v[1]
+        ret[0] = x*self.m00 + y*self.m10
+        ret[1] = x*self.m01 + y*self.m11
+        return ret
 
 
 class Vector:
@@ -74,12 +172,99 @@ class Vector:
         val2 = self.val2 - other.val2
         return Vector(val1, val2, self.type)
 
+    def __neg__(self):
+        return -1 * self
+
+    def __getitem__(self, key):
+        if key:
+            return self.val2
+        return self.val1
+
+    def __setitem__(self, key, value):
+        if key:
+            self.val2 = value
+        else:
+            self.val1 = value
+
+    def mag(self):
+        """
+        Returns the magnitude of the vector
+
+        Args:
+            (None)
+        Returns:
+            (float) : The magnitude of the vector
+        """
+        return math.sqrt(self.mag_squared())
+
+    def inv_mag(self):
+        """
+        Returns the inverse of the magnitude of the vector
+
+        Args:
+            (None)
+        Returns:
+            (float) : Magnitude inversed
+        """
+        return 1.0 / self.mag()
+
+    def perp(self):
+        """
+        Returns a perpendicular version of the vector
+
+        Args:
+            (None)
+        Returns:
+            (misc.Vector) : Perpendicular vector with same magnitude
+        """
+        return Vector(self.val2, -self.val1)
+
+    def is_equal_to(self, other):
+        """
+        Tells if the current vector is equal to `other` vector
+
+        Args:
+            other (misc.Vector) : The vector to be compared with
+
+        Returns:
+            (bool) : True if the vectors are equal
+                   : False otherwise
+        """
+        return approximate_equal((self - other).mag_squared(), 0)
+
+    def mag_squared(self):
+        """
+        Returns the squared magnitude of the vector
+
+        Args:
+            (None)
+        Returns:
+            (float) : squared magnitude
+        """
+        ret = self.val1 * self.val1 + self.val2 * self.val2
+        return ret
+
+    def norm(self):
+        """
+        Returns a normalised version of the vector
+
+        Args:
+            (None)
+        Returns:
+            (misc.Vector) : itselves whose magnitude is 1
+        """
+        obj = self * self.inv_mag()
+        self.__dict__.update(obj.__dict__)
+        return self
+
     # other can only be of type real
     def __mul__(self, other):
         if not isinstance(other, self.__class__):
             val1 = self.val1 * other
             val2 = self.val2 * other
             return Vector(val1, val2, self.type)
+        elif isinstance(other, self.__class__):
+            return self.val1*other.val1 + self.val2*other.val2
         raise Exception('Multiplication with {} not defined'.format(type(other)))
 
     def __rmul__(self, other):
@@ -118,7 +303,7 @@ class Vector:
             return [self.val1, self.val2]
         elif self.type == "circle_radius":
             return [self.val1, self.val1]
-        elif self.type in {"rectangle_size", "image_scale"}:
+        elif self.type in {"rectangle_size", "image_scale", "scale_layer_zoom"}:
             return [self.val1, self.val3]
         else:
             return [self.val1]
@@ -218,6 +403,24 @@ class Color:
         return [self.red, self.green, self.blue, self.alpha]
 
 
+def approximate_equal(a, b):
+    """
+    Need to define this function somewhere else, a and b are of type "float"
+
+    Args:
+        a (float) : First number to be compared
+        b (float) : Second number to be compared
+
+    Returns:
+        (bool) : True if the numbers are approximately equal under precision
+               : False otherwise
+    """
+    precision = 1e-8
+    if a < b:
+        return b - a < precision
+    return a - b < precision
+
+
 def calculate_pixels_per_unit():
     """
     Gives the value of 1 unit in terms of pixels according to the canvas defined
@@ -234,20 +437,24 @@ def calculate_pixels_per_unit():
     return settings.PIX_PER_UNIT
 
 
-def change_axis(x_val, y_val):
+def change_axis(x_val, y_val, is_transform=False):
     """
     Convert synfig axis coordinates into lottie format
 
     Args:
         x_val (float | str) : x axis value in pixels
         y_val (float | str) : y axis value in pixels
+        is_transform (`obj`: bool, optional) : Is this value used in transform module?
 
     Returns:
         (list)  : x and y axis value in Lottie format
     """
     x_val, y_val = float(x_val), float(y_val)
-    x_val, y_val = x_val + settings.lottie_format["w"]/2, -y_val + settings.lottie_format["h"]/2
-    return [int(x_val), int(y_val)]
+    if is_transform:
+        x_val, y_val = x_val, -y_val
+    else:
+        x_val, y_val = x_val + settings.lottie_format["w"]/2, -y_val + settings.lottie_format["h"]/2
+    return [x_val, y_val]
 
 
 def parse_position(animated, i):
@@ -268,7 +475,6 @@ def parse_position(animated, i):
         pos = [float(animated[i][0][0].text),
                float(animated[i][0][1].text)]
         pos = [settings.PIX_PER_UNIT*x for x in pos]
-        #pos = change_axis(pos[0], pos[1])   # This is very important
 
     elif animated.attrib["type"] == "real":
         pos = parse_value(animated, i)
@@ -279,19 +485,28 @@ def parse_position(animated, i):
 
     elif animated.attrib["type"] == "angle":
         pos = [get_angle(float(animated[i][0].attrib["value"])),
-               float(animated[i].attrib["time"][:-1]) * settings.lottie_format["fr"]]
+               get_frame(animated[i])]
+
+    elif animated.attrib["type"] == "region_angle":
+        pos = [float(animated[i][0].attrib["value"]),
+               get_frame(animated[i])]
+
+    elif animated.attrib["type"] == "rotate_layer_angle":
+        # Angle needs to made neg of what they are
+        pos = [-float(animated[i][0].attrib["value"]),
+               get_frame(animated[i])]
 
     elif animated.attrib["type"] == "opacity":
         pos = [float(animated[i][0].attrib["value"]) * settings.OPACITY_CONSTANT,
-               float(animated[i].attrib["time"][:-1]) * settings.lottie_format["fr"]]
+               get_frame(animated[i])]
 
     elif animated.attrib["type"] == "effects_opacity":
         pos = [float(animated[i][0].attrib["value"]),
-               float(animated[i].attrib["time"][:-1]) * settings.lottie_format["fr"]]
+               get_frame(animated[i])]
 
     elif animated.attrib["type"] == "points":
         pos = [int(animated[i][0].attrib["value"]),
-               float(animated[i].attrib["time"][:-1]) * settings.lottie_format["fr"]]
+               get_frame(animated[i])]
 
     elif animated.attrib["type"] == "rectangle_size":
         pos = parse_value(animated, i)
@@ -304,6 +519,13 @@ def parse_position(animated, i):
         val2 = get_frame(animated[i])
         vec = Vector(val, val2, animated.attrib["type"])
         vec.add_new_val(float(animated[i][0].attrib["value2"]))
+        return vec
+
+    elif animated.attrib["type"] == "scale_layer_zoom":
+        val = (math.e ** float(animated[i][0].attrib["value"])) * 100
+        val2 = get_frame(animated[i])
+        vec = Vector(val, val2, animated.attrib["type"])
+        vec.add_new_val(val)
         return vec
 
     elif animated.attrib["type"] == "color":
@@ -332,7 +554,7 @@ def parse_value(animated, i):
         (list)  : [value, time] is returned
     """
     pos = [float(animated[i][0].attrib["value"]) * settings.PIX_PER_UNIT,
-           float(animated[i].attrib["time"][:-1]) * settings.lottie_format["fr"]]
+           get_frame(animated[i])]
     return pos
 
 
@@ -434,7 +656,8 @@ def get_frame(waypoint):
     Returns:
         (int) : the frame at which waypoint is present
     """
-    frame = float(waypoint.attrib["time"][:-1]) * settings.lottie_format["fr"]
+    time = get_time(waypoint)
+    frame = time * settings.lottie_format["fr"]
     frame = round(frame)
     return frame
 
@@ -448,8 +671,18 @@ def get_time(waypoint):
     Returns:
         (float) : the time in seconds at which the waypoint is present
     """
-    time = float(waypoint.attrib["time"][:-1])
-    return time
+    time = waypoint.attrib["time"].split(" ")
+    final = 0
+    for frame in time:
+        if frame[-1] == "h":
+            final += float(frame[:-1]) * 60 * 60
+        elif frame[-1] == "m":
+            final += float(frame[:-1]) * 60
+        elif frame[-1] == "s":
+            final += float(frame[:-1])
+        elif frame[-1] == "f":  # This should never happen according to my code
+            raise ValueError("In waypoint, time is never expected in frames.")
+    return final
 
 def get_vector(waypoint):
     """
@@ -462,9 +695,29 @@ def get_vector(waypoint):
     Returns:
         (misc.Vector) : x and y axis values stores in Vector format
     """
-    x = float(waypoint[0][0].text)
-    y = float(waypoint[0][1].text)
+    # converting radius and angle to a vector
+    if waypoint.tag == "radial_composite":
+        for child in waypoint:
+            if child.tag == "radius":
+                radius = float(child[0].attrib["value"])
+                radius *= settings.PIX_PER_UNIT
+            elif child.tag == "theta":
+                angle = float(child[0].attrib["value"])
+        x, y = radial_to_tangent(radius, angle)
+    else:
+        x = float(waypoint[0][0].text)
+        y = float(waypoint[0][1].text)
     return Vector(x, y)
+
+def radial_to_tangent(radius, angle):
+    """
+    Converts a tangent from radius and angle format to x, y axis co-ordinate
+    system
+    """
+    angle = math.radians(angle)
+    x = radius * math.cos(angle)
+    y = radius * math.sin(angle)
+    return x, y
 
 def set_vector(waypoint, pos):
     """
