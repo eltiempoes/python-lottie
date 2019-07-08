@@ -8,6 +8,10 @@ def _to_dict(v):
         return int(v)
     elif isinstance(v, list):
         return list(map(_to_dict, v))
+    elif isinstance(v, (int, float, str)):
+        return v
+    else:
+        raise Exception("Unknown value %r" % v)
 
 
 class Tgs:
@@ -15,7 +19,7 @@ class Tgs:
         raise NotImplementedError
 
 
-class TgsEnum(enum.Enum, Tgs):
+class TgsEnum(Tgs, enum.Enum):
     def to_dict(self):
         return self.value
 
@@ -23,8 +27,8 @@ class TgsEnum(enum.Enum, Tgs):
 class TgsObject(Tgs):
     def to_dict(self):
         return {
-            exp: getattr(self, name)
-            for name, exp in self._properties.items()
+            exp: _to_dict(getattr(self, name))
+            for name, exp in self._props.items()
             if getattr(self, name) is not None
         }
 
@@ -591,9 +595,9 @@ class Value(TgsObject):
         "property_index": "ix",
     }
 
-    def __init__(self):
+    def __init__(self, value=0):
         # Property Value
-        self.value = 0
+        self.value = value
         # Property Expression. An AE expression that modifies the value.
         self.expression = ""
         # Property Index. Used for expressions.
@@ -623,9 +627,9 @@ class MultiDimensional(TgsObject):
         "property_index": "ix",
     }
 
-    def __init__(self):
+    def __init__(self, value=None):
         # Property Value
-        self.value = []
+        self.value = value or []
         # Property Expression. An AE expression that modifies the value.
         self.expression = ""
         # Property Index. Used for expressions.
@@ -847,7 +851,7 @@ class Shape(TgsObject):
         self.vertices = Shape() # Shape, ShapeKeyframed
 
 
-class Transform(TgsObject):
+class TransformShape(TgsObject):
     _props = {
         "name": "nm",
         "anchor_point": "a",
@@ -863,19 +867,19 @@ class Transform(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape Transform Anchor Point
-        self.anchor_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.anchor_point = MultiDimensional([0, 0, 0]) # MultiDimensional, MultiDimensionalKeyframed
         # Shape Transform Position
-        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
         # Shape Transform Scale
-        self.scale = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.scale = MultiDimensional([1, 1, 1]) # MultiDimensional, MultiDimensionalKeyframed
         # Shape Transform Rotation
-        self.rotation = Value() # Value, ValueKeyframed
+        self.rotation = Value(0) # Value, ValueKeyframed
         # Shape Transform Opacity
-        self.opacity = Value() # Value, ValueKeyframed
+        self.opacity = Value(1) # Value, ValueKeyframed
         # Shape Transform Skew
-        self.skew = Value() # Value, ValueKeyframed
+        self.skew = Value(0) # Value, ValueKeyframed
         # Shape Transform Skew Axis
-        self.skew_axis = Value() # Value, ValueKeyframed
+        self.skew_axis = Value(0) # Value, ValueKeyframed
 
 
 class Group(TgsObject):
@@ -1165,7 +1169,7 @@ class ShapeLayer(TgsObject):
         "effects": "ef",
         "stretch": "sr",
         "parent": "parent",
-        "items": "it",
+        "items": "shapes", # "it" in the JSON schema...
     }
 
     def __init__(self):
@@ -1445,25 +1449,25 @@ class Transform(TgsObject):
 
     def __init__(self):
         # Transform Anchor Point
-        self.anchor_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.anchor_point = MultiDimensional([0, 0, 0]) # MultiDimensional, MultiDimensionalKeyframed
         # Transform Position
-        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
         # Transform Scale
-        self.scale = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.scale = MultiDimensional([100, 100, 100]) # MultiDimensional, MultiDimensionalKeyframed
         # Transform Rotation
-        self.rotation = Value() # Value, ValueKeyframed
+        self.rotation = Value(0) # Value, ValueKeyframed
         # Transform Opacity
-        self.opacity = Value() # Value, ValueKeyframed
+        self.opacity = Value(1) # Value, ValueKeyframed
         # Transform Position X
-        self.position_x = Value() # Value, ValueKeyframed
+        self.position_x = Value(0) # Value, ValueKeyframed
         # Transform Position Y
-        self.position_y = Value() # Value, ValueKeyframed
+        self.position_y = Value(0) # Value, ValueKeyframed
         # Transform Position Z
-        self.position_z = Value() # Value, ValueKeyframed
+        self.position_z = Value(0) # Value, ValueKeyframed
         # Transform Skew
-        self.skew = Value() # Value, ValueKeyframed
+        self.skew = Value(0) # Value, ValueKeyframed
         # Transform Skew Axis
-        self.skew_axis = Value() # Value, ValueKeyframed
+        self.skew_axis = Value(0) # Value, ValueKeyframed
 
 
 class Mask(TgsObject):

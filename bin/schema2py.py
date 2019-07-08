@@ -181,6 +181,8 @@ def class_name(filename):
         name += "Layer"
     elif bits[-1] == "effects":
         name += "Effect"
+    elif name == "Transform" and bits[-1] == "shapes":
+        name += "Shape"
     return name
 
 

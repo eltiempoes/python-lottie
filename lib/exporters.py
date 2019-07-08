@@ -15,13 +15,18 @@ def export_tgs(animation, file):
 def lottie_display_html(rel_lottie_filename):
     return '''
 <!DOCTYPE html>
-<html style="width: 100%;height: 100%">
+<html>
 <head>
+    <meta charset="utf-8" />
+    <style>
+        html, body { width: 100%%; height: 100%%; background-color: #ccc; margin: 0; }
+        #bodymovin { width: 100%%; height: 100%%; background-color :#333; }
+    </style>
      <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.3/lottie.js"></script>
 </head>
-<body style="background-color:#ccc; margin: 0px;height: 100%; font-family: sans-serif;font-size: 10px">
+<body>
 
-<div style="width:100%;height:100%;background-color:#333;" id="bodymovin"></div>
+<div id="bodymovin"></div>
 
 <script>
     var animData = {
@@ -29,7 +34,7 @@ def lottie_display_html(rel_lottie_filename):
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        path:%r
+        path: %r,
     };
     var anim = bodymovin.loadAnimation(animData);
 </script>
