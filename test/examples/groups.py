@@ -8,11 +8,10 @@ from tgs import exporters
 from tgs import objects
 
 
-an = objects.Animation()
+an = objects.Animation(59)
 
 layer = objects.ShapeLayer()
-an.out_point = layer.out_point = 59
-an.layers.append(layer)
+an.add_layer(layer)
 
 
 g1 = layer.add_shape(objects.Group())
@@ -38,7 +37,5 @@ g3.add_shape(objects.Fill([0, 0, 1]))
 g3.add_shape(objects.Stroke([1, 1, 1], 5))
 
 
-exporters.export_lottie(an, open("/tmp/out.json", "w"), indent=4)
-open("/tmp/out.html", "w").write(exporters.lottie_display_html("/tmp/out.json"))
-exporters.export_tgs(an, open("/tmp/out.tgs", "wb"))
+exporters.multiexport(an, "/tmp/groups")
 

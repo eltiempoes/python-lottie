@@ -50,6 +50,7 @@ def prettyprint_scalar(tgs_object, out=sys.stdout):
         tgs_object = int(tgs_object)
     return str(tgs_object)
 
+
 def prettyprint(tgs_object, out=sys.stdout, indent="   ", _i=""):
     if isinstance(tgs_object, TgsObject):
         out.write(tgs_object.__class__.__name__)
@@ -76,3 +77,17 @@ def prettyprint(tgs_object, out=sys.stdout, indent="   ", _i=""):
     else:
         out.write(prettyprint_scalar(tgs_object, out))
         out.write('\n')
+
+
+def multiexport(animation, basename, lottie_json=True, lottie_html=True, tgs=True):
+    if lottie_json:
+        with open(basename+".json", "w") as lottieout:
+            export_lottie(animation, lottieout, indent=4)
+
+    if lottie_html:
+        with open(basename+".html", "w") as htmlout:
+            htmlout.write(lottie_display_html(basename+".json"))
+
+    if tgs:
+        with open(basename+".tgs", "wb") as tgsout:
+            export_tgs(animation, tgsout)

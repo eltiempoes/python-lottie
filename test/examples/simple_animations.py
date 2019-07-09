@@ -8,11 +8,10 @@ from tgs import exporters
 from tgs import objects
 
 
-an = objects.Animation()
+an = objects.Animation(59)
 
 layer = objects.ShapeLayer()
-an.out_point = layer.out_point = 59
-an.layers.append(layer)
+an.add_layer(layer)
 
 circle = layer.add_shape(objects.Ellipse())
 circle.size.value = [100, 100]
@@ -27,8 +26,7 @@ fill.opacity.add_keyframe(0, 100)
 fill.opacity.add_keyframe(30, 10)
 fill.opacity.add_keyframe(60, 100)
 
-exporters.export_lottie(an, open("/tmp/out.json", "w"), indent=4)
-open("/tmp/out.html", "w").write(exporters.lottie_display_html("/tmp/out.json"))
-exporters.export_tgs(an, open("/tmp/out.tgs", "wb"))
+
+exporters.multiexport(an, "/tmp/simple_animations")
 
 

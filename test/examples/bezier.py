@@ -8,11 +8,10 @@ from tgs import exporters
 from tgs import objects
 
 
-an = objects.Animation()
+an = objects.Animation(59)
 
 layer = objects.ShapeLayer()
-an.out_point = layer.out_point = 59
-an.layers.append(layer)
+an.add_layer(layer)
 
 heart = objects.Bezier()
 heart.add_point([50, 20], [50, -20], [-50, -20])
@@ -46,6 +45,4 @@ fill = layer.add_shape(objects.Fill([1, 0, 0]))
 stroke = layer.add_shape(objects.Stroke([0, 0, 0], 5))
 
 
-exporters.export_lottie(an, open("/tmp/out.json", "w"), indent=4)
-open("/tmp/out.html", "w").write(exporters.lottie_display_html("/tmp/out.json"))
-exporters.export_tgs(an, open("/tmp/out.tgs", "wb"))
+exporters.multiexport(an, "/tmp/bezier")
