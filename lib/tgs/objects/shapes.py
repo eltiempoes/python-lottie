@@ -164,7 +164,7 @@ class Group(TgsObject):
         # Shape content type.
         self.type = 'gr'
         # Group number of properties. Used for expressions.
-        self.number_of_properties = 0
+        self.number_of_properties = None
         # Group list of items
         self.shapes = [TransformShape()]
         self.property_index = None
@@ -345,7 +345,7 @@ class TransformShape(TgsObject):
         TgsProp("anchor_point", "a", MultiDimensional, False),
         TgsProp("position", "p", MultiDimensional, False),
         TgsProp("scale", "s", MultiDimensional, False),
-        TgsProp("rotation", "r", MultiDimensional, False),
+        TgsProp("rotation", "r", Value, False),
         TgsProp("opacity", "o", Value, False),
         TgsProp("skew", "sk", Value, False),
         TgsProp("skew_axis", "sa", Value, False),
@@ -355,19 +355,19 @@ class TransformShape(TgsObject):
         self.name = None
         self.type = 'tr'
         # Transform Anchor Point
-        self.anchor_point = MultiDimensional([0, 0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        self.anchor_point = MultiDimensional([0, 0])
         # Transform Position
-        self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional([0, 0])
         # Transform Scale
-        self.scale = MultiDimensional([100, 100, 100]) # MultiDimensional, MultiDimensionalKeyframed
+        self.scale = MultiDimensional([100, 100])
         # Transform Rotation
-        self.rotation = MultiDimensional([0, 0]) # Value, ValueKeyframed
+        self.rotation = Value(0)
         # Transform Opacity
-        self.opacity = Value(100) # Value, ValueKeyframed
+        self.opacity = Value(100)
         # Transform Skew
-        self.skew = Value(0) # Value, ValueKeyframed
+        self.skew = Value(0)
         # Transform Skew Axis
-        self.skew_axis = Value(0) # Value, ValueKeyframed
+        self.skew_axis = Value(0)
 
 
 class Trim(TgsObject): # TODO check

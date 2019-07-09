@@ -32,16 +32,18 @@ antiheart = (
 )
 
 g1 = layer.add_shape(objects.Group())
-g1.transform.position.value = [-72, -29]
-g1.transform.anchor_point.value = [-72, -29]
-g1.transform.scale.value = [100, 100]
 shape = g1.add_shape(objects.Shape())
+#shape.vertices.value = heart
 shape.vertices.add_keyframe(0, heart)
 shape.vertices.add_keyframe(30, antiheart)
 shape.vertices.add_keyframe(59, heart)
 
 
 fill = g1.add_shape(objects.Fill([1, 0, 0, 1]))
+
+
+
+layer.index = 1
 
 exporters.export_lottie(an, open("/tmp/out.json", "w"), indent=4)
 open("/tmp/out.html", "w").write(exporters.lottie_display_html("/tmp/out.json"))

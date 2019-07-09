@@ -15,6 +15,7 @@ class Animation(TgsObject):
         TgsProp("layers", "layers", load_layer, True),
         TgsProp("assets", "assets", todo_func, True),
         #TgsProp("chars", "chars", Chars, True),
+        TgsProp("tgs", "tgs", PseudoBool, False),
     }
 
     def __init__(self):
