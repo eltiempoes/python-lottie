@@ -20,7 +20,9 @@ circle.position.add_keyframe(10, [256, 256])
 circle.position.add_keyframe(30, [256+128, 256])
 
 fill = layer.add_shape(objects.Fill())
-fill.color.value = [1, 0, 0, 1]
+fill.color.add_keyframe(0, [1, 0, 0])
+fill.color.add_keyframe(10, [1, 1, 0])
+fill.color.add_keyframe(30, [1, 1, 1])
 #fill.opacity.value = 100
 #fill.opacity.add_keyframe(0, 100)
 fill.opacity.add_keyframe(10, 100)
