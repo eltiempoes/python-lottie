@@ -123,6 +123,38 @@ class Ellipse(TgsObject):
         self.size = MultiDimensional([0, 0])
 
 
+class Group(TgsObject):
+    _props = [
+        #TgsProp("match_name", "mn", str, False),
+        TgsProp("name", "nm", str, False),
+        TgsProp("type", "ty", str, False),
+        TgsProp("number_of_properties", "np", float, False),
+        TgsProp("shapes", "it", load_shape, True),
+        TgsProp("property_index", "ix", int, False),
+    ]
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        #self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = None
+        # Shape content type.
+        self.type = 'gr'
+        # Group number of properties. Used for expressions.
+        self.number_of_properties = 0
+        # Group list of items
+        self.shapes = [TransformShape()]
+        self.property_index = None
+
+    def add_shape(self, shape):
+        self.shapes.insert(-1, shape)
+        return shape
+
+    @property
+    def transform(self):
+        return self.shapes[-1]
+
+
 class Fill(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -132,7 +164,7 @@ class Fill(TgsObject):
         TgsProp("color", "c", MultiDimensional, False),
     ]
 
-    def __init__(self):
+    def __init__(self, color=[1, 1, 1]):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
         # After Effect's Name. Used for expressions.
@@ -142,7 +174,7 @@ class Fill(TgsObject):
         # Fill Opacity
         self.opacity = Value(100)
         # Fill Color
-        self.color = MultiDimensional([1, 1, 1])
+        self.color = MultiDimensional(color)
 
 
 class GradientType(TgsEnum):
@@ -212,7 +244,7 @@ class Stroke(TgsObject):
         TgsProp("color", "c", MultiDimensional, False),
     ]
 
-    def __init__(self):
+    def __init__(self, color=[0, 0, 0], width=1):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
         # After Effect's Name. Used for expressions.
@@ -228,9 +260,9 @@ class Stroke(TgsObject):
         # Stroke Opacity
         self.opacity = Value(100)
         # Stroke Width
-        self.width = Value(1)
+        self.width = Value(width)
         # Stroke Color
-        self.color = MultiDimensional([0, 0, 0])
+        self.color = MultiDimensional(color)
 
 
 class GradientStroke(TgsObject):
@@ -280,6 +312,39 @@ class GradientStroke(TgsObject):
         self.line_join = LineJoin.Round
         # Gradient Stroke Miter Limit. Only if Line Join is set to Miter.
         self.miter_limit = 0
+
+
+class TransformShape(TgsObject):
+    _props = [
+        TgsProp("name", "nm", str, False),
+        TgsProp("type", "ty", str, False),
+
+        TgsProp("anchor_point", "a", MultiDimensional, False),
+        TgsProp("position", "p", MultiDimensional, False),
+        TgsProp("scale", "s", MultiDimensional, False),
+        TgsProp("rotation", "r", Value, False),
+        TgsProp("opacity", "o", Value, False),
+        TgsProp("skew", "sk", Value, False),
+        TgsProp("skew_axis", "sa", Value, False),
+    ]
+
+    def __init__(self):
+        self.name = None
+        self.type = 'tr'
+        # Transform Anchor Point
+        self.anchor_point = MultiDimensional([0, 0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        # Transform Position
+        self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        # Transform Scale
+        self.scale = MultiDimensional([100, 100, 100]) # MultiDimensional, MultiDimensionalKeyframed
+        # Transform Rotation
+        self.rotation = Value(0) # Value, ValueKeyframed
+        # Transform Opacity
+        self.opacity = Value(100) # Value, ValueKeyframed
+        # Transform Skew
+        self.skew = Value(0) # Value, ValueKeyframed
+        # Transform Skew Axis
+        self.skew_axis = Value(0) # Value, ValueKeyframed
 
 
 class Trim(TgsObject): # TODO check
@@ -381,59 +446,6 @@ class Shape(TgsObject): # TODO check
         self.vertices = ShapeProperty() # ShapeProperty, ShapePropertyKeyframed
 
 
-class TransformShape(TgsObject): # TODO check
-    _props = [
-        TgsProp("name", "nm", str, False),
-        TgsProp("anchor_point", "a", MultiDimensional, False),
-        TgsProp("position", "p", MultiDimensional, False),
-        TgsProp("scale", "s", MultiDimensional, False),
-        TgsProp("rotation", "r", Value, False),
-        TgsProp("opacity", "o", Value, False),
-        TgsProp("skew", "sk", Value, False),
-        TgsProp("skew_axis", "sa", Value, False),
-    ]
-
-    def __init__(self):
-        # After Effect's Name. Used for expressions.
-        self.name = None
-        # Shape Transform Anchor Point
-        self.anchor_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
-        # Shape Transform Position
-        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
-        # Shape Transform Scale
-        self.scale = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
-        # Shape Transform Rotation
-        self.rotation = Value() # Value, ValueKeyframed
-        # Shape Transform Opacity
-        self.opacity = Value() # Value, ValueKeyframed
-        # Shape Transform Skew
-        self.skew = Value() # Value, ValueKeyframed
-        # Shape Transform Skew Axis
-        self.skew_axis = Value() # Value, ValueKeyframed
-
-
-class Group(TgsObject): # TODO check
-    _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
-        TgsProp("number_of_properties", "np", float, False),
-        TgsProp("shapes", "it", load_shape, True), # shapes?
-    ]
-
-    def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        # After Effect's Name. Used for expressions.
-        self.name = None
-        # Shape content type.
-        self.type = 'gr'
-        # Group number of properties. Used for expressions.
-        self.number_of_properties = 0
-        # Group list of items
-        self.shapes = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, TransformShape
-
-
 class Merge(TgsObject): # TODO check
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -451,4 +463,3 @@ class Merge(TgsObject): # TODO check
         self.type = 'mm'
         # Merge Mode
         self.merge_mode = 0
-
