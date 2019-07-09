@@ -1,4 +1,4 @@
-from .base import TgsObject, TgsProp
+from .base import TgsObject, TgsProp, PseudoBool
 from .effects import load_effect
 from .helpers import Transform
 from .shapes import load_shape
@@ -21,8 +21,8 @@ class NullLayer(TgsObject): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", bool, False),
-        TgsProp("threedimensional", "ddd", bool, False),
+        TgsProp("auto_orient", "ao", PseudoBool, False),
+        TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", float, False),
         TgsProp("css_class", "cl", str, False),
         TgsProp("layer_html_id", "ln", str, False),
@@ -70,9 +70,9 @@ class TextLayer(TgsObject): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", bool, False),
+        TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("blend_mode", "bm", float, False),
-        TgsProp("threedimensional", "ddd", bool, False),
+        TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", float, False),
         TgsProp("css_class", "cl", str, False),
         TgsProp("layer_html_id", "ln", str, False),
@@ -82,7 +82,7 @@ class TextLayer(TgsObject): # TODO check
         TgsProp("name", "nm", float, False),
         #TgsProp("has_masks", "hasMask", float, False),
         #TgsProp("masks_properties", "masksProperties", Mask, True),
-        TgsProp("effects", "ef", bool, False),
+        TgsProp("effects", "ef", PseudoBool, False),
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", float, False),
         TgsProp("text_data", "t", float, False),
@@ -131,9 +131,9 @@ class ShapeLayer(TgsObject):
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", bool, False),
+        TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("blend_mode", "bm", float, False),
-        TgsProp("threedimensional", "ddd", bool, False),
+        TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", float, False),
         #TgsProp("css_class", "cl", str, False),
         #TgsProp("layer_html_id", "ln", str, False),
@@ -195,9 +195,9 @@ class ImageLayer(TgsObject): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", bool, False),
+        TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("blend_mode", "bm", float, False),
-        TgsProp("threedimensional", "ddd", bool, False),
+        TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", float, False),
         TgsProp("css_class", "cl", str, False),
         TgsProp("layer_html_id", "ln", str, False),
@@ -256,9 +256,9 @@ class PreCompLayer(TgsObject): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", bool, False),
+        TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("blend_mode", "bm", float, False),
-        TgsProp("threedimensional", "ddd", bool, False),
+        TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", float, False),
         TgsProp("css_class", "cl", str, False),
         TgsProp("layer_html_id", "ln", str, False),
@@ -320,9 +320,9 @@ class SolidLayer(TgsObject): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", bool, False),
+        TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("blend_mode", "bm", float, False),
-        TgsProp("threedimensional", "ddd", bool, False),
+        TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", float, False),
         TgsProp("css_class", "cl", str, False),
         TgsProp("layer_html_id", "ln", str, False),
@@ -332,7 +332,7 @@ class SolidLayer(TgsObject): # TODO check
         TgsProp("name", "nm", float, False),
         #TgsProp("has_masks", "hasMask", float, False),
         #TgsProp("masks_properties", "masksProperties", Mask, True),
-        TgsProp("effects", "ef", bool, False),
+        TgsProp("effects", "ef", PseudoBool, False),
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", float, False),
         TgsProp("solid_color", "sc", str, False),

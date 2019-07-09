@@ -10,13 +10,14 @@ def load_shape(lottiedict):
         'el': Ellipse,
         'sr': Star,
         'fl': Fill,
-        'gf': GFill,
-        'gs': GStroke,
+        'gf': GradientFill,
+        'gs': GradientStroke,
         'st': Stroke,
         'mm': Merge,
         'tm': Trim,
         'gr': Group,
         'rp': Repeater,
+        'tr': TransformShape,
         # RoundedCorners? mentioned but not defined
     }
     return shapes[lottiedict["ty"]].load(lottiedict)
@@ -123,7 +124,7 @@ class Ellipse(TgsObject):
         self.size = MultiDimensional([0, 0])
 
 
-class Shape(TgsObject): # TODO check
+class Shape(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -344,7 +345,7 @@ class TransformShape(TgsObject):
         TgsProp("anchor_point", "a", MultiDimensional, False),
         TgsProp("position", "p", MultiDimensional, False),
         TgsProp("scale", "s", MultiDimensional, False),
-        TgsProp("rotation", "r", Value, False),
+        TgsProp("rotation", "r", MultiDimensional, False),
         TgsProp("opacity", "o", Value, False),
         TgsProp("skew", "sk", Value, False),
         TgsProp("skew_axis", "sa", Value, False),
@@ -360,7 +361,7 @@ class TransformShape(TgsObject):
         # Transform Scale
         self.scale = MultiDimensional([100, 100, 100]) # MultiDimensional, MultiDimensionalKeyframed
         # Transform Rotation
-        self.rotation = Value(0) # Value, ValueKeyframed
+        self.rotation = MultiDimensional([0, 0]) # Value, ValueKeyframed
         # Transform Opacity
         self.opacity = Value(100) # Value, ValueKeyframed
         # Transform Skew

@@ -5,11 +5,9 @@ import inspect
 def _to_dict(v):
     if isinstance(v, Tgs):
         return v.to_dict()
-    elif isinstance(v, bool):
-        return int(v)
     elif isinstance(v, list):
         return list(map(_to_dict, v))
-    elif isinstance(v, (int, float, str)):
+    elif isinstance(v, (int, float, str, bool)):
         return v
     else:
         raise Exception("Unknown value %r" % v)
@@ -35,6 +33,21 @@ class TgsEnum(Tgs, enum.Enum):
 
 class PseudoList:
     pass
+
+
+class TgsConverter:
+    def __init__(self, py, lottie):
+        self.py = py
+        self.lottie = lottie
+
+    def py_to_lottie(self, val):
+        return self.lottie(val)
+
+    def lottie_to_py(self, val):
+        return self.py(val)
+
+
+PseudoBool = TgsConverter(bool, int)
 
 
 class TgsProp:
@@ -76,12 +89,16 @@ class TgsProp:
             return self.type.load(lottieval)
         elif isinstance(self.type, type) and isinstance(lottieval, self.type):
             return lottieval
+        elif isinstance(self.type, TgsConverter):
+            return self.type.lottie_to_py(lottieval)
         return self.type(lottieval)
 
     def to_dict(self, obj):
         val = _to_dict(self.get(obj))
         if self.list is PseudoList:
             val = [val]
+        elif isinstance(self.type, TgsConverter):
+            return self.type.py_to_lottie(val)
         return val
 
 

@@ -1,4 +1,4 @@
-from .base import TgsObject, TgsProp, todo_func
+from .base import TgsObject, TgsProp, PseudoBool, todo_func
 from .layers import load_layer
 
 
@@ -8,7 +8,7 @@ class Animation(TgsObject):
         TgsProp("out_point", "op", float, False),
         TgsProp("frame_rate", "fr", float, False),
         TgsProp("width", "w", float, False),
-        TgsProp("threedimensional", "ddd", bool, False),
+        TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("height", "h", float, False),
         TgsProp("version", "v", str, False),
         TgsProp("name", "nm", str, False),

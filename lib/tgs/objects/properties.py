@@ -1,6 +1,6 @@
 import math
 from functools import reduce
-from .base import TgsObject, TgsProp, PseudoList
+from .base import TgsObject, TgsProp, PseudoList, PseudoBool
 
 
 class KeyframeBezierPoint(TgsObject):
@@ -82,7 +82,7 @@ class MultiDimensional(TgsObject):
     _props = [
         TgsProp("value", "k", float, True, lambda l: not l["a"]),
         TgsProp("property_index", "ix", int, False),
-        TgsProp("animated", "a", bool, False),
+        TgsProp("animated", "a", PseudoBool, False),
         TgsProp("keyframes", "k", OffsetKeyframe, True, lambda l: l["a"]),
     ]
 
@@ -171,7 +171,7 @@ class Value(TgsObject):
     _props = [
         TgsProp("value", "k", float, False, lambda l: not l["a"]),
         TgsProp("property_index", "ix", int, False),
-        TgsProp("animated", "a", bool, False),
+        TgsProp("animated", "a", PseudoBool, False),
         TgsProp("keyframes", "k", OffsetKeyframe, True, lambda l: l["a"]),
     ]
 
@@ -210,9 +210,9 @@ class Value(TgsObject):
 class Bezier(TgsObject):
     _props = [
         TgsProp("closed", "c", bool, False),
-        TgsProp("in_point", "i", float, True),
-        TgsProp("out_point", "o", float, True),
-        TgsProp("vertices", "v", float, True),
+        TgsProp("in_point", "i", list, True),
+        TgsProp("out_point", "o", list, True),
+        TgsProp("vertices", "v", list, True),
     ]
 
     def __init__(self):
@@ -269,8 +269,8 @@ class ShapeProperty(TgsObject):
         TgsProp("value", "k", Bezier, False, lambda l: not l["a"]),
         #TgsProp("expression", "x", str, False),
         TgsProp("property_index", "ix", float, False),
-        TgsProp("animated", "a", bool, False),
-        TgsProp("keyframes", "k", ShapePropKeyframe, True, lambda l: not l["a"]),
+        TgsProp("animated", "a", PseudoBool, False),
+        TgsProp("keyframes", "k", ShapePropKeyframe, True, lambda l: l["a"]),
     ]
 
     def __init__(self):
