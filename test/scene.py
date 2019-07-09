@@ -1,23 +1,24 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from lib import tgs, exporters
+from lib.tgs import exporters
+from lib.tgs import objects
 
 
-an = tgs.Animation()
+an = objects.animation.Animation()
 
-layer = tgs.ShapeLayer()
+layer = objects.layers.ShapeLayer()
 an.out_point = layer.out_point = 59
 an.layers.append(layer)
 
-circle = layer.add_shape(tgs.Ellipse())
+circle = layer.add_shape(objects.shapes.Ellipse())
 circle.size.value = [86, 86]
 #circle.position.value = [222, 206]
 circle.position.add_keyframe( 0, [256, 256-128])
 circle.position.add_keyframe(10, [256, 256])
 circle.position.add_keyframe(30, [256+128, 256])
 
-fill = layer.add_shape(tgs.Fill())
+fill = layer.add_shape(objects.shapes.Fill())
 fill.color.value = [1, 0, 0]
 
 exporters.export_lottie(an, open("/tmp/out.json", "w"))
@@ -36,5 +37,5 @@ for entry in os.scandir(os.path.dirname(os.path.abspath(__file__))):
             latest = entry.path
 
 lottie_json = json.load(open(latest))
-a2 = tgs.Animation.load(lottie_json)
+a2 = objects.animation.Animation.load(lottie_json)
 exporters.prettyprint(a2)

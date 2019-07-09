@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import argparse
 
 
 def ucfirst(x):
@@ -48,6 +49,8 @@ class ClassProp:
         self.value = None
         self.raw = data
         self.value_comment = None
+        self.list = False
+        self.type = "float"
         if "const" in data:
             self.value = repr(data["const"])
         else:
@@ -91,10 +94,12 @@ class ClassProp:
         if data["type"] == "number":
             if "oneOf" in data:
                 if data["oneOf"][0]["$ref"] == "#/helpers/boolean":
+                    self.type = bool.__name__
                     self.value = "False"
                 else:
                     self._get_value_object(data)
             elif "enum" in data and data["enum"] == [0, 1]:
+                self.type = bool.__name__
                 self.value = "False"
             else:
                 self.value = "0"
@@ -103,10 +108,14 @@ class ClassProp:
                 self.value = 'None'
             self._get_value_object(data)
         elif data["type"] == "array":
+            self.list = True
             self.value = "[]"
             if "items" in data:
                 intype = data["items"].get("type", "object")
                 if intype == "object":
+                    self.type = "todo_func"
+                    if len(data["items"]["oneOf"]) == 1:
+                        self.type = class_name(data["items"]["oneOf"][0]["$ref"])
                     self.value_comment = ", ". join(
                         class_name(oo["$ref"])
                         for oo in data["items"]["oneOf"]
@@ -114,6 +123,7 @@ class ClassProp:
                 else:
                     self.value_comment = intype
         elif data["type"] == "string":
+            self.type = "str"
             self.value = '""'
         else:
             self.value = 'None'
@@ -131,6 +141,7 @@ class ClassProp:
                 if data["type"] == "number":
                     self.value = "%s.default()" % clsname
                 else:
+                    self.type = clsname
                     self.value = "%s()" % clsname
 
                 if len(data["oneOf"]) > 1:
@@ -138,6 +149,12 @@ class ClassProp:
                         class_name(oo["$ref"])
                         for oo in data["oneOf"]
                     )
+                    if self.value_comment == "MultiDimensional, MultiDimensionalKeyframed":
+                        self.type = "MultiDimensional"
+                    elif self.value_comment == "Value, ValueKeyframed":
+                        self.type = "Value"
+                    else:
+                        self.type = "todo_func"
 
     def write_init(self, out, indent):
         out.write(indent)
@@ -155,7 +172,7 @@ def schema2class(out, filename, data, ei=""):
 
     out.write("\n\nclass ")
     out.write(class_name(filename))
-    out.write("(TgsObject):\n")
+    out.write("(TgsObject): # TODO check\n")
     properties = []
     for n, p in data["properties"].items():
         prop = ClassProp(n, p)
@@ -163,12 +180,12 @@ def schema2class(out, filename, data, ei=""):
         properties.append(prop)
 
     out.write(" "*4+ei)
-    out.write("_props = {\n")
+    out.write("_props = [\n")
     for p in properties:
         out.write(" "*8+ei)
-        out.write("\"%s\": \"%s\",\n" % (p.name, p.out))
+        out.write("TgsProp(\"%s\", \"%s\", %s, %s),\n" % (p.name, p.out, p.type, p.list))
     out.write(" "*4+ei)
-    out.write("}\n\n")
+    out.write("]\n\n")
 
     out.write(" "*4+ei)
     out.write("def __init__(self):\n")
@@ -185,14 +202,23 @@ def class_name(filename):
         name += "Effect"
     elif name == "Transform" and bits[-1] == "shapes":
         name += "Shape"
+    elif name == "Shape" and bits[-1] == "properties":
+        name += "Property"
+    elif name == "ShapeKeyframed":
+        name = "ShapePropertyKeyframed"
     return name
 
 
+p = argparse.ArgumentParser()
+p.add_argument("limit", nargs="*")
 schema_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "json")
-outfile = sys.stdout
-limit = sys.argv[1:]
+p.add_argument("--load", "-l", default=schema_path)
+ns = p.parse_args()
 
-for root, _, files in os.walk(schema_path):
+outfile = sys.stdout
+limit = ns.limit
+
+for root, _, files in os.walk(ns.load):
     for file in files:
         filepath = os.path.join(root, file)
         with open(filepath, "r") as fp:
