@@ -18,14 +18,14 @@ class Animation(TgsObject):
         TgsProp("tgs", "tgs", PseudoBool, False),
     }
 
-    def __init__(self):
+    def __init__(self, n_frames=60, framerate=60):
         self.tgs = 1
         # In Point of the Time Ruler. Sets the initial Frame of the animation.
         self.in_point = 0
         # Out Point of the Time Ruler. Sets the final Frame of the animation
-        self.out_point = 0
+        self.out_point = n_frames
         # Frame Rate
-        self.frame_rate = 60
+        self.frame_rate = framerate
         # Composition Width
         self.width = 512
         # Composition has 3-D layers
@@ -42,3 +42,13 @@ class Animation(TgsObject):
         self.assets = [] # Image, Precomp
         # source chars for text layers
         #self.chars = [] # Chars
+
+
+    def add_layer(self, layer):
+        self.layers.append(layer)
+        if layer.index is None:
+            layer.index = len(self.layers)
+        if layer.in_point is None:
+            layer.in_point = self.in_point
+        if layer.out_point is None:
+            layer.out_point = self.out_point

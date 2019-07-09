@@ -9,11 +9,10 @@ from tgs import objects
 from tgs.utils.linediff import difflines
 
 
-an = objects.Animation()
+an = objects.Animation(60)
 
 layer = objects.ShapeLayer()
-an.out_point = layer.out_point = 60
-an.layers.append(layer)
+an.add_layer(layer)
 
 
 heart = objects.Bezier()

@@ -161,15 +161,15 @@ class ShapeLayer(TgsObject):
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
-        self.index = 0
+        self.index = None
         ## Parsed layer name used as html class on SVG/HTML renderer
         #self.css_class = ""
         ## Parsed layer name used as html id on SVG/HTML renderer
         #self.layer_html_id = ""
         # In Point of layer. Sets the initial frame of the layer.
-        self.in_point = 0
+        self.in_point = None
         # Out Point of layer. Sets the final frame of the layer.
-        self.out_point = 0
+        self.out_point = None
         # Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
         # After Effects Layer Name. Used for expressions.
