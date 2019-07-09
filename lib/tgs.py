@@ -18,10 +18,18 @@ class Tgs:
     def to_dict(self):
         raise NotImplementedError
 
+    @classmethod
+    def load(cls, lottiedict):
+        raise NotImplementedError
+
 
 class TgsEnum(Tgs, enum.Enum):
     def to_dict(self):
         return self.value
+
+    @classmethod
+    def load(cls, lottieint):
+        return cls(lottieint)
 
 
 class TgsObject(Tgs):
@@ -32,6 +40,31 @@ class TgsObject(Tgs):
             if getattr(self, name) is not None
         }
 
+    @classmethod
+    def load(cls, lottiedict):
+        obj = cls()
+        for attr, lot in cls._props.items():
+            val = None
+            if lot in lottiedict:
+                val = cls.load_lottie_attr(lot, lottiedict[lot])
+            setattr(obj, attr, val)
+        return obj
+
+    @classmethod
+    def load_lottie_attr(cls, name, value):
+        if isinstance(value, dict):
+            return cls.load_lottie_obj(name, value)
+        if isinstance(value, list):
+            return list(
+                cls.load_lottie_attr(name, v)
+                for v in value
+            )
+        return value
+
+    @classmethod
+    def load_lottie_obj(cls, name, value):
+        raise NotImplementedError("%s cannot load %s" % (cls, name))
+
 
 class Index:
     def __init__(self):
@@ -40,6 +73,37 @@ class Index:
     def __next__(self):
             self._i += 1
             return self._i
+
+
+def load_layer(lottiedict):
+    layers = {
+        0: PreCompLayer,
+        1: SolidLayer,
+        2: ImageLayer,
+        3: NullLayer,
+        4: ShapeLayer,
+        5: TextLayer,
+    }
+    return layers[lottiedict["ty"]].load(lottiedict)
+
+
+def load_shape(lottiedict):
+    shapes = {
+        'sh': Shape,
+        'rc': Rect,
+        'el': Ellipse,
+        'sr': Star,
+        'fl': Fill,
+        'gf': GFill,
+        'gs': GStroke,
+        'st': Stroke,
+        'mm': Merge,
+        'tm': Trim,
+        'gr': Group,
+        'rp': Repeater,
+        # RoundedCorners? mentioned but not defined
+    }
+    return shapes[lottiedict["ty"]].load(lottiedict)
 
 
 class Animation(TgsObject):
@@ -75,13 +139,19 @@ class Animation(TgsObject):
         # Bodymovin Version
         self.version = "5.5.2"
         # Composition name
-        self.name = ""
+        self.name = None
         # List of Composition Layers
         self.layers = [] # ShapeLayer, SolidLayer, CompLayer, ImageLayer, NullLayer, TextLayer
         # source items that can be used in multiple places. Comps and Images for now.
         self.assets = [] # Image, Precomp
         # source chars for text layers
         #self.chars = [] # Chars
+
+    @classmethod
+    def load_lottie_obj(cls, name, value):
+        if name == "layers":
+            return load_layer(value)
+        return super().load_lottie_obj(name, value)
 
 
 class FillEffect(TgsObject): # TODO check
@@ -433,7 +503,7 @@ class Precomp(TgsObject): # TODO check
         self.layers = [] # ShapeLayer, SolidLayer, CompLayer, ImageLayer, NullLayer, TextLayer
 
 
-class ShapeKeyframed(TgsObject): # TODO check
+class ShapePropertyKeyframed(TgsObject): # TODO check
     _props = {
         "keyframes": "k",
         "expression": "x",
@@ -455,7 +525,7 @@ class ShapeKeyframed(TgsObject): # TODO check
         self.out_tangent = []
 
 
-class Shape(TgsObject): # TODO check
+class ShapeProperty(TgsObject): # TODO check
     _props = {
         "value": "k",
         "expression": "x",
@@ -581,7 +651,6 @@ class ValueKeyframe(TgsObject): # TODO check
         self.in_value = None
 
 
-
 class MultiDimensional(TgsObject):
     _props = {
         "value": "k",
@@ -618,11 +687,17 @@ class MultiDimensional(TgsObject):
             time,
             value,
             None,
-            KeyframeBexierPoint(0, 0),
-            KeyframeBexierPoint(0, 0),
+            KeyframeBezierPoint(0, 0),
+            KeyframeBezierPoint(0, 0),
             [1, 1],
             [0, 0]
         ))
+
+    @classmethod
+    def load_lottie_obj(cls, name, value):
+        if name == "k":
+            return OffsetKeyframe.load(value)
+        return super().load_lottie_obj(name, value)
 
 
 class OffsetKeyframe(TgsObject):
@@ -654,8 +729,14 @@ class OffsetKeyframe(TgsObject):
         # Out Spatial Tangent. Only for spatial properties. Array of numbers.
         self.out_tangent = out_tangent
 
+    @classmethod
+    def load_lottie_obj(cls, name, value):
+        if name in {"i", "o"}:
+            return KeyframeBezierPoint.load(value)
+        return super().load_lottie_obj(name, value)
 
-class KeyframeBexierPoint(TgsObject):
+
+class KeyframeBezierPoint(TgsObject):
     _props = {
         "x": "x",
         "y": "y",
@@ -664,6 +745,10 @@ class KeyframeBexierPoint(TgsObject):
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
+    @classmethod
+    def load(cls, value):
+        return cls(**value)
 
 
 class Rect(TgsObject): # TODO check
@@ -714,6 +799,14 @@ class Fill(TgsObject): # TODO check
         self.opacity = Value(100) # Value, ValueKeyframed
         # Fill Color
         self.color = MultiDimensional() # MultiDimensional
+
+    @classmethod
+    def load_lottie_obj(cls, name, value):
+        if name == "o":
+            return Value.load(value)
+        if name == "c":
+            return MultiDimensional.load(value)
+        return super().load_lottie_obj(name, value)
 
 
 class Trim(TgsObject): # TODO check
@@ -1003,6 +1096,12 @@ class Ellipse(TgsObject):
         self.size = MultiDimensional() # MultiDimensional
         self.index = None
 
+    @classmethod
+    def load_lottie_obj(cls, name, value):
+        if name in {"p", "s"}:
+            return MultiDimensional.load(value)
+        return super().load_lottie_obj(name, value)
+
 
 class Merge(TgsObject): # TODO check
     _props = {
@@ -1145,7 +1244,7 @@ class TextLayer(TgsObject): # TODO check
 
     def __init__(self):
         # Type of layer: Text.
-        self.type = 0
+        self.type = 5
         # Transform properties
         self.transform = Transform()
         # Auto-Orient along path AE property.
@@ -1247,6 +1346,17 @@ class ShapeLayer(TgsObject): # TODO check
     def add_shape(self, shape):
         self.shapes.append(shape)
         return shape
+
+    @classmethod
+    def load_lottie_obj(cls, name, value):
+        if name == "shapes":
+            return load_shape(value)
+        if name == "ks":
+            return Transform.load(value)
+        if name == "bm":
+            return BlendMode.load(value)
+        return super().load_lottie_obj(name, value)
+
 
 class ImageLayer(TgsObject): # TODO check
     _props = {
@@ -1399,7 +1509,7 @@ class SolidLayer(TgsObject): # TODO check
 
     def __init__(self):
         # Type of layer: Solid.
-        self.type = 0
+        self.type = 1
         # Transform properties
         self.transform = Transform()
         # Auto-Orient along path AE property.
@@ -1505,6 +1615,13 @@ class Transform(TgsObject): # TODO check
         self.skew = Value(0) # Value, ValueKeyframed
         # Transform Skew Axis
         self.skew_axis = Value(0) # Value, ValueKeyframed
+
+
+    @classmethod
+    def load_lottie_obj(cls, name, value):
+        if name in {"a", "p", "s"}:
+            return MultiDimensional.load(value)
+        return Value.load(value)
 
 
 class Mask(TgsObject): # TODO check
