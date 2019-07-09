@@ -1,5 +1,6 @@
 from .base import TgsEnum
 
+
 class LineJoin(TgsEnum):
     Miter = 1
     Round = 2
@@ -86,3 +87,7 @@ class BlendMode(TgsEnum):
     def default(cls):
         return cls.Normal
 
+
+class StarType(TgsEnum):
+    Star = 1
+    Polygon = 2

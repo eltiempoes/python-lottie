@@ -1,6 +1,6 @@
 from .base import TgsObject, TgsProp, todo_func
 from .properties import Value, MultiDimensional
-from .enums import LineCap, LineJoin
+from .enums import LineCap, LineJoin, Composite, StarType
 from .helpers import Transform
 
 
@@ -23,7 +23,7 @@ def load_shape(lottiedict):
     return shapes[lottiedict["ty"]].load(lottiedict)
 
 
-class Rect(TgsObject): # TODO check
+class Rect(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -44,11 +44,11 @@ class Rect(TgsObject): # TODO check
         # Shape content type.
         self.type = 'rc'
         # Rect's position
-        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional([0, 0])
         # Rect's size
-        self.size = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.size = MultiDimensional([0, 0])
         # Rect's rounded corners
-        self.rounded_corners = Value() # Value, ValueKeyframed
+        self.rounded_corners = Value()
 
 
 class Fill(TgsObject):
@@ -68,9 +68,9 @@ class Fill(TgsObject):
         # Shape content type.
         self.type = 'fl'
         # Fill Opacity
-        self.opacity = Value(100) # Value, ValueKeyframed
+        self.opacity = Value(100)
         # Fill Color
-        self.color = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.color = MultiDimensional([1, 1, 1])
 
 
 class Trim(TgsObject): # TODO check
@@ -163,7 +163,7 @@ class GFill(TgsObject): # TODO check
         self.gradient_colors = None
 
 
-class Stroke(TgsObject): # TODO check
+class Stroke(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -190,11 +190,11 @@ class Stroke(TgsObject): # TODO check
         # Stroke Miter Limit. Only if Line Join is set to Miter.
         self.miter_limit = 0
         # Stroke Opacity
-        self.opacity = Value() # Value, ValueKeyframed
+        self.opacity = Value(100)
         # Stroke Width
-        self.width = Value() # Value, ValueKeyframed
+        self.width = Value(1)
         # Stroke Color
-        self.color = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.color = MultiDimensional([0, 0, 0])
 
 
 class Round(TgsObject): # TODO check
@@ -291,7 +291,7 @@ class Group(TgsObject): # TODO check
         self.shapes = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, TransformShape
 
 
-class Star(TgsObject): # TODO check
+class Star(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -317,7 +317,7 @@ class Star(TgsObject): # TODO check
         # Shape content type.
         self.type = 'sr'
         # Star's position
-        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
         # Star's inner radius. (Star only)
         self.inner_radius = Value() # Value, ValueKeyframed
         # Star's inner roundness. (Star only)
@@ -329,12 +329,12 @@ class Star(TgsObject): # TODO check
         # Star's rotation.
         self.rotation = Value() # Value, ValueKeyframed
         # Star's number of points.
-        self.points = Value() # Value, ValueKeyframed
+        self.points = Value(5) # Value, ValueKeyframed
         # Star's type. Polygon or Star.
-        self.star_type = 1 # 1: Star, 2: Polygon
+        self.star_type = StarType.Star
 
 
-class Ellipse(TgsObject): # TODO check
+class Ellipse(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -354,9 +354,9 @@ class Ellipse(TgsObject): # TODO check
         # Shape content type.
         self.type = 'el'
         # Ellipse's position
-        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional([0, 0])
         # Ellipse's size
-        self.size = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.size = MultiDimensional([0, 0])
 
 
 class Merge(TgsObject): # TODO check

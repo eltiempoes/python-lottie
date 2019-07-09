@@ -22,8 +22,8 @@ def lottie_display_html(rel_lottie_filename):
 <head>
     <meta charset="utf-8" />
     <style>
-        html, body { width: 100%%; height: 100%%; background-color: #ccc; margin: 0; }
-        #bodymovin { width: 100%%; height: 100%%; background-color :#333; }
+        html, body { width: 100%%; height: 100%%; margin: 0; }
+        #bodymovin { width: 100%%; height: 100%%; background-color :#888; }
     </style>
      <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.3/lottie.js"></script>
 </head>
