@@ -1,3 +1,4 @@
+import math
 from .base import TgsObject, TgsProp, PseudoList
 
 
@@ -42,8 +43,9 @@ class OffsetKeyframe(TgsObject):
         self.out_tan = out_tan
 
     def set_tangents(self, end_time):
-        start = self.start[0]
-        end = self.end[0]
+        to_val = lambda vals: math.sqrt(sum(map(lambda x: x**2, vals)))
+        start = to_val(self.start)
+        end = to_val(self.end)
 
         self.in_value = KeyframeBezierPoint(
             (end_time - self.time) / 3,
@@ -55,20 +57,21 @@ class OffsetKeyframe(TgsObject):
         )
 
         time_scale = end_time - self.time
+        time_diff = self.time / time_scale
         value_scale = end - start
         if value_scale == 0:
             value_scale = 1e-9
-        time_diff = self.time / time_scale
         value_diff = start / value_scale
-        self.out_value.time += self.time
-        self.out_value.value += start
-        self.out_value.time = abs(self.out_value.time / time_scale - time_diff)
-        self.out_value.value = abs(self.out_value.value / value_scale - value_diff)
 
         self.in_value.time = end_time - self.in_value.time
         self.in_value.value = end - self.in_value.value
         self.in_value.time = abs(self.in_value.time / time_scale - time_diff)
         self.in_value.value = abs(self.in_value.value / value_scale - value_diff)
+
+        self.out_value.time += self.time
+        self.out_value.value += start
+        self.out_value.time = abs(self.out_value.time / time_scale - time_diff)
+        self.out_value.value = abs(self.out_value.value / value_scale - value_diff)
 
 
 class MultiDimensional(TgsObject):
