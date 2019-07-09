@@ -84,7 +84,7 @@ class Animation(TgsObject):
         #self.chars = [] # Chars
 
 
-class FillEffect(TgsObject):
+class FillEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -106,7 +106,7 @@ class FillEffect(TgsObject):
         self.effects = [] # PointEffect, DropDownEffect, ColorEffect, DropDownEffect, SliderEffect, SliderEffect, SliderEffect
 
 
-class StrokeEffect(TgsObject):
+class StrokeEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -128,7 +128,7 @@ class StrokeEffect(TgsObject):
         self.effects = [] # ColorEffect, CheckboxEffect, CheckboxEffect, ColorEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, DropDownEffect, DropDownEffect
 
 
-class DropDownEffect(TgsObject):
+class DropDownEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -150,7 +150,7 @@ class DropDownEffect(TgsObject):
         self.value = Value() # Value, ValueKeyframed
 
 
-class TritoneEffect(TgsObject):
+class TritoneEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -172,7 +172,7 @@ class TritoneEffect(TgsObject):
         self.effects = [] # ColorEffect, ColorEffect, ColorEffect, SliderEffect
 
 
-class GroupEffect(TgsObject):
+class GroupEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -197,7 +197,7 @@ class GroupEffect(TgsObject):
         self.enabled = 0
 
 
-class ColorEffect(TgsObject):
+class ColorEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -216,10 +216,10 @@ class ColorEffect(TgsObject):
         # Effect type.
         self.type = 2
         # Effect value.
-        self.value = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.value = MultiDimensional() # MultiDimensional
 
 
-class ProLevelsEffect(TgsObject):
+class ProLevelsEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -241,7 +241,7 @@ class ProLevelsEffect(TgsObject):
         self.effects = [] # DropDownEffect, NoValueEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect
 
 
-class AngleEffect(TgsObject):
+class AngleEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -263,7 +263,7 @@ class AngleEffect(TgsObject):
         self.value = Value() # Value, ValueKeyframed
 
 
-class SliderEffect(TgsObject):
+class SliderEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -285,7 +285,7 @@ class SliderEffect(TgsObject):
         self.value = Value() # Value, ValueKeyframed
 
 
-class CheckBoxEffect(TgsObject):
+class CheckBoxEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -307,7 +307,7 @@ class CheckBoxEffect(TgsObject):
         self.value = Value() # Value, ValueKeyframed
 
 
-class PointEffect(TgsObject):
+class PointEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -326,10 +326,10 @@ class PointEffect(TgsObject):
         # Effect type.
         self.type = 2
         # Effect value.
-        self.value = [] # MultiDimensional, MultiDimensionalKeyframed
+        self.value = [] # MultiDimensional
 
 
-class TintEffect(TgsObject):
+class TintEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -351,7 +351,7 @@ class TintEffect(TgsObject):
         self.effects = [] # ColorEffect, ColorEffect, SliderEffect
 
 
-class LayerEffect(TgsObject):
+class LayerEffect(TgsObject): # TODO check
     _props = {
         "effect_index": "ix",
         "match_name": "mn",
@@ -373,7 +373,7 @@ class LayerEffect(TgsObject):
         self.value = Value()
 
 
-class Image(TgsObject):
+class Image(TgsObject): # TODO check
     _props = {
         "height": "h",
         "width": "w",
@@ -395,7 +395,7 @@ class Image(TgsObject):
         self.image_path = ""
 
 
-class Chars(TgsObject):
+class Chars(TgsObject): # TODO check
     _props = {
         "character": "ch",
         "font_family": "fFamily",
@@ -420,7 +420,7 @@ class Chars(TgsObject):
         self.character_data = None
 
 
-class Precomp(TgsObject):
+class Precomp(TgsObject): # TODO check
     _props = {
         "id": "id",
         "layers": "layers",
@@ -433,7 +433,7 @@ class Precomp(TgsObject):
         self.layers = [] # ShapeLayer, SolidLayer, CompLayer, ImageLayer, NullLayer, TextLayer
 
 
-class ShapeKeyframed(TgsObject):
+class ShapeKeyframed(TgsObject): # TODO check
     _props = {
         "keyframes": "k",
         "expression": "x",
@@ -455,7 +455,7 @@ class ShapeKeyframed(TgsObject):
         self.out_tangent = []
 
 
-class Shape(TgsObject):
+class Shape(TgsObject): # TODO check
     _props = {
         "value": "k",
         "expression": "x",
@@ -474,7 +474,7 @@ class Shape(TgsObject):
         self.animated = 0
 
 
-class DoubleKeyframe(TgsObject):
+class DoubleKeyframe(TgsObject): # TODO check
     _props = {
         "start": "s",
         "time": "t",
@@ -493,7 +493,7 @@ class DoubleKeyframe(TgsObject):
         self.out_value = None
 
 
-class ShapePropKeyframe(TgsObject):
+class ShapePropKeyframe(TgsObject): # TODO check
     _props = {
         "start": "s",
         "time": "t",
@@ -512,7 +512,7 @@ class ShapePropKeyframe(TgsObject):
         self.out_value = None
 
 
-class ShapeProp(TgsObject):
+class ShapeProp(TgsObject): # TODO check
     _props = {
         "closed": "c",
         "in_point": "i",
@@ -531,7 +531,7 @@ class ShapeProp(TgsObject):
         self.vertices = [] # array
 
 
-class Value(TgsObject):
+class Value(TgsObject): # TODO check
     _props = {
         "value": "k",
         #"expression": "x",
@@ -549,7 +549,7 @@ class Value(TgsObject):
         self.animated = False
 
 
-class ValueKeyframed(TgsObject):
+class ValueKeyframed(TgsObject): # TODO check
     _props = {
         "keyframes": "k",
         "expression": "x",
@@ -565,7 +565,7 @@ class ValueKeyframed(TgsObject):
         self.property_index = 0
 
 
-class ValueKeyframe(TgsObject):
+class ValueKeyframe(TgsObject): # TODO check
     _props = {
         "start": "s",
         "time": "t",
@@ -581,35 +581,48 @@ class ValueKeyframe(TgsObject):
         self.in_value = None
 
 
+
 class MultiDimensional(TgsObject):
     _props = {
         "value": "k",
+        "property_index": "ix",
+        "animated": "a",
+        "keyframes": "k",
         "property_index": "ix",
         "animated": "a",
     }
 
     def __init__(self, value=None):
         # Property Value
-        self.value = value or []
+        self.value = value
         # Property Index. Used for expressions.
         self.property_index = None
         self.animated = False
-
-
-class MultiDimensionalKeyframed(TgsObject):
-    _props = {
-        "keyframes": "k",
-        #"expression": "x",
-        "property_index": "ix",
-        "animated": "a",
-    }
-
-    def __init__(self):
         # Property Value keyframes
-        self.keyframes = [] # OffsetKeyframe
-        # Property Index. Used for expressions.
-        self.property_index = None
-        self.animated = True
+        self.keyframes = None # [OffsetKeyframe]
+
+    def clear_animation(self, value):
+        self.value = value
+        self.animated = False
+
+    def add_keyframe(self, time, value):
+        if not self.animated:
+            self.value = None
+            self.keyframes = []
+            self.animated = True
+        else:
+            self.keyframes[-1].end = value
+
+        # TODO see calc_tangent in the exporter
+        self.keyframes.append(OffsetKeyframe(
+            time,
+            value,
+            None,
+            KeyframeBexierPoint(0, 0),
+            KeyframeBexierPoint(0, 0),
+            [1, 1],
+            [0, 0]
+        ))
 
 
 class OffsetKeyframe(TgsObject):
@@ -621,28 +634,25 @@ class OffsetKeyframe(TgsObject):
         "out_value": "o",
         "in_tangent": "ti",
         "out_tangent": "to",
-        "h": "h",
+        #"h": "h",
     }
 
-    def __init__(self, time=0, start=None, end=None):
+    def __init__(self, time=0, start=None, end=None,
+                 in_value=None, out_value=None, in_tangent=None, out_tangent=None):
         # Start value of keyframe segment.
         self.start = start # number
         self.end = end # number
         # Start time of keyframe segment.
         self.time = time
         # Bezier curve interpolation in value.
-        self.in_value = KeyframeBexierPoint(0, 0)
+        self.in_value = in_value
         # Bezier curve interpolation out value.
-        self.out_value = KeyframeBexierPoint(0, 0)
-        self.h = 1 #???
-        # TODO see calc_tangent in the exporter
+        self.out_value = out_value
+        #self.h = 1 #???
         # In Spatial Tangent. Only for spatial properties. Array of numbers.
-        self.in_tangent = [1, 1]
+        self.in_tangent = in_tangent
         # Out Spatial Tangent. Only for spatial properties. Array of numbers.
-        self.out_tangent = [0, 0]
-
-
-
+        self.out_tangent = out_tangent
 
 
 class KeyframeBexierPoint(TgsObject):
@@ -656,7 +666,7 @@ class KeyframeBexierPoint(TgsObject):
         self.y = y
 
 
-class Rect(TgsObject):
+class Rect(TgsObject): # TODO check
     _props = {
         "match_name": "mn",
         "name": "nm",
@@ -677,14 +687,14 @@ class Rect(TgsObject):
         # Shape content type.
         self.type = 'rc'
         # Rect's position
-        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional() # MultiDimensional
         # Rect's size
-        self.size = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.size = MultiDimensional() # MultiDimensional
         # Rect's rounded corners
         self.rounded_corners = Value() # Value, ValueKeyframed
 
 
-class Fill(TgsObject):
+class Fill(TgsObject): # TODO check
     _props = {
         #"match_name": "mn",
         #"name": "nm",
@@ -703,10 +713,10 @@ class Fill(TgsObject):
         # Fill Opacity
         self.opacity = Value(100) # Value, ValueKeyframed
         # Fill Color
-        self.color = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.color = MultiDimensional() # MultiDimensional
 
 
-class Trim(TgsObject):
+class Trim(TgsObject): # TODO check
     _props = {
         "match_name": "mn",
         "name": "nm",
@@ -731,7 +741,7 @@ class Trim(TgsObject):
         self.offset = Value() # Value, ValueKeyframed
 
 
-class Repeater(TgsObject):
+class Repeater(TgsObject): # TODO check
     _props = {
         "match_name": "mn",
         "name": "nm",
@@ -759,7 +769,7 @@ class Repeater(TgsObject):
         self.transform = Transform()
 
 
-class GFill(TgsObject):
+class GFill(TgsObject): # TODO check
     _props = {
         "match_name": "mn",
         "name": "nm",
@@ -783,9 +793,9 @@ class GFill(TgsObject):
         # Fill Opacity
         self.opacity = Value(100) # Value, ValueKeyframed
         # Gradient Start Point
-        self.start_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.start_point = MultiDimensional() # MultiDimensional
         # Gradient End Point
-        self.end_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.end_point = MultiDimensional() # MultiDimensional
         # Gradient Type
         self.gradient_type = 1 # 1: Linear, 2: Radial
         # Gradient Highlight Length. Only if type is Radial
@@ -796,7 +806,7 @@ class GFill(TgsObject):
         self.gradient_colors = None
 
 
-class Stroke(TgsObject):
+class Stroke(TgsObject): # TODO check
     _props = {
         "match_name": "mn",
         "name": "nm",
@@ -827,10 +837,10 @@ class Stroke(TgsObject):
         # Stroke Width
         self.width = Value() # Value, ValueKeyframed
         # Stroke Color
-        self.color = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.color = MultiDimensional() # MultiDimensional
 
 
-class Round(TgsObject):
+class Round(TgsObject): # TODO check
     _props = {
         "match_name": "mn",
         "name": "nm",
@@ -849,7 +859,7 @@ class Round(TgsObject):
         self.radius = Value() # Value, ValueKeyframed
 
 
-class Shape(TgsObject):
+class Shape(TgsObject): # TODO check
     _props = {
         "match_name": "mn",
         "name": "nm",
@@ -871,7 +881,7 @@ class Shape(TgsObject):
         self.vertices = Shape() # Shape, ShapeKeyframed
 
 
-class TransformShape(TgsObject):
+class TransformShape(TgsObject): # TODO check
     _props = {
         "name": "nm",
         "anchor_point": "a",
@@ -887,11 +897,11 @@ class TransformShape(TgsObject):
         # After Effect's Name. Used for expressions.
         self.name = ""
         # Shape Transform Anchor Point
-        self.anchor_point = MultiDimensional([0, 0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        self.anchor_point = MultiDimensional([0, 0, 0]) # MultiDimensional
         # Shape Transform Position
-        self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional([0, 0]) # MultiDimensional
         # Shape Transform Scale
-        self.scale = MultiDimensional([1, 1, 1]) # MultiDimensional, MultiDimensionalKeyframed
+        self.scale = MultiDimensional([1, 1, 1]) # MultiDimensional
         # Shape Transform Rotation
         self.rotation = Value(0) # Value, ValueKeyframed
         # Shape Transform Opacity
@@ -902,7 +912,7 @@ class TransformShape(TgsObject):
         self.skew_axis = Value(0) # Value, ValueKeyframed
 
 
-class Group(TgsObject):
+class Group(TgsObject): # TODO check
     _props = {
         "match_name": "mn",
         "name": "nm",
@@ -924,7 +934,7 @@ class Group(TgsObject):
         self.items = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, Transform
 
 
-class Star(TgsObject):
+class Star(TgsObject): # TODO check
     _props = {
         "match_name": "mn",
         "name": "nm",
@@ -950,7 +960,7 @@ class Star(TgsObject):
         # Shape content type.
         self.type = 'sr'
         # Star's position
-        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional() # MultiDimensional
         # Star's inner radius. (Star only)
         self.inner_radius = Value() # Value, ValueKeyframed
         # Star's inner roundness. (Star only)
@@ -967,7 +977,6 @@ class Star(TgsObject):
         self.star_type = 1 # 1: Star, 2: Polygon
 
 
-# manually checked
 class Ellipse(TgsObject):
     _props = {
         #"match_name": "mn",
@@ -989,13 +998,13 @@ class Ellipse(TgsObject):
         # Shape content type.
         self.type = 'el'
         # Ellipse's position
-        self.position = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional() # MultiDimensional
         # Ellipse's size
-        self.size = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.size = MultiDimensional() # MultiDimensional
         self.index = None
 
 
-class Merge(TgsObject):
+class Merge(TgsObject): # TODO check
     _props = {
         "match_name": "mn",
         "name": "nm",
@@ -1014,7 +1023,7 @@ class Merge(TgsObject):
         self.merge_mode = 0
 
 
-class GStroke(TgsObject):
+class GStroke(TgsObject): # TODO check
     _props = {
         "match_name": "mn",
         "name": "nm",
@@ -1042,9 +1051,9 @@ class GStroke(TgsObject):
         # Stroke Opacity
         self.opacity = Value(100) # Value, ValueKeyframed
         # Gradient Start Point
-        self.start_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.start_point = MultiDimensional() # MultiDimensional
         # Gradient End Point
-        self.end_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        self.end_point = MultiDimensional() # MultiDimensional
         # Gradient Type
         self.gradient_type = 1 # 1: Linear, 2: Radial
         # Gradient Highlight Length. Only if type is Radial
@@ -1063,7 +1072,7 @@ class GStroke(TgsObject):
         self.miter_limit = 0
 
 
-class NullLayer(TgsObject):
+class NullLayer(TgsObject): # TODO check
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1092,8 +1101,8 @@ class NullLayer(TgsObject):
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
         self.index = 0
-        # Parsed layer name used as html class on SVG/HTML renderer
-        self.css_class = ""
+        # Parsed layer name used as html class on SVG/HTML renderer # TODO check
+        self.css_class = "" # TODO check
         # Parsed layer name used as html id on SVG/HTML renderer
         self.layer_html_id = ""
         # In Point of layer. Sets the initial frame of the layer.
@@ -1112,7 +1121,7 @@ class NullLayer(TgsObject):
         self.parent = None
 
 
-class TextLayer(TgsObject):
+class TextLayer(TgsObject): # TODO check
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1147,8 +1156,8 @@ class TextLayer(TgsObject):
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
         self.index = 0
-        # Parsed layer name used as html class on SVG/HTML renderer
-        self.css_class = ""
+        # Parsed layer name used as html class on SVG/HTML renderer # TODO check
+        self.css_class = "" # TODO check
         # Parsed layer name used as html id on SVG/HTML renderer
         self.layer_html_id = ""
         # In Point of layer. Sets the initial frame of the layer.
@@ -1173,7 +1182,7 @@ class TextLayer(TgsObject):
         self.text_data = None
 
 
-class ShapeLayer(TgsObject):
+class ShapeLayer(TgsObject): # TODO check
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1209,8 +1218,8 @@ class ShapeLayer(TgsObject):
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
         self.index = 0
-        # Parsed layer name used as html class on SVG/HTML renderer
-        self.css_class = ""
+        # Parsed layer name used as html class on SVG/HTML renderer # TODO check
+        self.css_class = "" # TODO check
         # Parsed layer name used as html id on SVG/HTML renderer
         self.layer_html_id = ""
         # In Point of layer. Sets the initial frame of the layer.
@@ -1239,7 +1248,7 @@ class ShapeLayer(TgsObject):
         self.shapes.append(shape)
         return shape
 
-class ImageLayer(TgsObject):
+class ImageLayer(TgsObject): # TODO check
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1274,8 +1283,8 @@ class ImageLayer(TgsObject):
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
         self.index = 0
-        # Parsed layer name used as html class on SVG/HTML renderer
-        self.css_class = ""
+        # Parsed layer name used as html class on SVG/HTML renderer # TODO check
+        self.css_class = "" # TODO check
         # Parsed layer name used as html id on SVG/HTML renderer
         self.layer_html_id = ""
         # In Point of layer. Sets the initial frame of the layer.
@@ -1300,7 +1309,7 @@ class ImageLayer(TgsObject):
         self.reference_id = ""
 
 
-class PreCompLayer(TgsObject):
+class PreCompLayer(TgsObject): # TODO check
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1336,8 +1345,8 @@ class PreCompLayer(TgsObject):
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
         self.index = 0
-        # Parsed layer name used as html class on SVG/HTML renderer
-        self.css_class = ""
+        # Parsed layer name used as html class on SVG/HTML renderer # TODO check
+        self.css_class = "" # TODO check
         # Parsed layer name used as html id on SVG/HTML renderer
         self.layer_html_id = ""
         # In Point of layer. Sets the initial frame of the layer.
@@ -1364,7 +1373,7 @@ class PreCompLayer(TgsObject):
         self.time_remapping = ValueKeyframed.default()
 
 
-class SolidLayer(TgsObject):
+class SolidLayer(TgsObject): # TODO check
     _props = {
         "type": "ty",
         "transform": "ks",
@@ -1401,8 +1410,8 @@ class SolidLayer(TgsObject):
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
         self.index = 0
-        # Parsed layer name used as html class on SVG/HTML renderer
-        self.css_class = ""
+        # Parsed layer name used as html class on SVG/HTML renderer # TODO check
+        self.css_class = "" # TODO check
         # Parsed layer name used as html id on SVG/HTML renderer
         self.layer_html_id = ""
         # In Point of layer. Sets the initial frame of the layer.
@@ -1461,7 +1470,7 @@ class Composite(TgsEnum):
         return cls.Above
 
 
-class Transform(TgsObject):
+class Transform(TgsObject): # TODO check
     _props = {
         "anchor_point": "a",
         "position": "p",
@@ -1477,11 +1486,11 @@ class Transform(TgsObject):
 
     def __init__(self):
         # Transform Anchor Point
-        self.anchor_point = MultiDimensional([0, 0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        self.anchor_point = MultiDimensional([0, 0, 0]) # MultiDimensional
         # Transform Position
-        self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional([0, 0]) # MultiDimensional
         # Transform Scale
-        self.scale = MultiDimensional([100, 100, 100]) # MultiDimensional, MultiDimensionalKeyframed
+        self.scale = MultiDimensional([100, 100, 100]) # MultiDimensional
         # Transform Rotation
         self.rotation = Value(0) # Value, ValueKeyframed
         # Transform Opacity
@@ -1498,7 +1507,7 @@ class Transform(TgsObject):
         self.skew_axis = Value(0) # Value, ValueKeyframed
 
 
-class Mask(TgsObject):
+class Mask(TgsObject): # TODO check
     _props = {
         "inverted": "inv",
         "name": "nm",

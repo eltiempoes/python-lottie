@@ -11,14 +11,11 @@ an.out_point = layer.out_point = 59
 an.layers.append(layer)
 
 circle = layer.add_shape(tgs.Ellipse())
-circle.size.value = [153, 100]
+circle.size.value = [86, 86]
 #circle.position.value = [222, 206]
-circle.position = tgs.MultiDimensionalKeyframed()
-circle.position.keyframes = [
-    tgs.OffsetKeyframe(0, [222, 0], [222, 206]),
-    tgs.OffsetKeyframe(10, [222, 206], [422, 206]),
-    tgs.OffsetKeyframe(30, [422, 206]),
-]
+circle.position.add_keyframe( 0, [256, 256-128])
+circle.position.add_keyframe(10, [256, 256])
+circle.position.add_keyframe(30, [256+128, 256])
 
 fill = layer.add_shape(tgs.Fill())
 fill.color.value = [1, 0, 0]
