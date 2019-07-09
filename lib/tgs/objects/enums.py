@@ -1,16 +1,6 @@
 from .base import TgsEnum
 
 
-class LineJoin(TgsEnum):
-    Miter = 1
-    Round = 2
-    Bevel = 3
-
-    @classmethod
-    def default(cls):
-        return cls.Round
-
-
 class TestBased(TgsEnum):
     Characters = 1
     CharacterExcludingSpaces = 2
@@ -42,16 +32,6 @@ class TextShape(TgsEnum):
     @classmethod
     def default(cls):
         return cls.Square
-
-
-class LineCap(TgsEnum):
-    Butt = 1
-    Round = 2
-    Square = 3
-
-    @classmethod
-    def default(cls):
-        return cls.Round
 
 
 class TextGrouping(TgsEnum):
@@ -86,8 +66,3 @@ class BlendMode(TgsEnum):
     @classmethod
     def default(cls):
         return cls.Normal
-
-
-class StarType(TgsEnum):
-    Star = 1
-    Polygon = 2

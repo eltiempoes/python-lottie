@@ -1,6 +1,5 @@
-from .base import TgsObject, TgsProp, todo_func
-from .properties import Value, MultiDimensional
-from .enums import LineCap, LineJoin, Composite, StarType
+from .base import TgsObject, TgsProp, TgsEnum, todo_func
+from .properties import Value, MultiDimensional, GradientColors
 from .helpers import Transform
 
 
@@ -51,6 +50,79 @@ class Rect(TgsObject):
         self.rounded_corners = Value()
 
 
+class StarType(TgsEnum):
+    Star = 1
+    Polygon = 2
+
+
+class Star(TgsObject):
+    _props = [
+        #TgsProp("match_name", "mn", str, False),
+        TgsProp("name", "nm", str, False),
+        TgsProp("direction", "d", float, False),
+        TgsProp("type", "ty", str, False),
+        TgsProp("position", "p", MultiDimensional, False),
+        TgsProp("inner_radius", "ir", Value, False),
+        TgsProp("inner_roundness", "is", Value, False),
+        TgsProp("outer_radius", "or", Value, False),
+        TgsProp("outer_roundness", "os", Value, False),
+        TgsProp("rotation", "r", Value, False),
+        TgsProp("points", "pt", Value, False),
+        TgsProp("star_type", "sy", StarType, False),
+    ]
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        #self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = None
+        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        self.direction = 0
+        # Shape content type.
+        self.type = 'sr'
+        # Star's position
+        self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        # Star's inner radius. (Star only)
+        self.inner_radius = Value() # Value, ValueKeyframed
+        # Star's inner roundness. (Star only)
+        self.inner_roundness = Value() # Value, ValueKeyframed
+        # Star's outer radius.
+        self.outer_radius = Value() # Value, ValueKeyframed
+        # Star's outer roundness.
+        self.outer_roundness = Value() # Value, ValueKeyframed
+        # Star's rotation.
+        self.rotation = Value() # Value, ValueKeyframed
+        # Star's number of points.
+        self.points = Value(5) # Value, ValueKeyframed
+        # Star's type. Polygon or Star.
+        self.star_type = StarType.Star
+
+
+class Ellipse(TgsObject):
+    _props = [
+        #TgsProp("match_name", "mn", str, False),
+        TgsProp("name", "nm", str, False),
+        TgsProp("direction", "d", float, False),
+        TgsProp("type", "ty", str, False),
+        TgsProp("position", "p", MultiDimensional, False),
+        TgsProp("size", "s", MultiDimensional, False),
+    ]
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        #self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = None
+        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        self.direction = 1
+        # Shape content type.
+        self.type = 'el'
+        # Ellipse's position
+        self.position = MultiDimensional([0, 0])
+        # Ellipse's size
+        self.size = MultiDimensional([0, 0])
+
+
 class Fill(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -71,6 +143,143 @@ class Fill(TgsObject):
         self.opacity = Value(100)
         # Fill Color
         self.color = MultiDimensional([1, 1, 1])
+
+
+class GradientType(TgsEnum):
+    Linear = 1
+    Radial = 2
+
+
+class GradientFill(TgsObject):
+    _props = [
+        #TgsProp("match_name", "mn", str, False),
+        TgsProp("name", "nm", str, False),
+        TgsProp("type", "ty", str, False),
+        TgsProp("opacity", "o", Value, False),
+        TgsProp("start_point", "s", MultiDimensional, False),
+        TgsProp("end_point", "e", MultiDimensional, False),
+        TgsProp("gradient_type", "t", GradientType, False),
+        TgsProp("highlight_length", "h", Value, False),
+        TgsProp("highlight_angle", "a", Value, False),
+        TgsProp("colors", "g", GradientColors, False),
+    ]
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        #self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = None
+        # Shape content type.
+        self.type = 'gf'
+        # Fill Opacity
+        self.opacity = Value(100)
+        # Gradient Start Point
+        self.start_point = MultiDimensional([0, 0])
+        # Gradient End Point
+        self.end_point = MultiDimensional([0, 0])
+        # Gradient Type
+        self.gradient_type = GradientType.Linear
+        # Gradient Highlight Length. Only if type is Radial
+        self.highlight_length = Value()
+        # Highlight Angle. Only if type is Radial
+        self.highlight_angle = Value()
+        # Gradient Colors
+        self.colors = GradientColors()
+
+
+class LineJoin(TgsEnum):
+    Miter = 1
+    Round = 2
+    Bevel = 3
+
+
+class LineCap(TgsEnum):
+    Butt = 1
+    Round = 2
+    Square = 3
+
+
+class Stroke(TgsObject):
+    _props = [
+        #TgsProp("match_name", "mn", str, False),
+        TgsProp("name", "nm", str, False),
+        TgsProp("type", "ty", str, False),
+        TgsProp("line_cap", "lc", float, False),
+        TgsProp("line_join", "lj", float, False),
+        TgsProp("miter_limit", "ml", float, False),
+        TgsProp("opacity", "o", Value, False),
+        TgsProp("width", "w", Value, False),
+        TgsProp("color", "c", MultiDimensional, False),
+    ]
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        #self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = None
+        # Shape content type.
+        self.type = 'st'
+        # Stroke Line Cap
+        self.line_cap = LineCap.Round
+        # Stroke Line Join
+        self.line_join = LineJoin.Round
+        # Stroke Miter Limit. Only if Line Join is set to Miter.
+        self.miter_limit = 0
+        # Stroke Opacity
+        self.opacity = Value(100)
+        # Stroke Width
+        self.width = Value(1)
+        # Stroke Color
+        self.color = MultiDimensional([0, 0, 0])
+
+
+class GradientStroke(TgsObject):
+    _props = [
+        #TgsProp("match_name", "mn", str, False),
+        TgsProp("name", "nm", str, False),
+        TgsProp("type", "ty", str, False),
+        TgsProp("opacity", "o", Value, False),
+        TgsProp("start_point", "s", MultiDimensional, False),
+        TgsProp("end_point", "e", MultiDimensional, False),
+        TgsProp("gradient_type", "t", GradientType, False),
+        TgsProp("highlight_length", "h", Value, False),
+        TgsProp("highlight_angle", "a", Value, False),
+        TgsProp("colors", "g", GradientColors, False),
+        TgsProp("stroke_width", "w", Value, False),
+        TgsProp("line_cap", "lc", float, False),
+        TgsProp("line_join", "lj", float, False),
+        TgsProp("miter_limit", "ml", float, False),
+    ]
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        #self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = None
+        # Shape content type.
+        self.type = 'gs'
+        # Stroke Opacity
+        self.opacity = Value(100)
+        # Gradient Start Point
+        self.start_point = MultiDimensional([0, 0])
+        # Gradient End Point
+        self.end_point = MultiDimensional([0, 0])
+        # Gradient Type
+        self.gradient_type = GradientType.Linear
+        # Gradient Highlight Length. Only if type is Radial
+        self.highlight_length = Value()
+        # Highlight Angle. Only if type is Radial
+        self.highlight_angle = Value()
+        # Gradient Colors
+        self.colors = GradientColors()
+        # Gradient Stroke Width
+        self.stroke_width = Value(1)
+        # Gradient Stroke Line Cap
+        self.line_cap = LineCap.Round
+        # Gradient Stroke Line Join
+        self.line_join = LineJoin.Round
+        # Gradient Stroke Miter Limit. Only if Line Join is set to Miter.
+        self.miter_limit = 0
 
 
 class Trim(TgsObject): # TODO check
@@ -98,6 +307,11 @@ class Trim(TgsObject): # TODO check
         self.offset = Value() # Value, ValueKeyframed
 
 
+class Composite(TgsEnum):
+    Above = 1
+    Below = 2
+
+
 class Repeater(TgsObject): # TODO check
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -105,7 +319,7 @@ class Repeater(TgsObject): # TODO check
         TgsProp("type", "ty", str, False),
         TgsProp("copies", "c", Value, False),
         TgsProp("offset", "o", Value, False),
-        TgsProp("composite", "m", float, False),
+        TgsProp("composite", "m", Composite, False),
         TgsProp("transform", "tr", Transform, False),
     ]
 
@@ -121,80 +335,9 @@ class Repeater(TgsObject): # TODO check
         # Offset of Copies
         self.offset = Value() # Value, ValueKeyframed
         # Composite of copies
-        self.composite = Composite.default()
+        self.composite = Composite.Above
         # Transform values for each repeater copy
         self.transform = Transform()
-
-
-class GFill(TgsObject): # TODO check
-    _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
-        TgsProp("opacity", "o", Value, False),
-        TgsProp("start_point", "s", MultiDimensional, False),
-        TgsProp("end_point", "e", MultiDimensional, False),
-        TgsProp("gradient_type", "t", float, False),
-        TgsProp("highlight_length", "h", Value, False),
-        TgsProp("highlight_angle", "a", Value, False),
-        TgsProp("gradient_colors", "g", float, False),
-    ]
-
-    def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        # After Effect's Name. Used for expressions.
-        self.name = None
-        # Shape content type.
-        self.type = 'gf'
-        # Fill Opacity
-        self.opacity = Value() # Value, ValueKeyframed
-        # Gradient Start Point
-        self.start_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
-        # Gradient End Point
-        self.end_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
-        # Gradient Type
-        self.gradient_type = 1 # 1: Linear, 2: Radial
-        # Gradient Highlight Length. Only if type is Radial
-        self.highlight_length = Value() # Value, ValueKeyframed
-        # Highlight Angle. Only if type is Radial
-        self.highlight_angle = Value() # Value, ValueKeyframed
-        # Gradient Colors
-        self.gradient_colors = None
-
-
-class Stroke(TgsObject):
-    _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
-        TgsProp("line_cap", "lc", float, False),
-        TgsProp("line_join", "lj", float, False),
-        TgsProp("miter_limit", "ml", float, False),
-        TgsProp("opacity", "o", Value, False),
-        TgsProp("width", "w", Value, False),
-        TgsProp("color", "c", MultiDimensional, False),
-    ]
-
-    def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        # After Effect's Name. Used for expressions.
-        self.name = None
-        # Shape content type.
-        self.type = 'st'
-        # Stroke Line Cap
-        self.line_cap = LineCap.default()
-        # Stroke Line Join
-        self.line_join = LineJoin.default()
-        # Stroke Miter Limit. Only if Line Join is set to Miter.
-        self.miter_limit = 0
-        # Stroke Opacity
-        self.opacity = Value(100)
-        # Stroke Width
-        self.width = Value(1)
-        # Stroke Color
-        self.color = MultiDimensional([0, 0, 0])
 
 
 class Round(TgsObject): # TODO check
@@ -291,74 +434,6 @@ class Group(TgsObject): # TODO check
         self.shapes = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, TransformShape
 
 
-class Star(TgsObject):
-    _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("direction", "d", float, False),
-        TgsProp("type", "ty", str, False),
-        TgsProp("position", "p", MultiDimensional, False),
-        TgsProp("inner_radius", "ir", Value, False),
-        TgsProp("inner_roundness", "is", Value, False),
-        TgsProp("outer_radius", "or", Value, False),
-        TgsProp("outer_roundness", "os", Value, False),
-        TgsProp("rotation", "r", Value, False),
-        TgsProp("points", "pt", Value, False),
-        TgsProp("star_type", "sy", float, False),
-    ]
-
-    def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        # After Effect's Name. Used for expressions.
-        self.name = None
-        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
-        self.direction = 0
-        # Shape content type.
-        self.type = 'sr'
-        # Star's position
-        self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
-        # Star's inner radius. (Star only)
-        self.inner_radius = Value() # Value, ValueKeyframed
-        # Star's inner roundness. (Star only)
-        self.inner_roundness = Value() # Value, ValueKeyframed
-        # Star's outer radius.
-        self.outer_radius = Value() # Value, ValueKeyframed
-        # Star's outer roundness.
-        self.outer_roundness = Value() # Value, ValueKeyframed
-        # Star's rotation.
-        self.rotation = Value() # Value, ValueKeyframed
-        # Star's number of points.
-        self.points = Value(5) # Value, ValueKeyframed
-        # Star's type. Polygon or Star.
-        self.star_type = StarType.Star
-
-
-class Ellipse(TgsObject):
-    _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("direction", "d", float, False),
-        TgsProp("type", "ty", str, False),
-        TgsProp("position", "p", MultiDimensional, False),
-        TgsProp("size", "s", MultiDimensional, False),
-    ]
-
-    def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        # After Effect's Name. Used for expressions.
-        self.name = None
-        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
-        self.direction = 1
-        # Shape content type.
-        self.type = 'el'
-        # Ellipse's position
-        self.position = MultiDimensional([0, 0])
-        # Ellipse's size
-        self.size = MultiDimensional([0, 0])
-
-
 class Merge(TgsObject): # TODO check
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -377,51 +452,3 @@ class Merge(TgsObject): # TODO check
         # Merge Mode
         self.merge_mode = 0
 
-
-class GStroke(TgsObject): # TODO check
-    _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
-        TgsProp("opacity", "o", Value, False),
-        TgsProp("start_point", "s", MultiDimensional, False),
-        TgsProp("end_point", "e", MultiDimensional, False),
-        TgsProp("gradient_type", "t", float, False),
-        TgsProp("highlight_length", "h", Value, False),
-        TgsProp("highlight_angle", "a", Value, False),
-        TgsProp("gradient_colors", "g", float, False),
-        TgsProp("stroke_width", "w", Value, False),
-        TgsProp("line_cap", "lc", float, False),
-        TgsProp("line_join", "lj", float, False),
-        TgsProp("miter_limit", "ml", float, False),
-    ]
-
-    def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        # After Effect's Name. Used for expressions.
-        self.name = None
-        # Shape content type.
-        self.type = 'gs'
-        # Stroke Opacity
-        self.opacity = Value() # Value, ValueKeyframed
-        # Gradient Start Point
-        self.start_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
-        # Gradient End Point
-        self.end_point = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
-        # Gradient Type
-        self.gradient_type = 1 # 1: Linear, 2: Radial
-        # Gradient Highlight Length. Only if type is Radial
-        self.highlight_length = Value() # Value, ValueKeyframed
-        # Highlight Angle. Only if type is Radial
-        self.highlight_angle = Value() # Value, ValueKeyframed
-        # Gradient Colors
-        self.gradient_colors = None
-        # Gradient Stroke Width
-        self.stroke_width = Value() # Value, ValueKeyframed
-        # Gradient Stroke Line Cap
-        self.line_cap = LineCap.default()
-        # Gradient Stroke Line Join
-        self.line_join = LineJoin.default()
-        # Gradient Stroke Miter Limit. Only if Line Join is set to Miter.
-        self.miter_limit = 0

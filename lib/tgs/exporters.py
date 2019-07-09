@@ -6,8 +6,8 @@ import sys
 from .objects.base import TgsObject, Tgs
 
 
-def export_lottie(animation, fp):
-    json.dump(animation.to_dict(), fp)
+def export_lottie(animation, fp, **kw):
+    json.dump(animation.to_dict(), fp, **kw)
 
 
 def export_tgs(animation, file):

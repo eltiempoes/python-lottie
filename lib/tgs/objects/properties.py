@@ -1,4 +1,5 @@
 import math
+from functools import reduce
 from .base import TgsObject, TgsProp, PseudoList
 
 
@@ -111,6 +112,56 @@ class MultiDimensional(TgsObject):
             None,
             None,
         ))
+
+
+class GradientColors(TgsObject):
+    _props = [
+        TgsProp("colors", "k", MultiDimensional),
+        TgsProp("count", "p", int),
+    ]
+
+    def __init__(self):
+        self.colors = MultiDimensional()
+        self.count = 0
+
+    def set_colors(self, colors, keyframe=None):
+        flat = self._flatten_colors(colors)
+        if self.colors.animated and keyframe is not None:
+            if keyframe > 1:
+                self.colors.keyframes[keyframe-1].end = flat
+            self.colors.keyframes[keyframe].start = flat
+        else:
+            self.colors.clear_animation(flat)
+        self.count = len(colors)
+
+    def _flatten_colors(self, colors):
+        return reduce(
+            lambda a, b: a + b,
+            map(
+                lambda it: [it[0] / (len(colors)-1)] + it[1],
+                enumerate(colors),
+            )
+        )
+
+    def add_color(self, offset, color, keyframe=None):
+        flat = [offset] + color
+        if self.colors.animated:
+            if keyframe is None:
+                for kf in self.colors.keyframes:
+                    if kf.start:
+                        kf.start += flat
+                    if kf.end:
+                        kf.end += flat
+            else:
+                if keyframe > 1:
+                    self.colors.keyframes[keyframe-1].end += flat
+                self.colors.keyframes[keyframe].start += flat
+        else:
+            self.colors.value += flat
+        self.count += 1
+
+    def add_keyframe(self, time, colors=None):
+        self.colors.add_keyframe(time, self._flatten_colors(colors) if colors else [])
 
 
 class Value(TgsObject):

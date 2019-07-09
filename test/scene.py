@@ -39,11 +39,19 @@ fill.opacity.value = 100
 #fill.opacity.add_keyframe(30, 0)
 
 stroke = layer.add_shape(objects.Stroke())
-#stroke.color.value = [1,1,1]
-#stroke.color.
+stroke.color.value = [1,1,1]
+#grad = layer.add_shape(objects.GradientStroke())
+#grad.end_point.value = [200, 0]
+##grad.colors.set_colors([[1, 0, 0], [1, 1, 0]])
+#grad.colors.add_keyframe(0, [[1, 0, 0], [1, 1, 0]])
+#grad.colors.add_keyframe(10, [[1, 1, 0], [0, 1, 0]])
+#grad.colors.add_keyframe(30, [[1, 0, 1], [0, 0, 1]])
+#grad.colors.add_keyframe(59, [[1, 0, 0], [1, 1, 0]])
+#grad.colors.count = 2
+#grad.stroke_width.value = 10
 
 
-exporters.export_lottie(an, open("/tmp/out.json", "w"))
+exporters.export_lottie(an, open("/tmp/out.json", "w"), indent=4)
 open("/tmp/out.html", "w").write(exporters.lottie_display_html("/tmp/out.json"))
 exporters.export_tgs(an, open("/tmp/out.tgs", "wb"))
 
