@@ -38,13 +38,27 @@ rect.size.value = [100, 100]
 rect.position.value = [100, 200]
 
 
-group.transform.position.value = [200, 200]
+#group.transform.position.value = [200, 200]
 shape = group.add_shape(objects.Shape())
-shape.vertices.value.add_point([50, 20], [50, -20], [-50, -20])
-shape.vertices.value.add_smooth_point([0, 50], [-5, -10])
-shape.vertices.value.add_smooth_point([50, 100], [-10, 0])
-shape.vertices.value.add_smooth_point([100, 50], [-5, 10])
-shape.vertices.value.closed = True
+heart = objects.Bezier()
+heart.add_point([50, 20], [50, -20], [-50, -20])
+heart.add_smooth_point([0, 50], [-5, -10])
+heart.add_smooth_point([50, 100], [-10, 0])
+heart.add_smooth_point([100, 50], [-5, 10])
+heart.closed = True
+circbez = (
+    objects.Bezier()
+    .add_smooth_point([50, 0], [20, 0])
+    .add_smooth_point([0, 50], [0, -20])
+    .add_smooth_point([50, 100], [-20, 0])
+    .add_smooth_point([100, 50], [0, 20])
+    .close()
+)
+
+shape.vertices.add_keyframe(0, heart)
+shape.vertices.add_keyframe(30, circbez)
+shape.vertices.add_keyframe(59, heart)
+#shape.vertices.value = heart
 
 
 fill = group.add_shape(objects.Fill())

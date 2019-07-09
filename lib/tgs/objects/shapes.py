@@ -305,7 +305,7 @@ class GradientStroke(TgsObject):
         TgsProp("miter_limit", "ml", float, False),
     ]
 
-    def __init__(self):
+    def __init__(self, stroke_width=1):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
         # After Effect's Name. Used for expressions.
@@ -327,7 +327,7 @@ class GradientStroke(TgsObject):
         # Gradient Colors
         self.colors = GradientColors()
         # Gradient Stroke Width
-        self.stroke_width = Value(1)
+        self.stroke_width = Value(stroke_width)
         # Gradient Stroke Line Cap
         self.line_cap = LineCap.Round
         # Gradient Stroke Line Join
