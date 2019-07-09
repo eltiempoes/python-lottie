@@ -33,6 +33,10 @@ class TgsEnum(Tgs, enum.Enum):
         return cls(lottieint)
 
 
+class PseudoList:
+    pass
+
+
 class TgsProp:
     def __init__(self, name, lottie, type=float, list=False, cond=None):
         self.name = name
@@ -58,7 +62,9 @@ class TgsProp:
         self.set(obj, self.load_from_parent(lottiedict))
 
     def load(self, lottieval):
-        if self.list:
+        if self.list is PseudoList and isinstance(lottieval, list):
+            return self.load_scalar(lottieval[0])
+        elif self.list is True:
             return [
                 self.load_scalar(it)
                 for it in lottieval
@@ -72,11 +78,17 @@ class TgsProp:
             return lottieval
         return self.type(lottieval)
 
+    def to_dict(self, obj):
+        val = _to_dict(self.get(obj))
+        if self.list is PseudoList:
+            val = [val]
+        return val
+
 
 class TgsObject(Tgs):
     def to_dict(self):
         return {
-            prop.lottie: _to_dict(prop.get(self))
+            prop.lottie: prop.to_dict(self)
             for prop in self._props
             if prop.get(self) is not None
         }

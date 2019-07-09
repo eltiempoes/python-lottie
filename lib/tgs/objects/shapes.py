@@ -350,7 +350,7 @@ class Ellipse(TgsObject): # TODO check
         # After Effect's Name. Used for expressions.
         self.name = None
         # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
-        self.direction = 0
+        self.direction = 1
         # Shape content type.
         self.type = 'el'
         # Ellipse's position

@@ -179,9 +179,9 @@ class ShapeLayer(TgsObject):
         # List of Masks
         self.masks_properties = [] # Mask
         # List of Effects
-        self.effects = [] # IndexEffect
+        self.effects = None # IndexEffect
         # Layer Time Stretching
-        self.stretch = 0
+        self.stretch = 1
         # Layer Parent. Uses ind of parent.
         self.parent = None
         # Shape list of items
