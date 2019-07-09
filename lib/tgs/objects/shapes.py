@@ -1,5 +1,5 @@
 from .base import TgsObject, TgsProp, TgsEnum, todo_func
-from .properties import Value, MultiDimensional, GradientColors
+from .properties import Value, MultiDimensional, GradientColors, ShapeProperty
 from .helpers import Transform
 
 
@@ -121,6 +121,28 @@ class Ellipse(TgsObject):
         self.position = MultiDimensional([0, 0])
         # Ellipse's size
         self.size = MultiDimensional([0, 0])
+
+
+class Shape(TgsObject): # TODO check
+    _props = [
+        #TgsProp("match_name", "mn", str, False),
+        TgsProp("name", "nm", str, False),
+        TgsProp("direction", "d", float, False),
+        TgsProp("type", "ty", str, False),
+        TgsProp("vertices", "ks", ShapeProperty, False),
+    ]
+
+    def __init__(self):
+        # After Effect's Match Name. Used for expressions.
+        #self.match_name = ""
+        # After Effect's Name. Used for expressions.
+        self.name = None
+        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        self.direction = 0
+        # Shape content type.
+        self.type = 'sh'
+        # Shape's vertices
+        self.vertices = ShapeProperty()
 
 
 class Group(TgsObject):
@@ -422,28 +444,6 @@ class Round(TgsObject): # TODO check
         self.type = 'rd'
         # Rounded Corner Radius
         self.radius = Value() # Value, ValueKeyframed
-
-
-class Shape(TgsObject): # TODO check
-    _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("direction", "d", float, False),
-        TgsProp("type", "ty", str, False),
-        TgsProp("vertices", "ks", todo_func, False),
-    ]
-
-    def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        # After Effect's Name. Used for expressions.
-        self.name = None
-        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
-        self.direction = 0
-        # Shape content type.
-        self.type = 'sh'
-        # Shape's vertices
-        self.vertices = ShapeProperty() # ShapeProperty, ShapePropertyKeyframed
 
 
 class Merge(TgsObject): # TODO check

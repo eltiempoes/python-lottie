@@ -16,10 +16,10 @@ group = layer.add_shape(objects.Group())
 
 circle = group.add_shape(objects.Ellipse())
 circle.size.value = [100, 100]
-#circle.position.value = [200, 100]
-circle.position.add_keyframe( 0, [256, 256-128])
-circle.position.add_keyframe(10, [256, 256])
-circle.position.add_keyframe(30, [256+128, 256])
+circle.position.value = [200, 100]
+#circle.position.add_keyframe( 0, [256, 256-128])
+#circle.position.add_keyframe(10, [256, 256])
+#circle.position.add_keyframe(30, [256+128, 256])
 
 group.add_shape(objects.Fill([1, 0, 0]))
 group.add_shape(objects.Stroke([0, 0, 0], 2))
@@ -35,7 +35,17 @@ round.position.value = [300, 100]
 
 rect = group.add_shape(objects.Rect())
 rect.size.value = [100, 100]
-rect.position.value = [100, 100]
+rect.position.value = [100, 200]
+
+
+group.transform.position.value = [200, 200]
+shape = group.add_shape(objects.Shape())
+shape.vertices.value.add_point([50, 20], [50, -20], [-50, -20])
+shape.vertices.value.add_smooth_point([0, 50], [-5, -10])
+shape.vertices.value.add_smooth_point([50, 100], [-10, 0])
+shape.vertices.value.add_smooth_point([100, 50], [-5, 10])
+shape.vertices.value.closed = True
+
 
 fill = group.add_shape(objects.Fill())
 fill.color.value = [1, 1, 0]
@@ -46,17 +56,17 @@ fill.opacity.value = 100
 #fill.opacity.add_keyframe(10, 100)
 #fill.opacity.add_keyframe(30, 0)
 
-#stroke = layer.add_shape(objects.Stroke())
-#stroke.color.value = [1,1,1]
-grad = group.add_shape(objects.GradientStroke())
-grad.end_point.value = [200, 0]
-#grad.colors.set_colors([[1, 0, 0], [1, 1, 0]])
-grad.colors.add_keyframe(0, [[1, 0, 0], [1, 1, 0]])
-grad.colors.add_keyframe(10, [[1, 1, 0], [0, 1, 0]])
-grad.colors.add_keyframe(30, [[1, 0, 1], [0, 0, 1]])
-grad.colors.add_keyframe(59, [[1, 0, 0], [1, 1, 0]])
-grad.colors.count = 2
-grad.stroke_width.value = 10
+stroke = group.add_shape(objects.Stroke([0, 0, 0], 5))
+#grad = group.add_shape(objects.GradientStroke())
+#grad.end_point.value = [200, 0]
+##grad.colors.set_colors([[1, 0, 0], [1, 1, 0]])
+#grad.colors.add_keyframe(0, [[1, 0, 0], [1, 1, 0]])
+#grad.colors.add_keyframe(10, [[1, 1, 0], [0, 1, 0]])
+#grad.colors.add_keyframe(30, [[1, 0, 1], [0, 0, 1]])
+#grad.colors.add_keyframe(59, [[1, 0, 0], [1, 1, 0]])
+#grad.colors.count = 2
+#grad.stroke_width.value = 10
+
 
 
 exporters.export_lottie(an, open("/tmp/out.json", "w"), indent=4)

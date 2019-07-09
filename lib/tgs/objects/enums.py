@@ -12,15 +12,6 @@ class TestBased(TgsEnum):
         return cls.Characters
 
 
-class Composite(TgsEnum):
-    Above = 1
-    Below = 2
-
-    @classmethod
-    def default(cls):
-        return cls.Above
-
-
 class TextShape(TgsEnum):
     Square = 1
     RampUp = 2

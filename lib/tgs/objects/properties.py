@@ -206,7 +206,7 @@ class Value(TgsObject):
 
 class ShapeProp(TgsObject): # TODO check
     _props = [
-        TgsProp("closed", "c", float, False),
+        TgsProp("closed", "c", bool, False),
         TgsProp("in_point", "i", float, True),
         TgsProp("out_point", "o", float, True),
         TgsProp("vertices", "v", float, True),
@@ -214,13 +214,46 @@ class ShapeProp(TgsObject): # TODO check
 
     def __init__(self):
         # Closed property of shape
-        self.closed = None
+        self.closed = False
         # Bezier curve In points. Array of 2 dimensional arrays.
         self.in_point = [] # array
         # Bezier curve Out points. Array of 2 dimensional arrays.
         self.out_point = [] # array
         # Bezier curve Vertices. Array of 2 dimensional arrays.
         self.vertices = [] # array
+
+    def add_point(self, pos, inp=[0, 0], outp=[0, 0]):
+        self.vertices.append(pos)
+        self.in_point.append(list(inp))
+        self.out_point.append(list(outp))
+        return self
+
+    def add_smooth_point(self, pos, inp):
+        self.add_point(pos, inp, [-inp[0], -inp[1]])
+        return self
+
+    def close(self, closed=True):
+        self.closed = closed
+        return self
+
+
+class ShapeProperty(TgsObject): # TODO check
+    _props = [
+        TgsProp("value", "k", ShapeProp, False),
+        TgsProp("expression", "x", str, False),
+        TgsProp("property_index", "ix", float, False),
+        TgsProp("animated", "a", bool, False),
+    ]
+
+    def __init__(self):
+        # Property Value
+        self.value = ShapeProp()
+        # Property Expression. An AE expression that modifies the value.
+        self.expression = None
+        # Property Index. Used for expressions.
+        self.property_index = None
+        # Defines if property is animated
+        self.animated = False
 
 
 class ShapePropKeyframe(TgsObject): # TODO check
@@ -262,25 +295,6 @@ class ShapePropertyKeyframed(TgsObject): # TODO check
         self.in_tangent = []
         # Out Spatial Tangent. Only for spatial properties. Array of numbers.
         self.out_tangent = []
-
-
-class ShapeProperty(TgsObject): # TODO check
-    _props = [
-        TgsProp("value", "k", ShapeProp, False),
-        TgsProp("expression", "x", str, False),
-        TgsProp("property_index", "ix", float, False),
-        TgsProp("animated", "a", float, False),
-    ]
-
-    def __init__(self):
-        # Property Value
-        self.value = ShapeProp()
-        # Property Expression. An AE expression that modifies the value.
-        self.expression = ""
-        # Property Index. Used for expressions.
-        self.property_index = 0
-        # Defines if property is animated
-        self.animated = 0
 
 
 class DoubleKeyframe(TgsObject): # TODO check
