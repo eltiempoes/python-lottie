@@ -27,16 +27,16 @@ open("/tmp/out.html", "w").write(exporters.lottie_display_html("/tmp/out.json"))
 exporters.export_tgs(an, open("/tmp/out.tgs", "wb"))
 
 
-import json
-latest = None
-latest_stat = 0
-for entry in os.scandir(os.path.dirname(os.path.abspath(__file__))):
-    if entry.name.endswith(".json"):
-        stat = entry.stat().st_mtime_ns
-        if stat > latest_stat:
-            latest_stat = stat
-            latest = entry.path
+#import json
+#latest = None
+#latest_stat = 0
+#for entry in os.scandir(os.path.dirname(os.path.abspath(__file__))):
+    #if entry.name.endswith(".json"):
+        #stat = entry.stat().st_mtime_ns
+        #if stat > latest_stat:
+            #latest_stat = stat
+            #latest = entry.path
 
-lottie_json = json.load(open(latest))
-a2 = objects.Animation.load(lottie_json)
-difflines(an, a2)
+#lottie_json = json.load(open(latest))
+#a2 = objects.Animation.load(lottie_json)
+#difflines(an, a2)

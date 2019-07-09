@@ -6,7 +6,9 @@ Scripts
 -------
 
 * bin/extract.py    Will extract a tgs file into a pretty printed JSON
-* bin/lottie2tgs.py Will Convert a lottie file into a tgs file
+* bin/lottie2tgs.py Will convert a lottie file into a tgs file
+* bin/humanprint.py Prints the given lottie file into a human-readable format
+* bin/lottiediff.py SHows a side-by-side diff of the human-readable rendition of two lottie files
 
 
 Installation
