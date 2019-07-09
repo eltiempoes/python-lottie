@@ -45,12 +45,6 @@ class OffsetKeyframe(TgsObject):
         # Out Spatial Tangent. Only for spatial properties. Array of numbers.
         self.out_tangent = out_tangent
 
-    @classmethod
-    def load_lottie_obj(cls, name, value):
-        if name in {"i", "o"}:
-            return KeyframeBezierPoint.load(value)
-        return super().load_lottie_obj(name, value)
-
 
 class MultiDimensional(TgsObject):
     _props = [
