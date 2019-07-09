@@ -45,6 +45,11 @@ def lottie_display_html(rel_lottie_filename):
 </html>''' % rel_lottie_filename
 
 
+def prettyprint_scalar(tgs_object, out=sys.stdout):
+    if isinstance(tgs_object, float) and tgs_object == round(tgs_object):
+        tgs_object = int(tgs_object)
+    return str(tgs_object)
+
 def prettyprint(tgs_object, out=sys.stdout, indent="   ", _i=""):
     if isinstance(tgs_object, TgsObject):
         out.write(tgs_object.__class__.__name__)
@@ -59,7 +64,7 @@ def prettyprint(tgs_object, out=sys.stdout, indent="   ", _i=""):
     elif isinstance(tgs_object, (list, tuple)):
         if not tgs_object or (not isinstance(tgs_object[0], Tgs) and len(tgs_object) < 16):
             out.write("[")
-            out.write(", ".join(map(str, tgs_object)))
+            out.write(", ".join(map(prettyprint_scalar, tgs_object)))
             out.write("]\n")
         else:
             out.write("[\n")
@@ -69,5 +74,5 @@ def prettyprint(tgs_object, out=sys.stdout, indent="   ", _i=""):
             out.write(_i)
             out.write(']\n')
     else:
-        out.write(str(tgs_object))
+        out.write(prettyprint_scalar(tgs_object, out))
         out.write('\n')

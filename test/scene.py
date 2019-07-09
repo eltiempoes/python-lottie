@@ -3,6 +3,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib.tgs import exporters
 from lib.tgs import objects
+from lib.tgs.utils.linediff import difflines
 
 
 an = objects.Animation()
@@ -38,4 +39,4 @@ for entry in os.scandir(os.path.dirname(os.path.abspath(__file__))):
 
 lottie_json = json.load(open(latest))
 a2 = objects.Animation.load(lottie_json)
-exporters.prettyprint(a2)
+difflines(an, a2)
