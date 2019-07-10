@@ -3,6 +3,33 @@ from .properties import Value, MultiDimensional, GradientColors, ShapeProperty
 from .helpers import Transform
 
 
+class BoundingBox:
+    def __init__(self):
+        self.x1 = None
+        self.y1 = None
+        self.x2 = None
+        self.y2 = None
+
+    def include(self, x, y):
+        if x is not None:
+            if self.x1 is None or self.x1 > x:
+                self.x1 = x
+            if self.x2 is None or self.x2 < x:
+                self.x2 = x
+        if y is not None:
+            if self.y1 is None or self.y1 > y:
+                self.y1 = y
+            if self.y2 is None or self.y2 < y:
+                self.y2 = y
+
+    def expand(self, other):
+        self.include(other.x1, other.y1)
+        self.include(other.x2, other.y2)
+
+    def center(self):
+        return (self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2,
+
+
 def load_shape(lottiedict):
     shapes = {
         'sh': Shape,
@@ -49,6 +76,24 @@ class Rect(TgsObject):
         self.size = MultiDimensional([0, 0])
         # Rect's rounded corners
         self.rounded_corners = Value()
+
+    def bounding_box(self, frame=None):
+        if self.position.animated:
+            pos = self.position.keyframes[frame].start
+        else:
+            pos = self.position.value
+
+        if self.position.animated:
+            sz = self.size.keyframes[frame].start
+        else:
+            sz = self.size.value
+
+        return BoundingBox(
+            pos[0] - sz[0]/2,
+            pos[1] - sz[1]/2,
+            pos[0] + sz[0]/2,
+            pos[1] + sz[1]/2,
+        )
 
 
 class StarType(TgsEnum):
@@ -98,6 +143,24 @@ class Star(TgsObject):
         # Star's type. Polygon or Star.
         self.star_type = StarType.Star
 
+    def bounding_box(self, frame=None):
+        if self.position.animated:
+            pos = self.position.keyframes[frame].start
+        else:
+            pos = self.position.value
+
+        if self.position.animated:
+            r = self.size.keyframes[frame].start
+        else:
+            r = self.size.value
+
+        return BoundingBox(
+            pos[0] - r,
+            pos[1] - r,
+            pos[0] + r,
+            pos[1] + r,
+        )
+
 
 class Ellipse(TgsObject):
     _props = [
@@ -123,6 +186,24 @@ class Ellipse(TgsObject):
         # Ellipse's size
         self.size = MultiDimensional([0, 0])
 
+    def bounding_box(self, frame=None):
+        if self.position.animated:
+            pos = self.position.keyframes[frame].start
+        else:
+            pos = self.position.value
+
+        if self.position.animated:
+            sz = self.size.keyframes[frame].start
+        else:
+            sz = self.size.value
+
+        return BoundingBox(
+            pos[0] - sz[0]/2,
+            pos[1] - sz[1]/2,
+            pos[0] + sz[0]/2,
+            pos[1] + sz[1]/2,
+        )
+
 
 class Shape(TgsObject):
     _props = [
@@ -144,6 +225,18 @@ class Shape(TgsObject):
         self.type = 'sh'
         # Shape's vertices
         self.vertices = ShapeProperty()
+
+    def bounding_box(self, frame=None):
+        if self.vertices.animated:
+            pos = self.vertices.keyframes[frame].start
+        else:
+            pos = self.vertices.value
+
+        bb = BoundingBox()
+        for v in pos.vertices:
+            bb.include(*v)
+
+        return bb
 
 
 class Group(TgsObject):
@@ -177,6 +270,13 @@ class Group(TgsObject):
     def transform(self):
         return self.shapes[-1]
 
+    def bounding_box(self, frame=None):
+        bb = BoundingBox()
+        for v in self.shapes:
+            bb.expand(v.bounding_box(frame))
+
+        return bb
+
 
 class Fill(TgsObject):
     _props = [
@@ -198,6 +298,9 @@ class Fill(TgsObject):
         self.opacity = Value(100)
         # Fill Color
         self.color = MultiDimensional(color)
+
+    def bounding_box(self, frame=None):
+        return BoundingBox()
 
 
 class GradientType(TgsEnum):
@@ -240,6 +343,9 @@ class GradientFill(TgsObject):
         self.highlight_angle = Value()
         # Gradient Colors
         self.colors = GradientColors()
+
+    def bounding_box(self, frame=None):
+        return BoundingBox()
 
 
 class LineJoin(TgsEnum):
@@ -286,6 +392,9 @@ class Stroke(TgsObject):
         self.width = Value(width)
         # Stroke Color
         self.color = MultiDimensional(color)
+
+    def bounding_box(self, frame=None):
+        return BoundingBox()
 
 
 class GradientStroke(TgsObject):
@@ -336,6 +445,9 @@ class GradientStroke(TgsObject):
         # Gradient Stroke Miter Limit. Only if Line Join is set to Miter.
         self.miter_limit = 0
 
+    def bounding_box(self, frame=None):
+        return BoundingBox()
+
 
 class TransformShape(TgsObject):
     _props = [
@@ -368,6 +480,9 @@ class TransformShape(TgsObject):
         self.skew = Value(0)
         # Transform Skew Axis
         self.skew_axis = Value(0)
+
+    def bounding_box(self, frame=None):
+        return BoundingBox()
 
 
 class Trim(TgsObject): # TODO check

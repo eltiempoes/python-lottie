@@ -78,11 +78,14 @@ def _parse_color(color):
     return color_table[color]
 
 
-def _parse_transform(element, dest_trans):
+def _parse_transform(element, group, dest_trans):
     itcx = _qualified("inkscape", "transform-center-x")
     if itcx in element.attrib:
         cx = float(element.attrib[itcx])
         cy = float(element.attrib[_qualified("inkscape", "transform-center-y")])
+        bbx, bby = group.bounding_box().center()
+        cx += bbx
+        cy = bby - cy
         dest_trans.anchor_point.value = [cx, cy]
         dest_trans.position.value = [cx, cy]
 
@@ -255,7 +258,7 @@ def _add_shapes(element, shapes, shape_parent):
         fill = group.add_shape(objects.Fill(color[:3]))
         fill.opacity.value = color[3] * 100
 
-    _parse_transform(element, group.transform)
+    _parse_transform(element, group, group.transform)
 
     return group
 
@@ -270,9 +273,9 @@ def parse_g(element, shape_parent):
     shape_parent.shapes.insert(0, group)
     style = _parse_style(element)
     _apply_common_style(style, group.transform)
-    _parse_transform(element, group.transform)
     group.name = element.attrib.get(_qualified("inkscape", "label"), element.attrib.get("id"))
     parse_svg_element(element, group)
+    _parse_transform(element, group, group.transform)
 
 
 @element_parser("ellipse")
