@@ -1,4 +1,5 @@
 import operator
+import math
 
 
 def vop(op, a, b):
@@ -57,3 +58,13 @@ class NVector():
 
     def __setitem__(self, key, value):
         self.components[key] = value
+
+    def __eq__(self, other):
+        return self.components == other.components
+
+    @property
+    def length(self):
+        return math.sqrt(sum(map(lambda x: x**2, self.components)))
+
+    def dot(self, other):
+        return sum(map(operator.mul, self.components, other.components))

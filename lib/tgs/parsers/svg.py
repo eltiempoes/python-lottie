@@ -1,4 +1,5 @@
 import re
+import math
 from xml.etree import ElementTree
 from .. import objects
 from ..utils.nvector import NVector
@@ -494,36 +495,135 @@ class PathDParser:
         if self.la_type != 2:
             self.next_token()
             return
-        self._do_add_p()
-        rx = self.la
-        ry = self.next_token()
+        r = self.la
+        xrot = self.next_token()
         large = self.next_token()
         sweep = self.next_token()
-        self.p = self.next_token()
-        # TODO
-        self.path.add_point(
-            self.p.to_list(),
-            [0, 0],
-            [0, 0]
-        )
+        dest = self.next_token()
+        self._do_arc(r[0], r[1], xrot, large, sweep, dest)
         self.implicit = "A"
+
+    def _arc_matrix_mul(self, phi, x, y, sin_mul=1):
+        c = math.cos(phi)
+        s = math.sin(phi) * sin_mul
+
+        xr = c * x - s * y
+        yr = s * x + c * y
+        return xr, yr
+
+    def _arc_angle(self, u, v):
+        arg = math.acos(max(-1, min(1, u.dot(v) / (u.length * v.length))))
+        if u[0] * v[1] - u[1] * v[0] < 0:
+            return -arg
+        return arg
+
+    def _arc_point(self, c, r, xangle, t):
+        return NVector(
+            c[0] + r[0] * math.cos(xangle) * math.cos(t) - r[1] * math.sin(xangle) * math.sin(t),
+            c[1] + r[0] * math.sin(xangle) * math.cos(t) + r[1] * math.cos(xangle) * math.sin(t)
+        )
+
+    def _arc_derivative(self, c, r, xangle, t):
+        return NVector(
+            -r[0] * math.cos(xangle) * math.sin(t) - r[1] * math.sin(xangle) * math.cos(t),
+            -r[0] * math.sin(xangle) * math.sin(t) + r[1] * math.cos(xangle) * math.cos(t)
+        )
+
+    def _arc_alpha(self, step):
+        return math.sin(step) * (math.sqrt(4+3*math.tan(step/2)**2) - 1) / 3
+
+    def _do_arc(self, rx, ry, xrot, large, sweep, dest):
+        self._do_add_p()
+        if self.p == dest:
+            return
+        rx = abs(rx)
+        ry = abs(ry)
+
+        if rx == 0 or ry == 0:
+            # Straight line
+            self.p = dest
+            self.path.add_point(
+                self.p.to_list(),
+                [0, 0],
+                [0, 0]
+            )
+            return
+
+        x1 = self.p[0]
+        y1 = self.p[1]
+        x2 = dest[0]
+        y2 = dest[1]
+        phi = math.pi * xrot / 180
+
+        tx = (x1 - x2) / 2
+        ty = (y1 - y2) / 2
+        x1p, y1p = self._arc_matrix_mul(phi, tx, ty, -1)
+
+        cr = x1p ** 2 / rx**2 + y1p**2 / ry**2
+        if cr > 1:
+            s = math.sqrt(cr)
+            rx *= s
+            ry *= s
+
+        dq = rx**2 * y1p**2 + ry**2 * x1p**2
+        pq = (rx**2 * ry**2 - dq) / dq
+        cpm = math.sqrt(max(0, pq))
+        if large == sweep:
+            cpm = -cpm
+        cp = NVector(cpm * rx * y1p / ry, -cpm * ry * x1p / rx)
+        c = NVector(*self._arc_matrix_mul(phi, cp[0], cp[1])) + NVector((x1+x2)/2, (y1+y2)/2)
+        theta1 = self._arc_angle(NVector(1, 0), NVector((x1p - cp[0]) / rx, (y1p - cp[1]) / ry))
+        deltatheta = self._arc_angle(
+            NVector((x1p - cp[0]) / rx, (y1p - cp[1]) / ry),
+            NVector((-x1p - cp[0]) / rx, (-y1p - cp[1]) / ry)
+        ) % (2*math.pi)
+
+        if not sweep and deltatheta > 0:
+            deltatheta -= 2*math.pi
+        elif sweep and deltatheta < 0:
+            deltatheta += 2*math.pi
+
+        r = NVector(rx, ry)
+        angle1 = theta1
+        angle_left = deltatheta
+        step = math.pi / 2
+        sign = -1 if theta1+deltatheta < angle1 else 1
+
+        self._do_add_p()
+        # We need to fix the first handle
+        firststep = min(angle_left, step) * sign
+        alpha = self._arc_alpha(firststep)
+        q1 = self._arc_derivative(c, r, phi, angle1) * alpha
+        self.path.out_point[-1] = q1.to_list()
+        # Then we iterate until the angle has been completed
+        while abs(angle_left) > step / 2:
+            lstep = min(angle_left, step)
+            step_sign = lstep * sign
+            angle2 = angle1 + step_sign
+
+            alpha = self._arc_alpha(step_sign)
+            p2 = self._arc_point(c, r, phi, angle2)
+            q2 = -self._arc_derivative(c, r, phi, angle2) * alpha
+
+            self.path.add_smooth_point(
+                p2.to_list(),
+                q2.to_list(),
+            )
+            angle1 = angle2
+            angle_left -= lstep
+
+        self.p = dest
 
     def _parse_a(self):
         if self.la_type != 2:
             self.next_token()
             return
-        self._do_add_p()
-        rx = self.la
-        ry = self.next_token()
+        r = self.la
+        xrot = self.next_token()
         large = self.next_token()
         sweep = self.next_token()
-        self.p += self.next_token()
-        # TODO
-        self.path.add_point(
-            self.p.to_list(),
-            [0, 0],
-            [0, 0]
-        )
+        dest = self.p + self.next_token()
+        self._do_arc(r[0], r[1], xrot, large, sweep, dest)
         self.implicit = "a"
 
     def _parse_Z(self):
