@@ -84,6 +84,7 @@ def _parse_transform(element, dest_trans):
         cx = float(element.attrib[itcx])
         cy = float(element.attrib[_qualified("inkscape", "transform-center-y")])
         dest_trans.anchor_point.value = [cx, cy]
+        dest_trans.position.value = [cx, cy]
 
     if "transform" not in element.attrib:
         return
@@ -116,7 +117,6 @@ def _parse_transform(element, dest_trans):
             dest_trans.skew.value = params[0]
             dest_trans.skew_axis.value = 90
         elif name == "matrix":
-            #import pdb; pdb.set_trace()
             dest_trans.position.value = params[-2:]
             v1 = NVector(*params[0:2])
             v2 = NVector(*params[2:4])
@@ -267,7 +267,7 @@ def _add_shape(element, shape, shape_parent):
 @element_parser("g")
 def parse_g(element, shape_parent):
     group = objects.Group()
-    shape_parent.add_shape(group)
+    shape_parent.shapes.insert(0, group)
     style = _parse_style(element)
     _apply_common_style(style, group.transform)
     _parse_transform(element, group.transform)
