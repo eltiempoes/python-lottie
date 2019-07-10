@@ -79,6 +79,12 @@ def _parse_color(color):
 
 
 def _parse_transform(element, dest_trans):
+    itcx = _qualified("inkscape", "transform-center-x")
+    if itcx in element.attrib:
+        cx = float(element.attrib[itcx])
+        cy = float(element.attrib[_qualified("inkscape", "transform-center-y")])
+        dest_trans.anchor_point.value = [cx, cy]
+
     if "transform" not in element.attrib:
         return
 
@@ -173,6 +179,7 @@ def _add_shape(element, shape, shape_parent):
 def parse_g(element, shape_parent):
     group = objects.Group()
     shape_parent.add_shape(group)
+    _parse_transform(element, group.transform)
     group.name = element.attrib.get(_qualified("inkscape", "label"), element.attrib.get("id"))
     parse_svg_element(element, group)
 
