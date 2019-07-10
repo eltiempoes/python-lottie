@@ -9,8 +9,9 @@ sys.path.append(os.path.join(
 ))
 from tgs.utils.linediff import difflines
 from tgs.objects import Animation
+from tgs.parsers.tgs import parse_tgs
 
 
-a1 = Animation.load(json.load(open(sys.argv[1])))
-a2 = Animation.load(json.load(open(sys.argv[2])))
+a1 = parse_tgs(sys.argv[1])
+a2 = parse_tgs(sys.argv[2])
 difflines(a1, a2)

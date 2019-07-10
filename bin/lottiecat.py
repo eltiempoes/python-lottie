@@ -10,9 +10,10 @@ sys.path.append(os.path.join(
 ))
 from tgs.exporters import prettyprint, prettyprint_summary
 from tgs.objects import Animation
+from tgs.parsers.tgs import parse_tgs
 
 parser = argparse.ArgumentParser(
-    description="Pretty prints a lottie file"
+    description="Pretty prints a lottie/tgs file"
 )
 parser.add_argument(
     "infile",
@@ -27,7 +28,7 @@ parser.add_argument(
 
 ns = parser.parse_args()
 
-an = Animation.load(json.load(open(ns.infile)))
+an = parse_tgs(ns.infile)
 
 if ns.summary:
     prettyprint_summary(an)

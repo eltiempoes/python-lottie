@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import json
 import sys
+import json
 from io import StringIO
 import os
 sys.path.append(os.path.join(
@@ -10,12 +10,13 @@ sys.path.append(os.path.join(
 ))
 
 from tgs.utils.linediff import difflines_str
+from tgs.parsers.tgs import parse_tgs_json
 
-a = json.load(open(sys.argv[1]))
+a = parse_tgs_json(sys.argv[1])
 ioa = StringIO()
 json.dump(a, ioa, indent=4, sort_keys=True)
 
-b = json.load(open(sys.argv[2]))
+b = parse_tgs_json(sys.argv[2])
 iob = StringIO()
 json.dump(b, iob, indent=4, sort_keys=True)
 

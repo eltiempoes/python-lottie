@@ -111,6 +111,10 @@ def _parse_transform(element, group, dest_trans):
             if len(params) > 2:
                 x = params[1]
                 y = params[2]
+                dest_trans.position.value = [
+                    dest_trans.position.value[0] + x,
+                    dest_trans.position.value[1] + y
+                ]
             dest_trans.anchor_point.value = [x, y]
             dest_trans.rotation.value = ang
         elif name == "skewX":

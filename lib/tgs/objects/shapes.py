@@ -4,11 +4,11 @@ from .helpers import Transform
 
 
 class BoundingBox:
-    def __init__(self):
-        self.x1 = None
-        self.y1 = None
-        self.x2 = None
-        self.y2 = None
+    def __init__(self, x1=None, y1=None, x2=None, y2=None):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
 
     def include(self, x, y):
         if x is not None:
@@ -27,7 +27,7 @@ class BoundingBox:
         self.include(other.x2, other.y2)
 
     def center(self):
-        return (self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2,
+        return [(self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2]
 
 
 def load_shape(lottiedict):
