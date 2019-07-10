@@ -7,9 +7,9 @@ class Animation(TgsObject):
         TgsProp("in_point", "ip", float, False),
         TgsProp("out_point", "op", float, False),
         TgsProp("frame_rate", "fr", float, False),
-        TgsProp("width", "w", float, False),
+        TgsProp("width", "w", int, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("height", "h", float, False),
+        TgsProp("height", "h", int, False),
         TgsProp("version", "v", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("layers", "layers", load_layer, True),
@@ -52,3 +52,4 @@ class Animation(TgsObject):
             layer.in_point = self.in_point
         if layer.out_point is None:
             layer.out_point = self.out_point
+        return layer

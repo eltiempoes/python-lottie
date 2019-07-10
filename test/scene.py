@@ -16,6 +16,17 @@ an = parse_svg_file(os.path.join(
     "blep.svg"
 ))
 
+#an = parse_svg_file("/tmp/foo.svg")
+
+layer = an.layers[-1]
+#bez = layer.add_shape(objects.Shape())
+#bez.vertices.value.add_point([10, 10], [0, 0], [0,0])
+#bez.vertices.value.add_point([20, 10], [0, 0], [0,0])
+
+#layer.add_shape(objects.Stroke([1, 0, 0], 5))
+
+
+
 exporters.multiexport(an, "/tmp/out")
 
 #import json
