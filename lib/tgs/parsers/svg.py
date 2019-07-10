@@ -654,8 +654,8 @@ def parse_svg_element(element, shape_parent):
             element_parsers[tag](child, shape_parent)
 
 
-def parse_svg_etree(etree):
-    animation = objects.Animation()
+def parse_svg_etree(etree, *args, **kwargs):
+    animation = objects.Animation(*args, **kwargs)
     svg = etree.getroot()
     if "width" in svg.attrib and "height" in svg.attrib:
         animation.width = int(svg.attrib["width"])
@@ -669,5 +669,5 @@ def parse_svg_etree(etree):
     return animation
 
 
-def parse_svg_file(file):
-    return parse_svg_etree(ElementTree.parse(file))
+def parse_svg_file(file, *args, **kwargs):
+    return parse_svg_etree(ElementTree.parse(file), *args, **kwargs)
