@@ -578,4 +578,4 @@ class Merge(TgsObject): # TODO check
         # Shape content type. THIS FEATURE IS NOT SUPPORTED. It's exported because if you export it, they will come.
         self.type = 'mm'
         # Merge Mode
-        self.merge_mode = 0
+        self.merge_mode = 1

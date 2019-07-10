@@ -345,7 +345,7 @@ def parse_line(element, shape_parent):
 class PathDParser:
     def __init__(self, d_string):
         self.path = objects.properties.Bezier()
-        self.paths = [self.path]
+        self.paths = []
         self.p = NVector(0, 0)
         self.la = None
         self.la_type = None
@@ -383,11 +383,9 @@ class PathDParser:
             else:
                 parser = "_parse_" + self.implicit
                 getattr(self, parser)()
-            self.next_token()
 
     def _push_path(self):
         self.path = objects.properties.Bezier()
-        self.paths.append(self.path)
 
     def _parse_M(self):
         if self.la_type != 2:
@@ -398,6 +396,7 @@ class PathDParser:
         if not self.add_p:
             self._push_path()
         self.add_p = True
+        self.next_token()
 
     def _parse_m(self):
         if self.la_type != 2:
@@ -408,12 +407,14 @@ class PathDParser:
         if not self.add_p:
             self._push_path()
         self.add_p = True
+        self.next_token()
 
     def _rpoint(self, point, rel=None):
         return (point - (rel or self.p)).to_list() if point is not None else [0, 0]
 
     def _do_add_p(self, outp=None):
         if self.add_p:
+            self.paths.append(self.path)
             self.path.add_point(self.p.to_list(), [0, 0], self._rpoint(outp))
             self.add_p = False
         elif outp:
@@ -428,6 +429,7 @@ class PathDParser:
         self.p = self.la
         self.path.add_point(self.p.to_list(), NVector(0, 0), NVector(0, 0))
         self.implicit = "L"
+        self.next_token()
 
     def _parse_l(self):
         if self.la_type != 2:
@@ -437,6 +439,7 @@ class PathDParser:
         self.p += self.la
         self.path.add_point(self.p.to_list(), [0, 0], [0, 0])
         self.implicit = "l"
+        self.next_token()
 
     def _parse_H(self):
         if self.la_type != 1:
@@ -446,6 +449,7 @@ class PathDParser:
         self.p[0] = self.la
         self.path.add_point(self.p.to_list(), [0, 0], [0, 0])
         self.implicit = "H"
+        self.next_token()
 
     def _parse_h(self):
         if self.la_type != 1:
@@ -455,6 +459,7 @@ class PathDParser:
         self.p[0] += self.la
         self.path.add_point(self.p.to_list(), [0, 0], [0, 0])
         self.implicit = "h"
+        self.next_token()
 
     def _parse_V(self):
         if self.la_type != 1:
@@ -464,6 +469,7 @@ class PathDParser:
         self.p[1] = self.la
         self.path.add_point(self.p.to_list(), [0, 0], [0, 0])
         self.implicit = "V"
+        self.next_token()
 
     def _parse_v(self):
         if self.la_type != 1:
@@ -473,6 +479,7 @@ class PathDParser:
         self.p[1] += self.la
         self.path.add_point(self.p.to_list(), [0, 0], [0, 0])
         self.implicit = "v"
+        self.next_token()
 
     def _parse_C(self):
         if self.la_type != 2:
@@ -488,6 +495,7 @@ class PathDParser:
             [0, 0]
         )
         self.implicit = "C"
+        self.next_token()
 
     def _parse_c(self):
         if self.la_type != 2:
@@ -503,6 +511,7 @@ class PathDParser:
             [0, 0]
         )
         self.implicit = "c"
+        self.next_token()
 
     def _parse_S(self):
         if self.la_type != 2:
@@ -519,6 +528,7 @@ class PathDParser:
             [0, 0]
         )
         self.implicit = "S"
+        self.next_token()
 
     def _parse_s(self):
         if self.la_type != 2:
@@ -535,6 +545,7 @@ class PathDParser:
             [0, 0]
         )
         self.implicit = "s"
+        self.next_token()
 
     def _parse_Q(self):
         if self.la_type != 2:
@@ -549,6 +560,7 @@ class PathDParser:
             [0, 0]
         )
         self.implicit = "Q"
+        self.next_token()
 
     def _parse_q(self):
         if self.la_type != 2:
@@ -563,6 +575,7 @@ class PathDParser:
             [0, 0]
         )
         self.implicit = "q"
+        self.next_token()
 
     def _parse_T(self):
         if self.la_type != 2:
@@ -577,6 +590,7 @@ class PathDParser:
             [0, 0]
         )
         self.implicit = "T"
+        self.next_token()
 
     def _parse_t(self):
         if self.la_type != 2:
@@ -591,6 +605,7 @@ class PathDParser:
             [0, 0]
         )
         self.implicit = "t"
+        self.next_token()
 
     def _parse_A(self):
         if self.la_type != 2:
@@ -603,6 +618,7 @@ class PathDParser:
         dest = self.next_token()
         self._do_arc(r[0], r[1], xrot, large, sweep, dest)
         self.implicit = "A"
+        self.next_token()
 
     def _arc_matrix_mul(self, phi, x, y, sin_mul=1):
         c = math.cos(phi)
@@ -726,14 +742,16 @@ class PathDParser:
         dest = self.p + self.next_token()
         self._do_arc(r[0], r[1], xrot, large, sweep, dest)
         self.implicit = "a"
+        self.next_token()
 
     def _parse_Z(self):
+        if self.path.vertices:
+            self.p = NVector(*self.path.vertices[0])
         self.path.close()
         self._push_path()
 
     def _parse_z(self):
-        self.path.close()
-        self._push_path()
+        self._parse_Z()
 
 
 @element_parser("path")
@@ -745,6 +763,8 @@ def parse_path(element, shape_parent):
         p = objects.Shape()
         p.vertices.value = path
         paths.append(p)
+    #if len(d_parser.paths) > 1:
+        #paths.append(objects.shapes.Merge())
     _add_shapes(element, paths, shape_parent)
 
 
