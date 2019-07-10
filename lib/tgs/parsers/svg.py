@@ -728,11 +728,11 @@ class PathDParser:
         self.implicit = "a"
 
     def _parse_Z(self):
-        #self.path.close()
+        self.path.close()
         self._push_path()
 
     def _parse_z(self):
-        #self.path.close()
+        self.path.close()
         self._push_path()
 
 
