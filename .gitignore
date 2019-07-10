@@ -1,3 +1,6 @@
 *.sifz.*.html
 *.sifz.*.json
 *.sifz.*.sif
+MANIFEST
+dist/
+tgs.egg-info
