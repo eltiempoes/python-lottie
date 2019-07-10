@@ -12,8 +12,8 @@ class Transform(TgsObject):
         #TgsProp("position_x", "px", Value, False),
         #TgsProp("position_y", "py", Value, False),
         #TgsProp("position_z", "pz", Value, False),
-        #TgsProp("skew", "sk", Value, False),
-        #TgsProp("skew_axis", "sa", Value, False),
+        TgsProp("skew", "sk", Value, False),
+        TgsProp("skew_axis", "sa", Value, False),
     ]
 
     def __init__(self):
@@ -24,7 +24,7 @@ class Transform(TgsObject):
         # Transform Scale
         self.scale = MultiDimensional([100, 100, 100]) # MultiDimensional, MultiDimensionalKeyframed
         # Transform Rotation
-        self.rotation = Value() # Value, ValueKeyframed
+        self.rotation = Value(0) # Value, ValueKeyframed
         # Transform Opacity
         self.opacity = Value(100) # Value, ValueKeyframed
         # Transform Position X
@@ -33,10 +33,10 @@ class Transform(TgsObject):
         #self.position_y = Value() # Value, ValueKeyframed
         ## Transform Position Z
         #self.position_z = Value() # Value, ValueKeyframed
-        ## Transform Skew
-        #self.skew = Value() # Value, ValueKeyframed
-        ## Transform Skew Axis
-        #self.skew_axis = Value() # Value, ValueKeyframed
+        # Transform Skew
+        self.skew = Value() # Value, ValueKeyframed
+        # Transform Skew Axis
+        self.skew_axis = Value() # Value, ValueKeyframed
 
 
 class Mask(TgsObject): # TODO check

@@ -77,9 +77,45 @@ def _parse_color(color):
     return color_table[color]
 
 
+def _parse_transform(element, dest_trans):
+    if "transform" not in element.attrib:
+        return
+
+    for t in re.finditer("([a-zA-Z]+)\s*\(([^\)]*)\)", element.attrib["transform"]):
+        name = t[1]
+        params = list(map(float, t[2].strip().replace(",", " ").split()))
+        if name == "translate":
+            dest_trans.position.value = [
+                dest_trans.position.value[0] + params[0],
+                dest_trans.position.value[1] + (params[1] if len(params) > 1 else 0),
+            ]
+        elif name == "scale":
+            xfac = params[0]
+            dest_trans.scale.value[0] = (dest_trans.scale.value[0] / 100 * xfac) * 100
+            yfac = params[1] if len(params) > 1 else xfac
+            dest_trans.scale.value[1] = (dest_trans.scale.value[1] / 100 * yfac) * 100
+        elif name == "rotate":
+            ang = params[0]
+            x = y = 0
+            if len(params) > 2:
+                x = params[1]
+                y = params[2]
+            dest_trans.anchor_point.value = [x, y]
+            dest_trans.rotation.value = ang
+        elif name == "skewX":
+            dest_trans.skew.value = -params[0]
+            dest_trans.skew_axis.value = 0
+        elif name == "skewY":
+            dest_trans.skew.value = params[0]
+            dest_trans.skew_axis.value = 90
+
+
 def _add_shapes(element, shapes, shape_parent):
     if "style" in element.attrib:
-        style = dict(map(lambda x: x.split(":"), element.attrib["style"].split(";")))
+        style = dict(map(
+            lambda x: map(lambda y: y.strip(), x.split(":")),
+            element.attrib["style"].split(";"))
+        )
     else:
         style = {}
     # TODO inherit style
@@ -119,7 +155,9 @@ def _add_shapes(element, shapes, shape_parent):
         color = _parse_color(fill_color)
         fill = group.add_shape(objects.Fill(color[:3]))
         fill.opacity.value = color[3] * 100
-    # TODO transform
+
+    _parse_transform(element, group.transform)
+
     return group
 
 
@@ -156,9 +194,22 @@ def parse_circle(element, shape_parent):
         float(element.attrib["cx"]),
         float(element.attrib["cy"])
     ]
-    r = float(element.attrib["r"])
+    r = float(element.attrib["r"]) * 2
     ellipse.size.value = [r, r]
     _add_shape(element, ellipse, shape_parent)
+
+
+@element_parser("rect")
+def parse_ellipse(element, shape_parent):
+    rect = objects.Rect()
+    w = float(element.attrib["width"])
+    h = float(element.attrib["height"])
+    rect.position.value = [
+        float(element.attrib["x"]) + w / 2,
+        float(element.attrib["y"]) + h / 2
+    ]
+    rect.size.value = [w, h]
+    _add_shape(element, rect, shape_parent)
 
 
 @element_parser("line")
@@ -169,8 +220,8 @@ def parse_line(element, shape_parent):
         float(element.attrib["y1"])
     ])
     line.vertices.value.add_point([
-        float(element.attrib["x2"]),
-        float(element.attrib["y2"])
+        float(element.attrib["x2"]) * 2,
+        float(element.attrib["y2"]) * 2
     ])
     _add_shape(element, line, shape_parent)
 
