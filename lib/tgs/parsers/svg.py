@@ -115,28 +115,117 @@ def _parse_transform(element, dest_trans):
         elif name == "skewY":
             dest_trans.skew.value = params[0]
             dest_trans.skew_axis.value = 90
+        elif name == "matrix":
+            #import pdb; pdb.set_trace()
+            dest_trans.position.value = params[-2:]
+            v1 = NVector(*params[0:2])
+            v2 = NVector(*params[2:4])
+            dest_trans.scale.value = [v1.length * 100, v2.length * 100]
+            v1 /= v1.length
+            #v2 /= v2.length
+            angle = math.atan2(v1[1], v1[0])
+            #angle1 = math.atan2(v2[1], v2[0])
+            dest_trans.rotation.value = angle / math.pi * 180
+
+
+css_atrrs = {
+    "fill",
+    "alignment-baseline",
+    "baseline-shift",
+    "clip-path",
+    "clip-rule",
+    "color",
+    "color-interpolation",
+    "color-interpolation-filters",
+    "color-rendering",
+    "cursor",
+    "direction",
+    "display",
+    "dominant-baseline",
+    "fill-opacity",
+    "fill-rule",
+    "filter",
+    "flood-color",
+    "flood-opacity",
+    "font-family",
+    "font-size",
+    "font-size-adjust",
+    "font-stretch",
+    "font-style",
+    "font-variant",
+    "font-weight",
+    "glyph-orientation-horizontal",
+    "glyph-orientation-vertical",
+    "image-rendering",
+    "letter-spacing",
+    "lighting-color",
+    "marker-end",
+    "marker-mid",
+    "marker-start",
+    "mask",
+    "opacity",
+    "overflow",
+    "paint-order",
+    "pointer-events",
+    "shape-rendering",
+    "stop-color",
+    "stop-opacity",
+    "stroke",
+    "stroke-dasharray",
+    "stroke-dashoffset",
+    "stroke-linecap",
+    "stroke-linejoin",
+    "stroke-miterlimit",
+    "stroke-opacity",
+    "stroke-width",
+    "text-anchor",
+    "text-decoration",
+    "text-overflow",
+    "text-rendering",
+    "unicode-bidi",
+    "vector-effect",
+    "visibility",
+    "white-space",
+    "word-spacing",
+    "writing-mode"
+}
+
+
+def _parse_style(element):
+    style = {}
+    for att in css_atrrs & set(element.attrib.keys()):
+        if att in element.attrib:
+            style[att] = element.attrib[att]
+    if "style" in element.attrib:
+        style.update(**dict(map(
+            lambda x: map(lambda y: y.strip(), x.split(":")),
+            element.attrib["style"].split(";")
+        )))
+    return style
+
+
+def _apply_common_style(style, transform):
+    opacity = float(style.get("opacity", 1))
+    if style.get("display", "inline") == "none":
+        opacity = 0
+    if style.get("visibility", "visible") == "hidden":
+        opacity = 0
+    transform.opacity.value = opacity * 100
 
 
 def _add_shapes(element, shapes, shape_parent):
     # TODO inherit style
-    if "style" in element.attrib:
-        style = dict(map(
-            lambda x: map(lambda y: y.strip(), x.split(":")),
-            element.attrib["style"].split(";"))
-        )
-    else:
-        style = {}
+    style = _parse_style(element)
 
     group = objects.Group()
+    _apply_common_style(style, group.transform)
     group.name = element.attrib.get("id")
 
     shape_parent.shapes.insert(0, group)
     for shape in shapes:
         group.add_shape(shape)
 
-    # TODO opacity:
-
-    stroke_color = style.get("stroke", element.attrib.get("stroke", "none"))
+    stroke_color = style.get("stroke", "none")
     if stroke_color not in nocolor:
         stroke = objects.Stroke()
         group.add_shape(stroke)
@@ -160,7 +249,7 @@ def _add_shapes(element, shapes, shape_parent):
             stroke.line_cap = objects.shapes.LineJoin.Miter
         stroke.miter_limit = float(style.get("stroke-miterlimit", 0))
 
-    fill_color = style.get("fill", element.attrib.get("fill", "black"))
+    fill_color = style.get("fill", "black")
     if fill_color not in nocolor:
         color = _parse_color(fill_color)
         fill = group.add_shape(objects.Fill(color[:3]))
@@ -179,6 +268,8 @@ def _add_shape(element, shape, shape_parent):
 def parse_g(element, shape_parent):
     group = objects.Group()
     shape_parent.add_shape(group)
+    style = _parse_style(element)
+    _apply_common_style(style, group.transform)
     _parse_transform(element, group.transform)
     group.name = element.attrib.get(_qualified("inkscape", "label"), element.attrib.get("id"))
     parse_svg_element(element, group)

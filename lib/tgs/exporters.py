@@ -4,6 +4,7 @@ import codecs
 import sys
 
 from .objects.base import TgsObject, Tgs
+from .objects.properties import MultiDimensional, Value, ShapeProperty
 
 
 def export_lottie(animation, fp, **kw):
@@ -77,6 +78,36 @@ def prettyprint(tgs_object, out=sys.stdout, indent="   ", _i=""):
     else:
         out.write(prettyprint_scalar(tgs_object, out))
         out.write('\n')
+
+
+def _prettyprint_summary_printable(obj):
+    if isinstance(obj, TgsObject):
+        return not isinstance(obj, (MultiDimensional, Value, ShapeProperty))
+    return obj and isinstance(obj, (list, tuple)) and isinstance(obj[0], TgsObject)
+
+
+def prettyprint_summary(tgs_object, out=sys.stdout, indent="   ", _i=""):
+    if isinstance(tgs_object, TgsObject):
+        out.write(tgs_object.__class__.__name__)
+        name = getattr(tgs_object, "name", None)
+        if name:
+            out.write(" %r" % name)
+        out.write('\n')
+        _i += indent
+        for k in tgs_object._props:
+            val = k.get(tgs_object)
+            if _prettyprint_summary_printable(val):
+                out.write(_i)
+                out.write(k.name)
+                out.write(' : ')
+                prettyprint_summary(val, out, indent, _i)
+    elif _prettyprint_summary_printable(tgs_object):
+            out.write("[\n")
+            for k in tgs_object:
+                out.write(_i + indent)
+                prettyprint_summary(k, out, indent, _i + indent)
+            out.write(_i)
+            out.write(']\n')
 
 
 def multiexport(animation, basename, lottie_json=True, lottie_html=True, tgs=True):

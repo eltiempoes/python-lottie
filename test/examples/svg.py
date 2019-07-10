@@ -6,6 +6,7 @@ sys.path.append(os.path.join(
 ))
 from tgs import exporters
 from tgs import objects
+from tgs.parsers.svg import parse_svg_file
 
 
 an = parse_svg_file(os.path.join(

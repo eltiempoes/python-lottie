@@ -10,20 +10,20 @@ from tgs.utils.linediff import difflines
 from tgs.parsers.svg import parse_svg_file
 
 
-an = parse_svg_file(os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "examples",
-    "blep.svg"
-))
+#an = parse_svg_file(os.path.join(
+    #os.path.dirname(os.path.abspath(__file__)),
+    #"examples",
+    #"blep.svg"
+#))
 
-#an = parse_svg_file("/tmp/foo.svg")
+an = parse_svg_file("/tmp/foo.svg")
 
-layer = an.find("durg")
-layer.transform.anchor_point.value = [256, 256]
-layer.transform.position.value = [256, 256]
-layer.transform.rotation.add_keyframe(0, 0)
-layer.transform.rotation.add_keyframe(30, 180)
-layer.transform.rotation.add_keyframe(60, 360)
+#layer = an.find("durg")
+#layer.transform.anchor_point.value = [256, 256]
+#layer.transform.position.value = [256, 256]
+#layer.transform.rotation.add_keyframe(0, 0)
+#layer.transform.rotation.add_keyframe(30, 180)
+#layer.transform.rotation.add_keyframe(60, 360)
 
 
 exporters.multiexport(an, "/tmp/out")
