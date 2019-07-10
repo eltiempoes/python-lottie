@@ -89,11 +89,6 @@ def _add_shapes(element, shapes, shape_parent):
         group.add_shape(shape)
 
     # TODO opacity:
-    fill_color = style.get("fill", element.attrib.get("fill", "black"))
-    if fill_color not in nocolor:
-        color = _parse_color(fill_color)
-        fill = group.add_shape(objects.Fill(color[:3]))
-        fill.opacity.value = color[3] * 100
 
     stroke_color = style.get("stroke", element.attrib.get("stroke", "none"))
     if stroke_color not in nocolor:
@@ -118,6 +113,12 @@ def _add_shapes(element, shapes, shape_parent):
         elif linejoin in {"miter", "arcs", "miter-clip"}:
             stroke.line_cap = objects.shapes.LineJoin.Miter
         stroke.miter_limit = float(style.get("stroke-miterlimit", 0))
+
+    fill_color = style.get("fill", element.attrib.get("fill", "black"))
+    if fill_color not in nocolor:
+        color = _parse_color(fill_color)
+        fill = group.add_shape(objects.Fill(color[:3]))
+        fill.opacity.value = color[3] * 100
     # TODO transform
     return group
 
@@ -142,8 +143,8 @@ def parse_ellipse(element, shape_parent):
         float(element.attrib["cy"])
     ]
     ellipse.size.value = [
-        float(element.attrib["rx"]),
-        float(element.attrib["ry"])
+        float(element.attrib["rx"]) * 2,
+        float(element.attrib["ry"]) * 2
     ]
     _add_shape(element, ellipse, shape_parent)
 
@@ -472,11 +473,11 @@ class PathDParser:
         self.implicit = "a"
 
     def _parse_Z(self):
-        self.path.close()
+        #self.path.close()
         self._push_path()
 
     def _parse_z(self):
-        self.path.close()
+        #self.path.close()
         self._push_path()
 
 
