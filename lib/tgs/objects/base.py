@@ -117,6 +117,22 @@ class TgsObject(Tgs):
             prop.load_into(lottiedict, obj)
         return obj
 
+    def find(self, search, propname="name"):
+        if getattr(self, propname, None) == search:
+            return self
+        for prop in self._props:
+            v = prop.get(self)
+            if isinstance(v, TgsObject):
+                found = v.find(search, propname)
+                if found:
+                    return found
+            elif isinstance(v, list) and v and isinstance(v[0], TgsObject):
+                for obj in v:
+                    found = obj.find(search, propname)
+                    if found:
+                        return found
+        return None
+
 
 class Index:
     def __init__(self):

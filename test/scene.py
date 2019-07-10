@@ -18,13 +18,12 @@ an = parse_svg_file(os.path.join(
 
 #an = parse_svg_file("/tmp/foo.svg")
 
-layer = an.layers[-1]
-#bez = layer.add_shape(objects.Shape())
-#bez.vertices.value.add_point([10, 10], [0, 0], [0,0])
-#bez.vertices.value.add_point([20, 10], [0, 0], [0,0])
-
-#layer.add_shape(objects.Stroke([1, 0, 0], 5))
-
+layer = an.find("durg")
+layer.transform.anchor_point.value = [256, 256]
+layer.transform.position.value = [256, 256]
+layer.transform.rotation.add_keyframe(0, 0)
+layer.transform.rotation.add_keyframe(30, 180)
+layer.transform.rotation.add_keyframe(60, 360)
 
 
 exporters.multiexport(an, "/tmp/out")

@@ -111,6 +111,7 @@ def _parse_transform(element, dest_trans):
 
 
 def _add_shapes(element, shapes, shape_parent):
+    # TODO inherit style
     if "style" in element.attrib:
         style = dict(map(
             lambda x: map(lambda y: y.strip(), x.split(":")),
@@ -118,8 +119,10 @@ def _add_shapes(element, shapes, shape_parent):
         )
     else:
         style = {}
-    # TODO inherit style
+
     group = objects.Group()
+    group.name = element.attrib.get("id")
+
     shape_parent.shapes.insert(0, group)
     for shape in shapes:
         group.add_shape(shape)
