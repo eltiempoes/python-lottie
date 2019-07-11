@@ -1,10 +1,10 @@
 import re
 import math
-import enum
 from xml.etree import ElementTree
 from .. import objects
 from ..utils.nvector import NVector
 from .svgdata import color_table, css_atrrs
+from .handler import SvgHandler, NameMode
 
 nocolor = {"none"}
 
@@ -35,40 +35,6 @@ def hue_to_rgb(m1, m2, h):
     return m1
 
 
-class SvgHandler:
-    ns_map = {
-        "dc": "http://purl.org/dc/elements/1.1/",
-        "cc": "http://creativecommons.org/ns#",
-        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-        "svg": "http://www.w3.org/2000/svg",
-        "sodipodi": "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd",
-        "inkscape": "http://www.inkscape.org/namespaces/inkscape",
-        "xlink": "http://www.w3.org/1999/xlink",
-    }
-
-    def init_etree(self):
-        for n, u in self.ns_map.items():
-            ElementTree.register_namespace(n, u)
-
-    def qualified(self, ns, name):
-        return "{%s}%s" % (self.ns_map[ns], name)
-
-    def simplified(self, name):
-        for k, v in self.ns_map.items():
-            name = name.replace("{%s}" % v, k+":")
-        return name
-
-    def unqualified(self, name):
-        return name.split("}")[-1]
-
-    def __init__(self):
-        self.init_etree()
-
-
-class NameMode(enum.Enum):
-    NoName = 0
-    Id = 1
-    Inkscape = 2
 
 
 class SvgGradientCoord:
@@ -949,98 +915,4 @@ def parse_svg_etree(etree, *args, **kwargs):
 
 def parse_svg_file(file, *args, **kwargs):
     return parse_svg_etree(ElementTree.parse(file), *args, **kwargs)
-
-
-class SvgBuilder(SvgHandler):
-    namestart = r":_A-Za-z\xC0-\xD6\xD8-\xF6\xF8-\x2FF\x370-\x37D\x37F-\x1FFF\x200C-\x200D\x2070-\x218F\x2C00-\x2FEF\x3001-\xD7FF\xF900-\xFDCF\xFDF0-\xFFFD\x10000-\xEFFFF"
-    namenostart = r"-.0-9\xB7\x0300-\x036F\x203F-\x2040"
-    id_re = re.compile("^[%s][%s%s]*$" % (namestart, namenostart, namestart))
-
-    def __init__(self):
-        super().__init__(self)
-        self.svg = ElementTree.Element("svg")
-        self.dom = ElementTree.ElementTree(self.svg)
-        self.svg["xmlns"] = self.ns_map["svg"]
-        self.ids = {}
-        self.idc = 0
-        self.name_mode = NameMode.Inkscape
-
-    def gen_id(self):
-        #TODO should check if id_n already exists
-        self.idc += 1
-        id = "id_" + self.idc
-        self.ids.add(id)
-        return id
-
-    def set_id(self, dom, lottieobj, inkscape_qual=None, force=False):
-        n = getattr(lottieobj, "name", None)
-        if n is None or self.name_mode == NameMode.NoName:
-            if self.force:
-                dom.attrib["id"] = self.gen_id()
-            return
-
-        idn = n.replace(" ", "_")
-        if self.id_re.match(idn) and idn not in self.ids:
-            self.ids.add(idn)
-        else:
-            idn = self.gen_id()
-
-        dom.attrib["id"] = idn
-        if inkscape_qual:
-            dom.attrib[inkscape_qual] = n
-
-    def process_animation(self, animation: objects.Animation, time=0):
-        self.svg.attrib["width"] = animation.width
-        self.svg.attrib["height"] = animation.height
-        self.svg.attrib["viewBox"] = "0 0 %s %s" % (animation.width, animation.height)
-        self.svg.attrib["version"] = "1.1"
-        self.set_id(self.svg, animation, self.qualified("sodipodi", "docname"))
-        for layer in animation.layers:
-            self.parse_item(layer, self.svg, time)
-
-    def process_item(self, object, dom_parent, time):
-        cn = object.__class__.__name__.lower()
-        handler = getattr(self, "_process_" + cn, None)
-        if handler:
-            handler(object, dom_parent, time)
-
-    def _process_shapelayer(self, object, dom_parent, time):
-        g = ElementTree.SubElement(dom_parent, "g")
-        if self.name_mode == NameMode.Inkscape:
-            g.attrib[self.qualified("inkscape", "groupmode")] = "layer"
-        self.set_id(g, object, self.qualified("inkscape", "label"))
-        self.set_transform(g, object.transform, time)
-        for shape in object.shapes:
-            self.process_item(shape, g, time)
-
-    def set_transform(self, dom, transform, time):
-        trans = []
-        pos = NVector(transform.position.get_value(time))
-        anchor = NVector(transform.anchor_point.get_value(time))
-        pos -= anchor
-        if pos[0] != 0 or pos[0] != 0:
-            trans.append("translate(%s, %s)" % pos.components)
-
-        scale = NVector(transform.position.get_value(time))
-        if scale[0] != 100 or scale[1] != 100:
-            scale /= 100
-            trans.append("scale(%s, %s)" % scale.components)
-
-        rot = transform.rotation.get_value(time)
-        if rot != 0:
-            trans.append("rotate(%s, %s, %s)" % (rot, achor[0], anchor[1]))
-
-        op = transform.opacity.get_value(time)
-        if op != 100:
-            dom.attrib["style"] = dom.attrib.get("style", "") + "opacity:%s;" % (op/100)
-
-        skew = transform.skew.get_value(time)
-        if skew != 0:
-            axis = transform.skew_axis.get_value(time) * math.pi / 180
-            skx = skew * math.cos(axis)
-            sky = skew * math.sin(axis)
-            trans.append("skewX(%s)" % skx)
-            trans.append("skewY(%s)" % sky)
-
-        dom.attrib["transform"] = " ".join(trans)
 
