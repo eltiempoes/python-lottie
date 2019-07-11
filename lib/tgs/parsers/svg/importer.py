@@ -1,8 +1,8 @@
 import re
 import math
 from xml.etree import ElementTree
-from .. import objects
-from ..utils.nvector import NVector
+from ... import objects
+from ...utils.nvector import NVector
 from .svgdata import color_table, css_atrrs
 from .handler import SvgHandler, NameMode
 

@@ -5,6 +5,7 @@ import sys
 
 from .objects.base import TgsObject, Tgs
 from .objects.properties import MultiDimensional, Value, ShapeProperty
+from .parsers.svg.builder import to_svg
 
 
 def export_lottie(animation, fp, **kw):
@@ -47,7 +48,7 @@ def lottie_display_html(rel_lottie_filename):
 </html>''' % rel_lottie_filename
 
 
-def prettyprint_scalar(tgs_object, out=sys.stdout):
+def _prettyprint_scalar(tgs_object, out=sys.stdout):
     if isinstance(tgs_object, float) and tgs_object == round(tgs_object):
         tgs_object = int(tgs_object)
     return str(tgs_object)
@@ -67,7 +68,7 @@ def prettyprint(tgs_object, out=sys.stdout, indent="   ", _i=""):
     elif isinstance(tgs_object, (list, tuple)):
         if not tgs_object or (not isinstance(tgs_object[0], Tgs) and len(tgs_object) < 16):
             out.write("[")
-            out.write(", ".join(map(prettyprint_scalar, tgs_object)))
+            out.write(", ".join(map(_prettyprint_scalar, tgs_object)))
             out.write("]\n")
         else:
             out.write("[\n")
@@ -77,7 +78,7 @@ def prettyprint(tgs_object, out=sys.stdout, indent="   ", _i=""):
             out.write(_i)
             out.write(']\n')
     else:
-        out.write(prettyprint_scalar(tgs_object, out))
+        out.write(_prettyprint_scalar(tgs_object, out))
         out.write('\n')
 
 
@@ -123,3 +124,7 @@ def multiexport(animation, basename, lottie_json=True, lottie_html=True, tgs=Tru
     if tgs:
         with open(basename+".tgs", "wb") as tgsout:
             export_tgs(animation, tgsout)
+
+
+def export_svg(animation, fp):
+    to_svg(animation).write(fp, "utf-8", True)
