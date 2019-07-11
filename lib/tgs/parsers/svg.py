@@ -299,17 +299,25 @@ class NameMode(enum.Enum):
 
 
 class SvgGradientCoord:
-    def __init__(self, comp, value, percent):
+    def __init__(self, name, comp, value, percent):
+        self.name = name
         self.comp = comp
         self.value = value
         self.percent = percent
 
-    def to_value(self, bbox):
+    def to_value(self, bbox, default=None):
+        if self.value is None:
+            return default
+
         if not self.percent:
             return self.value
 
+        if self.comp == "w":
+            return (bbox.x2 - bbox.x1) * self.value
+
         if self.comp == "x":
             return bbox.x1 + (bbox.x2 - bbox.x1) * self.value
+
         return bbox.y1 + (bbox.y2 - bbox.y1) * self.value
 
     def parse(self, attr, default_percent):
@@ -323,16 +331,38 @@ class SvgGradientCoord:
             self.value = float(attr)
 
 
-class SvgLinearGradient:
+class SvgGradient:
     def __init__(self):
-        self.x1 = SvgGradientCoord("x", 0, True)
-        self.y1 = SvgGradientCoord("y", 0, True)
-        self.x2 = SvgGradientCoord("x", 1, True)
-        self.y2 = SvgGradientCoord("y", 0, True)
         self.colors = []
+        self.coords = []
 
     def add_color(self, offset, color):
         self.colors.append((offset, color[:3]))
+
+    def to_lottie(self, gradient_shape, shape, time=0):
+        """
+        gradient_shape should be a GradientFill or GradientStroke
+        """
+        for off, col in self.colors:
+            gradient_shape.colors.add_color(off, col)
+
+    def add_coord(self, value):
+        setattr(self, value.name, value)
+        self.coords.append(value)
+
+    def parse_attrs(self, attrib):
+        relunits = attrib.get("gradientUnits", "") != "userSpaceOnUse"
+        for c in self.coords:
+            c.parse(attrib.get(c.name, None), relunits)
+
+
+class SvgLinearGradient(SvgGradient):
+    def __init__(self):
+        super().__init__()
+        self.add_coord(SvgGradientCoord("x1", "x", 0, True))
+        self.add_coord(SvgGradientCoord("y1", "y", 0, True))
+        self.add_coord(SvgGradientCoord("x2", "x", 1, True))
+        self.add_coord(SvgGradientCoord("y2", "y", 0, True))
 
     def to_lottie(self, gradient_shape, shape, time=0):
         """
@@ -348,8 +378,38 @@ class SvgLinearGradient:
             self.y2.to_value(bbox),
         ]
         gradient_shape.gradient_type = objects.GradientType.Linear
-        for off, col in self.colors:
-            gradient_shape.colors.add_color(off, col)
+
+        super().to_lottie(gradient_shape, shape, time)
+
+
+class SvgRadialGradient(SvgGradient):
+    def __init__(self):
+        super().__init__()
+        self.add_coord(SvgGradientCoord("cx", "x", 0.5, True))
+        self.add_coord(SvgGradientCoord("cy", "y", 0.5, True))
+        self.add_coord(SvgGradientCoord("fx", "x", None, True))
+        self.add_coord(SvgGradientCoord("fy", "y", None, True))
+        self.add_coord(SvgGradientCoord("r", "w", 0.5, True))
+
+    def to_lottie(self, gradient_shape, shape, time=0):
+        """
+        gradient_shape should be a GradientFill or GradientStroke
+        """
+        bbox = shape.bounding_box(time)
+        cx = self.cx.to_value(bbox)
+        cy = self.cy.to_value(bbox)
+        gradient_shape.start_point.value = [cx, cy]
+        r = self.r.to_value(bbox)
+        gradient_shape.end_point.value = [cx+r, cy]
+
+        fx = self.fx.to_value(bbox, cx) - cx
+        fy = self.fy.to_value(bbox, cy) - cy
+        gradient_shape.highlight_angle.value = math.atan2(fy, fx) * 180 / math.pi
+        gradient_shape.highlight_length.value = math.hypot(fx, fy)
+
+        gradient_shape.gradient_type = objects.GradientType.Radial
+
+        super().to_lottie(gradient_shape, shape, time)
 
 
 class SvgParser(SvgHandler):
@@ -651,23 +711,28 @@ class SvgParser(SvgHandler):
         return animation
 
     def _parse_defs(self, element):
-        self.parse_children(element, None, {"linearGradient"})
+        self.parse_children(element, None, {"linearGradient", "radialGradient"})
 
     def _parse_linearGradient(self, element):
         id = element.attrib["id"]
         grad = SvgLinearGradient()
-        relunits = element.attrib.get("gradientUnits", "") != "userSpaceOnUse"
-        grad.x1.parse(element.attrib.get("x1", None), relunits)
-        grad.y1.parse(element.attrib.get("y1", None), relunits)
-        grad.x2.parse(element.attrib.get("x2", None), relunits)
-        grad.y2.parse(element.attrib.get("y2", None), relunits)
+        grad.parse_attrs(element.attrib)
+        for stop in element.findall("./%s" % self.qualified("svg", "stop")):
+            off = float(stop.attrib["offset"].strip("%")) / 100
+            grad.add_color(off, self.parse_color(stop.attrib["stop-color"]))
+        self.gradients[id] = grad
+
+    def _parse_radialGradient(self, element):
+        id = element.attrib["id"]
+        grad = SvgRadialGradient()
+        grad.parse_attrs(element.attrib)
         for stop in element.findall("./%s" % self.qualified("svg", "stop")):
             off = float(stop.attrib["offset"].strip("%")) / 100
             grad.add_color(off, self.parse_color(stop.attrib["stop-color"]))
         self.gradients[id] = grad
 
     def get_color_url(self, color, gradientclass, shape):
-        match = re.match(r"url\(#([^)]+)\)", color)
+        match = re.match(r"""url\(['"]?#([^)'"]+)['"]?\)""", color)
         if not match:
             return None
         id = match[1]

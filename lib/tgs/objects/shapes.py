@@ -177,7 +177,7 @@ class Ellipse(TgsObject):
 
     def bounding_box(self, time=0):
         pos = self.position.get_value(time)
-        sv = self.size.get_value(time)
+        sz = self.size.get_value(time)
 
         return BoundingBox(
             pos[0] - sz[0]/2,
@@ -299,6 +299,8 @@ class GradientFill(TgsObject):
         TgsProp("highlight_length", "h", Value, False),
         TgsProp("highlight_angle", "a", Value, False),
         TgsProp("colors", "g", GradientColors, False),
+        #r int
+        #bm int
     ]
 
     def __init__(self):
