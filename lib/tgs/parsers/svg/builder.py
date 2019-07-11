@@ -28,7 +28,7 @@ class SvgBuilder(SvgHandler):
     def gen_id(self):
         #TODO should check if id_n already exists
         self.idc += 1
-        id = "id_" + self.idc
+        id = "id_%s" % self.idc
         self.ids.add(id)
         return id
 
@@ -73,12 +73,12 @@ class SvgBuilder(SvgHandler):
         anchor = NVector(*transform.anchor_point.get_value(time))
         pos -= anchor
         if pos[0] != 0 or pos[0] != 0:
-            trans.append("translate(%s, %s)" % tuple(pos.components))
+            trans.append("translate(%s, %s)" % (pos.components[0], pos.components[1]))
 
         scale = NVector(*transform.scale.get_value(time))
         if scale[0] != 100 or scale[1] != 100:
             scale /= 100
-            trans.append("scale(%s, %s)" % tuple(scale.components))
+            trans.append("scale(%s, %s)" % (scale.components[0], scale.components[1]))
 
         rot = transform.rotation.get_value(time)
         if rot != 0:
@@ -88,13 +88,14 @@ class SvgBuilder(SvgHandler):
         if op != 100:
             dom.attrib["style"] = dom.attrib.get("style", "") + "opacity:%s;" % (op/100)
 
-        skew = transform.skew.get_value(time)
-        if skew != 0:
-            axis = transform.skew_axis.get_value(time) * math.pi / 180
-            skx = skew * math.cos(axis)
-            sky = skew * math.sin(axis)
-            trans.append("skewX(%s)" % skx)
-            trans.append("skewY(%s)" % sky)
+        if transform.skew:
+            skew = transform.skew.get_value(time)
+            if skew != 0:
+                axis = transform.skew_axis.get_value(time) * math.pi / 180
+                skx = skew * math.cos(axis)
+                sky = skew * math.sin(axis)
+                trans.append("skewX(%s)" % skx)
+                trans.append("skewY(%s)" % sky)
 
         dom.attrib["transform"] = " ".join(trans)
 
@@ -320,8 +321,8 @@ class SvgBuilderShapeGroup:
         self.layer = nchild > thresh and self.lottie.name
 
 
-def to_svg(animation):
+def to_svg(animation, time):
     builder = SvgBuilder()
-    builder.process(animation)
+    builder.process(animation, time)
     return builder.dom
 

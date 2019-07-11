@@ -126,5 +126,5 @@ def multiexport(animation, basename, lottie_json=True, lottie_html=True, tgs=Tru
             export_tgs(animation, tgsout)
 
 
-def export_svg(animation, fp):
-    to_svg(animation).write(fp, "utf-8", True)
+def export_svg(animation, fp, time=0):
+    to_svg(animation, time).write(fp, "utf-8", True)
