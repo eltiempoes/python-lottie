@@ -1,23 +1,10 @@
 import re
 import math
+import enum
 from xml.etree import ElementTree
 from .. import objects
 from ..utils.nvector import NVector
 
-
-ns_map = {
-    "dc": "http://purl.org/dc/elements/1.1/",
-    "cc": "http://creativecommons.org/ns#",
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "svg": "http://www.w3.org/2000/svg",
-    "sodipodi": "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd",
-    "inkscape": "http://www.inkscape.org/namespaces/inkscape",
-}
-
-for n, u in ns_map.items():
-    ElementTree.register_namespace(n, u)
-
-element_parsers = {}
 
 color_table = {
     "black": [0.0, 0.0, 0.0, 1],
@@ -185,106 +172,6 @@ color_table = {
     "yellowgreen": [0.6039215686274509, 0.803921568627451, 0.19607843137254902, 1],
 }
 
-
-nocolor = {"none", "transparent"}
-
-
-def element_parser(name):
-    def deco(func):
-        element_parsers[name] = func
-        return func
-    return deco
-
-
-def _qualified(ns, name):
-    return "{%s}%s" % (ns_map[ns], name)
-
-
-def _simplified(name):
-    for k, v in ns_map.items():
-        name = name.replace("{%s}" % v, k+":")
-    return name
-
-
-def _unqualified(name):
-    return name.split("}")[-1]
-
-
-def _parse_color(color):
-    if re.match("^#[0-9a-fA-F]{6}$", color):
-        return [int(color[1:3], 16) / 0xff, int(color[3:5], 16) / 0xff, int(color[5:7], 16) / 0xff, 1]
-    if re.match("^#[0-9a-fA-F]{3}$", color):
-        return [int(color[1], 16) / 0xf, int(color[2], 16) / 0xf, int(color[3], 16) / 0xf, 1]
-
-    match = re.match("^rgba\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9.eE]+)\s*\)$", color)
-    if match:
-        return [int(match[1])/255, int(match[2])/255, int(match[3])/255, float(match[4])]
-
-    match = re.match("^rgb\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*\)$", color)
-    if match:
-        return [int(match[1])/255, int(match[2])/255, int(match[3])/255, 1]
-
-    # TODO more formats hsv() etc
-    return color_table[color]
-
-
-def _parse_transform(element, group, dest_trans):
-    itcx = _qualified("inkscape", "transform-center-x")
-    if itcx in element.attrib:
-        cx = float(element.attrib[itcx])
-        cy = float(element.attrib[_qualified("inkscape", "transform-center-y")])
-        bbx, bby = group.bounding_box().center()
-        cx += bbx
-        cy = bby - cy
-        dest_trans.anchor_point.value = [cx, cy]
-        dest_trans.position.value = [cx, cy]
-
-    if "transform" not in element.attrib:
-        return
-
-    for t in re.finditer("([a-zA-Z]+)\s*\(([^\)]*)\)", element.attrib["transform"]):
-        name = t[1]
-        params = list(map(float, t[2].strip().replace(",", " ").split()))
-        if name == "translate":
-            dest_trans.position.value = [
-                dest_trans.position.value[0] + params[0],
-                dest_trans.position.value[1] + (params[1] if len(params) > 1 else 0),
-            ]
-        elif name == "scale":
-            xfac = params[0]
-            dest_trans.scale.value[0] = (dest_trans.scale.value[0] / 100 * xfac) * 100
-            yfac = params[1] if len(params) > 1 else xfac
-            dest_trans.scale.value[1] = (dest_trans.scale.value[1] / 100 * yfac) * 100
-        elif name == "rotate":
-            ang = params[0]
-            x = y = 0
-            if len(params) > 2:
-                x = params[1]
-                y = params[2]
-                dest_trans.position.value = [
-                    dest_trans.position.value[0] + x,
-                    dest_trans.position.value[1] + y
-                ]
-            dest_trans.anchor_point.value = [x, y]
-            dest_trans.rotation.value = ang
-        elif name == "skewX":
-            dest_trans.skew.value = -params[0]
-            dest_trans.skew_axis.value = 0
-        elif name == "skewY":
-            dest_trans.skew.value = params[0]
-            dest_trans.skew_axis.value = 90
-        elif name == "matrix":
-            dest_trans.position.value = params[-2:]
-            v1 = NVector(*params[0:2])
-            v2 = NVector(*params[2:4])
-            dest_trans.scale.value = [v1.length * 100, v2.length * 100]
-            v1 /= v1.length
-            #v2 /= v2.length
-            angle = math.atan2(v1[1], v1[0])
-            #angle1 = math.atan2(v2[1], v2[0])
-            dest_trans.rotation.value = angle / math.pi * 180
-
-
 css_atrrs = {
     "fill",
     "alignment-baseline",
@@ -347,153 +234,343 @@ css_atrrs = {
     "writing-mode"
 }
 
-
-def _parse_style(element):
-    style = {}
-    for att in css_atrrs & set(element.attrib.keys()):
-        if att in element.attrib:
-            style[att] = element.attrib[att]
-    if "style" in element.attrib:
-        style.update(**dict(map(
-            lambda x: map(lambda y: y.strip(), x.split(":")),
-            element.attrib["style"].split(";")
-        )))
-    return style
+nocolor = {"none"}
 
 
-def _apply_common_style(style, transform):
-    opacity = float(style.get("opacity", 1))
-    if style.get("display", "inline") == "none":
-        opacity = 0
-    if style.get("visibility", "visible") == "hidden":
-        opacity = 0
-    transform.opacity.value = opacity * 100
+def hsl_to_rgb(h, s, l):
+    if l < 0.5:
+        m2 = l * (s + 1)
+    else:
+        m2 = l + s - l * s
+    m1 = l*2 - m2
+    r = hue_to_rgb(m1, m2, h+1/3)
+    g = hue_to_rgb(m1, m2, h)
+    b = hue_to_rgb(m1, m2, h-1/3)
+    return [r, g, b]
 
 
-def _add_shapes(element, shapes, shape_parent):
-    # TODO inherit style
-    style = _parse_style(element)
-
-    group = objects.Group()
-    _apply_common_style(style, group.transform)
-    group.name = element.attrib.get("id")
-
-    shape_parent.shapes.insert(0, group)
-    for shape in shapes:
-        group.add_shape(shape)
-
-    stroke_color = style.get("stroke", "none")
-    if stroke_color not in nocolor:
-        stroke = objects.Stroke()
-        group.add_shape(stroke)
-        color = _parse_color(stroke_color)
-        stroke.color.value = color[:3]
-        stroke.opacity.value = color[3] * 100
-        stroke.width.value = float(style.get("stroke-width", 1))
-        linecap = style.get("stroke-linecap")
-        if linecap == "round":
-            stroke.line_cap = objects.shapes.LineCap.Round
-        elif linecap == "butt":
-            stroke.line_cap = objects.shapes.LineCap.Butt
-        elif linecap == "square":
-            stroke.line_cap = objects.shapes.LineCap.Square
-        linejoin = style.get("stroke-linejoin")
-        if linejoin == "round":
-            stroke.line_cap = objects.shapes.LineJoin.Round
-        elif linejoin == "bevel":
-            stroke.line_cap = objects.shapes.LineJoin.Bevel
-        elif linejoin in {"miter", "arcs", "miter-clip"}:
-            stroke.line_cap = objects.shapes.LineJoin.Miter
-        stroke.miter_limit = float(style.get("stroke-miterlimit", 0))
-
-    fill_color = style.get("fill", "black")
-    if fill_color not in nocolor:
-        color = _parse_color(fill_color)
-        fill = group.add_shape(objects.Fill(color[:3]))
-        fill.opacity.value = color[3] * 100
-
-    _parse_transform(element, group, group.transform)
-
-    return group
+def hue_to_rgb(m1, m2, h):
+    if h < 0:
+        h += 1
+    elif h > 1:
+        h -= 1
+    if h*6 < 1:
+        return m1+(m2-m1)*h*6
+    elif h*2 < 1:
+        return m2
+    elif h*3 < 2:
+        return m1+(m2-m1)*(2/3-h)*6
+    return m1
 
 
-def _add_shape(element, shape, shape_parent):
-    return _add_shapes(element, [shape], shape_parent)
+class SvgHandler:
+    ns_map = {
+        "dc": "http://purl.org/dc/elements/1.1/",
+        "cc": "http://creativecommons.org/ns#",
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "svg": "http://www.w3.org/2000/svg",
+        "sodipodi": "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd",
+        "inkscape": "http://www.inkscape.org/namespaces/inkscape",
+    }
+
+    def init_etree(self):
+        for n, u in self.ns_map.items():
+            ElementTree.register_namespace(n, u)
+
+    def qualified(self, ns, name):
+        return "{%s}%s" % (self.ns_map[ns], name)
+
+    def simplified(self, name):
+        for k, v in self.ns_map.items():
+            name = name.replace("{%s}" % v, k+":")
+        return name
+
+    def unqualified(self, name):
+        return name.split("}")[-1]
+
+    def __init__(self):
+        self.init_etree()
 
 
-@element_parser("g")
-def parse_g(element, shape_parent):
-    group = objects.Group()
-    shape_parent.shapes.insert(0, group)
-    style = _parse_style(element)
-    _apply_common_style(style, group.transform)
-    group.name = element.attrib.get(_qualified("inkscape", "label"), element.attrib.get("id"))
-    parse_svg_element(element, group)
-    _parse_transform(element, group, group.transform)
+class NameMode(enum.Enum):
+    NoName = 0
+    Id = 1
+    Inkscape = 2
 
 
-@element_parser("ellipse")
-def parse_ellipse(element, shape_parent):
-    ellipse = objects.Ellipse()
-    ellipse.position.value = [
-        float(element.attrib["cx"]),
-        float(element.attrib["cy"])
-    ]
-    ellipse.size.value = [
-        float(element.attrib["rx"]) * 2,
-        float(element.attrib["ry"]) * 2
-    ]
-    _add_shape(element, ellipse, shape_parent)
+class SvgParser(SvgHandler):
+    def __init__(self, name_mode=NameMode.Inkscape):
+        self.init_etree()
+        self.name_mode = name_mode
+        self.current_color = [0, 0, 0, 1]
 
+    def _get_name(self, element, inkscapequal):
+        if self.name_mode == NameMode.Inkscape:
+            return element.attrib.get(inkscapequal, element.attrib.get("id"))
+        return self._get_id(element)
 
-@element_parser("circle")
-def parse_circle(element, shape_parent):
-    ellipse = objects.Ellipse()
-    ellipse.position.value = [
-        float(element.attrib["cx"]),
-        float(element.attrib["cy"])
-    ]
-    r = float(element.attrib["r"]) * 2
-    ellipse.size.value = [r, r]
-    _add_shape(element, ellipse, shape_parent)
+    def _get_id(self, element):
+        if self.name_mode != NameMode.NoName:
+            return element.attrib.get("id")
+        return None
 
+    def parse_color(self, color):
+        # #fff
+        if re.match(r"^#[0-9a-fA-F]{6}$", color):
+            return [int(color[1:3], 16) / 0xff, int(color[3:5], 16) / 0xff, int(color[5:7], 16) / 0xff, 1]
+        # #112233
+        if re.match(r"^#[0-9a-fA-F]{3}$", color):
+            return [int(color[1], 16) / 0xf, int(color[2], 16) / 0xf, int(color[3], 16) / 0xf, 1]
+        # rgba(123, 123, 123, 0.7)
+        match = re.match(r"^rgba\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9.eE]+)\s*\)$", color)
+        if match:
+            return [int(match[1])/255, int(match[2])/255, int(match[3])/255, float(match[4])]
+        # rgb(123, 123, 123)
+        match = re.match(r"^rgb\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*\)$", color)
+        if match:
+            return [int(match[1])/255, int(match[2])/255, int(match[3])/255, 1]
+        # rgb(60%, 30%, 20%)
+        match = re.match(r"^rgb\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*\)$", color)
+        if match:
+            return [int(match[1])/100, int(match[2])/100, int(match[3])/100, 1]
+        # rgba(60%, 30%, 20%, 0.7)
+        match = re.match(r"^rgb\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
+        if match:
+            return [int(match[1])/100, int(match[2])/100, int(match[3])/100, float(match[4])]
+        # transparent
+        if color == "transparent":
+            return [0, 0, 0, 0]
+        # hsl(60, 30%, 20%)
+        match = re.match(r"^hsl\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*\)$", color)
+        if match:
+            return hsl_to_rgb(int(match[1])/360, int(match[2])/100, int(match[3])/100) + [1]
+        # hsla(60, 30%, 20%, 0.7)
+        match = re.match(r"^hsl\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\\)$", color)
+        if match:
+            return hsl_to_rgb(int(match[1])/360, int(match[2])/100, int(match[3])/100) + [float(match[4])]
+        # currentColor
+        if color in {"currentColor", "inherit"}:
+            return self.current_color
+        # red
+        return color_table[color]
 
-@element_parser("rect")
-def parse_ellipse(element, shape_parent):
-    rect = objects.Rect()
-    w = float(element.attrib["width"])
-    h = float(element.attrib["height"])
-    rect.position.value = [
-        float(element.attrib["x"]) + w / 2,
-        float(element.attrib["y"]) + h / 2
-    ]
-    rect.size.value = [w, h]
-    _add_shape(element, rect, shape_parent)
+    def parse_transform(self, element, group, dest_trans):
+        itcx = self.qualified("inkscape", "transform-center-x")
+        if itcx in element.attrib:
+            cx = float(element.attrib[itcx])
+            cy = float(element.attrib[self.qualified("inkscape", "transform-center-y")])
+            bbx, bby = group.bounding_box().center()
+            cx += bbx
+            cy = bby - cy
+            dest_trans.anchor_point.value = [cx, cy]
+            dest_trans.position.value = [cx, cy]
 
+        if "transform" not in element.attrib:
+            return
 
-@element_parser("line")
-def parse_line(element, shape_parent):
-    line = objects.Shape()
-    line.vertices.value.add_point([
-        float(element.attrib["x1"]),
-        float(element.attrib["y1"])
-    ])
-    line.vertices.value.add_point([
-        float(element.attrib["x2"]) * 2,
-        float(element.attrib["y2"]) * 2
-    ])
-    _add_shape(element, line, shape_parent)
+        for t in re.finditer(r"([a-zA-Z]+)\s*\(([^\)]*)\)", element.attrib["transform"]):
+            name = t[1]
+            params = list(map(float, t[2].strip().replace(",", " ").split()))
+            if name == "translate":
+                dest_trans.position.value = [
+                    dest_trans.position.value[0] + params[0],
+                    dest_trans.position.value[1] + (params[1] if len(params) > 1 else 0),
+                ]
+            elif name == "scale":
+                xfac = params[0]
+                dest_trans.scale.value[0] = (dest_trans.scale.value[0] / 100 * xfac) * 100
+                yfac = params[1] if len(params) > 1 else xfac
+                dest_trans.scale.value[1] = (dest_trans.scale.value[1] / 100 * yfac) * 100
+            elif name == "rotate":
+                ang = params[0]
+                x = y = 0
+                if len(params) > 2:
+                    x = params[1]
+                    y = params[2]
+                    dest_trans.position.value = [
+                        dest_trans.position.value[0] + x,
+                        dest_trans.position.value[1] + y
+                    ]
+                dest_trans.anchor_point.value = [x, y]
+                dest_trans.rotation.value = ang
+            elif name == "skewX":
+                dest_trans.skew.value = -params[0]
+                dest_trans.skew_axis.value = 0
+            elif name == "skewY":
+                dest_trans.skew.value = params[0]
+                dest_trans.skew_axis.value = 90
+            elif name == "matrix":
+                dest_trans.position.value = params[-2:]
+                v1 = NVector(*params[0:2])
+                v2 = NVector(*params[2:4])
+                dest_trans.scale.value = [v1.length * 100, v2.length * 100]
+                v1 /= v1.length
+                #v2 /= v2.length
+                angle = math.atan2(v1[1], v1[0])
+                #angle1 = math.atan2(v2[1], v2[0])
+                dest_trans.rotation.value = angle / math.pi * 180
 
+    def parse_style(self, element):
+        style = {}
+        for att in css_atrrs & set(element.attrib.keys()):
+            if att in element.attrib:
+                style[att] = element.attrib[att]
+        if "style" in element.attrib:
+            style.update(**dict(map(
+                lambda x: map(lambda y: y.strip(), x.split(":")),
+                element.attrib["style"].split(";")
+            )))
+        return style
 
-@element_parser("polyline")
-def parse_line(element, shape_parent):
-    line = objects.Shape()
-    points = element.attrib["points"].split()
-    for point in points:
-        line.vertices.value.add_point(
-            list(map(float, point.split(",")))
-        )
-    _add_shape(element, line, shape_parent)
+    def apply_common_style(self, style, transform):
+        opacity = float(style.get("opacity", 1))
+        if style.get("display", "inline") == "none":
+            opacity = 0
+        if style.get("visibility", "visible") == "hidden":
+            opacity = 0
+        transform.opacity.value = opacity * 100
+
+    def add_shapes(self, element, shapes, shape_parent):
+        # TODO inherit style
+        style = self.parse_style(element)
+
+        group = objects.Group()
+        self.apply_common_style(style, group.transform)
+        group.name = self._get_id(element)
+
+        shape_parent.shapes.insert(0, group)
+        for shape in shapes:
+            group.add_shape(shape)
+
+        stroke_color = style.get("stroke", "none")
+        if stroke_color not in nocolor:
+            stroke = objects.Stroke()
+            group.add_shape(stroke)
+            color = self.parse_color(stroke_color)
+            stroke.color.value = color[:3]
+            stroke.opacity.value = color[3] * 100
+            stroke.width.value = float(style.get("stroke-width", 1))
+            linecap = style.get("stroke-linecap")
+            if linecap == "round":
+                stroke.line_cap = objects.shapes.LineCap.Round
+            elif linecap == "butt":
+                stroke.line_cap = objects.shapes.LineCap.Butt
+            elif linecap == "square":
+                stroke.line_cap = objects.shapes.LineCap.Square
+            linejoin = style.get("stroke-linejoin")
+            if linejoin == "round":
+                stroke.line_cap = objects.shapes.LineJoin.Round
+            elif linejoin == "bevel":
+                stroke.line_cap = objects.shapes.LineJoin.Bevel
+            elif linejoin in {"miter", "arcs", "miter-clip"}:
+                stroke.line_cap = objects.shapes.LineJoin.Miter
+            stroke.miter_limit = float(style.get("stroke-miterlimit", 0))
+
+        fill_color = style.get("fill", "inherit")
+        if fill_color not in nocolor:
+            color = self.parse_color(fill_color)
+            fill = group.add_shape(objects.Fill(color[:3]))
+            fill.opacity.value = color[3] * 100
+
+        self.parse_transform(element, group, group.transform)
+
+        return group
+
+    def _parse_g(self, element, shape_parent):
+        group = objects.Group()
+        shape_parent.shapes.insert(0, group)
+        style = self.parse_style(element)
+        self.apply_common_style(style, group.transform)
+        group.name = self._get_name(element, self.qualified("inkscape", "label"))
+        self.parse_svg_element(element, group)
+        self.parse_transform(element, group, group.transform)
+
+    def _parse_ellipse(self, element, shape_parent):
+        ellipse = objects.Ellipse()
+        ellipse.position.value = [
+            float(element.attrib["cx"]),
+            float(element.attrib["cy"])
+        ]
+        ellipse.size.value = [
+            float(element.attrib["rx"]) * 2,
+            float(element.attrib["ry"]) * 2
+        ]
+        self.add_shapes(element, [ellipse], shape_parent)
+
+    def _parse_circle(self, element, shape_parent):
+        ellipse = objects.Ellipse()
+        ellipse.position.value = [
+            float(element.attrib["cx"]),
+            float(element.attrib["cy"])
+        ]
+        r = float(element.attrib["r"]) * 2
+        ellipse.size.value = [r, r]
+        self.add_shapes(element, [ellipse], shape_parent)
+
+    def _parse_rect(self, element, shape_parent):
+        rect = objects.Rect()
+        w = float(element.attrib["width"])
+        h = float(element.attrib["height"])
+        rect.position.value = [
+            float(element.attrib["x"]) + w / 2,
+            float(element.attrib["y"]) + h / 2
+        ]
+        rect.size.value = [w, h]
+        self.add_shapes(element, [rect], shape_parent)
+
+    def _parse_line(self, element, shape_parent):
+        line = objects.Shape()
+        line.vertices.value.add_point([
+            float(element.attrib["x1"]),
+            float(element.attrib["y1"])
+        ])
+        line.vertices.value.add_point([
+            float(element.attrib["x2"]) * 2,
+            float(element.attrib["y2"]) * 2
+        ])
+        self.add_shapes(element, [line], shape_parent)
+
+    def _parse_polyline(self, element, shape_parent):
+        line = objects.Shape()
+        points = element.attrib["points"].split()
+        for point in points:
+            line.vertices.value.add_point(
+                list(map(float, point.split(",")))
+            )
+        self.add_shapes(element, [line], shape_parent)
+
+    def _parse_path(self, element, shape_parent):
+        d_parser = PathDParser(element.attrib.get("d", ""))
+        d_parser.parse()
+        paths = []
+        for path in d_parser.paths:
+            p = objects.Shape()
+            p.vertices.value = path
+            paths.append(p)
+        #if len(d_parser.paths) > 1:
+            #paths.append(objects.shapes.Merge())
+        self.add_shapes(element, paths, shape_parent)
+
+    def parse_svg_element(self, element, shape_parent):
+        for child in element:
+            tag = self.unqualified(child.tag)
+            handler = getattr(self, "_parse_" + tag, None)
+            if handler:
+                handler(child, shape_parent)
+
+    def parse_etree(self, etree, *args, **kwargs):
+        animation = objects.Animation(*args, **kwargs)
+        svg = etree.getroot()
+        if "width" in svg.attrib and "height" in svg.attrib:
+            animation.width = int(svg.attrib["width"])
+            animation.height = int(svg.attrib["height"])
+        else:
+            _, _, animation.width, animation.height = map(int, svg.attrib["viewBox"].split(" "))
+        animation.name = self._get_name(svg, self.qualified("sodipodi", "docname"))
+        layer = objects.ShapeLayer()
+        animation.add_layer(layer)
+        self.parse_svg_element(svg, layer)
+        return animation
 
 
 class PathDParser:
@@ -908,40 +985,9 @@ class PathDParser:
         self._parse_Z()
 
 
-@element_parser("path")
-def parse_path(element, shape_parent):
-    d_parser = PathDParser(element.attrib.get("d", ""))
-    d_parser.parse()
-    paths = []
-    for path in d_parser.paths:
-        p = objects.Shape()
-        p.vertices.value = path
-        paths.append(p)
-    #if len(d_parser.paths) > 1:
-        #paths.append(objects.shapes.Merge())
-    _add_shapes(element, paths, shape_parent)
-
-
-def parse_svg_element(element, shape_parent):
-    for child in element:
-        tag = _unqualified(child.tag)
-        if tag in element_parsers:
-            element_parsers[tag](child, shape_parent)
-
-
 def parse_svg_etree(etree, *args, **kwargs):
-    animation = objects.Animation(*args, **kwargs)
-    svg = etree.getroot()
-    if "width" in svg.attrib and "height" in svg.attrib:
-        animation.width = int(svg.attrib["width"])
-        animation.height = int(svg.attrib["height"])
-    else:
-        _, _, animation.width, animation.height = map(int, svg.attrib["viewBox"].split(" "))
-    animation.name = svg.attrib.get(_qualified("sodipodi", "docname"), svg.attrib.get("id"))
-    layer = objects.ShapeLayer()
-    animation.add_layer(layer)
-    parse_svg_element(svg, layer)
-    return animation
+    parser = SvgParser()
+    return parser.parse_etree(etree, *args, **kwargs)
 
 
 def parse_svg_file(file, *args, **kwargs):
