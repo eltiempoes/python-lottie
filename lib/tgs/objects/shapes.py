@@ -58,7 +58,7 @@ class Rect(TgsObject):
         TgsProp("type", "ty", str, False),
         TgsProp("position", "p", MultiDimensional, False),
         TgsProp("size", "s", MultiDimensional, False),
-        TgsProp("rounded_corners", "r", Value, False),
+        TgsProp("rounded", "r", Value, False),
     ]
 
     def __init__(self):
@@ -75,7 +75,7 @@ class Rect(TgsObject):
         # Rect's size
         self.size = MultiDimensional([0, 0])
         # Rect's rounded corners
-        self.rounded_corners = Value()
+        self.rounded = Value()
 
     def bounding_box(self, time=0):
         pos = self.position.get_value(time)

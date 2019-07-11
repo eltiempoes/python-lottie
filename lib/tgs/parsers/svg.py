@@ -345,7 +345,7 @@ class SvgParser(SvgHandler):
         if match:
             return hsl_to_rgb(int(match[1])/360, int(match[2])/100, int(match[3])/100) + [1]
         # hsla(60, 30%, 20%, 0.7)
-        match = re.match(r"^hsl\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\\)$", color)
+        match = re.match(r"^hsl\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
         if match:
             return hsl_to_rgb(int(match[1])/360, int(match[2])/100, int(match[3])/100) + [float(match[4])]
         # currentColor
@@ -516,6 +516,9 @@ class SvgParser(SvgHandler):
             float(element.attrib["y"]) + h / 2
         ]
         rect.size.value = [w, h]
+        rx = float(element.attrib.get("rx", 0))
+        ry = float(element.attrib.get("ry", 0))
+        rect.rounded.value = (rx + ry) / 2
         self.add_shapes(element, [rect], shape_parent)
 
     def _parse_line(self, element, shape_parent):
@@ -530,14 +533,22 @@ class SvgParser(SvgHandler):
         ])
         self.add_shapes(element, [line], shape_parent)
 
-    def _parse_polyline(self, element, shape_parent):
+    def _handle_poly(self, element):
         line = objects.Shape()
-        points = element.attrib["points"].split()
-        for point in points:
-            line.vertices.value.add_point(
-                list(map(float, point.split(",")))
-            )
+        coords = list(map(float, element.attrib["points"].replace(",", " ").split()))
+        for i in range(0, len(coords), 2):
+            line.vertices.value.add_point(coords[i:i+2])
+        return line
+
+    def _parse_polyline(self, element, shape_parent):
+        line = self._handle_poly(element)
         self.add_shapes(element, [line], shape_parent)
+
+    def _parse_polygon(self, element, shape_parent):
+        line = self._handle_poly(element)
+        line.vertices.value.close()
+        self.add_shapes(element, [line], shape_parent)
+
 
     def _parse_path(self, element, shape_parent):
         d_parser = PathDParser(element.attrib.get("d", ""))
