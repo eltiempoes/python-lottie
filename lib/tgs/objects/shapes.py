@@ -77,16 +77,9 @@ class Rect(TgsObject):
         # Rect's rounded corners
         self.rounded_corners = Value()
 
-    def bounding_box(self, frame=None):
-        if self.position.animated:
-            pos = self.position.keyframes[frame].start
-        else:
-            pos = self.position.value
-
-        if self.position.animated:
-            sz = self.size.keyframes[frame].start
-        else:
-            sz = self.size.value
+    def bounding_box(self, time=0):
+        pos = self.position.get_value(time)
+        sz = self.size.get_value(time)
 
         return BoundingBox(
             pos[0] - sz[0]/2,
@@ -143,16 +136,9 @@ class Star(TgsObject):
         # Star's type. Polygon or Star.
         self.star_type = StarType.Star
 
-    def bounding_box(self, frame=None):
-        if self.position.animated:
-            pos = self.position.keyframes[frame].start
-        else:
-            pos = self.position.value
-
-        if self.position.animated:
-            r = self.size.keyframes[frame].start
-        else:
-            r = self.size.value
+    def bounding_box(self, time=0):
+        pos = self.position.get_value(time)
+        r = self.outer_radius.get_value(time)
 
         return BoundingBox(
             pos[0] - r,
@@ -186,16 +172,9 @@ class Ellipse(TgsObject):
         # Ellipse's size
         self.size = MultiDimensional([0, 0])
 
-    def bounding_box(self, frame=None):
-        if self.position.animated:
-            pos = self.position.keyframes[frame].start
-        else:
-            pos = self.position.value
-
-        if self.position.animated:
-            sz = self.size.keyframes[frame].start
-        else:
-            sz = self.size.value
+    def bounding_box(self, time=0):
+        pos = self.position.get_value(time)
+        sv = self.size.get_value(time)
 
         return BoundingBox(
             pos[0] - sz[0]/2,
@@ -226,11 +205,8 @@ class Shape(TgsObject):
         # Shape's vertices
         self.vertices = ShapeProperty()
 
-    def bounding_box(self, frame=None):
-        if self.vertices.animated:
-            pos = self.vertices.keyframes[frame].start
-        else:
-            pos = self.vertices.value
+    def bounding_box(self, time=0):
+        pos = self.vertices.get_value(time)
 
         bb = BoundingBox()
         for v in pos.vertices:
@@ -270,10 +246,10 @@ class Group(TgsObject):
     def transform(self):
         return self.shapes[-1]
 
-    def bounding_box(self, frame=None):
+    def bounding_box(self, time=0):
         bb = BoundingBox()
         for v in self.shapes:
-            bb.expand(v.bounding_box(frame))
+            bb.expand(v.bounding_box(time))
 
         return bb
 
@@ -299,7 +275,7 @@ class Fill(TgsObject):
         # Fill Color
         self.color = MultiDimensional(color)
 
-    def bounding_box(self, frame=None):
+    def bounding_box(self, time=0):
         return BoundingBox()
 
 
@@ -344,7 +320,7 @@ class GradientFill(TgsObject):
         # Gradient Colors
         self.colors = GradientColors()
 
-    def bounding_box(self, frame=None):
+    def bounding_box(self, time=0):
         return BoundingBox()
 
 
@@ -393,7 +369,7 @@ class Stroke(TgsObject):
         # Stroke Color
         self.color = MultiDimensional(color)
 
-    def bounding_box(self, frame=None):
+    def bounding_box(self, time=0):
         return BoundingBox()
 
 
@@ -445,7 +421,7 @@ class GradientStroke(TgsObject):
         # Gradient Stroke Miter Limit. Only if Line Join is set to Miter.
         self.miter_limit = 0
 
-    def bounding_box(self, frame=None):
+    def bounding_box(self, time=0):
         return BoundingBox()
 
 
@@ -481,7 +457,7 @@ class TransformShape(TgsObject):
         # Transform Skew Axis
         self.skew_axis = Value(0)
 
-    def bounding_box(self, frame=None):
+    def bounding_box(self, time=0):
         return BoundingBox()
 
 
