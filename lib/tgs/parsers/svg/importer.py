@@ -318,11 +318,11 @@ class SvgParser(SvgHandler):
                 stroke.line_cap = objects.shapes.LineCap.Square
             linejoin = style.get("stroke-linejoin")
             if linejoin == "round":
-                stroke.line_cap = objects.shapes.LineJoin.Round
+                stroke.line_join = objects.shapes.LineJoin.Round
             elif linejoin == "bevel":
-                stroke.line_cap = objects.shapes.LineJoin.Bevel
+                stroke.line_join = objects.shapes.LineJoin.Bevel
             elif linejoin in {"miter", "arcs", "miter-clip"}:
-                stroke.line_cap = objects.shapes.LineJoin.Miter
+                stroke.line_join = objects.shapes.LineJoin.Miter
             stroke.miter_limit = float(style.get("stroke-miterlimit", 0))
 
         fill_color = style.get("fill", "inherit")
