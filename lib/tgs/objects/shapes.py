@@ -29,6 +29,9 @@ class BoundingBox:
     def center(self):
         return [(self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2]
 
+    def isnull(self):
+        return self.x1 is None or self.y2 is None
+
     def __repr__(self):
         return "<BoundingBox [%s, %s] - [%s, %s]>" % (self.x1, self.y1, self.x2, self.y2)
 
