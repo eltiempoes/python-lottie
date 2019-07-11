@@ -388,7 +388,7 @@ class GradientStroke(TgsObject):
         TgsProp("highlight_length", "h", Value, False),
         TgsProp("highlight_angle", "a", Value, False),
         TgsProp("colors", "g", GradientColors, False),
-        TgsProp("stroke_width", "w", Value, False),
+        TgsProp("width", "w", Value, False),
         TgsProp("line_cap", "lc", float, False),
         TgsProp("line_join", "lj", float, False),
         TgsProp("miter_limit", "ml", float, False),
@@ -416,7 +416,7 @@ class GradientStroke(TgsObject):
         # Gradient Colors
         self.colors = GradientColors()
         # Gradient Stroke Width
-        self.stroke_width = Value(stroke_width)
+        self.width = Value(stroke_width)
         # Gradient Stroke Line Cap
         self.line_cap = LineCap.Round
         # Gradient Stroke Line Join
