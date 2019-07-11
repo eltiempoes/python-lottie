@@ -43,6 +43,7 @@ class SvgHandler:
         "svg": "http://www.w3.org/2000/svg",
         "sodipodi": "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd",
         "inkscape": "http://www.inkscape.org/namespaces/inkscape",
+        "xlink": "http://www.w3.org/1999/xlink",
     }
 
     def init_etree(self):
@@ -246,11 +247,13 @@ class SvgParser(SvgHandler):
         if itcx in element.attrib:
             cx = float(element.attrib[itcx])
             cy = float(element.attrib[self.qualified("inkscape", "transform-center-y")])
-            bbx, bby = group.bounding_box().center()
-            cx += bbx
-            cy = bby - cy
-            dest_trans.anchor_point.value = [cx, cy]
-            dest_trans.position.value = [cx, cy]
+            bb = group.bounding_box()
+            if not bb.isnull():
+                bbx, bby = bb.center()
+                cx += bbx
+                cy = bby - cy
+                dest_trans.anchor_point.value = [cx, cy]
+                dest_trans.position.value = [cx, cy]
 
         if "transform" not in element.attrib:
             return
@@ -305,7 +308,7 @@ class SvgParser(SvgHandler):
         if "style" in element.attrib:
             style.update(**dict(map(
                 lambda x: map(lambda y: y.strip(), x.split(":")),
-                element.attrib["style"].split(";")
+                filter(bool, element.attrib["style"].split(";"))
             )))
         return style
 
@@ -485,23 +488,32 @@ class SvgParser(SvgHandler):
     def _parse_defs(self, element):
         self.parse_children(element, None, {"linearGradient", "radialGradient"})
 
-    def _parse_linearGradient(self, element):
+    def _gradient(self, element, grad):
         id = element.attrib["id"]
-        grad = SvgLinearGradient()
+        if id in self.gradients:
+            grad.colors = self.gradients[id].colors
         grad.parse_attrs(element.attrib)
-        for stop in element.findall("./%s" % self.qualified("svg", "stop")):
-            off = float(stop.attrib["offset"].strip("%")) / 100
-            grad.add_color(off, self.parse_color(stop.attrib["stop-color"]))
+        href = element.attrib.get(self.qualified("xlink", "href"))
+        if href:
+            srcid = href.strip("#")
+            if srcid in self.gradients:
+                src = self.gradients[srcid]
+            else:
+                src = grad.__class__()
+                self.gradients[srcid] = src
+            grad.colors = src.colors
+        else:
+            for stop in element.findall("./%s" % self.qualified("svg", "stop")):
+                off = float(stop.attrib["offset"].strip("%")) / 100
+                style = self.parse_style(stop)
+                grad.add_color(off, self.parse_color(style["stop-color"]))
         self.gradients[id] = grad
 
+    def _parse_linearGradient(self, element):
+        self._gradient(element, SvgLinearGradient())
+
     def _parse_radialGradient(self, element):
-        id = element.attrib["id"]
-        grad = SvgRadialGradient()
-        grad.parse_attrs(element.attrib)
-        for stop in element.findall("./%s" % self.qualified("svg", "stop")):
-            off = float(stop.attrib["offset"].strip("%")) / 100
-            grad.add_color(off, self.parse_color(stop.attrib["stop-color"]))
-        self.gradients[id] = grad
+        self._gradient(element, SvgRadialGradient())
 
     def get_color_url(self, color, gradientclass, shape):
         match = re.match(r"""url\(['"]?#([^)'"]+)['"]?\)""", color)
