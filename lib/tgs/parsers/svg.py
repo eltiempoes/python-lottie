@@ -298,11 +298,66 @@ class NameMode(enum.Enum):
     Inkscape = 2
 
 
+class SvgGradientCoord:
+    def __init__(self, comp, value, percent):
+        self.comp = comp
+        self.value = value
+        self.percent = percent
+
+    def to_value(self, bbox):
+        if not self.percent:
+            return self.value
+
+        if self.comp == "x":
+            return bbox.x1 + (bbox.x2 - bbox.x1) * self.value
+        return bbox.y1 + (bbox.y2 - bbox.y1) * self.value
+
+    def parse(self, attr, default_percent):
+        if attr is None:
+            return
+        if attr.endswith("%"):
+            self.percent = True
+            self.value = float(attr[:-1])/100
+        else:
+            self.percent = default_percent
+            self.value = float(attr)
+
+
+class SvgLinearGradient:
+    def __init__(self):
+        self.x1 = SvgGradientCoord("x", 0, True)
+        self.y1 = SvgGradientCoord("y", 0, True)
+        self.x2 = SvgGradientCoord("x", 1, True)
+        self.y2 = SvgGradientCoord("y", 0, True)
+        self.colors = []
+
+    def add_color(self, offset, color):
+        self.colors.append((offset, color[:3]))
+
+    def to_lottie(self, gradient_shape, shape, time=0):
+        """
+        gradient_shape should be a GradientFill or GradientStroke
+        """
+        bbox = shape.bounding_box(time)
+        gradient_shape.start_point.value = [
+            self.x1.to_value(bbox),
+            self.y1.to_value(bbox),
+        ]
+        gradient_shape.end_point.value = [
+            self.x2.to_value(bbox),
+            self.y2.to_value(bbox),
+        ]
+        gradient_shape.gradient_type = objects.GradientType.Linear
+        for off, col in self.colors:
+            gradient_shape.colors.add_color(off, col)
+
+
 class SvgParser(SvgHandler):
     def __init__(self, name_mode=NameMode.Inkscape):
         self.init_etree()
         self.name_mode = name_mode
         self.current_color = [0, 0, 0, 1]
+        self.gradients ={}
 
     def _get_name(self, element, inkscapequal):
         if self.name_mode == NameMode.Inkscape:
@@ -444,11 +499,14 @@ class SvgParser(SvgHandler):
 
         stroke_color = style.get("stroke", "none")
         if stroke_color not in nocolor:
-            stroke = objects.Stroke()
+            if stroke_color.startswith("url"):
+                stroke = self.get_color_url(stroke_color, objects.GradientStroke, group)
+            else:
+                stroke = objects.Stroke()
+                color = self.parse_color(stroke_color)
+                stroke.color.value = color[:3]
+                stroke.opacity.value = color[3] * 100
             group.add_shape(stroke)
-            color = self.parse_color(stroke_color)
-            stroke.color.value = color[:3]
-            stroke.opacity.value = color[3] * 100
             stroke.width.value = float(style.get("stroke-width", 1))
             linecap = style.get("stroke-linecap")
             if linecap == "round":
@@ -468,24 +526,28 @@ class SvgParser(SvgHandler):
 
         fill_color = style.get("fill", "inherit")
         if fill_color not in nocolor:
-            color = self.parse_color(fill_color)
-            fill = group.add_shape(objects.Fill(color[:3]))
-            fill.opacity.value = color[3] * 100
+            if fill_color.startswith("url"):
+                fill = self.get_color_url(fill_color, objects.GradientFill, group)
+            else:
+                color = self.parse_color(fill_color)
+                fill = objects.Fill(color[:3])
+                fill.opacity.value = color[3] * 100
+            group.add_shape(fill)
 
         self.parse_transform(element, group, group.transform)
 
         return group
 
-    def _parse_g(self, element, shape_parent):
+    def _parseshape_g(self, element, shape_parent):
         group = objects.Group()
         shape_parent.shapes.insert(0, group)
         style = self.parse_style(element)
         self.apply_common_style(style, group.transform)
         group.name = self._get_name(element, self.qualified("inkscape", "label"))
-        self.parse_svg_element(element, group)
+        self.parse_children(element, group)
         self.parse_transform(element, group, group.transform)
 
-    def _parse_ellipse(self, element, shape_parent):
+    def _parseshape_ellipse(self, element, shape_parent):
         ellipse = objects.Ellipse()
         ellipse.position.value = [
             float(element.attrib["cx"]),
@@ -497,7 +559,7 @@ class SvgParser(SvgHandler):
         ]
         self.add_shapes(element, [ellipse], shape_parent)
 
-    def _parse_circle(self, element, shape_parent):
+    def _parseshape_circle(self, element, shape_parent):
         ellipse = objects.Ellipse()
         ellipse.position.value = [
             float(element.attrib["cx"]),
@@ -507,7 +569,7 @@ class SvgParser(SvgHandler):
         ellipse.size.value = [r, r]
         self.add_shapes(element, [ellipse], shape_parent)
 
-    def _parse_rect(self, element, shape_parent):
+    def _parseshape_rect(self, element, shape_parent):
         rect = objects.Rect()
         w = float(element.attrib["width"])
         h = float(element.attrib["height"])
@@ -521,7 +583,7 @@ class SvgParser(SvgHandler):
         rect.rounded.value = (rx + ry) / 2
         self.add_shapes(element, [rect], shape_parent)
 
-    def _parse_line(self, element, shape_parent):
+    def _parseshape_line(self, element, shape_parent):
         line = objects.Shape()
         line.vertices.value.add_point([
             float(element.attrib["x1"]),
@@ -540,17 +602,16 @@ class SvgParser(SvgHandler):
             line.vertices.value.add_point(coords[i:i+2])
         return line
 
-    def _parse_polyline(self, element, shape_parent):
+    def _parseshape_polyline(self, element, shape_parent):
         line = self._handle_poly(element)
         self.add_shapes(element, [line], shape_parent)
 
-    def _parse_polygon(self, element, shape_parent):
+    def _parseshape_polygon(self, element, shape_parent):
         line = self._handle_poly(element)
         line.vertices.value.close()
         self.add_shapes(element, [line], shape_parent)
 
-
-    def _parse_path(self, element, shape_parent):
+    def _parseshape_path(self, element, shape_parent):
         d_parser = PathDParser(element.attrib.get("d", ""))
         d_parser.parse()
         paths = []
@@ -562,12 +623,18 @@ class SvgParser(SvgHandler):
             #paths.append(objects.shapes.Merge())
         self.add_shapes(element, paths, shape_parent)
 
-    def parse_svg_element(self, element, shape_parent):
+    def parse_children(self, element, shape_parent, limit=None):
         for child in element:
             tag = self.unqualified(child.tag)
-            handler = getattr(self, "_parse_" + tag, None)
+            if limit and tag not in limit:
+                continue
+            handler = getattr(self, "_parseshape_" + tag, None)
             if handler:
                 handler(child, shape_parent)
+            else:
+                handler = getattr(self, "_parse_" + tag, None)
+                if handler:
+                    handler(child)
 
     def parse_etree(self, etree, *args, **kwargs):
         animation = objects.Animation(*args, **kwargs)
@@ -580,8 +647,38 @@ class SvgParser(SvgHandler):
         animation.name = self._get_name(svg, self.qualified("sodipodi", "docname"))
         layer = objects.ShapeLayer()
         animation.add_layer(layer)
-        self.parse_svg_element(svg, layer)
+        self.parse_children(svg, layer)
         return animation
+
+    def _parse_defs(self, element):
+        self.parse_children(element, None, {"linearGradient"})
+
+    def _parse_linearGradient(self, element):
+        id = element.attrib["id"]
+        grad = SvgLinearGradient()
+        relunits = element.attrib.get("gradientUnits", "") != "userSpaceOnUse"
+        grad.x1.parse(element.attrib.get("x1", None), relunits)
+        grad.y1.parse(element.attrib.get("y1", None), relunits)
+        grad.x2.parse(element.attrib.get("x2", None), relunits)
+        grad.y2.parse(element.attrib.get("y2", None), relunits)
+        for stop in element.findall("./%s" % self.qualified("svg", "stop")):
+            off = float(stop.attrib["offset"].strip("%")) / 100
+            grad.add_color(off, self.parse_color(stop.attrib["stop-color"]))
+        self.gradients[id] = grad
+
+    def get_color_url(self, color, gradientclass, shape):
+        match = re.match(r"url\(#([^)]+)\)", color)
+        if not match:
+            return None
+        id = match[1]
+        if id not in self.gradients:
+            return None
+        grad = self.gradients[id]
+        outgrad = gradientclass()
+        grad.to_lottie(outgrad, shape)
+        if self.name_mode != NameMode.NoName:
+            grad.name = id
+        return outgrad
 
 
 class PathDParser:

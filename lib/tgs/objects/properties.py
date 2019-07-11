@@ -141,7 +141,7 @@ class GradientColors(TgsObject):
     ]
 
     def __init__(self):
-        self.colors = MultiDimensional()
+        self.colors = MultiDimensional([])
         self.count = 0
 
     def set_colors(self, colors, keyframe=None):
