@@ -35,8 +35,6 @@ def hue_to_rgb(m1, m2, h):
     return m1
 
 
-
-
 class SvgGradientCoord:
     def __init__(self, name, comp, value, percent):
         self.name = name

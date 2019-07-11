@@ -191,6 +191,7 @@ class ShapeLayer(TgsObject):
             self.shapes.append(shape)
             return shape
 
+
 class ImageLayer(TgsObject): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
