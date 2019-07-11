@@ -391,8 +391,8 @@ class SvgParser(SvgHandler):
             float(element.attrib["y1"])
         ])
         line.vertices.value.add_point([
-            float(element.attrib["x2"]) * 2,
-            float(element.attrib["y2"]) * 2
+            float(element.attrib["x2"]),
+            float(element.attrib["y2"])
         ])
         self.add_shapes(element, [line], shape_parent)
 
@@ -503,15 +503,13 @@ class PathDParser:
         self.p = NVector(0, 0)
         self.la = None
         self.la_type = None
-        self.tokens = list(map(self.d_subsplit, re.findall("[a-zA-Z]|[-+.0-9eE,]+", d_string)))
+        self.tokens = list(map(self.d_subsplit, re.findall("[a-zA-Z]|[-+.0-9eE]+", d_string)))
         self.add_p = True
         self.implicit = "M"
 
     def d_subsplit(self, tok):
         if tok.isalpha():
             return tok
-        if "," in tok:
-            return NVector(*map(float, tok.split(",")))
         return float(tok)
 
     def next_token(self):
@@ -519,13 +517,21 @@ class PathDParser:
             self.la = self.tokens.pop(0)
             if isinstance(self.la, str):
                 self.la_type = 0
-            elif isinstance(self.la, NVector):
-                self.la_type = 2
             else:
                 self.la_type = 1
         else:
             self.la = None
         return self.la
+
+    def next_vec(self):
+        x = self.next_token()
+        y = self.next_token()
+        return NVector(x, y)
+
+    def cur_vec(self):
+        x = self.la
+        y = self.next_token()
+        return NVector(x, y)
 
     def parse(self):
         self.next_token()
@@ -542,10 +548,10 @@ class PathDParser:
         self.path = objects.properties.Bezier()
 
     def _parse_M(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
-        self.p = self.la
+        self.p = self.cur_vec()
         self.implicit = "L"
         if not self.add_p:
             self._push_path()
@@ -553,10 +559,10 @@ class PathDParser:
         self.next_token()
 
     def _parse_m(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
-        self.p += self.la
+        self.p += self.cur_vec()
         self.implicit = "l"
         if not self.add_p:
             self._push_path()
@@ -576,21 +582,21 @@ class PathDParser:
             self.path.out_point[-1] = self._rpoint(outp, rp)
 
     def _parse_L(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
         self._do_add_p()
-        self.p = self.la
+        self.p = self.cur_vec()
         self.path.add_point(self.p.to_list(), NVector(0, 0), NVector(0, 0))
         self.implicit = "L"
         self.next_token()
 
     def _parse_l(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
         self._do_add_p()
-        self.p += self.la
+        self.p += self.cur_vec()
         self.path.add_point(self.p.to_list(), [0, 0], [0, 0])
         self.implicit = "l"
         self.next_token()
@@ -636,13 +642,13 @@ class PathDParser:
         self.next_token()
 
     def _parse_C(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
-        pout = self.la
+        pout = self.cur_vec()
         self._do_add_p(pout)
-        pin = self.next_token()
-        self.p = self.next_token()
+        pin = self.next_vec()
+        self.p = self.next_vec()
         self.path.add_point(
             self.p.to_list(),
             (pin - self.p).to_list(),
@@ -652,13 +658,13 @@ class PathDParser:
         self.next_token()
 
     def _parse_c(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
-        pout = self.p + self.la
+        pout = self.p + self.cur_vec()
         self._do_add_p(pout)
-        pin = self.p + self.next_token()
-        self.p += self.next_token()
+        pin = self.p + self.next_vec()
+        self.p += self.next_vec()
         self.path.add_point(
             self.p.to_list(),
             (pin - self.p).to_list(),
@@ -668,14 +674,14 @@ class PathDParser:
         self.next_token()
 
     def _parse_S(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
-        pin = self.la
+        pin = self.cur_vec()
         self._do_add_p()
         handle = NVector(*self.path.in_point[-1])
         self.path.out_point[-1] = (-handle).to_list()
-        self.p = self.next_token()
+        self.p = self.next_vec()
         self.path.add_point(
             self.p.to_list(),
             (pin - self.p).to_list(),
@@ -685,14 +691,14 @@ class PathDParser:
         self.next_token()
 
     def _parse_s(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
-        pin = self.la + self.p
+        pin = self.cur_vec() + self.p
         self._do_add_p()
         handle = NVector(*self.path.in_point[-1])
         self.path.out_point[-1] = (-handle).to_list()
-        self.p += self.next_token()
+        self.p += self.next_vec()
         self.path.add_point(
             self.p.to_list(),
             (pin - self.p).to_list(),
@@ -702,12 +708,12 @@ class PathDParser:
         self.next_token()
 
     def _parse_Q(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
         self._do_add_p()
-        pin = self.la
-        self.p = self.next_token()
+        pin = self.cur_vec()
+        self.p = self.next_vec()
         self.path.add_point(
             self.p.to_list(),
             (pin - self.p).to_list(),
@@ -717,12 +723,12 @@ class PathDParser:
         self.next_token()
 
     def _parse_q(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
         self._do_add_p()
-        pin = self.p + self.la
-        self.p += self.next_token()
+        pin = self.p + self.cur_vec()
+        self.p += self.next_vec()
         self.path.add_point(
             self.p.to_list(),
             (pin - self.p).to_list(),
@@ -732,12 +738,12 @@ class PathDParser:
         self.next_token()
 
     def _parse_T(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
         self._do_add_p()
         handle = -(NVector(*self.path.in_point[-1]) - self.p) + self.p
-        self.p = self.la
+        self.p = self.cur_vec()
         self.path.add_point(
             self.p.to_list(),
             (handle - self.p).to_list(),
@@ -747,12 +753,12 @@ class PathDParser:
         self.next_token()
 
     def _parse_t(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
         self._do_add_p()
         handle = -NVector(*self.path.in_point[-1]) + self.p
-        self.p += self.la
+        self.p += self.cur_vec()
         self.path.add_point(
             self.p.to_list(),
             (handle - self.p).to_list(),
@@ -762,14 +768,14 @@ class PathDParser:
         self.next_token()
 
     def _parse_A(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
-        r = self.la
+        r = self.cur_vec()
         xrot = self.next_token()
         large = self.next_token()
         sweep = self.next_token()
-        dest = self.next_token()
+        dest = self.next_vec()
         self._do_arc(r[0], r[1], xrot, large, sweep, dest)
         self.implicit = "A"
         self.next_token()
@@ -856,8 +862,8 @@ class PathDParser:
 
         r = NVector(rx, ry)
         angle1 = theta1
-        angle_left = deltatheta
-        step = math.pi / 2
+        angle_left = abs(deltatheta)
+        step = math.pi / 4
         sign = -1 if theta1+deltatheta < angle1 else 1
 
         self._do_add_p()
@@ -881,19 +887,19 @@ class PathDParser:
                 q2.to_list(),
             )
             angle1 = angle2
-            angle_left -= lstep
-
+            angle_left -= abs(lstep)
+        self.path.out_point[-1] = [0, 0]
         self.p = dest
 
     def _parse_a(self):
-        if self.la_type != 2:
+        if self.la_type != 1:
             self.next_token()
             return
-        r = self.la
+        r = self.cur_vec()
         xrot = self.next_token()
         large = self.next_token()
         sweep = self.next_token()
-        dest = self.p + self.next_token()
+        dest = self.p + self.next_vec()
         self._do_arc(r[0], r[1], xrot, large, sweep, dest)
         self.implicit = "a"
         self.next_token()
