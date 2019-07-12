@@ -25,11 +25,16 @@ class RasterImage:
         colors = []
         for row in range(self.data.shape[0]):
             for column in range(self.data.shape[1]):
-                if self.data[row][column][3] == 255:
+                if self.get_alpha(row, column) == 255:
                     colors.append(self.data[row][column])
 
         colors = numpy.array(colors, numpy.float)
         return kmeans(colors, n_colors)[0]
+
+    def get_alpha(self, row, column):
+        if self.data.shape[2] >= 4:
+            return self.data[row][column][3]
+        return 255
 
     def quantize(self, codebook):
         """
@@ -47,7 +52,7 @@ class RasterImage:
 
         for row in range(self.data.shape[0]):
             for column in range(self.data.shape[1]):
-                if self.data[row][column][3] == 255:
+                if self.get_alpha(row, column) == 255:
                     min_norm = 511 # (norm of [255, 255, 255, 255]) + 1
                     best = None
                     for color, bitmap in mono_data:
@@ -97,12 +102,12 @@ class Vectorizer:
         else:
             for color in self.palette:
                 group = layer.add_shape(objects.Group())
-                group.name = "color_%02x%02x%02x_%02x" % tuple(map(int, color))
+                group.name = "color_%s" % "".join("%02x" % int(c) for c in color)
                 layer._max_verts[group.name] = 0
                 group.add_shape(objects.Shape())
                 fcol = color/255
                 fill = group.add_shape(objects.Fill(list(fcol)))
-                if fcol[3] < 1:
+                if len(fcol) > 3 and fcol[3] < 1:
                     fill.opacity.value = fcol[3] * 100
         return layer
 

@@ -58,22 +58,7 @@ class SvgBuilder(SvgHandler):
         self.set_id(self.svg, animation, self.qualified("sodipodi", "docname"))
         self.defs = ElementTree.SubElement(self.svg, "defs")
 
-        layers = {}
-        flat_layers = []
-        for layer in animation.layers:
-            laybuilder = SvgBuilderLayer(layer)
-            flat_layers.append(laybuilder)
-            if layer.index is not None:
-                layers[layer.index] = laybuilder
-
-        top_layers = []
-        for layer in flat_layers:
-            if layer.lottie.parent is not None:
-                layers[layer.lottie.parent].children.append(layer)
-            else:
-                top_layers.append(layer)
-
-        for layer in reversed(top_layers):
+        for layer in SvgBuilder.setup(animation):
             self.process_layer(layer, self.svg, time)
 
     def process_layer(self, layer_builder, dom_parent, time):
@@ -231,8 +216,6 @@ class SvgBuilder(SvgHandler):
             g.attrib[self.qualified("inkscape", "groupmode")] = "layer"
         self.set_id(g, lottie, self.qualified("inkscape", "label"))
         self.set_transform(g, lottie.transform, time)
-        if lottie.name == "green1":
-            g.attrib["x-foobar"] = "1"
         return g
 
     def group_builder_to_svg(self, group, dom_parent, time):
@@ -355,6 +338,24 @@ class SvgBuilderLayer:
     def __init__(self, lottie):
         self.lottie = lottie
         self.children = []
+
+    @classmethod
+    def setup(cls, animation):
+        layers = {}
+        flat_layers = []
+        for layer in animation.layers:
+            laybuilder = cls(layer)
+            flat_layers.append(laybuilder)
+            if layer.index is not None:
+                layers[layer.index] = laybuilder
+
+        top_layers = []
+        for layer in flat_layers:
+            if layer.lottie.parent is not None:
+                layers[layer.lottie.parent].children.append(layer)
+            else:
+                top_layers.append(layer)
+        return reversed(top_layers)
 
 
 def to_svg(animation, time):
