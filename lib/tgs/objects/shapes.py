@@ -349,8 +349,8 @@ class Stroke(TgsObject):
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", str, False),
-        TgsProp("line_cap", "lc", float, False),
-        TgsProp("line_join", "lj", float, False),
+        TgsProp("line_cap", "lc", LineCap, False),
+        TgsProp("line_join", "lj", LineJoin, False),
         TgsProp("miter_limit", "ml", float, False),
         TgsProp("opacity", "o", Value, False),
         TgsProp("width", "w", Value, False),
@@ -394,8 +394,8 @@ class GradientStroke(TgsObject):
         TgsProp("highlight_angle", "a", Value, False),
         TgsProp("colors", "g", GradientColors, False),
         TgsProp("width", "w", Value, False),
-        TgsProp("line_cap", "lc", float, False),
-        TgsProp("line_join", "lj", float, False),
+        TgsProp("line_cap", "lc", LineCap, False),
+        TgsProp("line_join", "lj", LineJoin, False),
         TgsProp("miter_limit", "ml", float, False),
     ]
 

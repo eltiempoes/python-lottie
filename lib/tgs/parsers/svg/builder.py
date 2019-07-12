@@ -167,7 +167,8 @@ class SvgBuilder(SvgHandler):
 
             style["stroke-opacity"] = group.stroke.opacity.get_value(time) / 100
             style["stroke-width"] = group.stroke.width.get_value(time)
-            style["stroke-miterlimit"] = group.stroke.miter_limit
+            if group.stroke.miter_limit is not None:
+                style["stroke-miterlimit"] = group.stroke.miter_limit
 
             if group.stroke.line_cap == objects.LineCap.Round:
                 style["stroke-linecap"] = "round"
