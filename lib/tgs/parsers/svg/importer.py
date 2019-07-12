@@ -533,7 +533,7 @@ class PathDParser:
 
     def parse(self):
         self.next_token()
-        while self.la:
+        while self.la is not None:
             if self.la_type == 0:
                 parser = "_parse_" + self.la
                 self.next_token()
