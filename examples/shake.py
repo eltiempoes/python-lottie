@@ -1,7 +1,7 @@
 import sys
 import os
 sys.path.append(os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
 from tgs import exporters
@@ -24,7 +24,7 @@ g = layer.add_shape(objects.Group())
 box = g.add_shape(objects.Rect())
 box.size.value = [200, 100]
 g.transform.anchor_point.value = g.transform.position.value = box.position.value = [256, 384]
-rot_shake(g.transform.rotation, -15, 15, 0, 60, 10)
+rot_shake(g.transform.rotation, [-15, 15], 0, 60, 10)
 
 
 layer.add_shape(objects.Fill([1, 1, 0]))
