@@ -544,6 +544,7 @@ class PathDParser:
 
     def _push_path(self):
         self.path = objects.properties.Bezier()
+        self.add_p = True
 
     def _parse_M(self):
         if self.la_type != 1:
@@ -553,7 +554,6 @@ class PathDParser:
         self.implicit = "L"
         if not self.add_p:
             self._push_path()
-        self.add_p = True
         self.next_token()
 
     def _parse_m(self):
@@ -564,7 +564,6 @@ class PathDParser:
         self.implicit = "l"
         if not self.add_p:
             self._push_path()
-        self.add_p = True
         self.next_token()
 
     def _rpoint(self, point, rel=None):
@@ -740,7 +739,7 @@ class PathDParser:
             self.next_token()
             return
         self._do_add_p()
-        handle = -(NVector(*self.path.in_point[-1]) - self.p) + self.p
+        handle = self.p - NVector(*self.path.in_point[-1])
         self.p = self.cur_vec()
         self.path.add_point(
             self.p.to_list(),
@@ -861,7 +860,7 @@ class PathDParser:
         r = NVector(rx, ry)
         angle1 = theta1
         angle_left = abs(deltatheta)
-        step = math.pi / 4
+        step = math.pi / 2
         sign = -1 if theta1+deltatheta < angle1 else 1
 
         self._do_add_p()
@@ -870,14 +869,19 @@ class PathDParser:
         alpha = self._arc_alpha(firststep)
         q1 = self._arc_derivative(c, r, phi, angle1) * alpha
         self.path.out_point[-1] = q1.to_list()
+        tolerance = step / 2
         # Then we iterate until the angle has been completed
-        while abs(angle_left) > step / 2:
+        while angle_left > tolerance:
             lstep = min(angle_left, step)
             step_sign = lstep * sign
             angle2 = angle1 + step_sign
+            angle_left -= abs(lstep)
 
             alpha = self._arc_alpha(step_sign)
-            p2 = self._arc_point(c, r, phi, angle2)
+            if angle_left <= tolerance:
+                p2 = dest
+            else:
+                p2 = self._arc_point(c, r, phi, angle2)
             q2 = -self._arc_derivative(c, r, phi, angle2) * alpha
 
             self.path.add_smooth_point(
@@ -885,7 +889,6 @@ class PathDParser:
                 q2.to_list(),
             )
             angle1 = angle2
-            angle_left -= abs(lstep)
         self.path.out_point[-1] = [0, 0]
         self.p = dest
 
