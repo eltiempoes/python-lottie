@@ -1,7 +1,7 @@
 #!/bin/bash
 HERE="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-if [ "$#" -gt 1 ]
+if [ "$#" -gt 0 ]
 then
     python3 -m unittest "$@"
 else

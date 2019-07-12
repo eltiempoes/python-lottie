@@ -317,3 +317,13 @@ class TestClosePath(PathTester):
             [10, 10], [20, 10], [20, 20],
         ])
         self.assertTrue(bezier.closed)
+
+
+class TestIntegration(PathTester):
+    def test_zero_values(self):
+        self.assert_path(
+            "M 10,10 L 90,90 0,0",
+            [[10, 10], [90, 90], [0, 0]],
+            [[ 0,  0], [ 0,  0], [0, 0]],
+            [[ 0,  0], [ 0,  0], [0, 0]],
+        )
