@@ -300,11 +300,13 @@ class SvgParser(SvgHandler):
         if stroke_color not in nocolor:
             if stroke_color.startswith("url"):
                 stroke = self.get_color_url(stroke_color, objects.GradientStroke, group)
+                opacity = 1
             else:
                 stroke = objects.Stroke()
                 color = self.parse_color(stroke_color)
                 stroke.color.value = color[:3]
-                stroke.opacity.value = color[3] * 100
+                opacity = color[3]
+            stroke.opacity.value = opacity * float(style.get("stroke-opacity", 1)) * 100
             group.add_shape(stroke)
             stroke.width.value = float(style.get("stroke-width", 1))
             linecap = style.get("stroke-linecap")
@@ -327,10 +329,13 @@ class SvgParser(SvgHandler):
         if fill_color not in nocolor:
             if fill_color.startswith("url"):
                 fill = self.get_color_url(fill_color, objects.GradientFill, group)
+                opacity = 1
             else:
                 color = self.parse_color(fill_color)
                 fill = objects.Fill(color[:3])
-                fill.opacity.value = color[3] * 100
+                opacity = color[3]
+            opacity *= float(style.get("fill-opacity", 1))
+            fill.opacity.value = opacity * 100
             group.add_shape(fill)
 
         self.parse_transform(element, group, group.transform)
