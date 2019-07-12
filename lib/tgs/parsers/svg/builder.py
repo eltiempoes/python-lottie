@@ -79,7 +79,7 @@ class SvgBuilder(SvgHandler):
         group = SvgBuilderShapeGroup(object)
         group.layer = True
         for shape in object.shapes:
-            self.collect_shape(shape, group)
+            collect_shape(shape, group)
         self.group_builder_process_children(group, dom_parent, time)
 
     def set_transform(self, dom, transform, time):
@@ -113,25 +113,6 @@ class SvgBuilder(SvgHandler):
                 trans.append("skewY(%s)" % sky)
 
         dom.attrib["transform"] = " ".join(trans)
-
-    def collect_shape(self, shape, shape_group):
-        if isinstance(shape, (objects.Rect, objects.Ellipse, objects.Star)):
-            shape_group.children.append(shape)
-        elif isinstance(shape, (objects.Fill, objects.GradientFill)):
-            shape_group.fill = shape
-        elif isinstance(shape, (objects.Stroke, objects.GradientStroke)):
-            shape_group.stroke = shape
-        elif isinstance(shape, (objects.Shape)):
-            if not shape_group.paths:
-                shape_group.children.append(None)
-            shape_group.paths.append(shape)
-        elif isinstance(shape, (objects.Group)):
-            subgroup = SvgBuilderShapeGroup(shape)
-            shape_group.children.append(subgroup)
-            shape_group.subgroups.append(subgroup)
-            for subshape in shape.shapes:
-                self.collect_shape(subshape, subgroup)
-            subgroup.finalize()
 
     def group_to_style(self, group, time):
         style = {}
@@ -333,6 +314,25 @@ class SvgBuilderShapeGroup:
         nchild = len(self.children)
         self.layer = nchild > thresh and self.lottie.name
 
+
+def collect_shape(shape, shape_group):
+    if isinstance(shape, (objects.Rect, objects.Ellipse, objects.Star)):
+        shape_group.children.append(shape)
+    elif isinstance(shape, (objects.Fill, objects.GradientFill)):
+        shape_group.fill = shape
+    elif isinstance(shape, (objects.Stroke, objects.GradientStroke)):
+        shape_group.stroke = shape
+    elif isinstance(shape, (objects.Shape)):
+        if not shape_group.paths:
+            shape_group.children.append(None)
+        shape_group.paths.append(shape)
+    elif isinstance(shape, (objects.Group)):
+        subgroup = SvgBuilderShapeGroup(shape)
+        shape_group.children.append(subgroup)
+        shape_group.subgroups.append(subgroup)
+        for subshape in shape.shapes:
+            collect_shape(subshape, subgroup)
+        subgroup.finalize()
 
 class SvgBuilderLayer:
     def __init__(self, lottie):
