@@ -39,7 +39,7 @@ class RasterImage:
         You can get codebook from k_means
         """
         if codebook is None or len(codebook) == 0:
-            return (numpy.array([0., 0., 0., 255.]), self.mono())
+            return [(numpy.array([0., 0., 0., 255.]), self.mono())]
 
         mono_data = []
         for c in codebook:
@@ -175,11 +175,11 @@ def raster_to_animation(filename, n_colors=1):
     return vc.animation
 
 
-def raster_frames_to_animation(files, n_colors=1, frame_delay=1, start_time=0, looping=True):
+def raster_frames_to_animation(files, n_colors=1, frame_delay=1, start_time=0, looping=True, framerate=60):
     nframes = len(files)
     if not looping:
         nframes -= 1
-    vc = Vectorizer(start_time + frame_delay * nframes)
+    vc = Vectorizer(start_time + frame_delay * nframes, framerate=framerate)
 
     raster = RasterImage.open(files.pop(0))
     if n_colors > 1:

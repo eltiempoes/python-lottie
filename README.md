@@ -9,8 +9,9 @@ Scripts
 * bin/lottie2tgs.py Will convert a lottie file into a tgs file
 * bin/svg2tgs.pt    Converts an SVG file into a lottie or tgs file
 * bin/lottiecat.py  Prints the given lottie file into a human-readable format
-* bin/lottiediff.py SHows a side-by-side diff of the human-readable rendition of two lottie files
+* bin/lottiediff.py Shows a side-by-side diff of the human-readable rendition of two lottie files
 * bin/lottie2svg.py Extracts a frame as SVG from a lottie/tgs file
+* bin/raster2tgs.py Converts a sequence of raster images into a lottie/tgs file
 
 
 Installation
