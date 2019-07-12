@@ -35,6 +35,10 @@ class TgsConverter:
     def lottie_to_py(self, val):
         return self.py(val)
 
+    @property
+    def __name__(self):
+        return "%s but displayed as %s" % (self.py.__name__, self.lottie.__name__)
+
 
 PseudoBool = TgsConverter(bool, int)
 
