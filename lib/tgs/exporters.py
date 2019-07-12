@@ -115,7 +115,7 @@ def prettyprint_summary(tgs_object, out=sys.stdout, indent="   ", _i=""):
 def multiexport(animation, basename, lottie_json=True, lottie_html=True, tgs=True):
     if lottie_json:
         with open(basename+".json", "w") as lottieout:
-            export_lottie(animation, lottieout, indent=4)
+            export_lottie(animation, lottieout, sort_keys=True, indent=4)
 
     if lottie_html:
         with open(basename+".html", "w") as htmlout:

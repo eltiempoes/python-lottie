@@ -23,7 +23,7 @@ class NullLayer(TgsObject): # TODO check
         TgsProp("transform", "ks", Transform, False),
         TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("index", "ind", float, False),
+        TgsProp("index", "ind", int, False),
         TgsProp("css_class", "cl", str, False),
         TgsProp("layer_html_id", "ln", str, False),
         TgsProp("in_point", "ip", float, False),
@@ -32,7 +32,7 @@ class NullLayer(TgsObject): # TODO check
         TgsProp("name", "nm", str, False),
         TgsProp("effects", "ef", load_effect, True),
         TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", float, False),
+        TgsProp("parent", "parent", int, False),
     ]
 
     def __init__(self):
@@ -45,7 +45,7 @@ class NullLayer(TgsObject): # TODO check
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
-        self.index = 0
+        self.index = None
         # Parsed layer name used as html class on SVG/HTML renderer
         self.css_class = ""
         # Parsed layer name used as html id on SVG/HTML renderer
@@ -73,7 +73,7 @@ class TextLayer(TgsObject): # TODO check
         TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("blend_mode", "bm", float, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("index", "ind", float, False),
+        TgsProp("index", "ind", int, False),
         TgsProp("css_class", "cl", str, False),
         TgsProp("layer_html_id", "ln", str, False),
         TgsProp("in_point", "ip", float, False),
@@ -84,7 +84,7 @@ class TextLayer(TgsObject): # TODO check
         #TgsProp("masks_properties", "masksProperties", Mask, True),
         TgsProp("effects", "ef", PseudoBool, False),
         TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", float, False),
+        TgsProp("parent", "parent", int, False),
         TgsProp("text_data", "t", float, False),
     ]
 
@@ -100,7 +100,7 @@ class TextLayer(TgsObject): # TODO check
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
-        self.index = 0
+        self.index = None
         # Parsed layer name used as html class on SVG/HTML renderer
         self.css_class = ""
         # Parsed layer name used as html id on SVG/HTML renderer
@@ -134,7 +134,7 @@ class ShapeLayer(TgsObject):
         TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("blend_mode", "bm", float, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("index", "ind", float, False),
+        TgsProp("index", "ind", int, False),
         #TgsProp("css_class", "cl", str, False),
         #TgsProp("layer_html_id", "ln", str, False),
         TgsProp("in_point", "ip", float, False),
@@ -145,7 +145,7 @@ class ShapeLayer(TgsObject):
         #TgsProp("masks_properties", "masksProperties", Mask, True),
         TgsProp("effects", "ef", load_effect, True),
         TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", float, False),
+        TgsProp("parent", "parent", int, False),
         TgsProp("shapes", "shapes", load_shape, True),
     ]
 
@@ -199,7 +199,7 @@ class ImageLayer(TgsObject): # TODO check
         TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("blend_mode", "bm", float, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("index", "ind", float, False),
+        TgsProp("index", "ind", int, False),
         TgsProp("css_class", "cl", str, False),
         TgsProp("layer_html_id", "ln", str, False),
         TgsProp("in_point", "ip", float, False),
@@ -210,7 +210,7 @@ class ImageLayer(TgsObject): # TODO check
         #TgsProp("masks_properties", "masksProperties", Mask, True),
         TgsProp("effects", "ef", load_effect, True),
         TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", float, False),
+        TgsProp("parent", "parent", int, False),
         TgsProp("reference_id", "refId", str, False),
     ]
 
@@ -226,7 +226,7 @@ class ImageLayer(TgsObject): # TODO check
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
-        self.index = 0
+        self.index = None
         # Parsed layer name used as html class on SVG/HTML renderer
         self.css_class = ""
         # Parsed layer name used as html id on SVG/HTML renderer
@@ -260,7 +260,7 @@ class PreCompLayer(TgsObject): # TODO check
         TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("blend_mode", "bm", float, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("index", "ind", float, False),
+        TgsProp("index", "ind", int, False),
         TgsProp("css_class", "cl", str, False),
         TgsProp("layer_html_id", "ln", str, False),
         TgsProp("in_point", "ip", float, False),
@@ -271,7 +271,7 @@ class PreCompLayer(TgsObject): # TODO check
         #TgsProp("masks_properties", "masksProperties", Mask, True),
         TgsProp("effects", "ef", load_effect, True),
         TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", float, False),
+        TgsProp("parent", "parent", int, False),
         TgsProp("reference_id", "refId", str, False),
         TgsProp("time_remapping", "tm", float, False),
     ]
@@ -288,7 +288,7 @@ class PreCompLayer(TgsObject): # TODO check
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
-        self.index = 0
+        self.index = None
         # Parsed layer name used as html class on SVG/HTML renderer
         self.css_class = ""
         # Parsed layer name used as html id on SVG/HTML renderer
@@ -324,7 +324,7 @@ class SolidLayer(TgsObject): # TODO check
         TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("blend_mode", "bm", float, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("index", "ind", float, False),
+        TgsProp("index", "ind", int, False),
         TgsProp("css_class", "cl", str, False),
         TgsProp("layer_html_id", "ln", str, False),
         TgsProp("in_point", "ip", float, False),
@@ -335,7 +335,7 @@ class SolidLayer(TgsObject): # TODO check
         #TgsProp("masks_properties", "masksProperties", Mask, True),
         TgsProp("effects", "ef", PseudoBool, False),
         TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", float, False),
+        TgsProp("parent", "parent", int, False),
         TgsProp("solid_color", "sc", str, False),
         TgsProp("solid_height", "sh", float, False),
         TgsProp("solid_width", "sw", float, False),
@@ -353,7 +353,7 @@ class SolidLayer(TgsObject): # TODO check
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
-        self.index = 0
+        self.index = None
         # Parsed layer name used as html class on SVG/HTML renderer
         self.css_class = ""
         # Parsed layer name used as html id on SVG/HTML renderer

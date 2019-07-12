@@ -199,6 +199,12 @@ class Value(TgsObject, AnimatableMixin):
     def add_keyframe(self, time, value):
         super().add_keyframe(time, [value])
 
+    def get_value(self, time=0):
+        v = super().get_value(time)
+        if self.animated and self.keyframes:
+            return v[0]
+        return v
+
 
 class Bezier(TgsObject):
     _props = [

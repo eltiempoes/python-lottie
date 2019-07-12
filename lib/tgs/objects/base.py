@@ -2,17 +2,6 @@ import enum
 import inspect
 
 
-def _to_dict(v):
-    if isinstance(v, Tgs):
-        return v.to_dict()
-    elif isinstance(v, list):
-        return list(map(_to_dict, v))
-    elif isinstance(v, (int, float, str, bool)):
-        return v
-    else:
-        raise Exception("Unknown value %r" % v)
-
-
 class Tgs:
     def to_dict(self):
         raise NotImplementedError
@@ -94,12 +83,29 @@ class TgsProp:
         return self.type(lottieval)
 
     def to_dict(self, obj):
-        val = _to_dict(self.get(obj))
+        val = self.basic_to_dict(self.get(obj))
         if self.list is PseudoList:
             val = [val]
         elif isinstance(self.type, TgsConverter):
-            return self.type.py_to_lottie(val)
+            val = self.basic_to_dict(self.type.py_to_lottie(val))
         return val
+
+    def basic_to_dict(self, v):
+        if isinstance(v, Tgs):
+            return v.to_dict()
+        elif isinstance(v, list):
+            return list(map(self.basic_to_dict, v))
+        elif isinstance(v, (int, str, bool)):
+            return v
+        elif isinstance(v, float):
+            if v % 1 == 0:
+                return int(v)
+            return v
+        else:
+            raise Exception("Unknown value %r" % v)
+
+    def __repr__(self):
+        return "<TgsProp %s:%s>" % (self.name, self.lottie)
 
 
 class TgsObject(Tgs):

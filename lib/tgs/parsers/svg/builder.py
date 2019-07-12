@@ -58,14 +58,44 @@ class SvgBuilder(SvgHandler):
         self.set_id(self.svg, animation, self.qualified("sodipodi", "docname"))
         self.defs = ElementTree.SubElement(self.svg, "defs")
 
-        for layer in reversed(animation.layers):
-            self.process_item(layer, self.svg, time)
+        layers = {}
+        flat_layers = []
+        for layer in animation.layers:
+            laybuilder = SvgBuilderLayer(layer)
+            flat_layers.append(laybuilder)
+            if layer.index is not None:
+                layers[layer.index] = laybuilder
 
-    def process_item(self, object, dom_parent, time):
-        cn = object.__class__.__name__.lower()
+        top_layers = []
+        for layer in flat_layers:
+            if layer.lottie.parent is not None:
+                layers[layer.lottie.parent].children.append(layer)
+            else:
+                top_layers.append(layer)
+
+        for layer in reversed(top_layers):
+            self.process_layer(layer, self.svg, time)
+
+    def process_layer(self, layer_builder, dom_parent, time):
+        cn = layer_builder.lottie.__class__.__name__.lower()
         handler = getattr(self, "_process_" + cn, None)
+
+        g = self.group_from_lottie(layer_builder.lottie, dom_parent, time, True)
         if handler:
-            handler(object, dom_parent, time)
+            handler(layer_builder.lottie, g, time)
+
+        for c in reversed(layer_builder.children):
+            self.process_layer(c, g, time)
+
+    def _process_nulllayer(self, object, dom_parent, time):
+        dom_parent.attrib["opacity"] = "1"
+
+    def _process_shapelayer(self, object, dom_parent, time):
+        group = SvgBuilderShapeGroup(object)
+        group.layer = True
+        for shape in object.shapes:
+            self.collect_shape(shape, group)
+        self.group_builder_process_children(group, dom_parent, time)
 
     def set_transform(self, dom, transform, time):
         trans = []
@@ -86,7 +116,7 @@ class SvgBuilder(SvgHandler):
 
         op = transform.opacity.get_value(time)
         if op != 100:
-            dom.attrib["style"] = dom.attrib.get("style", "") + "opacity:%s;" % (op/100)
+            dom.attrib["opacity"] = str(op/100)
 
         if transform.skew:
             skew = transform.skew.get_value(time)
@@ -101,26 +131,22 @@ class SvgBuilder(SvgHandler):
 
     def collect_shape(self, shape, shape_group):
         if isinstance(shape, (objects.Rect, objects.Ellipse, objects.Star)):
-            shape_group.shapes.append(shape)
+            shape_group.children.append(shape)
         elif isinstance(shape, (objects.Fill, objects.GradientFill)):
             shape_group.fill = shape
         elif isinstance(shape, (objects.Stroke, objects.GradientStroke)):
             shape_group.stroke = shape
         elif isinstance(shape, (objects.Shape)):
+            if not shape_group.paths:
+                shape_group.children.append(None)
             shape_group.paths.append(shape)
         elif isinstance(shape, (objects.Group)):
             subgroup = SvgBuilderShapeGroup(shape)
+            shape_group.children.append(subgroup)
             shape_group.subgroups.append(subgroup)
             for subshape in shape.shapes:
                 self.collect_shape(subshape, subgroup)
             subgroup.finalize()
-
-    def _process_shapelayer(self, object, dom_parent, time):
-        group = SvgBuilderShapeGroup(object)
-        group.layer = True
-        for shape in object.shapes:
-            self.collect_shape(shape, group)
-        self.group_to_svg(group, dom_parent, time)
 
     def group_to_style(self, group, time):
         style = {}
@@ -198,45 +224,50 @@ class SvgBuilder(SvgHandler):
 
         return id
 
-    def group_to_svg(self, group, dom_parent, time, i=""):
+    def group_from_lottie(self, lottie, dom_parent, time, layer):
+        g = ElementTree.SubElement(dom_parent, "g")
+        if layer and self.name_mode == NameMode.Inkscape:
+            g.attrib[self.qualified("inkscape", "groupmode")] = "layer"
+        self.set_id(g, lottie, self.qualified("inkscape", "label"))
+        self.set_transform(g, lottie.transform, time)
+        if lottie.name == "green1":
+            g.attrib["x-foobar"] = "1"
+        return g
+
+    def group_builder_to_svg(self, group, dom_parent, time):
         if group.empty():
             return
-
-        style = self.group_to_style(group, time)
-        opacity = group.lottie.transform.opacity.get_value(time) / 100
 
         if group.atomic():
             path = self.build_path(group.paths, dom_parent, time)
             self.set_id(path, group.paths[0])
-            path.attrib["style"] = style
-            path.attrib["opacity"] = str(opacity)
+            path.attrib["style"] = self.group_to_style(group, time)
+            self.set_transform(path, group.lottie.transform, time)
             return
 
-        g = ElementTree.SubElement(dom_parent, "g")
-        if group.layer and self.name_mode == NameMode.Inkscape:
-            g.attrib[self.qualified("inkscape", "groupmode")] = "layer"
-        self.set_id(g, group.lottie, self.qualified("inkscape", "label"))
-        self.set_transform(g, group.lottie.transform, time)
+        g = self.group_from_lottie(group.lottie, dom_parent, time, group.layer)
+        self.group_builder_process_children(group, g, time)
 
-        g.attrib["opacity"] = str(opacity)
-        for shape in reversed(group.shapes):
-            if isinstance(shape, objects.Rect):
-                svgshape = self.build_rect(shape, g, time)
-            elif isinstance(shape, objects.Ellipse):
-                svgshape = self.build_ellipse(shape, g, time)
+    def group_builder_process_children(self, group, g, time):
+        style = self.group_to_style(group, time)
+        for shape in reversed(group.children):
+            if shape is None:
+                if group.paths:
+                    path = self.build_path(group.paths, g, time)
+                    self.set_id(path, group.paths[0])
+                    path.attrib["style"] = style
+            elif isinstance(shape, SvgBuilderShapeGroup):
+                self.group_builder_to_svg(shape, g, time)
             else:
-                # TODO star
-                continue
-            self.set_id(svgshape, shape)
-            svgshape.attrib["style"] = style
-
-        if group.paths:
-            path = self.build_path(group.paths, g, time)
-            self.set_id(path, group.paths[0])
-            path.attrib["style"] = style
-
-        for subgroup in reversed(group.subgroups):
-            self.group_to_svg(subgroup, g, time, i+"  ")
+                if isinstance(shape, objects.Rect):
+                    svgshape = self.build_rect(shape, g, time)
+                elif isinstance(shape, objects.Ellipse):
+                    svgshape = self.build_ellipse(shape, g, time)
+                else:
+                    # TODO star
+                    continue
+                self.set_id(svgshape, shape)
+                svgshape.attrib["style"] = style
 
     def build_rect(self, shape, parent, time):
         rect = ElementTree.SubElement(parent, "rect")
@@ -297,7 +328,7 @@ def color_to_css(color):
 class SvgBuilderShapeGroup:
     def __init__(self, lottie):
         self.lottie = lottie
-        self.shapes = []
+        self.children = []
         self.paths = []
         self.subgroups = []
         self.fill = None
@@ -305,20 +336,24 @@ class SvgBuilderShapeGroup:
         self.layer = False
 
     def atomic(self):
-        return not self.shapes and not self.subgroups
+        return self.children == [None]
 
     def empty(self):
-        return self.atomic() and not self.paths
+        return not self.children
 
     def finalize(self, thresh=6):
         for g in self.subgroups:
             if g.layer:
                 self.layer = True
                 return
-        nchild = len(self.shapes) + len(self.subgroups)
-        if self.paths:
-            nchild += 1
+        nchild = len(self.children)
         self.layer = nchild > thresh and self.lottie.name
+
+
+class SvgBuilderLayer:
+    def __init__(self, lottie):
+        self.lottie = lottie
+        self.children = []
 
 
 def to_svg(animation, time):
