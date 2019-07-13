@@ -314,3 +314,7 @@ class SifBuilder:
         self.process_vector_ext("t2", lottie_path.vertices.keyframes, composite, "radial_composite", get_tangent)
 
 
+def to_sif(animation):
+    builder = SifBuilder()
+    builder.process(animation)
+    return builder.dom

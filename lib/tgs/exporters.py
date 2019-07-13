@@ -6,6 +6,7 @@ import sys
 from .objects.base import TgsObject, Tgs
 from .objects.properties import MultiDimensional, Value, ShapeProperty
 from .parsers.svg.builder import to_svg
+from .parsers.sif.builder import to_sif
 
 
 def export_lottie(animation, fp, **kw):
@@ -128,3 +129,8 @@ def multiexport(animation, basename, lottie_json=True, lottie_html=True, tgs=Tru
 
 def export_svg(animation, fp, time=0):
     to_svg(animation, time).write(fp, "utf-8", True)
+
+
+def export_sif(animation, fp):
+    to_sif(animation).write(fp, "utf-8", True)
+
