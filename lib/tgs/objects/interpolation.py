@@ -26,19 +26,66 @@ class Linear:
 
 
 class EaseIn:
-    def __init__(self, delay=1/3):
+    def __init__(self, delay=1 / 3):
         self.delay = delay
 
     def __call__(self, keyframe, start, end, end_time):
         keyframe.in_value = KeyframeBezierPoint(
-            (end_time - keyframe.time) / 3,
-            (end - start) / 3
+            (end_time - keyframe.time) * self.delay,
+            (end - start) * self.delay
         )
         keyframe.out_value = KeyframeBezierPoint(
             (end_time - keyframe.time) * self.delay,
             0
         )
-        self.adjust(keyframe, start, end, end_time)
+        Sigmoid.adjust(keyframe, start, end, end_time)
+
+
+class EaseOut:
+    def __init__(self, delay=1 / 3):
+        self.delay = delay
+
+    def __call__(self, keyframe, start, end, end_time):
+        keyframe.in_value = KeyframeBezierPoint(
+            (end_time - keyframe.time) * self.delay,
+            0
+        )
+        keyframe.out_value = KeyframeBezierPoint(
+            (end_time - keyframe.time) * self.delay,
+            (end - start) * self.delay
+        )
+        Sigmoid.adjust(keyframe, start, end, end_time)
+
+
+class Jump:
+    def __init__(self, delay=1 / 3):
+        self.delay = delay
+
+    def __call__(self, keyframe, start, end, end_time):
+        keyframe.in_value = KeyframeBezierPoint(
+            (end_time - keyframe.time),
+            0
+        )
+        keyframe.out_value = KeyframeBezierPoint(
+            0,
+            0
+        )
+
+
+class Sigmoid:
+    def __init__(self, delay=1 / 3):
+        self.delay = delay
+
+    def __call__(self, keyframe, start, end, end_time):
+        keyframe.in_value = KeyframeBezierPoint(
+            (end_time - keyframe.time) * self.delay,
+            0
+        )
+        keyframe.out_value = KeyframeBezierPoint(
+            -(end_time - keyframe.time) * self.delay,
+            0
+        )
+        Sigmoid.adjust(keyframe, start, end, end_time)
 
     @staticmethod
     def adjust(keyframe, start, end, end_time):
@@ -58,31 +105,3 @@ class EaseIn:
         keyframe.out_value.y += start
         keyframe.out_value.x = abs(keyframe.out_value.x / time_scale - time_diff)
         keyframe.out_value.y = abs(keyframe.out_value.y / value_scale - value_diff)
-
-
-class Jump:
-    def __init__(self, delay=1/3):
-        self.delay = delay
-
-    def __call__(self, keyframe, start, end, end_time):
-        keyframe.in_value = KeyframeBezierPoint(
-            (end_time - keyframe.time),
-            0
-        )
-        keyframe.out_value = KeyframeBezierPoint(
-            0,
-            0
-        )
-
-
-class Sigmoid:
-    def __call__(self, keyframe, start, end, end_time):
-        keyframe.in_value = KeyframeBezierPoint(
-            (end_time - keyframe.time) / 3,
-            0
-        )
-        keyframe.out_value = KeyframeBezierPoint(
-            -(end_time - keyframe.time) / 3,
-            0
-        )
-        EaseIn.adjust(keyframe, start, end, end_time)
