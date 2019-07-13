@@ -8,7 +8,8 @@ from ...utils.nvector import NVector
 from ...utils import restructure
 
 
-class SvgBuilder(SvgHandler):
+class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
+    merge_paths = True
     namestart = (
         r":_A-Za-z\xC0-\xD6\xD8-\xF6\xF8-\u02FF\u0370-\u037D\u037F-\u1FFF" +
         r"\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF" +
@@ -17,7 +18,7 @@ class SvgBuilder(SvgHandler):
     namenostart = r"-.0-9\xB7\u0300-\u036F\u203F-\u2040"
     id_re = re.compile("^[%s][%s%s]*$" % (namestart, namenostart, namestart))
 
-    def __init__(self):
+    def __init__(self, time=0):
         super().__init__()
         self.svg = ElementTree.Element("svg")
         self.dom = ElementTree.ElementTree(self.svg)
@@ -25,6 +26,7 @@ class SvgBuilder(SvgHandler):
         self.ids = set()
         self.idc = 0
         self.name_mode = NameMode.Inkscape
+        self.time = time
 
     def gen_id(self):
         #TODO should check if id_n already exists
@@ -53,59 +55,46 @@ class SvgBuilder(SvgHandler):
             dom.attrib[inkscape_qual] = n
         return n
 
-    def process(self, animation: objects.Animation, time=0):
+    def _on_animation(self, animation: objects.Animation):
         self.svg.attrib["width"] = str(animation.width)
         self.svg.attrib["height"] = str(animation.height)
         self.svg.attrib["viewBox"] = "0 0 %s %s" % (animation.width, animation.height)
         self.svg.attrib["version"] = "1.1"
         self.set_id(self.svg, animation, self.qualified("sodipodi", "docname"))
         self.defs = ElementTree.SubElement(self.svg, "defs")
+        return self.svg
 
-        for layer in restructure.restructure_animation(animation, True):
-            self.process_layer(layer, self.svg, time)
+    def _on_layer(self, layer_builder, dom_parent):
+        g = self.group_from_lottie(layer_builder.lottie, dom_parent, True)
+        if isinstance(layer_builder.lottie, objects.NullLayer):
+            dom_parent.attrib["opacity"] = "1"
+        return g
 
-    def process_layer(self, layer_builder, dom_parent, time):
-        cn = layer_builder.lottie.__class__.__name__.lower()
-        handler = getattr(self, "_process_" + cn, None)
-
-        g = self.group_from_lottie(layer_builder.lottie, dom_parent, time, True)
-        if handler:
-            handler(layer_builder, g, time)
-
-        for c in layer_builder.children:
-            self.process_layer(c, g, time)
-
-    def _process_nulllayer(self, layer_builder, dom_parent, time):
-        dom_parent.attrib["opacity"] = "1"
-
-    def _process_shapelayer(self, layer_builder, dom_parent, time):
-        self.group_builder_process_children(layer_builder.shapegroup, dom_parent, time)
-
-    def set_transform(self, dom, transform, time):
+    def set_transform(self, dom, transform):
         trans = []
-        pos = NVector(*transform.position.get_value(time))
-        anchor = NVector(*transform.anchor_point.get_value(time))
+        pos = NVector(*transform.position.get_value(self.time))
+        anchor = NVector(*transform.anchor_point.get_value(self.time))
         pos -= anchor
         if pos[0] != 0 or pos[0] != 0:
             trans.append("translate(%s, %s)" % (pos.components[0], pos.components[1]))
 
-        scale = NVector(*transform.scale.get_value(time))
+        scale = NVector(*transform.scale.get_value(self.time))
         if scale[0] != 100 or scale[1] != 100:
             scale /= 100
             trans.append("scale(%s, %s)" % (scale.components[0], scale.components[1]))
 
-        rot = transform.rotation.get_value(time)
+        rot = transform.rotation.get_value(self.time)
         if rot != 0:
             trans.append("rotate(%s, %s, %s)" % (rot, anchor[0], anchor[1]))
 
-        op = transform.opacity.get_value(time)
+        op = transform.opacity.get_value(self.time)
         if op != 100:
             dom.attrib["opacity"] = str(op/100)
 
         if transform.skew:
-            skew = transform.skew.get_value(time)
+            skew = transform.skew.get_value(self.time)
             if skew != 0:
-                axis = transform.skew_axis.get_value(time) * math.pi / 180
+                axis = transform.skew_axis.get_value(self.time) * math.pi / 180
                 skx = skew * math.cos(axis)
                 sky = skew * math.sin(axis)
                 trans.append("skewX(%s)" % skx)
@@ -113,25 +102,25 @@ class SvgBuilder(SvgHandler):
 
         dom.attrib["transform"] = " ".join(trans)
 
-    def group_to_style(self, group, time):
+    def group_to_style(self, group):
         style = {}
         if group.fill:
-            style["fill-opacity"] = group.fill.opacity.get_value(time) / 100
+            style["fill-opacity"] = group.fill.opacity.get_value(self.time) / 100
             if isinstance(group.fill, objects.GradientFill):
-                style["fill"] = "url(#%s)" % self.process_gradient(group.fill, time)
+                style["fill"] = "url(#%s)" % self.process_gradient(group.fill)
             else:
-                style["fill"] = color_to_css(group.fill.color.get_value(time))
+                style["fill"] = color_to_css(group.fill.color.get_value(self.time))
         else:
             style["fill"] = "none"
 
         if group.stroke:
             if isinstance(group.stroke, objects.GradientStroke):
-                style["stroke"] = "url(#%s)" % self.process_gradient(group.stroke, time)
+                style["stroke"] = "url(#%s)" % self.process_gradient(group.stroke)
             else:
-                style["stroke"] = color_to_css(group.stroke.color.get_value(time))
+                style["stroke"] = color_to_css(group.stroke.color.get_value(self.time))
 
-            style["stroke-opacity"] = group.stroke.opacity.get_value(time) / 100
-            style["stroke-width"] = group.stroke.width.get_value(time)
+            style["stroke-opacity"] = group.stroke.opacity.get_value(self.time) / 100
+            style["stroke-width"] = group.stroke.width.get_value(self.time)
             if group.stroke.miter_limit is not None:
                 style["stroke-miterlimit"] = group.stroke.miter_limit
 
@@ -156,9 +145,9 @@ class SvgBuilder(SvgHandler):
             style.items()
         ))
 
-    def process_gradient(self, gradient, time):
-        spos = NVector(*gradient.start_point.get_value(time))
-        epos = NVector(*gradient.end_point.get_value(time))
+    def process_gradient(self, gradient):
+        spos = NVector(*gradient.start_point.get_value(self.time))
+        epos = NVector(*gradient.end_point.get_value(self.time))
 
         if gradient.gradient_type == objects.GradientType.Linear:
             dom = ElementTree.SubElement(self.defs, "linerGradient")
@@ -171,15 +160,15 @@ class SvgBuilder(SvgHandler):
             dom.attrib["cx"] = str(spos[0])
             dom.attrib["cy"] = str(spos[1])
             dom.attrib["r"] = str((epos-spos).length)
-            a = gradient.highlight_angle.get_value(time) * math.pi / 180
-            l = gradient.highlight_length.get_value(time)
+            a = gradient.highlight_angle.get_value(self.time) * math.pi / 180
+            l = gradient.highlight_length.get_value(self.time)
             dom.attrib["fx"] = str(spos[0] + math.cos(a) * l)
             dom.attrib["fy"] = str(spos[1] + math.sin(a) * l)
 
         id = self.set_id(dom, gradient, force=True)
         dom.attrib["gradientUnits"] = "userSpaceOnUse"
 
-        colors = gradient.colors.colors.get_value(time)
+        colors = gradient.colors.colors.get_value(self.time)
         for i in range(0, len(colors), 4):
             off = colors[i]
             color = colors[i+1:i+4]
@@ -189,74 +178,70 @@ class SvgBuilder(SvgHandler):
 
         return id
 
-    def group_from_lottie(self, lottie, dom_parent, time, layer):
+    def group_from_lottie(self, lottie, dom_parent, layer):
         g = ElementTree.SubElement(dom_parent, "g")
         if layer and self.name_mode == NameMode.Inkscape:
             g.attrib[self.qualified("inkscape", "groupmode")] = "layer"
         self.set_id(g, lottie, self.qualified("inkscape", "label"))
-        self.set_transform(g, lottie.transform, time)
+        self.set_transform(g, lottie.transform)
         return g
 
-    def group_builder_to_svg(self, group, dom_parent, time):
+    def _on_shapegroup(self, group, dom_parent):
         if group.empty():
             return
 
         if len(group.children) == 1 and isinstance(group.children[0], restructure.RestructuredPathMerger):
-            path = self.build_path(group.paths.paths, dom_parent, time)
+            path = self.build_path(group.paths.paths, dom_parent)
             self.set_id(path, group.paths.paths[0])
-            path.attrib["style"] = self.group_to_style(group, time)
-            self.set_transform(path, group.lottie.transform, time)
+            path.attrib["style"] = self.group_to_style(group)
+            self.set_transform(path, group.lottie.transform)
             return
 
-        g = self.group_from_lottie(group.lottie, dom_parent, time, group.layer)
-        self.group_builder_process_children(group, g, time)
+        g = self.group_from_lottie(group.lottie, dom_parent, group.layer)
+        self.shapegroup_process_children(group, g)
 
-    def group_builder_process_children(self, group, g, time):
-        style = self.group_to_style(group, time)
-        for shape in group.children:
-            if isinstance(shape, restructure.RestructuredPathMerger):
-                path = self.build_path(shape.paths, g, time)
-                self.set_id(path, shape.paths[0])
-                path.attrib["style"] = style
-            elif isinstance(shape, restructure.RestructuredShapeGroup):
-                self.group_builder_to_svg(shape, g, time)
-            else:
-                if isinstance(shape, objects.Rect):
-                    svgshape = self.build_rect(shape, g, time)
-                elif isinstance(shape, objects.Ellipse):
-                    svgshape = self.build_ellipse(shape, g, time)
-                else:
-                    # TODO star
-                    continue
-                self.set_id(svgshape, shape)
-                svgshape.attrib["style"] = style
+    def _on_merged_path(self, shape, shapegroup, out_parent):
+        path = self.build_path(shape.paths, out_parent)
+        self.set_id(path, shape.paths[0])
+        path.attrib["style"] = self.group_to_style(shapegroup)
 
-    def build_rect(self, shape, parent, time):
+    def _on_shape(self, shape, shapegroup, out_parent):
+        if isinstance(shape, objects.Rect):
+            svgshape = self.build_rect(shape, out_parent)
+        elif isinstance(shape, objects.Ellipse):
+            svgshape = self.build_ellipse(shape, out_parent)
+        else:
+            # TODO star
+            return
+        self.set_id(svgshape, shape)
+        svgshape.attrib["style"] = self.group_to_style(shapegroup)
+
+    def build_rect(self, shape, parent):
         rect = ElementTree.SubElement(parent, "rect")
-        size = shape.size.get_value(time)
-        pos = shape.position.get_value(time)
+        size = shape.size.get_value(self.time)
+        pos = shape.position.get_value(self.time)
         rect.attrib["width"] = str(size[0])
         rect.attrib["height"] = str(size[1])
         rect.attrib["x"] = str(pos[0] - size[0] / 2)
         rect.attrib["y"] = str(pos[1] - size[1] / 2)
-        rect.attrib["rx"] = str(shape.rounded.get_value(time))
+        rect.attrib["rx"] = str(shape.rounded.get_value(self.time))
         return rect
 
-    def build_ellipse(self, shape, parent, time):
+    def build_ellipse(self, shape, parent):
         ellipse = ElementTree.SubElement(parent, "ellipse")
-        size = shape.size.get_value(time)
-        pos = shape.position.get_value(time)
+        size = shape.size.get_value(self.time)
+        pos = shape.position.get_value(self.time)
         ellipse.attrib["rx"] = str(size[0] / 2)
         ellipse.attrib["ry"] = str(size[1] / 2)
         ellipse.attrib["cx"] = str(pos[0])
         ellipse.attrib["cy"] = str(pos[1])
         return ellipse
 
-    def build_path(self, shapes, parent, time):
+    def build_path(self, shapes, parent):
         path = ElementTree.SubElement(parent, "path")
         d = ""
         for shape in shapes:
-            bez = shape.vertices.get_value(time)
+            bez = shape.vertices.get_value(self.time)
             d += "M %s,%s " % tuple(bez.vertices[0])
             for i in range(1, len(bez.vertices)):
                 qfrom = NVector(*bez.vertices[i-1])
@@ -288,7 +273,7 @@ def color_to_css(color):
 
 
 def to_svg(animation, time):
-    builder = SvgBuilder()
-    builder.process(animation, time)
+    builder = SvgBuilder(time)
+    builder.process(animation)
     return builder.dom
 

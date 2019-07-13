@@ -95,3 +95,48 @@ def restructure_shapegroup(shape, shape_group, merge_paths):
         for subshape in shape.shapes:
             restructure_shapegroup(subshape, subgroup, merge_paths)
         subgroup.finalize()
+
+
+class AbstractBuilder:
+    merge_paths = False
+
+    def _on_animation(self, animation):
+        raise NotImplementedError()
+
+    def _on_shapegroup(self, shapegroup, out_parent):
+        raise NotImplementedError()
+
+    def _on_shape(self, shape, shapegroup, out_parent):
+        raise NotImplementedError()
+
+    def _on_merged_path(self, shape, shapegroup, out_parent):
+        raise NotImplementedError()
+
+    def process(self, animation: objects.Animation):
+        out_parent = self._on_animation(animation)
+        for layer_builder in restructure_animation(animation, self.merge_paths):
+            self.process_layer(layer_builder, out_parent)
+
+    def _on_layer(self, layer_builder, out_parent):
+        raise NotImplementedError()
+
+    def process_layer(self, layer_builder, out_parent):
+        out_layer = self._on_layer(layer_builder, out_parent)
+
+        shapegroup = getattr(layer_builder, "shapegroup", None)
+        if shapegroup:
+            self.shapegroup_process_children(shapegroup, out_layer)
+
+        for c in layer_builder.children:
+            self.process_layer(c, out_layer)
+
+    def shapegroup_process_children(self, shapegroup, out_parent):
+        for shape in shapegroup.children:
+            if isinstance(shape, RestructuredShapeGroup):
+                self._on_shapegroup(shape, out_parent)
+            elif isinstance(shape, RestructuredPathMerger):
+                self._on_merged_path(shape, shapegroup, out_parent)
+            else:
+                self._on_shape(shape, shapegroup, out_parent)
+
+

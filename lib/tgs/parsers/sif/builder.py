@@ -32,7 +32,7 @@ blend_modes = {
 }
 
 
-class SifBuilder:
+class SifBuilder(restructure.AbstractBuilder):
     def __init__(self):
         super().__init__()
         self.canvas = ElementTree.Element("canvas")
@@ -45,7 +45,7 @@ class SifBuilder:
     def _format_time(self, time):
         return "%ss" % (time / self.framerate)
 
-    def process(self, animation: objects.Animation):
+    def _on_animation(self, animation: objects.Animation):
         if animation.name:
             ElementTree.SubElement(self.canvas, "name").text = animation.name
         self.canvas.attrib["width"] = str(animation.width)
@@ -61,11 +61,9 @@ class SifBuilder:
         self.end_frame = animation.out_point
         self.width = animation.width
         self.height = animation.height
+        return self.canvas
 
-        for layer in restructure.restructure_animation(animation, False):
-            self.process_layer(layer, self.canvas)
-
-    def process_layer(self, layer_builder, dom_parent):
+    def _on_layer(self, layer_builder, dom_parent):
         layer = self.layer_from_lottie("group", layer_builder.lottie, dom_parent)
 
         bm = getattr(layer_builder.lottie, "blend_mode", objects.BlendMode.Normal)
@@ -82,13 +80,7 @@ class SifBuilder:
         canvas = ElementTree.SubElement(pcanv, "canvas")
         out_point = getattr(layer_builder.lottie, "out_point", self.end_frame)
         canvas.attrib["end-time"] = self._format_time(out_point)
-
-        shapegroup = getattr(layer_builder, "shapegroup", None)
-        if shapegroup:
-            self.group_builder_process_children(shapegroup, dom_parent)
-
-        for c in layer_builder.children:
-            self.process_layer(c, canvas)
+        return canvas
 
     def layer_from_lottie(self, type, lottie, dom_parent):
         g = ElementTree.SubElement(dom_parent, "layer")
@@ -196,7 +188,7 @@ class SifBuilder:
         e_val.attrib["value"] = str(vaue)
         return e_val
 
-    def group_builder_shape_to_sif(self, shape, group, dom_parent):
+    def _on_shape(self, shape, group, dom_parent):
         layers = []
         if group.fill:
             if isinstance(shape, objects.Rect):
@@ -220,13 +212,6 @@ class SifBuilder:
             layers.append(sif_shape)
 
         return layers
-
-    def group_builder_process_children(self, group, dom_parent):
-        for shape in group.children:
-            if isinstance(shape, restructure.RestructuredShapeGroup):
-                self.group_builder_to_sif(shape, dom_parent)
-            else:
-                self.group_builder_shape_to_sif(shape, group, dom_parent)
 
     def _merge_keyframes(self, props):
         keyframes = {}
@@ -369,7 +354,7 @@ class SifBuilder:
         which_point = "out_point"
         self.process_vector_ext("t2", lottie_path.vertices.keyframes, composite, "radial_composite", get_tangent)
 
-    def group_builder_to_sif(self, shape_group, dom_parent):
+    def _on_shapegroup(self, shape_group, dom_parent):
         if shape_group.empty():
             return
 
@@ -378,7 +363,7 @@ class SifBuilder:
         pcanv = ElementTree.SubElement(layer, "param")
         pcanv.attrib["name"] = "canvas"
         canvas = ElementTree.SubElement(pcanv, "canvas")
-        self.group_builder_process_children(shape_group, canvas)
+        self.shapegroup_process_children(shape_group, canvas)
 
 
 def to_sif(animation):
