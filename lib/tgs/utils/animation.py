@@ -51,3 +51,13 @@ def spring_pull(position_prop, point, start_time, end_time, falloff=15, oscillat
         position_prop.add_keyframe(start_time + delta * i, p.to_list())
 
     position_prop.add_keyframe(end_time, point.to_list())
+
+
+def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, reverse=False):
+    delta = (end_time - start_time) / n_keyframes
+    for i in range(n_keyframes):
+        time = start_time + i * delta
+        fact = i / (n_keyframes-1)
+        if reverse:
+            fact = 1 - fact
+        position_prop.add_keyframe(time, bezier.point_at(fact).to_list())

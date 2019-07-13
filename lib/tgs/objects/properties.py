@@ -2,6 +2,7 @@ import math
 from functools import reduce
 from .base import TgsObject, TgsProp, PseudoList, PseudoBool
 from . import interpolation
+from ..utils.nvector import NVector
 
 
 class OffsetKeyframe(TgsObject):
@@ -199,6 +200,40 @@ class Bezier(TgsObject):
     def close(self, closed=True):
         self.closed = closed
         return self
+
+    def point_at(self, t):
+        if t <= 0:
+            return NVector(*self.vertices[0])
+        if t >= 1:
+            return NVector(*self.vertices[-1])
+
+        n = len(self.vertices)-1
+        for i in range(n):
+            if (i+1) / n > t:
+                break
+        t = (t - (i/n)) * n
+        v1 = NVector(*self.vertices[i])
+        v2 = NVector(*self.vertices[i+1])
+        points = [v1]
+        t1 = NVector(*self.out_point[i])
+        if t1.length != 0:
+            points.append(t1+v1)
+        t2 = NVector(*self.in_point[i+1])
+        if t1.length != 0:
+            points.append(t2+v2)
+        points.append(v2)
+
+        return self._solve_bezier(t, points)
+
+    def _solve_bezier(self, t, points):
+        next = []
+        p1 = points.pop(0)
+        for p2 in points:
+            next.append(p1 * (1-t) + p2 * t)
+            p1 = p2
+        if len(next) > 1:
+            return self._solve_bezier(t, next)
+        return next[0]
 
 
 class ShapePropKeyframe(TgsObject):
