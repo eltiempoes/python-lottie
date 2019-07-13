@@ -5,6 +5,7 @@ from ... import objects
 from ...utils.nvector import NVector
 from .svgdata import color_table, css_atrrs
 from .handler import SvgHandler, NameMode
+from ...utils.ellipse import Ellipse
 
 nocolor = {"none"}
 
@@ -786,41 +787,10 @@ class PathDParser:
         self.implicit = "A"
         self.next_token()
 
-    def _arc_matrix_mul(self, phi, x, y, sin_mul=1):
-        c = math.cos(phi)
-        s = math.sin(phi) * sin_mul
-
-        xr = c * x - s * y
-        yr = s * x + c * y
-        return xr, yr
-
-    def _arc_angle(self, u, v):
-        arg = math.acos(max(-1, min(1, u.dot(v) / (u.length * v.length))))
-        if u[0] * v[1] - u[1] * v[0] < 0:
-            return -arg
-        return arg
-
-    def _arc_point(self, c, r, xangle, t):
-        return NVector(
-            c[0] + r[0] * math.cos(xangle) * math.cos(t) - r[1] * math.sin(xangle) * math.sin(t),
-            c[1] + r[0] * math.sin(xangle) * math.cos(t) + r[1] * math.cos(xangle) * math.sin(t)
-        )
-
-    def _arc_derivative(self, c, r, xangle, t):
-        return NVector(
-            -r[0] * math.cos(xangle) * math.sin(t) - r[1] * math.sin(xangle) * math.cos(t),
-            -r[0] * math.sin(xangle) * math.sin(t) + r[1] * math.cos(xangle) * math.cos(t)
-        )
-
-    def _arc_alpha(self, step):
-        return math.sin(step) * (math.sqrt(4+3*math.tan(step/2)**2) - 1) / 3
-
     def _do_arc(self, rx, ry, xrot, large, sweep, dest):
         self._do_add_p()
         if self.p == dest:
             return
-        rx = abs(rx)
-        ry = abs(ry)
 
         if rx == 0 or ry == 0:
             # Straight line
@@ -832,73 +802,22 @@ class PathDParser:
             )
             return
 
-        x1 = self.p[0]
-        y1 = self.p[1]
-        x2 = dest[0]
-        y2 = dest[1]
-        phi = math.pi * xrot / 180
-
-        tx = (x1 - x2) / 2
-        ty = (y1 - y2) / 2
-        x1p, y1p = self._arc_matrix_mul(phi, tx, ty, -1)
-
-        cr = x1p ** 2 / rx**2 + y1p**2 / ry**2
-        if cr > 1:
-            s = math.sqrt(cr)
-            rx *= s
-            ry *= s
-
-        dq = rx**2 * y1p**2 + ry**2 * x1p**2
-        pq = (rx**2 * ry**2 - dq) / dq
-        cpm = math.sqrt(max(0, pq))
-        if large == sweep:
-            cpm = -cpm
-        cp = NVector(cpm * rx * y1p / ry, -cpm * ry * x1p / rx)
-        c = NVector(*self._arc_matrix_mul(phi, cp[0], cp[1])) + NVector((x1+x2)/2, (y1+y2)/2)
-        theta1 = self._arc_angle(NVector(1, 0), NVector((x1p - cp[0]) / rx, (y1p - cp[1]) / ry))
-        deltatheta = self._arc_angle(
-            NVector((x1p - cp[0]) / rx, (y1p - cp[1]) / ry),
-            NVector((-x1p - cp[0]) / rx, (-y1p - cp[1]) / ry)
-        ) % (2*math.pi)
-
-        if not sweep and deltatheta > 0:
-            deltatheta -= 2*math.pi
-        elif sweep and deltatheta < 0:
-            deltatheta += 2*math.pi
-
-        r = NVector(rx, ry)
-        angle1 = theta1
-        angle_left = abs(deltatheta)
-        step = math.pi / 2
-        sign = -1 if theta1+deltatheta < angle1 else 1
+        ellipse, theta1, deltatheta = Ellipse.from_svg_arc(self.p, rx, ry, xrot, large, sweep, dest)
+        points = ellipse.to_bezier(theta1, deltatheta)
 
         self._do_add_p()
-        # We need to fix the first handle
-        firststep = min(angle_left, step) * sign
-        alpha = self._arc_alpha(firststep)
-        q1 = self._arc_derivative(c, r, phi, angle1) * alpha
-        self.path.out_point[-1] = q1.to_list()
-        tolerance = step / 2
-        # Then we iterate until the angle has been completed
-        while angle_left > tolerance:
-            lstep = min(angle_left, step)
-            step_sign = lstep * sign
-            angle2 = angle1 + step_sign
-            angle_left -= abs(lstep)
-
-            alpha = self._arc_alpha(step_sign)
-            if angle_left <= tolerance:
-                p2 = dest
-            else:
-                p2 = self._arc_point(c, r, phi, angle2)
-            q2 = -self._arc_derivative(c, r, phi, angle2) * alpha
-
-            self.path.add_smooth_point(
-                p2.to_list(),
-                q2.to_list(),
+        self.path.out_point[-1] = points[0].out_t.to_list()
+        for point in points[1:-1]:
+            self.path.add_point(
+                point.point.to_list(),
+                point.in_t.to_list(),
+                point.out_t.to_list(),
             )
-            angle1 = angle2
-        self.path.out_point[-1] = [0, 0]
+        self.path.add_point(
+            dest.to_list(),
+            points[-1].in_t.to_list(),
+            [0, 0],
+        )
         self.p = dest
 
     def _parse_a(self):
@@ -931,4 +850,3 @@ def parse_svg_etree(etree, *args, **kwargs):
 
 def parse_svg_file(file, *args, **kwargs):
     return parse_svg_etree(ElementTree.parse(file), *args, **kwargs)
-
