@@ -58,7 +58,7 @@ class SvgBuilder(SvgHandler):
         self.set_id(self.svg, animation, self.qualified("sodipodi", "docname"))
         self.defs = ElementTree.SubElement(self.svg, "defs")
 
-        for layer in SvgBuilder.setup(animation):
+        for layer in SvgBuilderLayer.setup(animation):
             self.process_layer(layer, self.svg, time)
 
     def process_layer(self, layer_builder, dom_parent, time):
