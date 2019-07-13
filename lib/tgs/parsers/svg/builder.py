@@ -36,8 +36,10 @@ class SvgBuilder(SvgHandler):
         n = getattr(lottieobj, "name", None)
         if n is None or self.name_mode == NameMode.NoName:
             if force:
-                dom.attrib["id"] = self.gen_id()
-            return
+                id = self.gen_id()
+                dom.attrib["id"] = id
+                return id
+            return None
 
         idn = n.replace(" ", "_")
         if self.id_re.match(idn) and idn not in self.ids:
@@ -178,7 +180,6 @@ class SvgBuilder(SvgHandler):
             dom.attrib["fy"] = str(spos[1] + math.sin(a) * l)
 
         id = self.set_id(dom, gradient, force=True)
-        dom.attrib["id"] = id
         dom.attrib["gradientUnits"] = "userSpaceOnUse"
 
         colors = gradient.colors.colors.get_value(time)
@@ -242,7 +243,7 @@ class SvgBuilder(SvgHandler):
         rect.attrib["height"] = str(size[1])
         rect.attrib["x"] = str(pos[0] - size[0] / 2)
         rect.attrib["y"] = str(pos[1] - size[1] / 2)
-        rect.attrib["rx"] = shape.rounded.get_value(time)
+        rect.attrib["rx"] = str(shape.rounded.get_value(time))
         return rect
 
     def build_ellipse(self, shape, parent, time):
