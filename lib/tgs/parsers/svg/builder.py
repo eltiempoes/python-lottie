@@ -334,6 +334,7 @@ def collect_shape(shape, shape_group):
             collect_shape(subshape, subgroup)
         subgroup.finalize()
 
+
 class SvgBuilderLayer:
     def __init__(self, lottie):
         self.lottie = lottie

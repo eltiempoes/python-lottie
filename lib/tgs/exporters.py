@@ -2,6 +2,8 @@ import json
 import gzip
 import codecs
 import sys
+from xml.dom import minidom
+from xml.etree import ElementTree
 
 from .objects.base import TgsObject, Tgs
 from .objects.properties import MultiDimensional, Value, ShapeProperty
@@ -127,10 +129,22 @@ def multiexport(animation, basename, lottie_json=True, lottie_html=True, tgs=Tru
             export_tgs(animation, tgsout)
 
 
-def export_svg(animation, fp, time=0):
-    to_svg(animation, time).write(fp, "utf-8", True)
+def _print_ugly_xml(dom, fp):
+    return dom.write(fp, "utf-8", True)
 
 
-def export_sif(animation, fp):
-    to_sif(animation).write(fp, "utf-8", True)
+def _print_pretty_xml(dom, fp):
+    xmlstr = minidom.parseString(ElementTree.tostring(dom.getroot())).toprettyxml(indent="   ")
+    if isinstance(fp, str):
+        fp = open(fp, "w")
+    fp.write(xmlstr)
 
+
+def export_svg(animation, fp, time=0, pretty=True):
+    _print_xml = _print_pretty_xml if pretty else _print_ugly_xml
+    _print_xml(to_svg(animation, time), fp)
+
+
+def export_sif(animation, fp, pretty=True):
+    _print_xml = _print_pretty_xml if pretty else _print_ugly_xml
+    _print_xml(to_sif(animation), fp)
