@@ -65,6 +65,8 @@ class SifBuilder(restructure.AbstractBuilder):
 
     def _on_layer(self, layer_builder, dom_parent):
         layer = self.layer_from_lottie("group", layer_builder.lottie, dom_parent)
+        if not layer_builder.lottie.name:
+            layer.attrib["desc"] = layer_builder.lottie.__class__.__name__
 
         bm = getattr(layer_builder.lottie, "blend_mode", objects.BlendMode.Normal)
         self.simple_param("blend_method", bm, layer, "integer").attrib["static"] = "true"

@@ -68,6 +68,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         g = self.group_from_lottie(layer_builder.lottie, dom_parent, True)
         if isinstance(layer_builder.lottie, objects.NullLayer):
             dom_parent.attrib["opacity"] = "1"
+        if not layer_builder.lottie.name:
+            g.attrib[self.qualified("inkscape", "label")] = layer_builder.lottie.__class__.__name__
         return g
 
     def set_transform(self, dom, transform):
