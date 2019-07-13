@@ -72,7 +72,7 @@ class SifBuilder:
         self.simple_param("time_offset", self._format_time(in_point), layer)
 
         pcanv = ElementTree.SubElement(layer, "param")
-        pcav.attrib["name"] = "canvas"
+        pcanv.attrib["name"] = "canvas"
         canvas = ElementTree.SubElement(pcanv, "canvas")
         # TODO seconds?
         out_point = getattr(layer_builder.lottie, "out_point", self.end_frame)
@@ -93,7 +93,9 @@ class SifBuilder:
         g.attrib["version"] = "0.2"
         if lottie.name:
             g.attrib["desc"] = lottie.name
-        self.set_transform(g, lottie.transform)
+        transf = getattr(lottie, "transform", None)
+        if transf:
+            self.set_transform(g, lottie.transform)
         return g
 
     def set_transform(self, group, transform):
@@ -141,16 +143,16 @@ class SifBuilder:
     def process_scalar(self, type, name, value, parent):
         def getter(keyframe, elem):
             if keyframe is None:
-                v = multidim.value
+                v = value.value
             else:
                 v = keyframe.start
-            ElementTree.SubElement(vector, type).text = str(v)
+            elem.attrib["value"] = str(v)
         return self.process_vector_ext(name, value.keyframes, parent, type, getter)
 
     def simple_param(self, name, vaue, parent, type="real"):
         param = ElementTree.SubElement(parent, "param")
         param.attrib["name"] = name
-        e_val = ElementTree.SubElement(blend, type)
+        e_val = ElementTree.SubElement(param, type)
         e_val.attrib["value"] = str(vaue)
         return e_val
 
@@ -164,20 +166,28 @@ class SifBuilder:
         for shape in reversed(group.children):
             if shape is None:
                 if group.paths:
-                    sif_shape = self.build_path(group.paths, dom_parent)
-                    self.apply_group_style(sif_shape, group)
+                    for path in group.paths:
+                        if group.fill:
+                            sif_shape = self.build_path("region", path, dom_parent)
+                            self.apply_group_fill(sif_shape, group.fill)
+                        if group.stroke:
+                            sif_shape = self.build_paths("outline", path, dom_parent)
+                            self.apply_group_stroke(sif_shape, group.stroke)
             elif isinstance(shape, SvgBuilderShapeGroup):
                 self.group_builder_to_sif(shape, dom_parent)
             else:
-                # TODO if not fill create bline
-                if isinstance(shape, objects.Rect):
-                    sif_shape = self.build_rect(shape, dom_parent)
-                elif isinstance(shape, objects.Ellipse):
-                    sif_shape = self.build_ellipse(shape, dom_parent)
-                else:
-                    # TODO star
-                    continue
-                self.apply_group_style(shape, sif_shape, group)
+                if group.fill:
+                    if isinstance(shape, objects.Rect):
+                        sif_shape = self.build_rect(shape, dom_parent)
+                    elif isinstance(shape, objects.Ellipse):
+                        sif_shape = self.build_ellipse(shape, dom_parent)
+                    else:
+                        # TODO star
+                        continue
+                    self.apply_group_fill(shape, sif_shape, group.fill)
+                if group.stroke:
+                    # TODO if not create bline for rect / ellipse etc
+                    pass
 
     def build_rect(self, parent, shape):
         layer = self.layer_from_lottie("rectangle", shape, parent)
@@ -205,10 +215,11 @@ class SifBuilder:
         self.process_vector_ext("param", keyframes, layer, "vector", getp2).attrib["name"] = "point2"
         self.process_scalar("real", "param", shape.rounded, layer).attrib["name"] = "bevel"
 
-    def apply_group_style(self, shape, sif_shape, group):
+    def apply_group_fill(self, shape, sif_shape, fill):
+        # TODO gradients?
         def getter(keyframe, elem):
             if keyframe is None:
-                v = group.fill.color.value
+                v = fill.color.value
             else:
                 v = keyframe.start
             ElementTree.SubElement(elem, "r").text = str(v[0])
@@ -216,17 +227,90 @@ class SifBuilder:
             ElementTree.SubElement(elem, "b").text = str(v[2])
             ElementTree.SubElement(elem, "a").text = "1"
 
-        return self.process_vector_ext("color", group.fill.color.keyframes, sif_shape, "color", getter)
+        self.process_vector_ext("color", fill.color.keyframes, sif_shape, "color", getter)
+
+        def get_op(keyframe, elem):
+            if keyframe is None:
+                v = fill.opacity.value
+            else:
+                v = keyframe.start
+            v /= 100
+            elem.attrib["value"] = str(v)
+
+        self.process_vector_ext("param", fill.opacity.keyframes, sif_shape, "real", get_op).attrib["name"] = "amount"
+
+    def apply_group_stroke(self, shape, sif_shape, stroke):
+        self.apply_group_fill(shape, sif_shape, stroke)
+        cusp = self._format_bool(stroke.line_join == objects.LineJoin.Miter)
+        self.simple_param("sharp_cusps", cusp, sif_shape, "bool")
+        round_cap = self._format_bool(stroke.line_cap == objects.LineCap.Round)
+        self.simple_param("round_tip[0]", round_cap, sif_shape, "bool")
+        self.simple_param("round_tip[1]", round_cap, sif_shape, "bool")
+        self.process_scalar("real", "param", stroke.width, sif_shape).attrib["name"] = "width"
 
     def build_ellipse(self, parent, shape):
         layer = self.layer_from_lottie("circle", shape, parent)
 
-        def get_r(kf, elem):
+        def get_r(keyframe, elem):
             if keyframe is None:
                 v = shape.size.value
             else:
                 v = keyframe.start
             sz = math.hypot(*v)
-            elem.attrib["value"] = str(pos[0] + sz[0]/2)
+            elem.attrib["value"] = str(sz)
         self.process_vector_ext("param", shape.size.keyframes, layer, "real", get_r).attrib["name"] = "radius"
         self.process_vector("param", shape.position, layer).attrib["name"] = "origin"
+
+    def _format_bool(self, value):
+        return str(bool(value)).lower()
+
+    def build_path(self, type, path, dom_parent):
+        layer = self.layer_from_lottie("bline", path, dom_parent)
+        bline = ElementTree.SubElement(layer, "bline")
+        bline.attrib["type"] = "bline_point"
+        startbez = path.vertices.get_value()
+        bline.attrib["loop"] = self._format_bool(startbez.closed)
+        nverts = len(startbez.vertices)
+        for point in range(nverts):
+            self.bezier_point(path, point, bline)
+        return layer
+
+    def bezier_point(self, lottie_path, point_index, sif_parent):
+        entry = ElementTree.SubElement(sif_parent, "entry")
+        composite = ElementTree.SubElement(entry, composite)
+
+        def get_point(keyframe, elem):
+            if keyframe is None:
+                bezier = lottie_path.vertices.value
+            else:
+                bezier = keyframe.start
+
+            vert = bezier.vertices[point_index]
+            ElementTree.SubElement(elem, "x").text = str(vert[0])
+            ElementTree.SubElement(elem, "y").text = str(vert[1])
+
+        self.process_vector_ext("point", lottie_path.vertices.keyframes, composite, "vector", get_point)
+        self.simple_param("split", "true", composite, "bool")
+        self.simple_param("split_radius", "true", composite, "bool")
+        self.simple_param("split_angle", "true", composite, "bool")
+
+        which_point = "in_point"
+
+        def get_tangent(keyframe, elem):
+            if keyframe is None:
+                bezier = lottie_path.vertices.value
+            else:
+                bezier = keyframe.start
+
+            inp = getattr(bezier["which_point"])[point_index]
+            radius = math.hypot(*inp)
+            theta = math.atan2(inp[1], inp[0]) * 180 / math.pi
+            elem.attrib["type"] = "vector"
+            self.simple_param("radius", radius, elem, "real")
+            self.simple_param("theta", radius, elem, "real")
+
+        self.process_vector_ext("t1", lottie_path.vertices.keyframes, composite, "radial_composite", get_tangent)
+        which_point = "out_point"
+        self.process_vector_ext("t2", lottie_path.vertices.keyframes, composite, "radial_composite", get_tangent)
+
+
