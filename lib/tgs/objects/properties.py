@@ -1,45 +1,7 @@
 import math
 from functools import reduce
 from .base import TgsObject, TgsProp, PseudoList, PseudoBool
-
-
-class KeyframeBezierPoint(TgsObject):
-    _props = [
-        TgsProp("time", "x", list=PseudoList),
-        TgsProp("value", "y", list=PseudoList),
-    ]
-
-    def __init__(self, time=0, value=0):
-        self.time = time
-        self.value = value
-
-
-def _set_tangents(self, start, end, end_time):
-    self.in_value = KeyframeBezierPoint(
-        (end_time - self.time) / 3,
-        (end - start) / 3
-    )
-    self.out_value = KeyframeBezierPoint(
-        (end_time - self.time) / 3,
-        (end - start) / 3
-    )
-
-    time_scale = end_time - self.time
-    time_diff = self.time / time_scale
-    value_scale = end - start
-    if value_scale == 0:
-        value_scale = 1e-9
-    value_diff = start / value_scale
-
-    self.in_value.time = end_time - self.in_value.time
-    self.in_value.value = end - self.in_value.value
-    self.in_value.time = abs(self.in_value.time / time_scale - time_diff)
-    self.in_value.value = abs(self.in_value.value / value_scale - value_diff)
-
-    self.out_value.time += self.time
-    self.out_value.value += start
-    self.out_value.time = abs(self.out_value.time / time_scale - time_diff)
-    self.out_value.value = abs(self.out_value.value / value_scale - value_diff)
+from . import interpolation
 
 
 class OffsetKeyframe(TgsObject):
@@ -47,8 +9,8 @@ class OffsetKeyframe(TgsObject):
         TgsProp("start", "s", float, True),
         TgsProp("end", "e", float, True),
         TgsProp("time", "t", float, False),
-        TgsProp("in_value", "i", KeyframeBezierPoint, False),
-        TgsProp("out_value", "o", KeyframeBezierPoint, False),
+        TgsProp("in_value", "i", interpolation.KeyframeBezierPoint, False),
+        TgsProp("out_value", "o", interpolation.KeyframeBezierPoint, False),
         TgsProp("in_tan", "ti", float, True),
         TgsProp("out_tan", "to", float, True),
         #TgsProp("h" ,"h"),
@@ -71,11 +33,11 @@ class OffsetKeyframe(TgsObject):
         # Out Spatial Tangent. Only for spatial properties. Array of numbers.
         self.out_tan = out_tan
 
-    def set_tangents(self, end_time):
+    def set_tangents(self, end_time, interp):
         to_val = lambda vals: math.sqrt(sum(map(lambda x: x**2, vals)))
         start = to_val(self.start)
         end = to_val(self.end)
-        _set_tangents(self, start, end, end_time)
+        interp(self, start, end, end_time)
 
 
 class AnimatableMixin:
@@ -89,14 +51,14 @@ class AnimatableMixin:
         self.value = value
         self.animated = False
 
-    def add_keyframe(self, time, value):
+    def add_keyframe(self, time, value, interp=interpolation.Linear()):
         if not self.animated:
             self.value = None
             self.keyframes = []
             self.animated = True
         else:
             self.keyframes[-1].end = value
-            self.keyframes[-1].set_tangents(time)
+            self.keyframes[-1].set_tangents(time, interp)
 
         self.keyframes.append(self.keyframe_type(
             time,
@@ -244,8 +206,8 @@ class ShapePropKeyframe(TgsObject):
         TgsProp("start", "s", Bezier, PseudoList),
         TgsProp("end", "e", Bezier, PseudoList),
         TgsProp("time", "t", float, False),
-        TgsProp("in_value", "i", KeyframeBezierPoint, False),
-        TgsProp("out_value", "o", KeyframeBezierPoint, False),
+        TgsProp("in_value", "i", interpolation.KeyframeBezierPoint, False),
+        TgsProp("out_value", "o", interpolation.KeyframeBezierPoint, False),
     ]
 
     def __init__(self, time=0, start=None, end=None):
@@ -259,8 +221,8 @@ class ShapePropKeyframe(TgsObject):
         # Bezier curve interpolation out value.
         self.out_value = None
 
-    def set_tangents(self, end_time):
-        _set_tangents(self, 0, 0, end_time)
+    def set_tangents(self, end_time, interp=interpolation.Linear()):
+        interp(self, 0, 0, end_time)
 
 
 class ShapeProperty(TgsObject, AnimatableMixin):

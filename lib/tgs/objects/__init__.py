@@ -1,4 +1,4 @@
-from . import animation, base, effects, enums, helpers, layers, shapes, sources
+from . import animation, base, effects, enums, helpers, layers, shapes, sources, interpolation
 from .animation import Animation
 from .layers import *
 from .shapes import *
@@ -6,6 +6,7 @@ from .properties import Bezier
 
 __all__ = [
     "animation", "base", "effects", "enums", "helpers", "layers", "shapes", "sources"
+    "interpolation",
     "Animation",
     "NullLayer", "TextLayer", "ShapeLayer", "ImageLayer", "PreCompLayer", "SolidLayer",
     "Rect", "Fill", "Trim", "Repeater", "GFill", "Stroke", "Round", "Shape",
