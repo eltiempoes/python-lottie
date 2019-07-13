@@ -51,7 +51,7 @@ class SifBuilder:
         return (v - self.width / 2) / self.coord_scale
 
     def _y(self, v):
-        return (v - self.height / 2) / self.coord_scale
+        return -(v - self.height / 2) / self.coord_scale
 
     def process(self, animation: objects.Animation):
         if animation.name:
@@ -127,16 +127,7 @@ class SifBuilder:
         self.process_vector_ext("scale", transform.scale.keyframes, composite, "vector", get_scale)
         self.process_scalar("angle", "angle", transform.rotation, composite)
         self.process_scalar("angle", "skew_angle", transform.rotation, composite)
-
-        def getter(keyframe, elem):
-            if keyframe is None:
-                v = transform.opacity.value
-            else:
-                v = keyframe.start[0]
-            elem.attrib["value"] = str(v/100)
-        amountp = self.process_vector_ext("param", transform.opacity.keyframes, group, "real", getter)
-        amountp.attrib["name"] = "amount"
-
+        self.process_scalar("real", "param", transform.opacity, group, 1/100).attrib["name"] = "amount"
         self.process_vector("param", objects.MultiDimensional([self.width/2, self.height/2]), group).attrib["name"] = "origin"
         # TODO get z_depth from position
         self.process_scalar("real", "param", objects.Value(0), group).attrib["name"] = "z_depth"
@@ -179,12 +170,14 @@ class SifBuilder:
             getter(None, vector)
         return wrap
 
-    def process_scalar(self, type, name, value, parent):
+    def process_scalar(self, type, name, value, parent, mult=None):
         def getter(keyframe, elem):
             if keyframe is None:
                 v = value.value
             else:
-                v = keyframe.start
+                v = keyframe.start[0]
+            if mult is not None:
+                v *= mult
             elem.attrib["value"] = str(v)
         return self.process_vector_ext(name, value.keyframes, parent, type, getter)
 
@@ -224,6 +217,24 @@ class SifBuilder:
             for path in group.paths:
                 self.group_builder_path_to_sif(path, group, dom_parent)
 
+    def group_builder_shape_to_sif(self, shape, group, dom_parent):
+        layers = []
+        if group.fill:
+            if isinstance(shape, objects.Rect):
+                sif_shape = self.build_rect(shape, dom_parent)
+            elif isinstance(shape, objects.Ellipse):
+                sif_shape = self.build_ellipse(shape, dom_parent)
+            else:
+                return []  # TODO star
+            layers.append(sif_shape)
+            self.apply_group_fill(sif_shape, group.fill)
+
+        # TODO if not create bline for rect / ellipse etc
+        if group.stroke:
+            pass
+
+        return layers
+
     def group_builder_process_children(self, group, dom_parent):
         for shape in reversed(group.children):
             if shape is None:
@@ -231,18 +242,7 @@ class SifBuilder:
             elif isinstance(shape, SvgBuilderShapeGroup):
                 self.group_builder_to_sif(shape, dom_parent)
             else:
-                if group.fill:
-                    if isinstance(shape, objects.Rect):
-                        sif_shape = self.build_rect(shape, dom_parent)
-                    elif isinstance(shape, objects.Ellipse):
-                        sif_shape = self.build_ellipse(shape, dom_parent)
-                    else:
-                        # TODO star
-                        continue
-                    self.apply_group_fill(sif_shape, group.fill)
-                if group.stroke:
-                    # TODO if not create bline for rect / ellipse etc
-                    pass
+                self.group_builder_shape_to_sif(shape, group, dom_parent)
 
     def build_rect(self, shape, dom_parent):
         layer = self.layer_from_lottie("rectangle", shape, dom_parent)
@@ -305,7 +305,7 @@ class SifBuilder:
         round_cap = self._format_bool(stroke.line_cap == objects.LineCap.Round)
         self.simple_param("round_tip[0]", round_cap, sif_shape, "bool")
         self.simple_param("round_tip[1]", round_cap, sif_shape, "bool")
-        self.process_scalar("real", "param", stroke.width, sif_shape).attrib["name"] = "width"
+        self.process_scalar("real", "param", stroke.width, sif_shape, 1/self.coord_scale).attrib["name"] = "width"
 
     def build_ellipse(self, shape, dom_parent):
         layer = self.layer_from_lottie("circle", shape, dom_parent)
@@ -386,14 +386,18 @@ class SifBuilder:
             if shape_group.lottie.name:
                 for layer in layers:
                     layer.attrib["desc"] = shape_group.lottie.name
-            return
+        elif not shape_group.subgroups and len(shape_group.children) == 1:
+            layers = self.group_builder_shape_to_sif(shape_group.children[0], shape_group, dom_parent)
+            if shape_group.lottie.name:
+                for layer in layers:
+                    layer.attrib["desc"] = shape_group.lottie.name
+        else:
+            layer = self.layer_from_lottie("group", shape_group.lottie, dom_parent)
 
-        layer = self.layer_from_lottie("group", shape_group.lottie, dom_parent)
-
-        pcanv = ElementTree.SubElement(layer, "param")
-        pcanv.attrib["name"] = "canvas"
-        canvas = ElementTree.SubElement(pcanv, "canvas")
-        self.group_builder_process_children(shape_group, canvas)
+            pcanv = ElementTree.SubElement(layer, "param")
+            pcanv.attrib["name"] = "canvas"
+            canvas = ElementTree.SubElement(pcanv, "canvas")
+            self.group_builder_process_children(shape_group, canvas)
 
 
 def to_sif(animation):
