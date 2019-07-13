@@ -2,7 +2,7 @@ import math
 from xml.etree import ElementTree
 
 from ... import objects
-from ..svg.builder import SvgBuilderLayer, SvgBuilderShapeGroup, collect_shape
+from ...utils import restructure
 
 
 blend_modes = {
@@ -62,12 +62,10 @@ class SifBuilder:
         self.width = animation.width
         self.height = animation.height
 
-        for layer in SvgBuilderLayer.setup(animation):
+        for layer in restructure.restructure_animation(animation, False):
             self.process_layer(layer, self.canvas)
 
     def process_layer(self, layer_builder, dom_parent):
-        cn = layer_builder.lottie.__class__.__name__.lower()
-
         layer = self.layer_from_lottie("group", layer_builder.lottie, dom_parent)
 
         bm = getattr(layer_builder.lottie, "blend_mode", objects.BlendMode.Normal)
@@ -85,11 +83,11 @@ class SifBuilder:
         out_point = getattr(layer_builder.lottie, "out_point", self.end_frame)
         canvas.attrib["end-time"] = self._format_time(out_point)
 
-        handler = getattr(self, "_process_" + cn, None)
-        if handler:
-            handler(layer_builder.lottie, canvas)
+        shapegroup = getattr(layer_builder, "shapegroup", None)
+        if shapegroup:
+            self.group_builder_process_children(shapegroup, dom_parent)
 
-        for c in reversed(layer_builder.children):
+        for c in layer_builder.children:
             self.process_layer(c, canvas)
 
     def layer_from_lottie(self, type, lottie, dom_parent):
@@ -198,29 +196,6 @@ class SifBuilder:
         e_val.attrib["value"] = str(vaue)
         return e_val
 
-    def _process_shapelayer(self, object, dom_parent):
-        group = SvgBuilderShapeGroup(object)
-        for shape in object.shapes:
-            collect_shape(shape, group)
-        self.group_builder_process_children(group, dom_parent)
-
-    def group_builder_path_to_sif(self, path, group, dom_parent):
-        layers = []
-        if group.fill:
-            sif_shape = self.build_path("region", path, dom_parent)
-            self.apply_group_fill(sif_shape, group.fill)
-            layers.append(sif_shape)
-        if group.stroke:
-            sif_shape = self.build_path("outline", path, dom_parent)
-            self.apply_group_stroke(sif_shape, group.stroke)
-            layers.append(sif_shape)
-        return layers
-
-    def group_builder_paths_to_sif(self, group, dom_parent):
-        if group.paths:
-            for path in group.paths:
-                self.group_builder_path_to_sif(path, group, dom_parent)
-
     def group_builder_shape_to_sif(self, shape, group, dom_parent):
         layers = []
         if group.fill:
@@ -228,22 +203,27 @@ class SifBuilder:
                 sif_shape = self.build_rect(shape, dom_parent)
             elif isinstance(shape, objects.Ellipse):
                 sif_shape = self.build_ellipse(shape, dom_parent)
+            elif isinstance(shape, objects.Shape):
+                sif_shape = self.build_path("region", shape, dom_parent)
             else:
                 return []  # TODO star
             layers.append(sif_shape)
             self.apply_group_fill(sif_shape, group.fill)
 
-        # TODO if not create bline for rect / ellipse etc
         if group.stroke:
-            pass
+            if isinstance(shape, objects.Shape):
+                sif_shape = self.build_path("outline", shape, dom_parent)
+            else:
+                # TODO create bline for rect / ellipse etc
+                return layers
+            self.apply_group_stroke(sif_shape, group.stroke)
+            layers.append(sif_shape)
 
         return layers
 
     def group_builder_process_children(self, group, dom_parent):
-        for shape in reversed(group.children):
-            if shape is None:
-                self.group_builder_paths_to_sif(group, dom_parent)
-            elif isinstance(shape, SvgBuilderShapeGroup):
+        for shape in group.children:
+            if isinstance(shape, restructure.RestructuredShapeGroup):
                 self.group_builder_to_sif(shape, dom_parent)
             else:
                 self.group_builder_shape_to_sif(shape, group, dom_parent)
