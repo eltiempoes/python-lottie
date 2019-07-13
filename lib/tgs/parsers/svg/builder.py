@@ -311,6 +311,8 @@ class SvgBuilderShapeGroup:
         for g in self.subgroups:
             if g.layer:
                 self.layer = True
+                for gg in self.subgroups:
+                    gg.layer = True
                 return
         nchild = len(self.children)
         self.layer = nchild > thresh and self.lottie.name
