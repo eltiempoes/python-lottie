@@ -114,7 +114,7 @@ class AnimatableMixin:
         val = self.keyframes[0].start
         for k in self.keyframes:
             time -= k.time
-            if time < 0:
+            if time <= 0:
                 # TODO interpolate
                 if k.start is not None:
                     val = k.start

@@ -113,17 +113,24 @@ class SifBuilder:
         composite.attrib["type"] = "transformation"
         self.process_vector("offset", transform.position, composite)
 
-        def get_scale(keyframe, elem):
-            if keyframe is None:
-                v = transform.scale.value
-            else:
-                v = keyframe.start
-            ElementTree.SubElement(elem, "x").text = str(v[0] / 100)
-            ElementTree.SubElement(elem, "y").text = str(v[1] / 100)
+        keyframes = self._merge_keyframes([transform.scale, transform.skew])
 
-        self.process_vector_ext("scale", transform.scale.keyframes, composite, "vector", get_scale)
+        def get_scale(keyframe, elem):
+            t = keyframe.time if keyframe else 0
+            scale_x, scale_y = transform.scale.get_value(t)[:2]
+            scale_x /= 100
+            scale_y /= 100
+            skew = transform.skew.get_value(t)
+            c = math.cos(skew * math.pi / 180)
+            if c != 0:
+                scale_y *= 1 / c
+            ElementTree.SubElement(elem, "x").text = str(scale_x)
+            ElementTree.SubElement(elem, "y").text = str(scale_y)
+
+        self.process_vector_ext("scale", keyframes, composite, "vector", get_scale)
+        #self.process_vector_ext("scale", transform.scale.keyframes, composite, "vector", get_scale)
+        self.process_scalar("angle", "skew_angle", transform.skew, composite)
         self.process_scalar("angle", "angle", transform.rotation, composite)
-        self.process_scalar("angle", "skew_angle", transform.rotation, composite)
         self.process_scalar("real", "param", transform.opacity, group, 1/100).attrib["name"] = "amount"
         self.process_vector("param", transform.anchor_point, group).attrib["name"] = "origin"
         # TODO get z_depth from position
@@ -241,31 +248,35 @@ class SifBuilder:
             else:
                 self.group_builder_shape_to_sif(shape, group, dom_parent)
 
+    def _merge_keyframes(self, props):
+        keyframes = {}
+        for prop in props:
+            if prop.animated:
+                keyframes.update({kf.time: kf for kf in prop.keyframes})
+        return list(sorted(keyframes.values(), key=lambda kf: kf.time)) or None
+
     def build_rect(self, shape, dom_parent):
+        # TODO if shape.rounded generate bline
         layer = self.layer_from_lottie("rectangle", shape, dom_parent)
 
-        keyframes = {}
-        if shape.position.animated:
-            keyframes.update({kf.time: kf for kf in shape.position.keyframes})
-        if shape.size.animated:
-            keyframes.update({kf.time: kf for kf in shape.size.keyframes})
-        keyframes = list(sorted(keyframes.keys(), key=lambda kf: kf.time)) or None
+        keyframes = self._merge_keyframes([shape.position, shape.size])
 
         def getp1(kf, elem):
-            pos = shape.position.get_value(kf.time)
-            sz = shape.size.get_value(kf.time)
-            ElementTree.SubElement(elem, "x").text = str(pos[0] - sz[0]/2)
-            ElementTree.SubElement(elem, "y").text = str(pos[1] - sz[1]/2)
+            t = kf.time if kf else 0
+            pos = shape.position.get_value(t)
+            sz = shape.size.get_value(t)
+            ElementTree.SubElement(elem, "x").text = str(pos[0] - sz[0])
+            ElementTree.SubElement(elem, "y").text = str(pos[1] - sz[1])
 
         def getp2(kf, elem):
-            pos = shape.position.get_value(kf.time)
-            sz = shape.size.get_value(kf.time)
-            ElementTree.SubElement(elem, "x").text = str(pos[0] + sz[0]/2)
-            ElementTree.SubElement(elem, "y").text = str(pos[1] + sz[1]/2)
+            t = kf.time if kf else 0
+            pos = shape.position.get_value(t)
+            sz = shape.size.get_value(t)
+            ElementTree.SubElement(elem, "x").text = str(pos[0] + sz[0])
+            ElementTree.SubElement(elem, "y").text = str(pos[1] + sz[1])
 
         self.process_vector_ext("param", keyframes, layer, "vector", getp1).attrib["name"] = "point1"
         self.process_vector_ext("param", keyframes, layer, "vector", getp2).attrib["name"] = "point2"
-        self.process_scalar("real", "param", shape.rounded, layer).attrib["name"] = "bevel"
         return layer
 
     def apply_group_fill(self, sif_shape, fill):
@@ -307,6 +318,7 @@ class SifBuilder:
     def build_ellipse(self, shape, dom_parent):
         layer = self.layer_from_lottie("circle", shape, dom_parent)
 
+        # TODO if radii are different, generate a bline
         def get_r(keyframe, elem):
             if keyframe is None:
                 v = shape.size.value
