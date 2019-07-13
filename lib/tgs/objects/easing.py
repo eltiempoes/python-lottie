@@ -58,9 +58,6 @@ class EaseOut:
 
 
 class Jump:
-    def __init__(self, delay=1 / 3):
-        self.delay = delay
-
     def __call__(self, keyframe, start, end, end_time):
         keyframe.in_value = KeyframeBezierPoint(
             (end_time - keyframe.time),
