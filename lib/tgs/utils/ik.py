@@ -59,3 +59,30 @@ class Chain:
             self.forward(base)
             distance = (target - self.joints[-1]).length
             n_it += 1
+
+
+class Octopus:
+    def __init__(self, master):
+        self.chains = {"master": master}
+        self.master = master
+
+    @property
+    def base(self):
+        return self.master.joints[-1]
+
+    def add_chain(self, name):
+        ch = Chain(self.base)
+        self.chains[name] = ch
+        return ch
+
+    def reach(self, target_map):
+        centroid = NVector(0, 0)
+        for chain, target in target_map.items():
+            self.chains[chain].backward(target)
+            centroid += self.chains[chain].joints[0]
+        centroid /= len(target_map)
+
+        self.master.reach(centroid)
+
+        for chain in target_map.keys():
+            self.chains[chain].forward(self.base)
