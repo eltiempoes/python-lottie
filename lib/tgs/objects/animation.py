@@ -43,9 +43,11 @@ class Animation(TgsObject):
         # source chars for text layers
         #self.chars = [] # Chars
 
-
     def add_layer(self, layer):
-        self.layers.append(layer)
+        return self.insert_layer(len(self.layers), layer)
+
+    def insert_layer(self, index, layer):
+        self.layers.insert(index, layer)
         if layer.index is None:
             layer.index = len(self.layers)
         if layer.in_point is None:

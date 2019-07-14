@@ -55,6 +55,23 @@ def spring_pull(position_prop, point, start_time, end_time, falloff=15, oscillat
     position_prop.add_keyframe(end_time, point.to_list())
 
 
+# TODO use NVector for multidimensional values so spring_pull/spring_scalar become equivalent
+def spring_scalar(prop, value, start_time, end_time, falloff=15, oscillations=7):
+    start = prop.get_value(start_time)
+    point = value
+    d = start-point
+
+    delta = (end_time - start_time) / oscillations
+
+    for i in range(oscillations):
+        time_x = i / oscillations
+        factor = math.cos(time_x * math.pi * oscillations) * (1-time_x**(1/falloff))
+        p = point + d * factor
+        prop.add_keyframe(start_time + delta * i, p)
+
+    prop.add_keyframe(end_time, point)
+
+
 def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, reverse=False):
     delta = (end_time - start_time) / n_keyframes
     for i in range(n_keyframes):
