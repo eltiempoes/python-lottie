@@ -1,5 +1,5 @@
 import math
-from xml.etree import ElementTree
+from xml.dom import minidom
 
 from ... import objects
 from ...utils import restructure
@@ -35,9 +35,9 @@ blend_modes = {
 class SifBuilder(restructure.AbstractBuilder):
     def __init__(self):
         super().__init__()
-        self.canvas = ElementTree.Element("canvas")
-        self.dom = ElementTree.ElementTree(self.canvas)
-        self.canvas.attrib["version"] = "1.0"
+        self.dom = minidom.Document()
+        self.canvas = self.dom.appendChild(self.dom.createElement("canvas"))
+        self.canvas.setAttribute("version", "1.0")
 
     def _format_time_f(self, time):
         return "%sf" % time
@@ -45,18 +45,24 @@ class SifBuilder(restructure.AbstractBuilder):
     def _format_time(self, time):
         return "%ss" % (time / self.framerate)
 
+    def _subelement(self, parent, tagname):
+        return parent.appendChild(self.dom.createElement(tagname))
+
+    def _settext(self, element, text):
+        element.appendChild(self.dom.createTextNode(text))
+
     def _on_animation(self, animation: objects.Animation):
         if animation.name:
-            ElementTree.SubElement(self.canvas, "name").text = animation.name
-        self.canvas.attrib["width"] = str(animation.width)
-        self.canvas.attrib["height"] = str(animation.height)
-        self.canvas.attrib["xres"] = str(animation.width)
-        self.canvas.attrib["yres"] = str(animation.height)
-        self.canvas.attrib["view-box"] = "0 0 %s %s" % (animation.width, animation.height)
-        self.canvas.attrib["fps"] = str(animation.frame_rate)
-        self.canvas.attrib["begin-time"] = self._format_time_f(animation.in_point)
-        self.canvas.attrib["end-time"] = self._format_time_f(animation.out_point)
-        self.canvas.attrib["antialias"] = "1"
+            self._settext(self._subelement(self.canvas, "name"), animation.name)
+        self.canvas.setAttribute("width", str(animation.width))
+        self.canvas.setAttribute("height", str(animation.height))
+        self.canvas.setAttribute("xres", str(animation.width))
+        self.canvas.setAttribute("yres", str(animation.height))
+        self.canvas.setAttribute("view-box", "0 0 %s %s" % (animation.width, animation.height))
+        self.canvas.setAttribute("fps", str(animation.frame_rate))
+        self.canvas.setAttribute("begin-time", self._format_time_f(animation.in_point))
+        self.canvas.setAttribute("end-time", self._format_time_f(animation.out_point))
+        self.canvas.setAttribute("antialias", "1")
         self.framerate = animation.frame_rate
         self.end_frame = animation.out_point
         self.width = animation.width
@@ -66,10 +72,10 @@ class SifBuilder(restructure.AbstractBuilder):
     def _on_layer(self, layer_builder, dom_parent):
         layer = self.layer_from_lottie("group", layer_builder.lottie, dom_parent)
         if not layer_builder.lottie.name:
-            layer.attrib["desc"] = layer_builder.lottie.__class__.__name__
+            layer.setAttribute("desc", layer_builder.lottie.__class__.__name__)
 
         bm = getattr(layer_builder.lottie, "blend_mode", objects.BlendMode.Normal)
-        self.simple_param("blend_method", bm, layer, "integer").attrib["static"] = "true"
+        self.simple_param("blend_method", bm, layer, "integer").setAttribute("static", "true")
 
         stretch = getattr(layer_builder.lottie, "stretch", 1) or 1
         self.simple_param("time_dilation", stretch, layer)
@@ -77,21 +83,21 @@ class SifBuilder(restructure.AbstractBuilder):
         in_point = getattr(layer_builder.lottie, "in_point", 0)
         self.simple_param("time_offset", self._format_time(in_point), layer, "time")
 
-        pcanv = ElementTree.SubElement(layer, "param")
-        pcanv.attrib["name"] = "canvas"
-        canvas = ElementTree.SubElement(pcanv, "canvas")
+        pcanv = self._subelement(layer, "param")
+        pcanv.setAttribute("name", "canvas")
+        canvas = self._subelement(pcanv, "canvas")
         out_point = getattr(layer_builder.lottie, "out_point", self.end_frame)
-        canvas.attrib["end-time"] = self._format_time(out_point)
+        canvas.setAttribute("end-time", self._format_time(out_point))
         return canvas
 
     def layer_from_lottie(self, type, lottie, dom_parent):
-        g = ElementTree.SubElement(dom_parent, "layer")
-        g.attrib["type"] = type
-        g.attrib["active"] = "true"
-        g.attrib["exclude_from_rendering"] = "false"
-        #g.attrib["version"] = "0.2"
+        g = self._subelement(dom_parent, "layer")
+        g.setAttribute("type", type)
+        g.setAttribute("active", "true")
+        g.setAttribute("exclude_from_rendering", "false")
+        #g.setAttribute("version", "0.2")
         if lottie.name:
-            g.attrib["desc"] = lottie.name
+            g.setAttribute("desc", lottie.name)
 
         transf = getattr(lottie, "transform", None)
         if transf:
@@ -99,10 +105,10 @@ class SifBuilder(restructure.AbstractBuilder):
         return g
 
     def set_transform(self, group, transform):
-        param = ElementTree.SubElement(group, "param")
-        param.attrib["name"] = "transformation"
-        composite = ElementTree.SubElement(param, "composite")
-        composite.attrib["type"] = "transformation"
+        param = self._subelement(group, "param")
+        param.setAttribute("name", "transformation")
+        composite = self._subelement(param, "composite")
+        composite.setAttribute("type", "transformation")
         self.process_vector("offset", transform.position, composite)
 
         keyframes = self._merge_keyframes([transform.scale, transform.skew])
@@ -116,17 +122,17 @@ class SifBuilder(restructure.AbstractBuilder):
             c = math.cos(skew * math.pi / 180)
             if c != 0:
                 scale_y *= 1 / c
-            ElementTree.SubElement(elem, "x").text = str(scale_x)
-            ElementTree.SubElement(elem, "y").text = str(scale_y)
+            self._settext(self._subelement(elem, "x"), str(scale_x))
+            self._settext(self._subelement(elem, "y"), str(scale_y))
 
         self.process_vector_ext("scale", keyframes, composite, "vector", get_scale)
         #self.process_vector_ext("scale", transform.scale.keyframes, composite, "vector", get_scale)
         self.process_scalar("angle", "skew_angle", transform.skew or objects.Value(0), composite)
         self.process_scalar("angle", "angle", transform.rotation, composite)
-        self.process_scalar("real", "param", transform.opacity, group, 1/100).attrib["name"] = "amount"
-        self.process_vector("param", transform.anchor_point, group).attrib["name"] = "origin"
+        self.process_scalar("real", "param", transform.opacity, group, 1/100).setAttribute("name", "amount")
+        self.process_vector("param", transform.anchor_point, group).setAttribute("name", "origin")
         # TODO get z_depth from position
-        self.process_scalar("real", "param", objects.Value(0), group).attrib["name"] = "z_depth"
+        self.process_scalar("real", "param", objects.Value(0), group).setAttribute("name", "z_depth")
 
     def process_vector(self, name, multidim, parent):
         def getter(keyframe, elem):
@@ -134,8 +140,8 @@ class SifBuilder(restructure.AbstractBuilder):
                 v = multidim.value
             else:
                 v = keyframe.start
-            ElementTree.SubElement(elem, "x").text = str(v[0])
-            ElementTree.SubElement(elem, "y").text = str(v[1])
+            self._settext(self._subelement(elem, "x"), str(v[0]))
+            self._settext(self._subelement(elem, "y"), str(v[1]))
 
         return self.process_vector_ext(name, multidim.keyframes, parent, "vector", getter)
 
@@ -145,24 +151,25 @@ class SifBuilder(restructure.AbstractBuilder):
                 v = multidim.value
             else:
                 v = keyframe.start
-            ElementTree.SubElement(elem, "x").text = str(v[0])
-            ElementTree.SubElement(elem, "y").text = str(v[1])
+            self._settext(self._subelement(elem, "x"), str(v[0]))
+            self._settext(self._subelement(elem, "y"), str(v[1]))
 
         return self.process_vector_ext(name, multidim.keyframes, parent, "vector", getter)
 
     def process_vector_ext(self, name, kframes, parent, type, getter):
-        wrap = ElementTree.SubElement(parent, name)
+        wrap = self._subelement(parent, name)
         if kframes is not None:
-            animated = ElementTree.SubElement(wrap, "animated")
-            animated.attrib["type"] = type
+            animated = self._subelement(wrap, "animated")
+            animated.setAttribute("type", type)
             for keyframe in kframes:
-                waypoint = ElementTree.SubElement(animated, "waypoint")
-                waypoint.attrib["time"] = self._format_time(keyframe.time)
-                waypoint.attrib["before"] = waypoint.attrib["after"] = "clamped"
-                vector = ElementTree.SubElement(waypoint, type)
+                waypoint = self._subelement(animated, "waypoint")
+                waypoint.setAttribute("time", self._format_time(keyframe.time))
+                waypoint.setAttribute("before", "clamped")
+                waypoint.setAttribute("after", "clamped")
+                vector = self._subelement(waypoint, type)
                 getter(keyframe, vector)
         else:
-            vector = ElementTree.SubElement(wrap, type)
+            vector = self._subelement(wrap, type)
             getter(None, vector)
         return wrap
 
@@ -174,20 +181,20 @@ class SifBuilder(restructure.AbstractBuilder):
                 v = keyframe.start[0]
             if mult is not None:
                 v *= mult
-            elem.attrib["value"] = str(v)
+            elem.setAttribute("value", str(v))
         return self.process_vector_ext(name, value.keyframes, parent, type, getter)
 
     def simple_param(self, name, vaue, parent, type="real"):
-        param = ElementTree.SubElement(parent, "param")
-        param.attrib["name"] = name
-        e_val = ElementTree.SubElement(param, type)
-        e_val.attrib["value"] = str(vaue)
+        param = self._subelement(parent, "param")
+        param.setAttribute("name", name)
+        e_val = self._subelement(param, type)
+        e_val.setAttribute("value", str(vaue))
         return e_val
 
     def simple_composite_param(self, name, vaue, parent, type="real"):
-        param = ElementTree.SubElement(parent, name)
-        e_val = ElementTree.SubElement(param, type)
-        e_val.attrib["value"] = str(vaue)
+        param = self._subelement(parent, name)
+        e_val = self._subelement(param, type)
+        e_val.setAttribute("value", str(vaue))
         return e_val
 
     def _on_shape(self, shape, group, dom_parent):
@@ -232,18 +239,18 @@ class SifBuilder(restructure.AbstractBuilder):
             t = kf.time if kf else 0
             pos = shape.position.get_value(t)
             sz = shape.size.get_value(t)
-            ElementTree.SubElement(elem, "x").text = str(pos[0] - sz[0])
-            ElementTree.SubElement(elem, "y").text = str(pos[1] - sz[1])
+            self._settext(self._subelement(elem, "x"), str(pos[0] - sz[0]))
+            self._settext(self._subelement(elem, "y"), str(pos[1] - sz[1]))
 
         def getp2(kf, elem):
             t = kf.time if kf else 0
             pos = shape.position.get_value(t)
             sz = shape.size.get_value(t)
-            ElementTree.SubElement(elem, "x").text = str(pos[0] + sz[0])
-            ElementTree.SubElement(elem, "y").text = str(pos[1] + sz[1])
+            self._settext(self._subelement(elem, "x"), str(pos[0] + sz[0]))
+            self._settext(self._subelement(elem, "y"), str(pos[1] + sz[1]))
 
-        self.process_vector_ext("param", keyframes, layer, "vector", getp1).attrib["name"] = "point1"
-        self.process_vector_ext("param", keyframes, layer, "vector", getp2).attrib["name"] = "point2"
+        self.process_vector_ext("param", keyframes, layer, "vector", getp1).setAttribute("name", "point1")
+        self.process_vector_ext("param", keyframes, layer, "vector", getp2).setAttribute("name", "point2")
         return layer
 
     def apply_group_fill(self, sif_shape, fill):
@@ -256,12 +263,12 @@ class SifBuilder(restructure.AbstractBuilder):
                 v = fill.color.value
             else:
                 v = keyframe.start
-            ElementTree.SubElement(elem, "r").text = str(v[0])
-            ElementTree.SubElement(elem, "g").text = str(v[1])
-            ElementTree.SubElement(elem, "b").text = str(v[2])
-            ElementTree.SubElement(elem, "a").text = "1"
+            self._settext(self._subelement(elem, "r"), str(v[0]))
+            self._settext(self._subelement(elem, "g"), str(v[1]))
+            self._settext(self._subelement(elem, "b"), str(v[2]))
+            self._settext(self._subelement(elem, "a"), "1")
 
-        self.process_vector_ext("param", fill.color.keyframes, sif_shape, "color", getter).attrib["name"] = "color"
+        self.process_vector_ext("param", fill.color.keyframes, sif_shape, "color", getter).setAttribute("name", "color")
 
         def get_op(keyframe, elem):
             if keyframe is None:
@@ -269,9 +276,9 @@ class SifBuilder(restructure.AbstractBuilder):
             else:
                 v = keyframe.start
             v /= 100
-            elem.attrib["value"] = str(v)
+            elem.setAttribute("value", str(v))
 
-        self.process_vector_ext("param", fill.opacity.keyframes, sif_shape, "real", get_op).attrib["name"] = "amount"
+        self.process_vector_ext("param", fill.opacity.keyframes, sif_shape, "real", get_op).setAttribute("name", "amount")
 
     def apply_group_stroke(self, sif_shape, stroke):
         self.apply_group_fill(sif_shape, stroke)
@@ -280,7 +287,7 @@ class SifBuilder(restructure.AbstractBuilder):
         round_cap = self._format_bool(stroke.line_cap == objects.LineCap.Round)
         self.simple_param("round_tip[0]", round_cap, sif_shape, "bool")
         self.simple_param("round_tip[1]", round_cap, sif_shape, "bool")
-        self.process_scalar("real", "param", stroke.width, sif_shape).attrib["name"] = "width"
+        self.process_scalar("real", "param", stroke.width, sif_shape).setAttribute("name", "width")
 
     def build_ellipse(self, shape, dom_parent):
         layer = self.layer_from_lottie("circle", shape, dom_parent)
@@ -292,9 +299,9 @@ class SifBuilder(restructure.AbstractBuilder):
             else:
                 v = keyframe.start
             sz = (v[0]+v[1])/2
-            elem.attrib["value"] = str(sz)
-        self.process_vector_ext("param", shape.size.keyframes, layer, "real", get_r).attrib["name"] = "radius"
-        self.process_vector("param", shape.position, layer).attrib["name"] = "origin"
+            elem.setAttribute("value", str(sz))
+        self.process_vector_ext("param", shape.size.keyframes, layer, "real", get_r).setAttribute("name", "radius")
+        self.process_vector("param", shape.position, layer).setAttribute("name", "origin")
         return layer
 
     def _format_bool(self, value):
@@ -302,21 +309,21 @@ class SifBuilder(restructure.AbstractBuilder):
 
     def build_path(self, type, path, dom_parent):
         layer = self.layer_from_lottie(type, path, dom_parent)
-        bline_par = ElementTree.SubElement(layer, "param")
-        bline_par.attrib["name"] = "bline"
-        bline = ElementTree.SubElement(bline_par, "bline")
-        bline.attrib["type"] = "bline_point"
+        bline_par = self._subelement(layer, "param")
+        bline_par.setAttribute("name", "bline")
+        bline = self._subelement(bline_par, "bline")
+        bline.setAttribute("type", "bline_point")
         startbez = path.vertices.get_value()
-        bline.attrib["loop"] = self._format_bool(startbez.closed)
+        bline.setAttribute("loop", self._format_bool(startbez.closed))
         nverts = len(startbez.vertices)
         for point in range(nverts):
             self.bezier_point(path, point, bline)
         return layer
 
     def bezier_point(self, lottie_path, point_index, sif_parent):
-        entry = ElementTree.SubElement(sif_parent, "entry")
-        composite = ElementTree.SubElement(entry, "composite")
-        composite.attrib["type"] = "bline_point"
+        entry = self._subelement(sif_parent, "entry")
+        composite = self._subelement(entry, "composite")
+        composite.setAttribute("type", "bline_point")
 
         def get_point(keyframe, elem):
             if keyframe is None:
@@ -324,10 +331,11 @@ class SifBuilder(restructure.AbstractBuilder):
             else:
                 bezier = keyframe.start
             if not bezier:
+                elem.parentNode.parentNode.removeChild(elem.parentNode)
                 return
             vert = bezier.vertices[point_index]
-            ElementTree.SubElement(elem, "x").text = str(vert[0])
-            ElementTree.SubElement(elem, "y").text = str(vert[1])
+            self._settext(self._subelement(elem, "x"), str(vert[0]))
+            self._settext(self._subelement(elem, "y"), str(vert[1]))
 
         self.process_vector_ext("point", lottie_path.vertices.keyframes, composite, "vector", get_point)
         self.simple_composite_param("split", "true", composite, "bool")
@@ -336,28 +344,45 @@ class SifBuilder(restructure.AbstractBuilder):
         self.simple_composite_param("width", "1.0", composite, "real")
         self.simple_composite_param("origin", "0.5", composite, "real")
 
-        def get_tangent(keyframe, elem):
+        def get_tangent_r(keyframe, elem):
             if keyframe is None:
                 bezier = lottie_path.vertices.value
             else:
                 bezier = keyframe.start
             if not bezier:
+                elem.parentNode.parentNode.removeChild(elem.parentNode)
                 return
 
             inp = getattr(bezier, which_point)[point_index]
             radius = math.hypot(*inp) * 3 * mult
+            elem.setAttribute("value", str(radius))
+
+        def get_tangent_th(keyframe, elem):
+            if keyframe is None:
+                bezier = lottie_path.vertices.value
+            else:
+                bezier = keyframe.start
+            if not bezier:
+                elem.parentNode.parentNode.removeChild(elem.parentNode)
+                return
+
+            inp = getattr(bezier, which_point)[point_index]
             theta = math.atan2(inp[1], inp[0]) * 180 / math.pi
-            elem.attrib["type"] = "vector"
-            self.simple_composite_param("radius", radius, elem, "real")
-            self.simple_composite_param("theta", theta, elem, "angle")
+            elem.setAttribute("value", str(theta))
 
         mult = -1
         which_point = "in_point"
-        self.process_vector_ext("t1", lottie_path.vertices.keyframes, composite, "radial_composite", get_tangent)
+        radial_composite = self._subelement(self._subelement(composite, "t1"), "radial_composite")
+        radial_composite.setAttribute("type", "vector")
+        self.process_vector_ext("radius", lottie_path.vertices.keyframes, radial_composite, "real", get_tangent_r)
+        self.process_vector_ext("theta", lottie_path.vertices.keyframes, radial_composite, "angle", get_tangent_th)
 
         mult = 1
         which_point = "out_point"
-        self.process_vector_ext("t2", lottie_path.vertices.keyframes, composite, "radial_composite", get_tangent)
+        radial_composite = self._subelement(self._subelement(composite, "t2"), "radial_composite")
+        radial_composite.setAttribute("type", "vector")
+        self.process_vector_ext("radius", lottie_path.vertices.keyframes, radial_composite, "real", get_tangent_r)
+        self.process_vector_ext("theta", lottie_path.vertices.keyframes, radial_composite, "angle", get_tangent_th)
 
     def _on_shapegroup(self, shape_group, dom_parent):
         if shape_group.empty():
@@ -365,9 +390,9 @@ class SifBuilder(restructure.AbstractBuilder):
 
         layer = self.layer_from_lottie("group", shape_group.lottie, dom_parent)
 
-        pcanv = ElementTree.SubElement(layer, "param")
-        pcanv.attrib["name"] = "canvas"
-        canvas = ElementTree.SubElement(pcanv, "canvas")
+        pcanv = self._subelement(layer, "param")
+        pcanv.setAttribute("name", "canvas")
+        canvas = self._subelement(pcanv, "canvas")
         self.shapegroup_process_children(shape_group, canvas)
 
 

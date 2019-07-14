@@ -146,5 +146,7 @@ def export_svg(animation, fp, time=0, pretty=True):
 
 
 def export_sif(animation, fp, pretty=True):
-    _print_xml = _print_pretty_xml if pretty else _print_ugly_xml
-    _print_xml(to_sif(animation), fp)
+    dom = to_sif(animation)
+    if isinstance(fp, str):
+        fp = open(fp, "w")
+    dom.writexml(fp, "", "  " if pretty else "", "\n" if pretty else "")
