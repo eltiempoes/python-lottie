@@ -143,8 +143,8 @@ class GradientColors(TgsObject):
             self.colors.value += flat
         self.count += 1
 
-    def add_keyframe(self, time, colors=None):
-        self.colors.add_keyframe(time, self._flatten_colors(colors) if colors else [])
+    def add_keyframe(self, time, colors=None, ease=easing.Linear()):
+        self.colors.add_keyframe(time, self._flatten_colors(colors) if colors else [], ease)
 
 
 class Value(TgsObject, AnimatableMixin):
@@ -159,8 +159,8 @@ class Value(TgsObject, AnimatableMixin):
     def __init__(self, value=0):
         super().__init__(value)
 
-    def add_keyframe(self, time, value):
-        super().add_keyframe(time, [value])
+    def add_keyframe(self, time, value, ease=easing.Linear()):
+        super().add_keyframe(time, [value], ease)
 
     def get_value(self, time=0):
         v = super().get_value(time)

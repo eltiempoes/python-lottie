@@ -112,7 +112,7 @@ class SifBuilder(restructure.AbstractBuilder):
             scale_x, scale_y = transform.scale.get_value(t)[:2]
             scale_x /= 100
             scale_y /= 100
-            skew = transform.skew.get_value(t)
+            skew = transform.skew.get_value(t) if transform.skew else 0
             c = math.cos(skew * math.pi / 180)
             if c != 0:
                 scale_y *= 1 / c
@@ -121,7 +121,7 @@ class SifBuilder(restructure.AbstractBuilder):
 
         self.process_vector_ext("scale", keyframes, composite, "vector", get_scale)
         #self.process_vector_ext("scale", transform.scale.keyframes, composite, "vector", get_scale)
-        self.process_scalar("angle", "skew_angle", transform.skew, composite)
+        self.process_scalar("angle", "skew_angle", transform.skew or objects.Value(0), composite)
         self.process_scalar("angle", "angle", transform.rotation, composite)
         self.process_scalar("real", "param", transform.opacity, group, 1/100).attrib["name"] = "amount"
         self.process_vector("param", transform.anchor_point, group).attrib["name"] = "origin"
@@ -218,7 +218,7 @@ class SifBuilder(restructure.AbstractBuilder):
     def _merge_keyframes(self, props):
         keyframes = {}
         for prop in props:
-            if prop.animated:
+            if prop is not None and prop.animated:
                 keyframes.update({kf.time: kf for kf in prop.keyframes})
         return list(sorted(keyframes.values(), key=lambda kf: kf.time)) or None
 
@@ -323,7 +323,8 @@ class SifBuilder(restructure.AbstractBuilder):
                 bezier = lottie_path.vertices.value
             else:
                 bezier = keyframe.start
-
+            if not bezier:
+                return
             vert = bezier.vertices[point_index]
             ElementTree.SubElement(elem, "x").text = str(vert[0])
             ElementTree.SubElement(elem, "y").text = str(vert[1])
@@ -340,6 +341,8 @@ class SifBuilder(restructure.AbstractBuilder):
                 bezier = lottie_path.vertices.value
             else:
                 bezier = keyframe.start
+            if not bezier:
+                return
 
             inp = getattr(bezier, which_point)[point_index]
             radius = math.hypot(*inp) * 3 * mult
