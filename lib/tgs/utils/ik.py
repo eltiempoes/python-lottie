@@ -48,24 +48,3 @@ class Chain:
                 self.segments[i] = head
                 target = tail
             self.segments[-1] = target
-
-    def __reach(self, target):
-        base = self.segments[-1]
-
-        for i in range(len(self.segments)-1):
-            head, tail = reach(self.segments[i], self.segments[i + 1], target)
-            self.segments[i] = head
-            target = tail
-        self.segments[-1] = target
-
-        if self.fixed_tail:
-            # at this point, our base has moved from its original
-            # location... so perform the iterative reach in reverse,
-            # with the target set to the initial base location
-            target = base
-
-            for i in range(len(self.segments)-1, 0, -1):
-                head, tail = reach(self.segments[i], self.segments[i - 1], target)
-                self.segments[i] = head
-                target = tail
-            self.segments[0] = target
