@@ -68,3 +68,6 @@ class NVector():
 
     def dot(self, other):
         return sum(map(operator.mul, self.components, other.components))
+
+    def clone(self):
+        return NVector(*self.components)
