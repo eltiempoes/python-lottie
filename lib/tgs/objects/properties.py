@@ -212,6 +212,16 @@ class Bezier(TgsObject):
         points = self._bezier_points(i, True)
         return self._solve_bezier(t, points)
 
+    def _split(self, t):
+        i, t = self._index_t(t)
+        cub = self._bezier_points(i, True)
+        quad = self._solve_bezier_step(t, cub)
+        lin = self._solve_bezier_step(t, quad)
+        k = self._solve_bezier_step(t, lin)[0]
+        split1 = [cub[0], quad[0]-cub[0], lin[0]-k, k]
+        split2 = [k, lin[-1]-k, quad[-1]-cub[-1], cub[-1]]
+        return i, split1, split2
+
     def split_at(self, t):
         i, split1, split2 = self._split(t)
 
@@ -231,36 +241,48 @@ class Bezier(TgsObject):
         return seg1, seg2
 
     def segment(self, t1, t2):
-        istart, _, segstart = self._split(t1)
-        iend, segend, _ = self._split(t2)
+        if t1 > t2:
+            [t1, t2] = [t2, t1]
+        elif t1 == t2:
+            seg = Bezier()
+            p = self.point_at(t1)
+            seg.add_point(p.to_list())
+            seg.add_point(p.to_list())
+            return seg
 
-        seg = Bezier()
+        seg1, seg2 = self.split_at(t1)
+        t2p = (t2-t1) / (1-t1)
+        seg3, seg4 = seg2.split_at(t2p)
+        return seg3
 
-        seg.add_point(segstart[0].to_list(), [0, 0], segstart[1].to_list())
+    def split_self_multi(self, positions):
+        if not len(positions):
+            return
+        t1 = positions[0]
+        seg1, seg2 = self.split_at(t1)
+        self.vertices = []
+        self.in_point = []
+        self.out_point = []
 
-        if istart+1 < iend:
-            seg.add_point(segstart[3].to_list(), segstart[2].to_list(), list(self.out_point[istart+1]))
+        self.vertices = seg1.vertices[:-1]
+        self.in_point = seg1.in_point[:-1]
+        self.out_point = seg1.out_point[:-1]
 
-            for j in range(istart+2, iend-1):
-                seg.add_point(list(self.vertices[j]), list(self.in_point[j]), list(self.out_point[j]))
+        for t2 in positions[1:]:
+            t = (t2-t1) / (1-t1)
+            seg1, seg2 = seg2.split_at(t)
+            t1 = t
+            self.vertices += seg1.vertices[:-1]
+            self.in_point += seg1.in_point[:-1]
+            self.out_point += seg1.out_point[:-1]
 
-            seg.add_point(segend[0].to_list(), list(self.in_point[iend]), segend[1].to_list())
-        else:
-            seg.add_point(segstart[3].to_list(), segstart[2].to_list(), segend[1].to_list())
+        self.vertices += seg2.vertices
+        self.in_point += seg2.in_point
+        self.out_point += seg2.out_point
 
-        seg.add_point(segend[3].to_list(), segend[2].to_list(), [0, 0])
-
-        return seg
-
-    def _split(self, t):
-        i, t = self._index_t(t)
-        cub = self._bezier_points(i, True)
-        quad = self._solve_bezier_step(t, cub)
-        lin = self._solve_bezier_step(t, quad)
-        k = self._solve_bezier_step(t, lin)[0]
-        split1 = [cub[0], quad[0]-cub[0], lin[0]-k, k]
-        split2 = [k, lin[-1]-k, quad[-1]-cub[-1], cub[-1]]
-        return i, split1, split2
+    def split_self_chunks(self, n_chunks):
+        splits = [i/n_chunks for i in range(1, n_chunks)]
+        return self.split_self_multi(splits)
 
     def _bezier_points(self, i, optimize):
         v1 = NVector(*self.vertices[i])
@@ -301,6 +323,13 @@ class Bezier(TgsObject):
                 break
 
         return i, (t - (i/n)) * n
+
+    def reverse(self):
+        self.vertices = list(reversed(self.vertices))
+        out_point = list(reversed(self.in_point))
+        in_point = list(reversed(self.out_point))
+        self.in_point = in_point
+        self.out_point = out_point
 
 
 class ShapePropKeyframe(TgsObject):

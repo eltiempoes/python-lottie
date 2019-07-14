@@ -1,6 +1,7 @@
 import random
 import math
 from .nvector import NVector
+from ..objects.shapes import Shape
 
 
 def shake(position_prop, x_radius, y_radius, start_time, end_time, n_frames):
@@ -61,3 +62,113 @@ def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, revers
         if reverse:
             fact = 1 - fact
         position_prop.add_keyframe(time, bezier.point_at(fact).to_list())
+
+
+def generate_path_appear(bezier, appear_start, appear_end, n_keyframes, reverse=False):
+    obj = Shape()
+    beziers = []
+    maxp = 0
+
+    time_delta = (appear_end - appear_start) / n_keyframes
+    for i in range(n_keyframes+1):
+        time = appear_start + i * time_delta
+        t2 = (time - appear_start) / (appear_end - appear_start)
+
+        if reverse:
+            t2 = 1 - t2
+            segment = bezier.segment(t2, 1)
+            segment.reverse()
+        else:
+            segment = bezier.segment(0, t2)
+
+        beziers.append(segment)
+        if len(segment.vertices) > maxp:
+            maxp = len(segment.vertices)
+
+        obj.vertices.add_keyframe(time, segment)
+
+    for segment in beziers:
+        deltap = maxp - len(segment.vertices)
+        if deltap > 0:
+            segment.vertices += [segment.vertices[-1]] * deltap
+            segment.in_point += [[0,0]] * deltap
+            segment.out_point += [[0,0]] * deltap
+
+    return obj
+
+
+def generate_path_disappear(bezier, disappear_start, disappear_end, n_keyframes, reverse=False):
+    obj = Shape()
+    beziers = []
+    maxp = 0
+
+    time_delta = (disappear_end - disappear_start) / n_keyframes
+    for i in range(n_keyframes+1):
+        time = disappear_start + i * time_delta
+        t1 = (time - disappear_start) / (disappear_end - disappear_start)
+        if reverse:
+            t1 = 1 - t1
+            segment = bezier.segment(0, t1)
+        else:
+            segment = bezier.segment(1, t1)
+            segment.reverse()
+
+        beziers.append(segment)
+        if len(segment.vertices) > maxp:
+            maxp = len(segment.vertices)
+
+        obj.vertices.add_keyframe(time, segment)
+
+    for segment in beziers:
+        deltap = maxp - len(segment.vertices)
+        if deltap > 0:
+            segment.vertices += [segment.vertices[-1]] * deltap
+            segment.in_point += [[0,0]] * deltap
+            segment.out_point += [[0,0]] * deltap
+
+    return obj
+
+
+def generate_path_segment(bezier, appear_start, appear_end, disappear_start, disappear_end, n_keyframes, reverse=False):
+    obj = Shape()
+    beziers = []
+    maxp = 0
+
+    # HACK: For some reson reversed works better
+    if not reverse:
+        bezier.reverse()
+
+    time_delta = (appear_end - appear_start) / n_keyframes
+    for i in range(n_keyframes+1):
+        time = appear_start + i * time_delta
+        t1 = (time - disappear_start) / (disappear_end - disappear_start)
+        t2 = (time - appear_start) / (appear_end - appear_start)
+
+        t1 = max(0, min(1, t1))
+        t2 = max(0, min(1, t2))
+
+        #if reverse:
+        if True:
+            t1 = 1 - t1
+            t2 = 1 - t2
+            segment = bezier.segment(t2, t1)
+            segment.reverse()
+        #else:
+            #segment = bezier.segment(t1, t2)
+            #segment.reverse()
+
+        beziers.append(segment)
+        if len(segment.vertices) > maxp:
+            maxp = len(segment.vertices)
+
+        obj.vertices.add_keyframe(time, segment)
+
+    for segment in beziers:
+        deltap = maxp - len(segment.vertices)
+        if deltap > 0:
+            segment.split_self_chunks(deltap+1)
+
+    # HACK: Restore
+    if not reverse:
+        bezier.reverse()
+    return obj
