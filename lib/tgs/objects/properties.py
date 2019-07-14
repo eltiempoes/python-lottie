@@ -187,6 +187,12 @@ class Bezier(TgsObject):
         # Bezier curve Vertices. Array of 2 dimensional arrays.
         self.vertices = []
 
+    def insert_point(self, index, pos, inp=[0, 0], outp=[0, 0]):
+        self.vertices.insert(index, pos)
+        self.in_point.insert(index, list(inp))
+        self.out_point.insert(index, list(outp))
+        return self
+
     def add_point(self, pos, inp=[0, 0], outp=[0, 0]):
         self.vertices.append(pos)
         self.in_point.append(list(inp))
@@ -202,38 +208,99 @@ class Bezier(TgsObject):
         return self
 
     def point_at(self, t):
+        i, t = self._index_t(t)
+        points = self._bezier_points(i, True)
+        return self._solve_bezier(t, points)
+
+    def split_at(self, t):
+        i, split1, split2 = self._split(t)
+
+        seg1 = Bezier()
+        seg2 = Bezier()
+        for j in range(i):
+            seg1.add_point(list(self.vertices[j]), list(self.in_point[j]), list(self.out_point[j]))
+        for j in range(i+2, len(self.vertices)):
+            seg2.add_point(list(self.vertices[j]), list(self.in_point[j]), list(self.out_point[j]))
+
+        seg1.add_point(split1[0].to_list(), list(self.in_point[i]), split1[1].to_list())
+        seg1.add_point(split1[3].to_list(), split1[2].to_list(), split2[1].to_list())
+
+        seg2.insert_point(0, split2[0].to_list(), split1[2].to_list(), split2[1].to_list())
+        seg2.insert_point(1, split2[3].to_list(), split2[2].to_list(), list(self.out_point[i+1]))
+
+        return seg1, seg2
+
+    def segment(self, t1, t2):
+        istart, _, segstart = self._split(t1)
+        iend, segend, _ = self._split(t2)
+
+        seg = Bezier()
+
+        seg.add_point(segstart[0].to_list(), [0, 0], segstart[1].to_list())
+
+        if istart+1 < iend:
+            seg.add_point(segstart[3].to_list(), segstart[2].to_list(), list(self.out_point[istart+1]))
+
+            for j in range(istart+2, iend-1):
+                seg.add_point(list(self.vertices[j]), list(self.in_point[j]), list(self.out_point[j]))
+
+            seg.add_point(segend[0].to_list(), list(self.in_point[iend]), segend[1].to_list())
+        else:
+            seg.add_point(segstart[3].to_list(), segstart[2].to_list(), segend[1].to_list())
+
+        seg.add_point(segend[3].to_list(), segend[2].to_list(), [0, 0])
+
+        return seg
+
+    def _split(self, t):
+        i, t = self._index_t(t)
+        cub = self._bezier_points(i, True)
+        quad = self._solve_bezier_step(t, cub)
+        lin = self._solve_bezier_step(t, quad)
+        k = self._solve_bezier_step(t, lin)[0]
+        split1 = [cub[0], quad[0]-cub[0], lin[0]-k, k]
+        split2 = [k, lin[-1]-k, quad[-1]-cub[-1], cub[-1]]
+        return i, split1, split2
+
+    def _bezier_points(self, i, optimize):
+        v1 = NVector(*self.vertices[i])
+        v2 = NVector(*self.vertices[i+1])
+        points = [v1]
+        t1 = NVector(*self.out_point[i])
+        if optimize or t1.length != 0:
+            points.append(t1+v1)
+        t2 = NVector(*self.in_point[i+1])
+        if optimize or t1.length != 0:
+            points.append(t2+v2)
+        points.append(v2)
+        return points
+
+    def _solve_bezier_step(self, t, points):
+        next = []
+        p1 = points[0]
+        for p2 in points[1:]:
+            next.append(p1 * (1-t) + p2 * t)
+            p1 = p2
+        return next
+
+    def _solve_bezier(self, t, points):
+        while len(points) > 1:
+            points = self._solve_bezier_step(t, points)
+        return points[0]
+
+    def _index_t(self, t):
         if t <= 0:
-            return NVector(*self.vertices[0])
+            return 0, 0
+
         if t >= 1:
-            return NVector(*self.vertices[-1])
+            return len(self.vertices)-2, 1
 
         n = len(self.vertices)-1
         for i in range(n):
             if (i+1) / n > t:
                 break
-        t = (t - (i/n)) * n
-        v1 = NVector(*self.vertices[i])
-        v2 = NVector(*self.vertices[i+1])
-        points = [v1]
-        t1 = NVector(*self.out_point[i])
-        if t1.length != 0:
-            points.append(t1+v1)
-        t2 = NVector(*self.in_point[i+1])
-        if t1.length != 0:
-            points.append(t2+v2)
-        points.append(v2)
 
-        return self._solve_bezier(t, points)
-
-    def _solve_bezier(self, t, points):
-        next = []
-        p1 = points.pop(0)
-        for p2 in points:
-            next.append(p1 * (1-t) + p2 * t)
-            p1 = p2
-        if len(next) > 1:
-            return self._solve_bezier(t, next)
-        return next[0]
+        return i, (t - (i/n)) * n
 
 
 class ShapePropKeyframe(TgsObject):
