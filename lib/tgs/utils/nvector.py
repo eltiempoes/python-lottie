@@ -71,3 +71,6 @@ class NVector():
 
     def clone(self):
         return NVector(*self.components)
+
+    def lerp(self, other, t):
+        return self * (1-t) + other * t
