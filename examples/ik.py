@@ -37,7 +37,6 @@ for i in range(an.out_point):
     b2.position.add_keyframe(i, p2.to_list())
 
 
-
 def chain_bezier(chain):
     b = objects.Bezier()
     for seg in chain.joints:

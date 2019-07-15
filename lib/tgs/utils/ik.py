@@ -17,6 +17,15 @@ class Chain:
         self.total_length += length
         self.joints.append(point.clone())
 
+    def add_joints(self, head, n):
+        delta = head - self.joints[-1]
+        self.total_length += delta.length
+        segment = delta / n
+        seglen = segment.length
+        for i in range(n):
+            self.lengths.append(seglen)
+            self.joints.append(self.joints[-1] + segment)
+
     def backward(self, target):
         """
         target -> -> start
