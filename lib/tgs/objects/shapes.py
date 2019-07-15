@@ -455,7 +455,7 @@ class TransformShape(TgsObject):
         # Transform Position
         self.position = MultiDimensional(NVector(0, 0))
         # Transform Scale
-        self.scale = MultiDimensional([100, 100])
+        self.scale = MultiDimensional(NVector(100, 100))
         # Transform Rotation
         self.rotation = Value(0)
         # Transform Opacity

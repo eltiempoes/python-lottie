@@ -175,9 +175,9 @@ class Value(TgsObject, AnimatableMixin):
 class Bezier(TgsObject):
     _props = [
         TgsProp("closed", "c", bool, False),
-        TgsProp("in_point", "i", list, True),
-        TgsProp("out_point", "o", list, True),
-        TgsProp("vertices", "v", list, True),
+        TgsProp("in_point", "i", NVector, True),
+        TgsProp("out_point", "o", NVector, True),
+        TgsProp("vertices", "v", NVector, True),
     ]
 
     def __init__(self):
