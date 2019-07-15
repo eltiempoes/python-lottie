@@ -1,5 +1,5 @@
 from .base import TgsObject, TgsProp, todo_func
-from .properties import MultiDimensional, Value
+from .properties import MultiDimensional, Value, NVector
 
 
 class Transform(TgsObject):
@@ -18,25 +18,25 @@ class Transform(TgsObject):
 
     def __init__(self):
         # Transform Anchor Point
-        self.anchor_point = MultiDimensional([0, 0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        self.anchor_point = MultiDimensional(NVector(0, 0, 0))
         # Transform Position
-        self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional(NVector(0, 0))
         # Transform Scale
-        self.scale = MultiDimensional([100, 100]) # MultiDimensional, MultiDimensionalKeyframed
+        self.scale = MultiDimensional(NVector(100, 100))
         # Transform Rotation
-        self.rotation = Value(0) # Value, ValueKeyframed
+        self.rotation = Value(0)
         # Transform Opacity
-        self.opacity = Value(100) # Value, ValueKeyframed
+        self.opacity = Value(100)
         # Transform Position X
-        #self.position_x = Value() # Value, ValueKeyframed
+        #self.position_x = Value()
         ## Transform Position Y
-        #self.position_y = Value() # Value, ValueKeyframed
+        #self.position_y = Value()
         ## Transform Position Z
-        #self.position_z = Value() # Value, ValueKeyframed
+        #self.position_z = Value()
         # Transform Skew
-        self.skew = Value() # Value, ValueKeyframed
+        self.skew = Value()
         # Transform Skew Axis
-        self.skew_axis = Value() # Value, ValueKeyframed
+        self.skew_axis = Value()
 
 
 class Mask(TgsObject): # TODO check

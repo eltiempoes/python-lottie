@@ -1,4 +1,4 @@
-from .base import TgsObject, TgsProp, TgsEnum, todo_func
+from .base import TgsObject, TgsProp, TgsEnum, todo_func, NVector
 from .properties import Value, MultiDimensional, GradientColors, ShapeProperty
 from .helpers import Transform
 
@@ -77,9 +77,9 @@ class Rect(TgsObject):
         # Shape content type.
         self.type = 'rc'
         # Rect's position
-        self.position = MultiDimensional([0, 0])
+        self.position = MultiDimensional(NVector(0, 0))
         # Rect's size
-        self.size = MultiDimensional([0, 0])
+        self.size = MultiDimensional(NVector(0, 0))
         # Rect's rounded corners
         self.rounded = Value()
 
@@ -126,19 +126,19 @@ class Star(TgsObject):
         # Shape content type.
         self.type = 'sr'
         # Star's position
-        self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
+        self.position = MultiDimensional(NVector(0, 0))
         # Star's inner radius. (Star only)
-        self.inner_radius = Value() # Value, ValueKeyframed
+        self.inner_radius = Value()
         # Star's inner roundness. (Star only)
-        self.inner_roundness = Value() # Value, ValueKeyframed
+        self.inner_roundness = Value()
         # Star's outer radius.
-        self.outer_radius = Value() # Value, ValueKeyframed
+        self.outer_radius = Value()
         # Star's outer roundness.
-        self.outer_roundness = Value() # Value, ValueKeyframed
+        self.outer_roundness = Value()
         # Star's rotation.
-        self.rotation = Value() # Value, ValueKeyframed
+        self.rotation = Value()
         # Star's number of points.
-        self.points = Value(5) # Value, ValueKeyframed
+        self.points = Value(5)
         # Star's type. Polygon or Star.
         self.star_type = StarType.Star
 
@@ -174,9 +174,9 @@ class Ellipse(TgsObject):
         # Shape content type.
         self.type = 'el'
         # Ellipse's position
-        self.position = MultiDimensional([0, 0])
+        self.position = MultiDimensional(NVector(0, 0))
         # Ellipse's size
-        self.size = MultiDimensional([0, 0])
+        self.size = MultiDimensional(NVector(0, 0))
 
     def bounding_box(self, time=0):
         pos = self.position.get_value(time)
@@ -269,7 +269,7 @@ class Fill(TgsObject):
         TgsProp("color", "c", MultiDimensional, False),
     ]
 
-    def __init__(self, color=[1, 1, 1]):
+    def __init__(self, color=None):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
         # After Effect's Name. Used for expressions.
@@ -279,7 +279,7 @@ class Fill(TgsObject):
         # Fill Opacity
         self.opacity = Value(100)
         # Fill Color
-        self.color = MultiDimensional(color)
+        self.color = MultiDimensional(color or NVector(1, 1, 1))
 
     def bounding_box(self, time=0):
         return BoundingBox()
@@ -316,9 +316,9 @@ class GradientFill(TgsObject):
         # Fill Opacity
         self.opacity = Value(100)
         # Gradient Start Point
-        self.start_point = MultiDimensional([0, 0])
+        self.start_point = MultiDimensional(NVector(0, 0))
         # Gradient End Point
-        self.end_point = MultiDimensional([0, 0])
+        self.end_point = MultiDimensional(NVector(0, 0))
         # Gradient Type
         self.gradient_type = GradientType.Linear
         # Gradient Highlight Length. Only if type is Radial
@@ -357,7 +357,7 @@ class Stroke(TgsObject):
         TgsProp("color", "c", MultiDimensional, False),
     ]
 
-    def __init__(self, color=[0, 0, 0], width=1):
+    def __init__(self, color=None, width=1):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
         # After Effect's Name. Used for expressions.
@@ -375,7 +375,7 @@ class Stroke(TgsObject):
         # Stroke Width
         self.width = Value(width)
         # Stroke Color
-        self.color = MultiDimensional(color)
+        self.color = MultiDimensional(color or NVector(0, 0, 0))
 
     def bounding_box(self, time=0):
         return BoundingBox()
@@ -409,9 +409,9 @@ class GradientStroke(TgsObject):
         # Stroke Opacity
         self.opacity = Value(100)
         # Gradient Start Point
-        self.start_point = MultiDimensional([0, 0])
+        self.start_point = MultiDimensional(NVector(0, 0))
         # Gradient End Point
-        self.end_point = MultiDimensional([0, 0])
+        self.end_point = MultiDimensional(NVector(0, 0))
         # Gradient Type
         self.gradient_type = GradientType.Linear
         # Gradient Highlight Length. Only if type is Radial
@@ -451,9 +451,9 @@ class TransformShape(TgsObject):
         self.name = None
         self.type = 'tr'
         # Transform Anchor Point
-        self.anchor_point = MultiDimensional([0, 0])
+        self.anchor_point = MultiDimensional(NVector(0, 0))
         # Transform Position
-        self.position = MultiDimensional([0, 0])
+        self.position = MultiDimensional(NVector(0, 0))
         # Transform Scale
         self.scale = MultiDimensional([100, 100])
         # Transform Rotation
@@ -487,11 +487,11 @@ class Trim(TgsObject): # TODO check
         # Shape content type.
         self.type = 'tm'
         # Trim Start.
-        self.start = Value() # Value, ValueKeyframed
+        self.start = Value()
         # Trim End.
-        self.end = Value() # Value, ValueKeyframed
+        self.end = Value()
         # Trim Offset.
-        self.offset = Value() # Value, ValueKeyframed
+        self.offset = Value()
 
 
 class Composite(TgsEnum):
@@ -518,9 +518,9 @@ class Repeater(TgsObject): # TODO check
         # Shape content type.
         self.type = 'rp'
         # Number of Copies
-        self.copies = Value() # Value, ValueKeyframed
+        self.copies = Value()
         # Offset of Copies
-        self.offset = Value() # Value, ValueKeyframed
+        self.offset = Value()
         # Composite of copies
         self.composite = Composite.Above
         # Transform values for each repeater copy
@@ -543,7 +543,7 @@ class Round(TgsObject): # TODO check
         # Shape content type.
         self.type = 'rd'
         # Rounded Corner Radius
-        self.radius = Value() # Value, ValueKeyframed
+        self.radius = Value()
 
 
 class Merge(TgsObject): # TODO check

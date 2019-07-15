@@ -7,8 +7,8 @@ from ..utils.nvector import NVector
 
 class OffsetKeyframe(TgsObject):
     _props = {
-        TgsProp("start", "s", float, True),
-        TgsProp("end", "e", float, True),
+        TgsProp("start", "s", NVector, False),
+        TgsProp("end", "e", NVector, False),
         TgsProp("time", "t", float, False),
         TgsProp("in_value", "i", easing.KeyframeBezierPoint, False),
         TgsProp("out_value", "o", easing.KeyframeBezierPoint, False),
@@ -20,8 +20,8 @@ class OffsetKeyframe(TgsObject):
     def __init__(self, time=0, start=None, end=None,
                  in_value=None, out_value=None, in_tan=None, out_tan=None):
         # Start value of keyframe segment.
-        self.start = start # number
-        self.end = end # number
+        self.start = start
+        self.end = end
         # Start time of keyframe segment.
         self.time = time
         # Bezier curve easing in value.
@@ -91,13 +91,14 @@ class AnimatableMixin:
 class MultiDimensional(TgsObject, AnimatableMixin):
     keyframe_type = OffsetKeyframe
     _props = [
-        TgsProp("value", "k", float, True, lambda l: not l["a"]),
+        TgsProp("value", "k", NVector, False, lambda l: not l["a"]),
         TgsProp("property_index", "ix", int, False),
         TgsProp("animated", "a", PseudoBool, False),
         TgsProp("keyframes", "k", OffsetKeyframe, True, lambda l: l["a"]),
     ]
 
 
+# TODO use a more convenient representation and convert to the weird array on import/export
 class GradientColors(TgsObject):
     _props = [
         TgsProp("colors", "k", MultiDimensional),
@@ -105,7 +106,7 @@ class GradientColors(TgsObject):
     ]
 
     def __init__(self):
-        self.colors = MultiDimensional([])
+        self.colors = MultiDimensional(NVector())
         self.count = 0
 
     def set_colors(self, colors, keyframe=None):
@@ -119,13 +120,13 @@ class GradientColors(TgsObject):
         self.count = len(colors)
 
     def _flatten_colors(self, colors):
-        return reduce(
+        return NVector(*reduce(
             lambda a, b: a + b,
             map(
-                lambda it: [it[0] / (len(colors)-1)] + it[1],
+                lambda it: [it[0] / (len(colors)-1)] + it[1].components,
                 enumerate(colors),
             )
-        )
+        ))
 
     def add_color(self, offset, color, keyframe=None):
         flat = [offset] + color
@@ -138,14 +139,14 @@ class GradientColors(TgsObject):
                         kf.end += flat
             else:
                 if keyframe > 1:
-                    self.colors.keyframes[keyframe-1].end += flat
-                self.colors.keyframes[keyframe].start += flat
+                    self.colors.keyframes[keyframe-1].end.components += flat
+                self.colors.keyframes[keyframe].start.components += flat
         else:
-            self.colors.value += flat
+            self.colors.value.components += flat
         self.count += 1
 
     def add_keyframe(self, time, colors=None, ease=easing.Linear()):
-        self.colors.add_keyframe(time, self._flatten_colors(colors) if colors else [], ease)
+        self.colors.add_keyframe(time, self._flatten_colors(colors) if colors else NVector(), ease)
 
 
 class Value(TgsObject, AnimatableMixin):
@@ -161,7 +162,7 @@ class Value(TgsObject, AnimatableMixin):
         super().__init__(value)
 
     def add_keyframe(self, time, value, ease=easing.Linear()):
-        super().add_keyframe(time, [value], ease)
+        super().add_keyframe(time, NVector(value), ease)
 
     def get_value(self, time=0):
         v = super().get_value(time)
@@ -170,6 +171,7 @@ class Value(TgsObject, AnimatableMixin):
         return v
 
 
+# TODO Use BezierPoint and convert to in_point/out_point/vertices on inport/export
 class Bezier(TgsObject):
     _props = [
         TgsProp("closed", "c", bool, False),
@@ -188,20 +190,18 @@ class Bezier(TgsObject):
         # Bezier curve Vertices. Array of 2 dimensional arrays.
         self.vertices = []
 
-    def insert_point(self, index, pos, inp=[0, 0], outp=[0, 0]):
+    def insert_point(self, index, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
         self.vertices.insert(index, pos)
-        self.in_point.insert(index, list(inp))
-        self.out_point.insert(index, list(outp))
+        self.in_point.insert(index, inp.clone())
+        self.out_point.insert(index, outp.clone())
         return self
 
-    def add_point(self, pos, inp=[0, 0], outp=[0, 0]):
-        self.vertices.append(pos)
-        self.in_point.append(list(inp))
-        self.out_point.append(list(outp))
+    def add_point(self, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
+        self.insert_point(len(self.vertices), pos, inp, outp)
         return self
 
     def add_smooth_point(self, pos, inp):
-        self.add_point(pos, inp, [-inp[0], -inp[1]])
+        self.add_point(pos, inp, -inp)
         return self
 
     def close(self, closed=True):
@@ -229,15 +229,15 @@ class Bezier(TgsObject):
         seg1 = Bezier()
         seg2 = Bezier()
         for j in range(i):
-            seg1.add_point(list(self.vertices[j]), list(self.in_point[j]), list(self.out_point[j]))
+            seg1.add_point(self.vertices[j].clone(), self.in_point[j].clone(), self.out_point[j].clone())
         for j in range(i+2, len(self.vertices)):
-            seg2.add_point(list(self.vertices[j]), list(self.in_point[j]), list(self.out_point[j]))
+            seg2.add_point(self.vertices[j].clone(), self.in_point[j].clone(), self.out_point[j].clone())
 
-        seg1.add_point(split1[0].to_list(), list(self.in_point[i]), split1[1].to_list())
-        seg1.add_point(split1[3].to_list(), split1[2].to_list(), split2[1].to_list())
+        seg1.add_point(split1[0], self.in_point[i].clone(), split1[1])
+        seg1.add_point(split1[3], split1[2], split2[1])
 
-        seg2.insert_point(0, split2[0].to_list(), split1[2].to_list(), split2[1].to_list())
-        seg2.insert_point(1, split2[3].to_list(), split2[2].to_list(), list(self.out_point[i+1]))
+        seg2.insert_point(0, split2[0], split1[2], split2[1])
+        seg2.insert_point(1, split2[3], split2[2], self.out_point[i+1].clone())
 
         return seg1, seg2
 
@@ -247,8 +247,8 @@ class Bezier(TgsObject):
         elif t1 == t2:
             seg = Bezier()
             p = self.point_at(t1)
-            seg.add_point(p.to_list())
-            seg.add_point(p.to_list())
+            seg.add_point(p)
+            seg.add_point(p)
             return seg
 
         seg1, seg2 = self.split_at(t1)
@@ -286,13 +286,13 @@ class Bezier(TgsObject):
         return self.split_self_multi(splits)
 
     def _bezier_points(self, i, optimize):
-        v1 = NVector(*self.vertices[i])
-        v2 = NVector(*self.vertices[i+1])
+        v1 = self.vertices[i].clone()
+        v2 = self.vertices[i+1].clone()
         points = [v1]
-        t1 = NVector(*self.out_point[i])
+        t1 = self.out_point[i].clone()
         if optimize or t1.length != 0:
             points.append(t1+v1)
-        t2 = NVector(*self.in_point[i+1])
+        t2 = self.in_point[i+1].clone()
         if optimize or t1.length != 0:
             points.append(t2+v2)
         points.append(v2)

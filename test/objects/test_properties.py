@@ -1,10 +1,11 @@
 from .. import base
 from tgs import objects
+from tgs.utils.nvector import NVector
 
 
 class TestMultiDimensional(base.TestCase):
     def test_zero(self):
-        md = objects.MultiDimensional([0, 0])
+        md = objects.MultiDimensional(NVector(0, 0))
         self.assertDictEqual(
             md.to_dict(),
             {
@@ -14,8 +15,8 @@ class TestMultiDimensional(base.TestCase):
         )
 
     def test_value(self):
-        md = objects.MultiDimensional([0, 0])
-        md.value = [1, 2]
+        md = objects.MultiDimensional(NVector(0, 0))
+        md.value = NVector(1, 2)
         self.assertDictEqual(
             md.to_dict(),
             {
@@ -25,9 +26,9 @@ class TestMultiDimensional(base.TestCase):
         )
 
     def test_keyframes(self):
-        md = objects.MultiDimensional([0, 0])
-        md.add_keyframe(0, [1, 2])
-        md.add_keyframe(3, [4, 5])
+        md = objects.MultiDimensional(NVector(0, 0))
+        md.add_keyframe(0, NVector(1, 2))
+        md.add_keyframe(3, NVector(4, 5))
         self.assertDictEqual(
             md.to_dict(),
             {
@@ -49,10 +50,10 @@ class TestMultiDimensional(base.TestCase):
         )
 
     def test_clear(self):
-        md = objects.MultiDimensional([0, 0])
-        md.add_keyframe(0, [1, 2])
-        md.add_keyframe(3, [4, 5])
-        md.clear_animation([6, 7])
+        md = objects.MultiDimensional(NVector(0, 0))
+        md.add_keyframe(0, NVector(1, 2))
+        md.add_keyframe(3, NVector(4, 5))
+        md.clear_animation(NVector(6, 7))
         self.assertDictEqual(
             md.to_dict(),
             {
@@ -62,35 +63,35 @@ class TestMultiDimensional(base.TestCase):
         )
 
     def test_get_value_noanim(self):
-        md = objects.MultiDimensional([0, 0])
-        md.value = [1, 2]
-        self.assertEqual(md.get_value(), [1, 2])
-        self.assertEqual(md.get_value(0), [1, 2])
-        self.assertEqual(md.get_value(3), [1, 2])
-        self.assertEqual(md.get_value(4), [1, 2])
+        md = objects.MultiDimensional(NVector(0, 0))
+        md.value = NVector(1, 2)
+        self.assertEqual(md.get_value(),  NVector(1, 2))
+        self.assertEqual(md.get_value(0), NVector(1, 2))
+        self.assertEqual(md.get_value(3), NVector(1, 2))
+        self.assertEqual(md.get_value(4), NVector(1, 2))
 
     def test_get_value_anim(self):
-        md = objects.MultiDimensional([0, 0])
-        md.add_keyframe(0, [1, 2])
-        md.add_keyframe(3, [4, 5])
-        self.assertEqual(md.get_value(), [1, 2])
-        self.assertEqual(md.get_value(0), [1, 2])
-        self.assertEqual(md.get_value(3), [4, 5])
-        self.assertEqual(md.get_value(4), [4, 5])
+        md = objects.MultiDimensional(NVector(0, 0))
+        md.add_keyframe(0, NVector(1, 2))
+        md.add_keyframe(3, NVector(4, 5))
+        self.assertEqual(md.get_value(),  NVector(1, 2))
+        self.assertEqual(md.get_value(0), NVector(1, 2))
+        self.assertEqual(md.get_value(3), NVector(4, 5))
+        self.assertEqual(md.get_value(4), NVector(4, 5))
 
     def test_get_value_anim_nonestart(self):
-        md = objects.MultiDimensional([0, 0])
-        md.add_keyframe(0, [1, 2])
-        md.add_keyframe(3, [4, 5])
+        md = objects.MultiDimensional(NVector(0, 0))
+        md.add_keyframe(0, NVector(1, 2))
+        md.add_keyframe(3, NVector(4, 5))
         md.keyframes[-1].start = None # bodymovin exports them like this
-        self.assertEqual(md.get_value(), [1, 2])
-        self.assertEqual(md.get_value(0), [1, 2])
-        self.assertEqual(md.get_value(3), [4, 5])
-        self.assertEqual(md.get_value(4), [4, 5])
+        self.assertEqual(md.get_value(),  NVector(1, 2))
+        self.assertEqual(md.get_value(0), NVector(1, 2))
+        self.assertEqual(md.get_value(3), NVector(4, 5))
+        self.assertEqual(md.get_value(4), NVector(4, 5))
 
     def test_get_value_inconsistent(self):
-        md = objects.MultiDimensional([0, 0])
-        md.value = [1, 2]
+        md = objects.MultiDimensional(NVector(0, 0))
+        md.value = NVector(1, 2)
         md.animated = True
         self.assertEqual(md.get_value(),  None)
         self.assertEqual(md.get_value(0), None)
@@ -104,7 +105,7 @@ class TestMultiDimensional(base.TestCase):
         })
         self.assertIs(md.animated, False)
         self.assertIsNone(md.keyframes)
-        self.assertEqual(md.value, [1, 2])
+        self.assertEqual(md.value, NVector(1, 2))
 
     def test_load_anim(self):
         md = objects.MultiDimensional.load({
@@ -128,15 +129,15 @@ class TestMultiDimensional(base.TestCase):
         self.assertEqual(len(md.keyframes), 2)
 
         self.assertEqual(md.keyframes[0].time, 0)
-        self.assertEqual(md.keyframes[0].start, [1, 2])
-        self.assertEqual(md.keyframes[0].end, [4, 5])
+        self.assertEqual(md.keyframes[0].start, NVector(1, 2))
+        self.assertEqual(md.keyframes[0].end, NVector(4, 5))
         self.assertEqual(md.keyframes[0].in_value.x, 6)
         self.assertEqual(md.keyframes[0].in_value.y, 7)
         self.assertEqual(md.keyframes[0].out_value.x, 8)
         self.assertEqual(md.keyframes[0].out_value.y, 9)
 
         self.assertEqual(md.keyframes[1].time, 3)
-        self.assertEqual(md.keyframes[1].start, [4, 5])
+        self.assertEqual(md.keyframes[1].start, NVector(4, 5))
         self.assertEqual(md.keyframes[1].end, None)
         self.assertEqual(md.keyframes[1].in_value, None)
         self.assertEqual(md.keyframes[1].out_value, None)

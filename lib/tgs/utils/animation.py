@@ -40,8 +40,7 @@ def rot_shake(rotation_prop, angles, start_time, end_time, n_frames):
 
 
 def spring_pull(position_prop, point, start_time, end_time, falloff=15, oscillations=7):
-    start = NVector(*position_prop.get_value(start_time))
-    point = NVector(*point)
+    start = position_prop.get_value(start_time)
     d = start-point
 
     delta = (end_time - start_time) / oscillations
@@ -50,26 +49,9 @@ def spring_pull(position_prop, point, start_time, end_time, falloff=15, oscillat
         time_x = i / oscillations
         factor = math.cos(time_x * math.pi * oscillations) * (1-time_x**(1/falloff))
         p = point + d * factor
-        position_prop.add_keyframe(start_time + delta * i, p.to_list())
+        position_prop.add_keyframe(start_time + delta * i, p)
 
-    position_prop.add_keyframe(end_time, point.to_list())
-
-
-# TODO use NVector for multidimensional values so spring_pull/spring_scalar become equivalent
-def spring_scalar(prop, value, start_time, end_time, falloff=15, oscillations=7):
-    start = prop.get_value(start_time)
-    point = value
-    d = start-point
-
-    delta = (end_time - start_time) / oscillations
-
-    for i in range(oscillations):
-        time_x = i / oscillations
-        factor = math.cos(time_x * math.pi * oscillations) * (1-time_x**(1/falloff))
-        p = point + d * factor
-        prop.add_keyframe(start_time + delta * i, p)
-
-    prop.add_keyframe(end_time, point)
+    position_prop.add_keyframe(end_time, point)
 
 
 def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, reverse=False):
@@ -109,8 +91,8 @@ def generate_path_appear(bezier, appear_start, appear_end, n_keyframes, reverse=
         deltap = maxp - len(segment.vertices)
         if deltap > 0:
             segment.vertices += [segment.vertices[-1]] * deltap
-            segment.in_point += [[0,0]] * deltap
-            segment.out_point += [[0,0]] * deltap
+            segment.in_point += [NVector(0,0)] * deltap
+            segment.out_point += [NVector(0,0)] * deltap
 
     return obj
 
@@ -141,8 +123,8 @@ def generate_path_disappear(bezier, disappear_start, disappear_end, n_keyframes,
         deltap = maxp - len(segment.vertices)
         if deltap > 0:
             segment.vertices += [segment.vertices[-1]] * deltap
-            segment.in_point += [[0,0]] * deltap
-            segment.out_point += [[0,0]] * deltap
+            segment.in_point += [NVector(0,0)] * deltap
+            segment.out_point += [NVector(0,0)] * deltap
 
     return obj
 
@@ -229,7 +211,7 @@ def _sine_displace(startpos, wavelength, amplitude, f, n_frames, speed_f, axis):
         off = -math.sin(startpos[0]/wavelength*math.pi*2-f*speed_f/n_frames) * amplitude
         x = startpos[0] + off * math.cos(axis)
         y = startpos[1] + off * math.sin(axis)
-        return [x, y]
+        return NVector(x, y)
 
 
 def sine_displace_bezier(
@@ -258,17 +240,11 @@ def sine_displace_bezier(
             startpos = initial.vertices[pi]
 
             p = _sine_displace(startpos, wavelength, amplitude, f, n_frames, speed_f, axis)
-            t1sp = [
-                initial.in_point[pi][0] + startpos[0],
-                initial.in_point[pi][1] + startpos[1],
-            ]
+            t1sp = initial.in_point[pi] + startpos
             t1abs = _sine_displace(t1sp, wavelength, amplitude, f, n_frames, speed_f, axis)
-            t2sp = [
-                initial.out_point[pi][0] + startpos[0],
-                initial.out_point[pi][1] + startpos[1],
-            ]
+            t2sp = initial.out_point[pi] + startpos
             t2abs = _sine_displace(t2sp, wavelength, amplitude, f, n_frames, speed_f, axis)
 
-            bezier.add_point(p, [t1abs[0] - p[0], t1abs[1] - p[1]], [t2abs[0] - p[0], t2abs[1] - p[1]])
+            bezier.add_point(p, t1abs - p, t2abs - p)
 
         prop.add_keyframe(f * time_delta + time_start, bezier)

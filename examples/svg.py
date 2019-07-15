@@ -7,6 +7,7 @@ sys.path.append(os.path.join(
 from tgs import exporters
 from tgs import objects
 from tgs.parsers.svg import parse_svg_file
+from tgs import NVector
 
 
 an = parse_svg_file(os.path.join(
@@ -15,8 +16,8 @@ an = parse_svg_file(os.path.join(
 ))
 
 layer = an.find("durg")
-layer.transform.anchor_point.value = [256, 256]
-layer.transform.position.value = [256, 256]
+layer.transform.anchor_point.value = NVector(256, 256)
+layer.transform.position.value = NVector(256, 256)
 layer.transform.rotation.add_keyframe(0, 0)
 layer.transform.rotation.add_keyframe(30, 180)
 layer.transform.rotation.add_keyframe(60, 360)

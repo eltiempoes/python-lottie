@@ -74,13 +74,13 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
     def set_transform(self, dom, transform):
         trans = []
-        pos = NVector(*transform.position.get_value(self.time))
-        anchor = NVector(*transform.anchor_point.get_value(self.time))
+        pos = transform.position.get_value(self.time).clone()
+        anchor = transform.anchor_point.get_value(self.time).clone()
         pos -= anchor
         if pos[0] != 0 or pos[0] != 0:
             trans.append("translate(%s, %s)" % (pos.components[0], pos.components[1]))
 
-        scale = NVector(*transform.scale.get_value(self.time))
+        scale = transform.scale.get_value(self.time).clone()
         if scale[0] != 100 or scale[1] != 100:
             scale /= 100
             trans.append("scale(%s, %s)" % (scale.components[0], scale.components[1]))
@@ -148,8 +148,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         ))
 
     def process_gradient(self, gradient):
-        spos = NVector(*gradient.start_point.get_value(self.time))
-        epos = NVector(*gradient.end_point.get_value(self.time))
+        spos = gradient.start_point.get_value(self.time)
+        epos = gradient.end_point.get_value(self.time)
 
         if gradient.gradient_type == objects.GradientType.Linear:
             dom = ElementTree.SubElement(self.defs, "linerGradient")
@@ -246,20 +246,20 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             bez = shape.vertices.get_value(self.time)
             d += "M %s,%s " % tuple(bez.vertices[0])
             for i in range(1, len(bez.vertices)):
-                qfrom = NVector(*bez.vertices[i-1])
-                h1 = NVector(*bez.out_point[i-1]) + qfrom
-                qto = NVector(*bez.vertices[i])
-                h2 = NVector(*bez.in_point[i]) + qto
+                qfrom = bez.vertices[i-1]
+                h1 = bez.out_point[i-1] + qfrom
+                qto = bez.vertices[i]
+                h2 = bez.in_point[i] + qto
                 d += "C %s,%s %s,%s %s,%s " % (
                     h1[0], h1[1],
                     h2[0], h2[1],
                     qto[0], qto[1],
                 )
             if bez.closed:
-                qfrom = NVector(*bez.vertices[-1])
-                h1 = NVector(*bez.out_point[-1]) + qfrom
-                qto = NVector(*bez.vertices[0])
-                h2 = NVector(*bez.in_point[0]) + qto
+                qfrom = bez.vertices[-1]
+                h1 = bez.out_point[-1] + qfrom
+                qto = bez.vertices[0]
+                h2 = bez.in_point[0] + qto
                 d += "C %s,%s %s,%s %s,%s Z" % (
                     h1[0], h1[1],
                     h2[0], h2[1],

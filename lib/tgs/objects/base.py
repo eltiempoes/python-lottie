@@ -1,5 +1,6 @@
 import enum
 import inspect
+from ..utils.nvector import NVector
 
 
 class Tgs:
@@ -84,6 +85,8 @@ class TgsProp:
             return lottieval
         elif isinstance(self.type, TgsConverter):
             return self.type.lottie_to_py(lottieval)
+        elif self.type is NVector:
+            return NVector(*lottieval)
         return self.type(lottieval)
 
     def to_dict(self, obj):
@@ -97,6 +100,8 @@ class TgsProp:
     def basic_to_dict(self, v):
         if isinstance(v, Tgs):
             return v.to_dict()
+        elif isinstance(v, NVector):
+            return list(map(self.basic_to_dict, v.components))
         elif isinstance(v, list):
             return list(map(self.basic_to_dict, v))
         elif isinstance(v, (int, str, bool)):

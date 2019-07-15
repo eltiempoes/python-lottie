@@ -6,6 +6,7 @@ sys.path.append(os.path.join(
 ))
 from tgs import exporters
 from tgs import objects
+from tgs import NVector
 
 
 an = objects.Animation(59)
@@ -14,27 +15,27 @@ layer = objects.ShapeLayer()
 an.add_layer(layer)
 
 heart = objects.Bezier()
-heart.add_point([50, 20], [50, -20], [-50, -20])
-heart.add_smooth_point([0, 50], [-5, -10])
-heart.add_smooth_point([50, 100], [-10, 0])
-heart.add_smooth_point([100, 50], [-5, 10])
+heart.add_point(NVector(50, 20), NVector(50, -20), NVector(-50, -20))
+heart.add_smooth_point(NVector(0, 50), NVector(-5, -10))
+heart.add_smooth_point(NVector(50, 100), NVector(-10, 0))
+heart.add_smooth_point(NVector(100, 50), NVector(-5, 10))
 heart.closed = True
 antiheart = (
     objects.Bezier()
-    .add_smooth_point([50, 0], [10, 0])
-    .add_smooth_point([0, 50], [0, -20])
-    .add_point([50, 80], [-50, 20], [50, 20])
-    .add_smooth_point([100, 50], [0, 20])
+    .add_smooth_point(NVector(50, 0), NVector(10, 0))
+    .add_smooth_point(NVector(0, 50), NVector(0, -20))
+    .add_point(NVector(50, 80), NVector(-50, 20), NVector(50, 20))
+    .add_smooth_point(NVector(100, 50), NVector(0, 20))
     .close()
 )
 
 g1 = layer.add_shape(objects.Group())
-g1.transform.position.value = [100, 200]
+g1.transform.position.value = NVector(100, 200)
 shape = g1.add_shape(objects.Shape())
 shape.vertices.value = heart
 
 g2 = layer.add_shape(objects.Group())
-g2.transform.position.value = [300, 200]
+g2.transform.position.value = NVector(300, 200)
 animated = g2.add_shape(objects.Shape())
 animated.vertices.add_keyframe(0, heart)
 animated.vertices.add_keyframe(30, antiheart)

@@ -577,15 +577,15 @@ class PathDParser:
         self.next_token()
 
     def _rpoint(self, point, rel=None):
-        return (point - (rel or self.p)).to_list() if point is not None else [0, 0]
+        return (point - (rel or self.p)) if point is not None else NVector(0, 0)
 
     def _do_add_p(self, outp=None):
         if self.add_p:
             self.paths.append(self.path)
-            self.path.add_point(self.p.to_list(), [0, 0], self._rpoint(outp))
+            self.path.add_point(self.p.clone(), NVector(0, 0), self._rpoint(outp))
             self.add_p = False
         elif outp:
-            rp = NVector(*self.path.vertices[-1])
+            rp = self.path.vertices[-1]
             self.path.out_point[-1] = self._rpoint(outp, rp)
 
     def _parse_L(self):
@@ -594,7 +594,7 @@ class PathDParser:
             return
         self._do_add_p()
         self.p = self.cur_vec()
-        self.path.add_point(self.p.to_list(), NVector(0, 0), NVector(0, 0))
+        self.path.add_point(self.p.clone(), NVector(0, 0), NVector(0, 0))
         self.implicit = "L"
         self.next_token()
 
@@ -604,7 +604,7 @@ class PathDParser:
             return
         self._do_add_p()
         self.p += self.cur_vec()
-        self.path.add_point(self.p.to_list(), [0, 0], [0, 0])
+        self.path.add_point(self.p.clone(), NVector(0, 0), NVector(0, 0))
         self.implicit = "l"
         self.next_token()
 
@@ -614,7 +614,7 @@ class PathDParser:
             return
         self._do_add_p()
         self.p[0] = self.la
-        self.path.add_point(self.p.to_list(), [0, 0], [0, 0])
+        self.path.add_point(self.p.clone(), NVector(0, 0), NVector(0, 0))
         self.implicit = "H"
         self.next_token()
 
@@ -624,7 +624,7 @@ class PathDParser:
             return
         self._do_add_p()
         self.p[0] += self.la
-        self.path.add_point(self.p.to_list(), [0, 0], [0, 0])
+        self.path.add_point(self.p.clone(), NVector(0, 0), NVector(0, 0))
         self.implicit = "h"
         self.next_token()
 
@@ -634,7 +634,7 @@ class PathDParser:
             return
         self._do_add_p()
         self.p[1] = self.la
-        self.path.add_point(self.p.to_list(), [0, 0], [0, 0])
+        self.path.add_point(self.p.clone(), NVector(0, 0), NVector(0, 0))
         self.implicit = "V"
         self.next_token()
 
@@ -644,7 +644,7 @@ class PathDParser:
             return
         self._do_add_p()
         self.p[1] += self.la
-        self.path.add_point(self.p.to_list(), [0, 0], [0, 0])
+        self.path.add_point(self.p.clone(), NVector(0, 0), NVector(0, 0))
         self.implicit = "v"
         self.next_token()
 
@@ -657,9 +657,9 @@ class PathDParser:
         pin = self.next_vec()
         self.p = self.next_vec()
         self.path.add_point(
-            self.p.to_list(),
-            (pin - self.p).to_list(),
-            [0, 0]
+            self.p.clone(),
+            (pin - self.p),
+            NVector(0, 0)
         )
         self.implicit = "C"
         self.next_token()
@@ -673,9 +673,9 @@ class PathDParser:
         pin = self.p + self.next_vec()
         self.p += self.next_vec()
         self.path.add_point(
-            self.p.to_list(),
-            (pin - self.p).to_list(),
-            [0, 0]
+            self.p.clone(),
+            (pin - self.p),
+            NVector(0, 0)
         )
         self.implicit = "c"
         self.next_token()
@@ -686,13 +686,13 @@ class PathDParser:
             return
         pin = self.cur_vec()
         self._do_add_p()
-        handle = NVector(*self.path.in_point[-1])
-        self.path.out_point[-1] = (-handle).to_list()
+        handle = self.path.in_point[-1]
+        self.path.out_point[-1] = (-handle)
         self.p = self.next_vec()
         self.path.add_point(
-            self.p.to_list(),
-            (pin - self.p).to_list(),
-            [0, 0]
+            self.p.clone(),
+            (pin - self.p),
+            NVector(0, 0)
         )
         self.implicit = "S"
         self.next_token()
@@ -703,13 +703,13 @@ class PathDParser:
             return
         pin = self.cur_vec() + self.p
         self._do_add_p()
-        handle = NVector(*self.path.in_point[-1])
-        self.path.out_point[-1] = (-handle).to_list()
+        handle = self.path.in_point[-1]
+        self.path.out_point[-1] = (-handle)
         self.p += self.next_vec()
         self.path.add_point(
-            self.p.to_list(),
-            (pin - self.p).to_list(),
-            [0, 0]
+            self.p.clone(),
+            (pin - self.p),
+            NVector(0, 0)
         )
         self.implicit = "s"
         self.next_token()
@@ -722,9 +722,9 @@ class PathDParser:
         pin = self.cur_vec()
         self.p = self.next_vec()
         self.path.add_point(
-            self.p.to_list(),
-            (pin - self.p).to_list(),
-            [0, 0]
+            self.p.clone(),
+            (pin - self.p),
+            NVector(0, 0)
         )
         self.implicit = "Q"
         self.next_token()
@@ -737,9 +737,9 @@ class PathDParser:
         pin = self.p + self.cur_vec()
         self.p += self.next_vec()
         self.path.add_point(
-            self.p.to_list(),
-            (pin - self.p).to_list(),
-            [0, 0]
+            self.p.clone(),
+            (pin - self.p),
+            NVector(0, 0)
         )
         self.implicit = "q"
         self.next_token()
@@ -749,12 +749,12 @@ class PathDParser:
             self.next_token()
             return
         self._do_add_p()
-        handle = self.p - NVector(*self.path.in_point[-1])
+        handle = self.p - self.path.in_point[-1]
         self.p = self.cur_vec()
         self.path.add_point(
-            self.p.to_list(),
-            (handle - self.p).to_list(),
-            [0, 0]
+            self.p.clone(),
+            (handle - self.p),
+            NVector(0, 0)
         )
         self.implicit = "T"
         self.next_token()
@@ -764,12 +764,12 @@ class PathDParser:
             self.next_token()
             return
         self._do_add_p()
-        handle = -NVector(*self.path.in_point[-1]) + self.p
+        handle = -self.path.in_point[-1] + self.p
         self.p += self.cur_vec()
         self.path.add_point(
-            self.p.to_list(),
-            (handle - self.p).to_list(),
-            [0, 0]
+            self.p.clone(),
+            (handle - self.p),
+            NVector(0, 0)
         )
         self.implicit = "t"
         self.next_token()
@@ -796,9 +796,9 @@ class PathDParser:
             # Straight line
             self.p = dest
             self.path.add_point(
-                self.p.to_list(),
-                [0, 0],
-                [0, 0]
+                self.p.clone(),
+                NVector(0, 0),
+                NVector(0, 0)
             )
             return
 
@@ -806,17 +806,17 @@ class PathDParser:
         points = ellipse.to_bezier(theta1, deltatheta)
 
         self._do_add_p()
-        self.path.out_point[-1] = points[0].out_t.to_list()
+        self.path.out_point[-1] = points[0].out_t
         for point in points[1:-1]:
             self.path.add_point(
-                point.point.to_list(),
-                point.in_t.to_list(),
-                point.out_t.to_list(),
+                point.point,
+                point.in_t,
+                point.out_t,
             )
         self.path.add_point(
-            dest.to_list(),
-            points[-1].in_t.to_list(),
-            [0, 0],
+            dest,
+            points[-1].in_t,
+            NVector(0, 0),
         )
         self.p = dest
 
@@ -835,7 +835,7 @@ class PathDParser:
 
     def _parse_Z(self):
         if self.path.vertices:
-            self.p = NVector(*self.path.vertices[0])
+            self.p = self.path.vertices[0].clone()
         self.path.close()
         self._push_path()
 

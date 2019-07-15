@@ -3,6 +3,7 @@ from xml.etree import ElementTree
 from .. import base
 from tgs import objects
 from tgs.parsers.svg import parse_svg_etree
+from tgs.utils.nvector import NVector
 
 
 class PathTester(unittest.TestCase):
@@ -38,6 +39,8 @@ class PathTester(unittest.TestCase):
         for aa, bb in zip(a, b):
             if isinstance(aa, list):
                 self.assert_list_almost_equal(aa, bb)
+            elif isinstance(aa, NVector):
+                self.assert_list_almost_equal(aa.components, bb.components)
             else:
                 self.assertAlmostEqual(aa, bb)
 
@@ -46,17 +49,17 @@ class TestMove(PathTester):
     def test_abs(self):
         self.assert_path(
             "M 20,20 M 10,10 h 10",
-            [[10, 10], [20, 10]],
-            [[ 0,  0], [ 0,  0]],
-            [[ 0,  0], [ 0,  0]],
+            [NVector(10, 10), NVector(20, 10)],
+            [NVector( 0,  0), NVector( 0,  0)],
+            [NVector( 0,  0), NVector( 0,  0)],
         )
 
     def test_rel(self):
         self.assert_path(
             "M 20,20 m 10,10 h 10",
-            [[30, 30], [40, 30]],
-            [[ 0,  0], [ 0,  0]],
-            [[ 0,  0], [ 0,  0]],
+            [NVector(30, 30), NVector(40, 30)],
+            [NVector( 0,  0), NVector( 0,  0)],
+            [NVector( 0,  0), NVector( 0,  0)],
         )
 
     def test_breaks_abs(self):
@@ -67,13 +70,13 @@ class TestMove(PathTester):
         path = anim.find("path")
         bezier = path.shapes[0].vertices.value
         self.assertListEqual(bezier.vertices, [
-            [10, 10], [10, 20], [20, 20],
+            NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
         self.assertFalse(bezier.closed)
 
         bezier = path.shapes[1].vertices.value
         self.assertListEqual(bezier.vertices, [
-            [20, 10], [10, 20], [20, 20],
+            NVector(20, 10), NVector(10, 20), NVector(20, 20),
         ])
         self.assertFalse(bezier.closed)
 
@@ -85,13 +88,13 @@ class TestMove(PathTester):
         path = anim.find("path")
         bezier = path.shapes[0].vertices.value
         self.assertListEqual(bezier.vertices, [
-            [10, 10], [10, 20], [20, 20],
+            NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
         self.assertFalse(bezier.closed)
 
         bezier = path.shapes[1].vertices.value
         self.assertListEqual(bezier.vertices, [
-            [20, 10], [10, 20], [20, 20],
+            NVector(20, 10), NVector(10, 20), NVector(20, 20),
         ])
         self.assertFalse(bezier.closed)
 
@@ -100,17 +103,17 @@ class TestLineTo(PathTester):
     def test_line_abs(self):
         self.assert_path(
             "M 10,10 L 90,90 V 10 H 50",
-            [[10, 10], [90, 90], [90, 10], [50, 10]],
-            [[ 0,  0], [ 0,  0], [ 0,  0], [ 0,  0]],
-            [[ 0,  0], [ 0,  0], [ 0,  0], [ 0,  0]],
+            [NVector(10, 10), NVector(90, 90), NVector(90, 10), NVector(50, 10)],
+            [NVector( 0,  0), NVector( 0,  0), NVector( 0,  0), NVector( 0,  0)],
+            [NVector( 0,  0), NVector( 0,  0), NVector( 0,  0), NVector( 0,  0)],
         )
 
     def test_line_rel(self):
         self.assert_path(
             "M 10,10 l 80,80, v -80 h -40",
-            [[10, 10], [90, 90], [90, 10], [50, 10]],
-            [[ 0,  0], [ 0,  0], [ 0,  0], [ 0,  0]],
-            [[ 0,  0], [ 0,  0], [ 0,  0], [ 0,  0]],
+            [NVector(10, 10), NVector(90, 90), NVector(90, 10), NVector(50, 10)],
+            [NVector( 0,  0), NVector( 0,  0), NVector( 0,  0), NVector( 0,  0)],
+            [NVector( 0,  0), NVector( 0,  0), NVector( 0,  0), NVector( 0,  0)],
         )
 
 
@@ -122,9 +125,9 @@ class TestCubic(PathTester):
             C 30,90 25,10 50,10
             S 70,90 90,90
             """,
-            [[10, 90], [ 50, 10], [ 90, 90]],
-            [[ 0,  0], [-25,  0], [-20,  0]],
-            [[20,  0], [ 25,  0], [  0,  0]],
+            [NVector(10, 90), NVector( 50, 10), NVector( 90, 90)],
+            [NVector( 0,  0), NVector(-25,  0), NVector(-20,  0)],
+            [NVector(20,  0), NVector( 25,  0), NVector(  0,  0)],
         )
 
     def test_cubic_rel(self):
@@ -134,9 +137,9 @@ class TestCubic(PathTester):
             c 20,0 15,-80 40,-80
             s 20,80 40,80
             """,
-            [[10, 90], [ 50, 10], [ 90, 90]],
-            [[ 0,  0], [-25,  0], [-20,  0]],
-            [[20,  0], [ 25,  0], [  0,  0]],
+            [NVector(10, 90), NVector( 50, 10), NVector( 90, 90)],
+            [NVector( 0,  0), NVector(-25,  0), NVector(-20,  0)],
+            [NVector(20,  0), NVector( 25,  0), NVector(  0,  0)],
         )
 
 
@@ -147,9 +150,9 @@ class TestQuadratic(PathTester):
             M 10,50
             Q 25,25 40,50
             """,
-            [[10, 50], [ 40, 50]],
-            [[ 0,  0], [-15,-25]],
-            [[ 0,  0], [  0,  0]],
+            [NVector(10, 50), NVector( 40, 50)],
+            [NVector( 0,  0), NVector(-15,-25)],
+            [NVector( 0,  0), NVector(  0,  0)],
         )
 
     def test_q_rel(self):
@@ -158,9 +161,9 @@ class TestQuadratic(PathTester):
             M 10,50
             q 15,-25 30,0
             """,
-            [[10, 50], [ 40, 50]],
-            [[ 0,  0], [-15,-25]],
-            [[ 0,  0], [  0,  0]],
+            [NVector(10, 50), NVector( 40, 50)],
+            [NVector( 0,  0), NVector(-15,-25)],
+            [NVector( 0,  0), NVector(  0,  0)],
         )
 
     def test_t_abs(self):
@@ -170,9 +173,9 @@ class TestQuadratic(PathTester):
             Q 25,25 40,50
             T 70,50 100,50 130,50
             """,
-            [[10, 50], [ 40, 50], [ 70, 50], [100, 50], [130, 50]],
-            [[ 0,  0], [-15,-25], [-15, 25], [-15,-25], [-15, 25]],
-            [[ 0,  0], [  0,  0], [  0,  0], [  0,  0], [  0,  0]],
+            [NVector(10, 50), NVector( 40, 50), NVector( 70, 50), NVector(100, 50), NVector(130, 50)],
+            [NVector( 0,  0), NVector(-15,-25), NVector(-15, 25), NVector(-15,-25), NVector(-15, 25)],
+            [NVector( 0,  0), NVector(  0,  0), NVector(  0,  0), NVector(  0,  0), NVector(  0,  0)],
         )
 
     def test_t_rel(self):
@@ -182,9 +185,9 @@ class TestQuadratic(PathTester):
             q 15,-25 30,0
             t 30,0 30,0 30,0
             """,
-            [[10, 50], [ 40, 50], [ 70, 50], [100, 50], [130, 50]],
-            [[ 0,  0], [-15,-25], [-15, 25], [-15,-25], [-15, 25]],
-            [[ 0,  0], [  0,  0], [  0,  0], [  0,  0], [  0,  0]],
+            [NVector(10, 50), NVector( 40, 50), NVector( 70, 50), NVector(100, 50), NVector(130, 50)],
+            [NVector( 0,  0), NVector(-15,-25), NVector(-15, 25), NVector(-15,-25), NVector(-15, 25)],
+            [NVector( 0,  0), NVector(  0,  0), NVector(  0,  0), NVector(  0,  0), NVector(  0,  0)],
         )
 
 
@@ -199,13 +202,13 @@ class TestArc(PathTester):
         self.assertIsInstance(path.shapes[1], objects.Stroke)
         bezier = path.shapes[0].vertices.value
         self.assert_list_almost_equal(bezier.vertices, [
-            [6, 10], [6.8626965, 15.758131], [15.2322608, 15.9819042], [14, 10],
+            NVector(6, 10), NVector(6.8626965, 15.758131), NVector(15.2322608, 15.9819042), NVector(14, 10),
         ])
         self.assert_list_almost_equal(bezier.in_point, [
-            [0, 0], [-2.5323342, -1.6407878], [-2.0590729, 1.5180295], [2.5323342, 1.6407878],
+            NVector(0, 0), NVector(-2.5323342, -1.6407878), NVector(-2.0590729, 1.5180295), NVector(2.5323342, 1.6407878),
         ])
         self.assert_list_almost_equal(bezier.out_point, [
-            [-2.0590729, 1.5180295], [2.5323342, 1.6407878], [2.0590729, -1.5180295], [0, 0]
+            NVector(-2.0590729, 1.5180295), NVector(2.5323342, 1.6407878), NVector(2.0590729, -1.5180295), NVector(0, 0)
         ])
 
     def test_large_sweep(self):
@@ -218,13 +221,13 @@ class TestArc(PathTester):
         self.assertIsInstance(path.shapes[1], objects.Stroke)
         bezier = path.shapes[0].vertices.value
         self.assert_list_almost_equal(bezier.vertices, [
-            [6, 10], [4.4903685, 4.24186895], [12.7677392, 4.0180958], [14, 10],
+            NVector(6, 10), NVector(4.4903685, 4.24186895), NVector(12.7677392, 4.0180958), NVector(14, 10),
         ])
         self.assert_list_almost_equal(bezier.in_point, [
-            [0, 0], [-1.8563359, 1.6407878], [-2.6844953, -1.51802947], [1.8563359, -1.6407878],
+            NVector(0, 0), NVector(-1.8563359, 1.6407878), NVector(-2.6844953, -1.51802947), NVector(1.8563359, -1.6407878),
         ])
         self.assert_list_almost_equal(bezier.out_point, [
-            [-2.6844953, -1.5180295], [1.8563359, -1.6407878], [2.6844953, 1.5180295], [0, 0]
+            NVector(-2.6844953, -1.5180295), NVector(1.8563359, -1.6407878), NVector(2.6844953, 1.5180295), NVector(0, 0)
         ])
 
     def test_small_nosweep(self):
@@ -237,13 +240,13 @@ class TestArc(PathTester):
         self.assertIsInstance(path.shapes[1], objects.Stroke)
         bezier = path.shapes[0].vertices.value
         self.assert_list_almost_equal(bezier.vertices, [
-            [6, 10], [14, 10],
+            NVector(6, 10), NVector(14, 10),
         ])
         self.assert_list_almost_equal(bezier.in_point, [
-            [0, 0], [-1.9493793, 1.43715898],
+            NVector(0, 0), NVector(-1.9493793, 1.43715898),
         ])
         self.assert_list_almost_equal(bezier.out_point, [
-            [2.54148326, 1.43715898], [0, 0]
+            NVector(2.54148326, 1.43715898), NVector(0, 0)
         ])
 
     def test_small_sweep(self):
@@ -256,13 +259,13 @@ class TestArc(PathTester):
         self.assertIsInstance(path.shapes[1], objects.Stroke)
         bezier = path.shapes[0].vertices.value
         self.assert_list_almost_equal(bezier.vertices, [
-            [6, 10], [14, 10],
+            NVector(6, 10), NVector(14, 10),
         ])
         self.assert_list_almost_equal(bezier.in_point, [
-            [0, 0], [-2.54148326, -1.43715898],
+            NVector(0, 0), NVector(-2.54148326, -1.43715898),
         ])
         self.assert_list_almost_equal(bezier.out_point, [
-            [1.9493793, -1.43715898], [0, 0]
+            NVector(1.9493793, -1.43715898), NVector(0, 0)
         ])
 
 
@@ -274,7 +277,7 @@ class TestClosePath(PathTester):
         path = anim.find("path")
         bezier = path.shapes[0].vertices.value
         self.assertListEqual(bezier.vertices, [
-            [10, 10], [10, 20], [20, 20],
+            NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
         self.assertFalse(bezier.closed)
 
@@ -285,7 +288,7 @@ class TestClosePath(PathTester):
         path = anim.find("path")
         bezier = path.shapes[0].vertices.value
         self.assertListEqual(bezier.vertices, [
-            [10, 10], [10, 20], [20, 20],
+            NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
         self.assertTrue(bezier.closed)
 
@@ -296,7 +299,7 @@ class TestClosePath(PathTester):
         path = anim.find("path")
         bezier = path.shapes[0].vertices.value
         self.assertListEqual(bezier.vertices, [
-            [10, 10], [10, 20], [20, 20],
+            NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
         self.assertTrue(bezier.closed)
 
@@ -308,13 +311,13 @@ class TestClosePath(PathTester):
         path = anim.find("path")
         bezier = path.shapes[0].vertices.value
         self.assertListEqual(bezier.vertices, [
-            [10, 10], [10, 20], [20, 20],
+            NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
         self.assertTrue(bezier.closed)
 
         bezier = path.shapes[1].vertices.value
         self.assertListEqual(bezier.vertices, [
-            [10, 10], [20, 10], [20, 20],
+            NVector(10, 10), NVector(20, 10), NVector(20, 20),
         ])
         self.assertTrue(bezier.closed)
 
@@ -323,7 +326,7 @@ class TestIntegration(PathTester):
     def test_zero_values(self):
         self.assert_path(
             "M 10,10 L 90,90 0,0",
-            [[10, 10], [90, 90], [0, 0]],
-            [[ 0,  0], [ 0,  0], [0, 0]],
-            [[ 0,  0], [ 0,  0], [0, 0]],
+            [NVector(10, 10), NVector(90, 90), NVector(0, 0)],
+            [NVector( 0,  0), NVector( 0,  0), NVector(0, 0)],
+            [NVector( 0,  0), NVector( 0,  0), NVector(0, 0)],
         )

@@ -84,9 +84,7 @@ class Ellipse:
         y2 = dest[1]
         phi = math.pi * xrot / 180
 
-        tx = (x1 - x2) / 2
-        ty = (y1 - y2) / 2
-        x1p, y1p = _matrix_mul(phi, tx, ty, -1)
+        x1p, y1p = _matrix_mul(phi, (start-dest)/2, -1)
 
         cr = x1p ** 2 / rx**2 + y1p**2 / ry**2
         if cr > 1:
@@ -100,7 +98,7 @@ class Ellipse:
         if large == sweep:
             cpm = -cpm
         cp = NVector(cpm * rx * y1p / ry, -cpm * ry * x1p / rx)
-        c = NVector(*_matrix_mul(phi, cp[0], cp[1])) + NVector((x1+x2)/2, (y1+y2)/2)
+        c = _matrix_mul(phi, cp) + NVector((x1+x2)/2, (y1+y2)/2)
         theta1 = _angle(NVector(1, 0), NVector((x1p - cp[0]) / rx, (y1p - cp[1]) / ry))
         deltatheta = _angle(
             NVector((x1p - cp[0]) / rx, (y1p - cp[1]) / ry),
@@ -115,13 +113,13 @@ class Ellipse:
         return cls(c, NVector(rx, ry), phi), theta1, deltatheta
 
 
-def _matrix_mul(phi, x, y, sin_mul=1):
+def _matrix_mul(phi, p, sin_mul=1):
     c = math.cos(phi)
     s = math.sin(phi) * sin_mul
 
-    xr = c * x - s * y
-    yr = s * x + c * y
-    return xr, yr
+    xr = c * p.x - s * p.y
+    yr = s * p.x + c * p.y
+    return NVector(xr, yr)
 
 
 def _angle(u, v):

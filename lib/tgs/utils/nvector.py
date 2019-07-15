@@ -74,3 +74,11 @@ class NVector():
 
     def lerp(self, other, t):
         return self * (1-t) + other * t
+
+    @property
+    def x(self):
+        return self.components[0]
+
+    @property
+    def y(self):
+        return self.components[1]
