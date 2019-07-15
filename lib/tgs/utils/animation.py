@@ -54,14 +54,14 @@ def spring_pull(position_prop, point, start_time, end_time, falloff=15, oscillat
     position_prop.add_keyframe(end_time, point)
 
 
-def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, reverse=False):
+def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, reverse=False, offset=NVector(0, 0)):
     delta = (end_time - start_time) / n_keyframes
     for i in range(n_keyframes):
         time = start_time + i * delta
         fact = i / (n_keyframes-1)
         if reverse:
             fact = 1 - fact
-        position_prop.add_keyframe(time, bezier.point_at(fact).to_list())
+        position_prop.add_keyframe(time, bezier.point_at(fact)+offset)
 
 
 def generate_path_appear(bezier, appear_start, appear_end, n_keyframes, reverse=False):
@@ -208,10 +208,10 @@ def sine_displace(
 
 
 def _sine_displace(startpos, wavelength, amplitude, f, n_frames, speed_f, axis):
-        off = -math.sin(startpos[0]/wavelength*math.pi*2-f*speed_f/n_frames) * amplitude
-        x = startpos[0] + off * math.cos(axis)
-        y = startpos[1] + off * math.sin(axis)
-        return NVector(x, y)
+    off = -math.sin(startpos[0]/wavelength*math.pi*2-f*speed_f/n_frames) * amplitude
+    x = startpos[0] + off * math.cos(axis)
+    y = startpos[1] + off * math.sin(axis)
+    return NVector(x, y)
 
 
 def sine_displace_bezier(

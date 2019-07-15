@@ -208,6 +208,16 @@ class SvgParser(SvgHandler):
             return element.attrib.get("id")
         return None
 
+    def _parse_unit(self, value):
+        if not isinstance(value, str):
+            return value
+
+        mult = 1
+        if value.endswith("px"):
+            value = value[:-2]
+        # TODO mm and similar, based on dpi from the metadata
+        return float(value) * mult
+
     def parse_color(self, color):
         return NVector(*parse_color(color, self.current_color))
 
@@ -312,7 +322,7 @@ class SvgParser(SvgHandler):
                 opacity = color[3]
             stroke.opacity.value = opacity * float(style.get("stroke-opacity", 1)) * 100
             group.add_shape(stroke)
-            stroke.width.value = float(style.get("stroke-width", 1))
+            stroke.width.value = self._parse_unit(style.get("stroke-width", 1))
             linecap = style.get("stroke-linecap")
             if linecap == "round":
                 stroke.line_cap = objects.shapes.LineCap.Round
@@ -327,7 +337,7 @@ class SvgParser(SvgHandler):
                 stroke.line_join = objects.shapes.LineJoin.Bevel
             elif linejoin in {"miter", "arcs", "miter-clip"}:
                 stroke.line_join = objects.shapes.LineJoin.Miter
-            stroke.miter_limit = float(style.get("stroke-miterlimit", 0))
+            stroke.miter_limit = self._parse_unit(style.get("stroke-miterlimit", 0))
 
         fill_color = style.get("fill", "inherit")
         if fill_color not in nocolor:
@@ -357,50 +367,50 @@ class SvgParser(SvgHandler):
 
     def _parseshape_ellipse(self, element, shape_parent):
         ellipse = objects.Ellipse()
-        ellipse.position.value = [
-            float(element.attrib["cx"]),
-            float(element.attrib["cy"])
-        ]
-        ellipse.size.value = [
-            float(element.attrib["rx"]) * 2,
-            float(element.attrib["ry"]) * 2
-        ]
+        ellipse.position.value = NVector(
+            self._parse_unit(element.attrib["cx"]),
+            self._parse_unit(element.attrib["cy"])
+        )
+        ellipse.size.value = NVector(
+            self._parse_unit(element.attrib["rx"]) * 2,
+            self._parse_unit(element.attrib["ry"]) * 2
+        )
         self.add_shapes(element, [ellipse], shape_parent)
 
     def _parseshape_circle(self, element, shape_parent):
         ellipse = objects.Ellipse()
-        ellipse.position.value = [
-            float(element.attrib["cx"]),
-            float(element.attrib["cy"])
-        ]
-        r = float(element.attrib["r"]) * 2
+        ellipse.position.value = NVector(
+            self._parse_unit(element.attrib["cx"]),
+            self._parse_unit(element.attrib["cy"])
+        )
+        r = self._parse_unit(element.attrib["r"]) * 2
         ellipse.size.value = [r, r]
         self.add_shapes(element, [ellipse], shape_parent)
 
     def _parseshape_rect(self, element, shape_parent):
         rect = objects.Rect()
-        w = float(element.attrib["width"])
-        h = float(element.attrib["height"])
-        rect.position.value = [
-            float(element.attrib["x"]) + w / 2,
-            float(element.attrib["y"]) + h / 2
-        ]
-        rect.size.value = [w, h]
-        rx = float(element.attrib.get("rx", 0))
-        ry = float(element.attrib.get("ry", 0))
+        w = self._parse_unit(element.attrib["width"])
+        h = self._parse_unit(element.attrib["height"])
+        rect.position.value = NVector(
+            self._parse_unit(element.attrib["x"]) + w / 2,
+            self._parse_unit(element.attrib["y"]) + h / 2
+        )
+        rect.size.value = NVector(w, h)
+        rx = self._parse_unit(element.attrib.get("rx", 0))
+        ry = self._parse_unit(element.attrib.get("ry", 0))
         rect.rounded.value = (rx + ry) / 2
         self.add_shapes(element, [rect], shape_parent)
 
     def _parseshape_line(self, element, shape_parent):
         line = objects.Shape()
-        line.vertices.value.add_point([
-            float(element.attrib["x1"]),
-            float(element.attrib["y1"])
-        ])
-        line.vertices.value.add_point([
-            float(element.attrib["x2"]),
-            float(element.attrib["y2"])
-        ])
+        line.vertices.value.add_point(NVector(
+            self._parse_unit(element.attrib["x1"]),
+            self._parse_unit(element.attrib["y1"])
+        ))
+        line.vertices.value.add_point(NVector(
+            self._parse_unit(element.attrib["x2"]),
+            self._parse_unit(element.attrib["y2"])
+        ))
         self.add_shapes(element, [line], shape_parent)
 
     def _handle_poly(self, element):
