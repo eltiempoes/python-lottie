@@ -1,8 +1,26 @@
-from .base import TgsObject, TgsProp, PseudoBool
+from .base import TgsObject, TgsProp, PseudoBool, TgsEnum
 from .effects import load_effect
 from .helpers import Transform
 from .shapes import load_shape
-from .enums import BlendMode
+
+
+class BlendMode(TgsEnum):
+    Normal = 0
+    Multiply = 1
+    Screen = 2
+    Overlay = 3
+    Darken = 4
+    Lighten = 5
+    ColorDodge = 6
+    ColorBurn = 7
+    HardLight = 8
+    SoftLight = 9
+    Difference = 10
+    Exclusion = 11
+    Hue = 12
+    Saturation = 13
+    Color = 14
+    Luminosity = 15
 
 
 def load_layer(lottiedict):
@@ -17,15 +35,15 @@ def load_layer(lottiedict):
     return layers[lottiedict["ty"]].load(lottiedict)
 
 
-class NullLayer(TgsObject): # TODO check
+class NullLayer(TgsObject):
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
         TgsProp("auto_orient", "ao", PseudoBool, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", int, False),
-        TgsProp("css_class", "cl", str, False),
-        TgsProp("layer_html_id", "ln", str, False),
+        #TgsProp("css_class", "cl", str, False),
+        #TgsProp("layer_html_id", "ln", str, False),
         TgsProp("in_point", "ip", float, False),
         TgsProp("out_point", "op", float, False),
         TgsProp("start_time", "st", float, False),
@@ -47,13 +65,13 @@ class NullLayer(TgsObject): # TODO check
         # Layer index in AE. Used for parenting and expressions.
         self.index = None
         # Parsed layer name used as html class on SVG/HTML renderer
-        self.css_class = ""
+        #self.css_class = ""
         # Parsed layer name used as html id on SVG/HTML renderer
-        self.layer_html_id = ""
+        #self.layer_html_id = ""
         # In Point of layer. Sets the initial frame of the layer.
-        self.in_point = 0
+        self.in_point = None
         # Out Point of layer. Sets the final frame of the layer.
-        self.out_point = 0
+        self.out_point = None
         # Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
         # After Effects Layer Name. Used for expressions.
@@ -61,7 +79,7 @@ class NullLayer(TgsObject): # TODO check
         # List of Effects
         self.effects = [] # IndexEffect
         # Layer Time Stretching
-        self.stretch = 0
+        self.stretch = 1
         # Layer Parent. Uses ind of parent.
         self.parent = None
 
@@ -96,7 +114,7 @@ class TextLayer(TgsObject): # TODO check
         # Auto-Orient along path AE property.
         self.auto_orient = False
         # Blend Mode
-        self.blend_mode = BlendMode.default()
+        self.blend_mode = BlendMode.Normal
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
@@ -129,10 +147,10 @@ class TextLayer(TgsObject): # TODO check
 
 class ShapeLayer(TgsObject):
     _props = [
-        TgsProp("type", "ty", float, False),
+        TgsProp("type", "ty", int, False),
         TgsProp("transform", "ks", Transform, False),
         TgsProp("auto_orient", "ao", PseudoBool, False),
-        TgsProp("blend_mode", "bm", float, False),
+        TgsProp("blend_mode", "bm", BlendMode, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", int, False),
         #TgsProp("css_class", "cl", str, False),
@@ -157,7 +175,7 @@ class ShapeLayer(TgsObject):
         # Auto-Orient along path AE property.
         self.auto_orient = False
         # Blend Mode
-        self.blend_mode = BlendMode.default()
+        self.blend_mode = BlendMode.Normal
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
@@ -175,9 +193,9 @@ class ShapeLayer(TgsObject):
         # After Effects Layer Name. Used for expressions.
         self.name = None
         # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
-        self.has_masks = 0
+        #self.has_masks = 0
         # List of Masks
-        self.masks_properties = [] # Mask
+        #self.masks_properties = [] # Mask
         # List of Effects
         self.effects = None # IndexEffect
         # Layer Time Stretching
@@ -222,7 +240,7 @@ class ImageLayer(TgsObject): # TODO check
         # Auto-Orient along path AE property.
         self.auto_orient = False
         # Blend Mode
-        self.blend_mode = BlendMode.default()
+        self.blend_mode = BlendMode.Normal
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
@@ -284,7 +302,7 @@ class PreCompLayer(TgsObject): # TODO check
         # Auto-Orient along path AE property.
         self.auto_orient = False
         # Blend Mode
-        self.blend_mode = BlendMode.default()
+        self.blend_mode = BlendMode.Normal
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.
@@ -349,7 +367,7 @@ class SolidLayer(TgsObject): # TODO check
         # Auto-Orient along path AE property.
         self.auto_orient = False
         # Blend Mode
-        self.blend_mode = BlendMode.default()
+        self.blend_mode = BlendMode.Normal
         # 3d layer flag
         self.threedimensional = False
         # Layer index in AE. Used for parenting and expressions.

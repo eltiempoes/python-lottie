@@ -22,7 +22,7 @@ class Transform(TgsObject):
         # Transform Position
         self.position = MultiDimensional([0, 0]) # MultiDimensional, MultiDimensionalKeyframed
         # Transform Scale
-        self.scale = MultiDimensional([100, 100, 100]) # MultiDimensional, MultiDimensionalKeyframed
+        self.scale = MultiDimensional([100, 100]) # MultiDimensional, MultiDimensionalKeyframed
         # Transform Rotation
         self.rotation = Value(0) # Value, ValueKeyframed
         # Transform Opacity

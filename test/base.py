@@ -1,3 +1,4 @@
+import unittest
 import sys
 import os
 sys.path.append(os.path.join(
@@ -5,3 +6,6 @@ sys.path.append(os.path.join(
     "lib"
 ))
 
+
+class TestCase(unittest.TestCase):
+    maxDiff = None

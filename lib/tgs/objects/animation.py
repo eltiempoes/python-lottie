@@ -1,4 +1,4 @@
-from .base import TgsObject, TgsProp, PseudoBool, todo_func
+from .base import TgsObject, TgsProp, PseudoBool, todo_func, Index
 from .layers import load_layer
 
 
@@ -17,6 +17,7 @@ class Animation(TgsObject):
         #TgsProp("chars", "chars", Chars, True),
         TgsProp("tgs", "tgs", PseudoBool, False),
     }
+    _version = "5.5.2"
 
     def __init__(self, n_frames=60, framerate=60):
         self.tgs = 1
@@ -33,7 +34,7 @@ class Animation(TgsObject):
         # Composition Height
         self.height = 512
         # Bodymovin Version
-        self.version = "5.5.2"
+        self.version = self._version
         # Composition name
         self.name = None
         # List of Composition Layers
@@ -42,6 +43,7 @@ class Animation(TgsObject):
         self.assets = [] # Image, Precomp
         # source chars for text layers
         #self.chars = [] # Chars
+        self._index_gen = Index()
 
     def add_layer(self, layer):
         return self.insert_layer(len(self.layers), layer)
@@ -49,7 +51,7 @@ class Animation(TgsObject):
     def insert_layer(self, index, layer):
         self.layers.insert(index, layer)
         if layer.index is None:
-            layer.index = len(self.layers)
+            layer.index = next(self._index_gen)
         if layer.in_point is None:
             layer.in_point = self.in_point
         if layer.out_point is None:
