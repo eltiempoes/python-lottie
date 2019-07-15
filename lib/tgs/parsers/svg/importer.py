@@ -209,7 +209,7 @@ class SvgParser(SvgHandler):
         return None
 
     def parse_color(self, color):
-        return parse_color(color, self.current_color)
+        return NVector(*parse_color(color, self.current_color))
 
     def parse_transform(self, element, group, dest_trans):
         itcx = self.qualified("inkscape", "transform-center-x")
@@ -221,8 +221,8 @@ class SvgParser(SvgHandler):
                 bbx, bby = bb.center()
                 cx += bbx
                 cy = bby - cy
-                dest_trans.anchor_point.value = [cx, cy]
-                dest_trans.position.value = [cx, cy]
+                dest_trans.anchor_point.value = NVector(cx, cy)
+                dest_trans.position.value = NVector(cx, cy)
 
         if "transform" not in element.attrib:
             return
@@ -231,10 +231,10 @@ class SvgParser(SvgHandler):
             name = t[1]
             params = list(map(float, t[2].strip().replace(",", " ").split()))
             if name == "translate":
-                dest_trans.position.value = [
+                dest_trans.position.value = NVector(
                     dest_trans.position.value[0] + params[0],
                     dest_trans.position.value[1] + (params[1] if len(params) > 1 else 0),
-                ]
+                )
             elif name == "scale":
                 xfac = params[0]
                 dest_trans.scale.value[0] = (dest_trans.scale.value[0] / 100 * xfac) * 100
@@ -246,11 +246,11 @@ class SvgParser(SvgHandler):
                 if len(params) > 2:
                     x = params[1]
                     y = params[2]
-                    dest_trans.position.value = [
+                    dest_trans.position.value = NVector(
                         dest_trans.position.value[0] + x,
                         dest_trans.position.value[1] + y
-                    ]
-                dest_trans.anchor_point.value = [x, y]
+                    )
+                dest_trans.anchor_point.value = NVector(x, y)
                 dest_trans.rotation.value = ang
             elif name == "skewX":
                 dest_trans.skew.value = -params[0]
@@ -262,7 +262,7 @@ class SvgParser(SvgHandler):
                 dest_trans.position.value = params[-2:]
                 v1 = NVector(*params[0:2])
                 v2 = NVector(*params[2:4])
-                dest_trans.scale.value = [v1.length * 100, v2.length * 100]
+                dest_trans.scale.value = NVector(v1.length * 100, v2.length * 100)
                 v1 /= v1.length
                 #v2 /= v2.length
                 angle = math.atan2(v1[1], v1[0])
@@ -814,7 +814,7 @@ class PathDParser:
                 point.out_t,
             )
         self.path.add_point(
-            dest,
+            dest.clone(),
             points[-1].in_t,
             NVector(0, 0),
         )
