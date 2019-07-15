@@ -174,77 +174,76 @@ def generate_path_segment(bezier, appear_start, appear_end, disappear_start, dis
     return obj
 
 
-def sine_displace(
-    prop,
-    wavelength,
-    amplitude,
-    time_start,
-    time_end,
-    n_frames,
-    speed=1,
-    axis=90,
-):
-    """
-    Displaces a position property as if it were following a sine wave
+class PointDisplacer:
+    def __init__(self, time_start, time_end, n_frames):
+        self.time_start = time_start
+        self.time_end = time_end
+        self.n_frames = n_frames
+        self.time_delta = (time_end - time_start) / n_frames
 
-    prop        Multidimensional property to animate
-    wavelength  Distance between consecutive peaks
-    amplitude   Distance from a peak to the original position
-    time_start  When the animation shall start
-    time_end    When the animation shall end
-    n_frames    Number of keyframes to add
-    speed       Number of peaks a point will go through in the given time
-                If negative, it will go the other way
-    axis        Wave peak direction
-    """
-    speed_f = math.pi * 2 * speed
-    time_delta = (time_end - time_start) / n_frames
-    axis = axis / 180 * math.pi
+    def animate_point(self, prop):
+        startpos = prop.get_value(self.time_start)
+        for f in range(self.n_frames+1):
+            p = self._on_displace(startpos, f)
+            prop.add_keyframe(f * self.time_delta + self.time_start, p)
 
-    startpos = prop.get_value(time_start)
-    for f in range(n_frames+1):
-        p = _sine_displace(startpos, wavelength, amplitude, f, n_frames, speed_f, axis)
-        prop.add_keyframe(f * time_delta + time_start, p)
+    def _on_displace(self, startpos):
+        raise NotImplementedError()
 
+    def animate_bezier(self, prop):
+        initial = prop.get_value(self.time_start)
 
-def _sine_displace(startpos, wavelength, amplitude, f, n_frames, speed_f, axis):
-    off = -math.sin(startpos[0]/wavelength*math.pi*2-f*speed_f/n_frames) * amplitude
-    x = startpos[0] + off * math.cos(axis)
-    y = startpos[1] + off * math.sin(axis)
-    return NVector(x, y)
+        for f in range(self.n_frames+1):
+            bezier = objects.Bezier()
+            bezier.closed = initial.closed
+
+            for pi in range(len(initial.vertices)):
+                startpos = initial.vertices[pi]
+
+                p = self._on_displace(startpos, f)
+                t1sp = initial.in_point[pi] + startpos
+                t1abs = self._on_displace(t1sp, f)
+                t2sp = initial.out_point[pi] + startpos
+                t2abs = self._on_displace(t2sp, f)
+
+                bezier.add_point(p, t1abs - p, t2abs - p)
+
+            prop.add_keyframe(f * self.time_delta + self.time_start, bezier)
 
 
-def sine_displace_bezier(
-    prop,
-    wavelength,
-    amplitude,
-    time_start,
-    time_end,
-    n_frames,
-    speed=1,
-    axis=90,
-):
-    """
-    Same as sine_displace but for paths
-    """
-    speed_f = math.pi * 2 * speed
-    time_delta = (time_end - time_start) / n_frames
-    axis = axis / 180 * math.pi
+class SineDisplacer(PointDisplacer):
+    def __init__(
+        self,
+        wavelength,
+        amplitude,
+        time_start,
+        time_end,
+        n_frames,
+        speed=1,
+        axis=90,
+    ):
+        """
+        Displaces points as if they were following a sine wave
 
-    initial = prop.get_value(time_start)
-    for f in range(n_frames+1):
-        bezier = objects.Bezier()
-        bezier.closed = initial.closed
+        prop        Multidimensional property to animate
+        wavelength  Distance between consecutive peaks
+        amplitude   Distance from a peak to the original position
+        time_start  When the animation shall start
+        time_end    When the animation shall end
+        n_frames    Number of keyframes to add
+        speed       Number of peaks a point will go through in the given time
+                    If negative, it will go the other way
+        axis        Wave peak direction
+        """
+        super().__init__(time_start, time_end, n_frames)
 
-        for pi in range(len(initial.vertices)):
-            startpos = initial.vertices[pi]
+        self.wavelength = wavelength
+        self.amplitude = amplitude
+        self.speed_f = math.pi * 2 * speed
+        self.axis = axis / 180 * math.pi
 
-            p = _sine_displace(startpos, wavelength, amplitude, f, n_frames, speed_f, axis)
-            t1sp = initial.in_point[pi] + startpos
-            t1abs = _sine_displace(t1sp, wavelength, amplitude, f, n_frames, speed_f, axis)
-            t2sp = initial.out_point[pi] + startpos
-            t2abs = _sine_displace(t2sp, wavelength, amplitude, f, n_frames, speed_f, axis)
-
-            bezier.add_point(p, t1abs - p, t2abs - p)
-
-        prop.add_keyframe(f * time_delta + time_start, bezier)
+    def _on_displace(self, startpos, f):
+        off = -math.sin(startpos[0]/self.wavelength*math.pi*2-f*self.speed_f/self.n_frames) * self.amplitude
+        x = startpos[0] + off * math.cos(self.axis)
+        y = startpos[1] + off * math.sin(self.axis)
+        return NVector(x, y)
