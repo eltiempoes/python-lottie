@@ -39,6 +39,3 @@ for b in balls:
     dr.animate_point(b.position)
 
 exporters.multiexport(an, "/tmp/3d_rotation")
-
-
-

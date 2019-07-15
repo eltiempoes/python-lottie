@@ -338,7 +338,7 @@ class DepthRotationDisplacer(PointDisplacer):
     axis_y = DepthRotation.axis_y
     axis_z = DepthRotation.axis_z
 
-    def __init__(self, center, time_start, time_end, n_frames, axis, depth=0, angle=360):
+    def __init__(self, center, time_start, time_end, n_frames, axis, depth=0, angle=360, anglestart=0):
         super().__init__(time_start, time_end, n_frames)
         self.rotation = DepthRotation(center)
         if isinstance(axis, NVector):
@@ -346,9 +346,10 @@ class DepthRotationDisplacer(PointDisplacer):
         self.axis = axis
         self.depth = depth
         self.angle = angle
+        self.anglestart = anglestart
 
     def _on_displace(self, startpos, f):
-        angle = self.angle * f / self.n_frames
+        angle = self.anglestart + self.angle * f / self.n_frames
         if len(startpos) < 3:
             startpos = NVector(*(startpos.components + [self.depth]))
         return self.rotation.rotate3d(startpos, angle, self.axis)

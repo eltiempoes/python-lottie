@@ -206,8 +206,12 @@ class ShapeLayer(TgsObject):
         self.shapes = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, Repeater
 
     def add_shape(self, shape):
-            self.shapes.append(shape)
-            return shape
+        self.shapes.append(shape)
+        return shape
+
+    def insert_shape(self, index, shape):
+        self.shapes.insert(index, shape)
+        return shape
 
 
 class ImageLayer(TgsObject): # TODO check
