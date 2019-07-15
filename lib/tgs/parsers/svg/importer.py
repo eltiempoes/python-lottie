@@ -246,11 +246,10 @@ class SvgParser(SvgHandler):
                 if len(params) > 2:
                     x = params[1]
                     y = params[2]
-                    dest_trans.position.value = NVector(
-                        dest_trans.position.value[0] + x,
-                        dest_trans.position.value[1] + y
-                    )
-                dest_trans.anchor_point.value = NVector(x, y)
+                    ap = NVector(x, y)
+                    dap = ap - dest_trans.position.value
+                    dest_trans.position.value = ap
+                    dest_trans.anchor_point.value += dap
                 dest_trans.rotation.value = ang
             elif name == "skewX":
                 dest_trans.skew.value = -params[0]
