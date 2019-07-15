@@ -51,6 +51,7 @@ class AnimatableMixin:
     def clear_animation(self, value):
         self.value = value
         self.animated = False
+        self.keyframes = None
 
     def add_keyframe(self, time, value, interp=easing.Linear()):
         if not self.animated:
