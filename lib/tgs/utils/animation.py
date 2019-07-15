@@ -247,3 +247,109 @@ class SineDisplacer(PointDisplacer):
         x = startpos[0] + off * math.cos(self.axis)
         y = startpos[1] + off * math.sin(self.axis)
         return NVector(x, y)
+
+
+class DepthRotationAxis:
+    def __init__(self, x, y, keep):
+        self.x = x / x.length
+        self.y = y / y.length
+        self.keep = keep / keep.length # should be the cross product
+
+    def rot_center(self, center, point):
+        return (
+            self.x * self.x.dot(center) +
+            self.y * self.y.dot(center) +
+            self.keep * self.keep.dot(point)
+        )
+
+    def extract_component(self, vector, axis):
+        return sum(vector.element_scaled(axis).components)
+
+    @classmethod
+    def from_points(cls, keep_point, center=NVector(0, 0, 0)):
+        keep = keep_point - center
+        keep /= keep.length
+        # Hughes-Moller to find x and y
+        if abs(keep.x) > abs(keep.z):
+            y = NVector(-keep.y, keep.x, 0)
+        else:
+            y = NVector(0, -keep.z, keep.y)
+        y /= y.length
+        x = y.cross(keep)
+        return cls(x, y, keep)
+
+
+class DepthRotation:
+    axis_x = DepthRotationAxis(NVector(0, 0, 1), NVector(0, 1, 0), NVector(1, 0, 0))
+    axis_y = DepthRotationAxis(NVector(1, 0, 0), NVector(0, 0, 1), NVector(0, 1, 0))
+    axis_z = DepthRotationAxis(NVector(1, 0, 0), NVector(0, 1, 0), NVector(0, 0, 1))
+
+    def __init__(self, center):
+        self.center = center
+
+    def rotate3d_y(self, point, angle):
+        return self.rotate3d(point, angle, self.axis_y)
+        # Hard-coded version:
+        #c = NVector(self.center.x, point.y, self.center.z)
+        #rad = angle * math.pi / 180
+        #delta = point - c
+        #pol_l = delta.length
+        #pol_a = math.atan2(delta.z, delta.x)
+        #dest_a = pol_a + rad
+        #return NVector(
+        #    c.x + pol_l * math.cos(dest_a),
+        #    point.y,
+        #    c.z + pol_l * math.sin(dest_a)
+        #)
+
+    def rotate3d_x(self, point, angle):
+        return self.rotate3d(point, angle, self.axis_x)
+        # Hard-coded version:
+        #c = NVector(point.x, self.center.y, self.center.z)
+        #rad = angle * math.pi / 180
+        #delta = point - c
+        #pol_l = delta.length
+        #pol_a = math.atan2(delta.y, delta.z)
+        #dest_a = pol_a + rad
+        #return NVector(
+        #    point.x,
+        #    c.y + pol_l * math.sin(dest_a),
+        #    c.z + pol_l * math.cos(dest_a),
+        #)
+
+    def rotate3d_z(self, point, angle):
+        return self.rotate3d(point, angle, self.axis_z)
+
+    def rotate3d(self, point, angle, axis):
+        c = axis.rot_center(self.center, point)
+        rad = angle * math.pi / 180
+        delta = point - c
+        pol_l = delta.length
+        pol_a = math.atan2(
+            axis.extract_component(delta, axis.y),
+            axis.extract_component(delta, axis.x)
+        )
+        dest_a = pol_a + rad
+        return c + axis.x * pol_l * math.cos(dest_a) + axis.y * pol_l * math.sin(dest_a)
+
+
+class DepthRotationDisplacer(PointDisplacer):
+    axis_x = DepthRotation.axis_x
+    axis_y = DepthRotation.axis_y
+    axis_z = DepthRotation.axis_z
+
+    def __init__(self, center, time_start, time_end, n_frames, axis, depth=0, angle=360):
+        super().__init__(time_start, time_end, n_frames)
+        self.rotation = DepthRotation(center)
+        if isinstance(axis, NVector):
+            axis = DepthRotationAxis.from_points(axis)
+        self.axis = axis
+        self.depth = depth
+        self.angle = angle
+
+    def _on_displace(self, startpos, f):
+        angle = self.angle * f / self.n_frames
+        if len(startpos) < 3:
+            startpos = NVector(*(startpos.components + [self.depth]))
+        return self.rotation.rotate3d(startpos, angle, self.axis)
+

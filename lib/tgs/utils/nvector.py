@@ -82,3 +82,22 @@ class NVector():
     @property
     def y(self):
         return self.components[1]
+
+    @property
+    def z(self):
+        return self.components[2]
+
+    def element_scaled(self, other):
+        return NVector(*vop(operator.mul, self.components, other.components))
+
+    def cross(self, other):
+        """
+        Pre: len(self) == len(other) == 3
+        """
+        a = self
+        b = other
+        return NVector(
+            a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0],
+        )
