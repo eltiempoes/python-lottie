@@ -1,6 +1,8 @@
+import math
 from .base import TgsObject, TgsProp, TgsEnum, todo_func, NVector
-from .properties import Value, MultiDimensional, GradientColors, ShapeProperty
+from .properties import Value, MultiDimensional, GradientColors, ShapeProperty, Bezier
 from .helpers import Transform
+from ..utils.ellipse import Ellipse as EllipseConverter
 
 
 class BoundingBox:
@@ -94,6 +96,53 @@ class Rect(TgsObject):
             pos[1] + sz[1]/2,
         )
 
+    def to_bezier(self):
+        shape = Shape()
+        kft = set()
+        if self.position.animated:
+            kft |= set(kf.time for kf in self.position.keyframes)
+        if self.size.animated:
+            kft |= set(kf.time for kf in self.size.keyframes)
+        if self.rounded.animated:
+            kft |= set(kf.time for kf in self.rounded.keyframes)
+        if not kft:
+            shape.vertices.value = self._bezier_t(0)
+        else:
+            for time in sorted(kft):
+                shape.vertices.add_keyframe(time, self._bezier_t(time))
+        return shape
+
+    def _bezier_t(self, time):
+        bezier = Bezier()
+        bb = self.bounding_box(time)
+        rounded = self.rounded.get_value(time)
+        tl = NVector(bb.x1, bb.y1)
+        tr = NVector(bb.x2, bb.y1)
+        br = NVector(bb.x2, bb.y2)
+        bl = NVector(bb.x1, bb.y2)
+
+        if not self.rounded.animated and rounded == 0:
+            bezier.add_point(tl)
+            bezier.add_point(tr)
+            bezier.add_point(br)
+            bezier.add_point(bl)
+        else:
+            hh = NVector(rounded/2, 0)
+            vh = NVector(0, rounded/2)
+            hd = NVector(rounded, 0)
+            vd = NVector(0, rounded)
+            bezier.add_point(tl+vd, outp=-vh)
+            bezier.add_point(tl+hd, -hh)
+            bezier.add_point(tr-hd, outp=hh)
+            bezier.add_point(tr+vd, -vh)
+            bezier.add_point(br-vd, outp=vh)
+            bezier.add_point(br-hd, hh)
+            bezier.add_point(bl+hd, outp=-hh)
+            bezier.add_point(bl-vd, vh)
+
+        bezier.close()
+        return bezier
+
 
 class StarType(TgsEnum):
     Star = 1
@@ -153,6 +202,50 @@ class Star(TgsObject):
             pos[1] + r,
         )
 
+    def to_bezier(self):
+        shape = Shape()
+        kft = set()
+        if self.position.animated:
+            kft |= set(kf.time for kf in self.position.keyframes)
+        if self.inner_radius.animated:
+            kft |= set(kf.time for kf in self.inner_radius.keyframes)
+        if self.inner_roundness.animated:
+            kft |= set(kf.time for kf in self.inner_roundness.keyframes)
+        if self.points.animated:
+            kft |= set(kf.time for kf in self.points.keyframes)
+        if self.rotation.animated:
+            kft |= set(kf.time for kf in self.rotation.keyframes)
+        # TODO inner_roundness / outer_roundness
+        if not kft:
+            shape.vertices.value = self._bezier_t(0)
+        else:
+            for time in sorted(kft):
+                shape.vertices.add_keyframe(time, self._bezier_t(time))
+        return shape
+
+    def _bezier_t(self, time):
+        bezier = Bezier()
+        pos = self.position.get_value(time)
+        r1 = self.inner_radius.get_value(time)
+        r2 = self.outer_radius.get_value(time)
+        rot = (self.rotation.get_value(time)) * math.pi / 180
+        p = self.points.get_value(time)
+        halfd = math.pi / p
+
+        for i in range(p):
+            main_angle = rot + i * halfd * 2
+            dx = r2 * math.sin(main_angle)
+            dy = r2 * math.cos(main_angle)
+            bezier.add_point(NVector(pos.x + dx, pos.y + dy))
+
+            if self.star_type == StarType.Star:
+                dx = r1 * math.sin(main_angle+halfd)
+                dy = r1 * math.cos(main_angle+halfd)
+                bezier.add_point(NVector(pos.x + dx, pos.y + dy))
+
+        bezier.close()
+        return bezier
+
 
 class Ellipse(TgsObject):
     _props = [
@@ -188,6 +281,33 @@ class Ellipse(TgsObject):
             pos[0] + sz[0]/2,
             pos[1] + sz[1]/2,
         )
+
+    def to_bezier(self):
+        shape = Shape()
+        kft = set()
+        if self.position.animated:
+            kft |= set(kf.time for kf in self.position.keyframes)
+        if self.size.animated:
+            kft |= set(kf.time for kf in self.size.keyframes)
+        if not kft:
+            shape.vertices.value = self._bezier_t(0)
+        else:
+            for time in sorted(kft):
+                shape.vertices.add_keyframe(time, self._bezier_t(time))
+        return shape
+
+    def _bezier_t(self, time):
+        bezier = Bezier()
+        position = self.position.get_value(time)
+        radii = self.size.get_value(time) / 2
+
+        el = EllipseConverter(position, radii, 0)
+        points = el.to_bezier(0, math.pi*2)
+        for point in points[1:]:
+            bezier.add_point(point.point, point.in_t, point.out_t)
+
+        bezier.close()
+        return bezier
 
 
 class Shape(TgsObject):

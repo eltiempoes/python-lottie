@@ -76,12 +76,17 @@ class AnimatableMixin:
             return None
 
         val = self.keyframes[0].start
-        for k in self.keyframes:
-            time -= k.time
-            if time <= 0:
-                # TODO interpolate
+        for i in range(len(self.keyframes)):
+            k = self.keyframes[i]
+            if time - k.time <= 0:
                 if k.start is not None:
                     val = k.start
+
+                kp = self.keyframes[i-1] if i > 0 else None
+                if kp and isinstance(val, NVector):
+                    prev = kp.start
+                    # TODO honour easing
+                    val = prev.lerp(val, (time - kp.time) / (k.time - kp.time))
                 break
             if k.end is not None:
                 val = k.end

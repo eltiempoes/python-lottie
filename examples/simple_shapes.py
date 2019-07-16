@@ -19,7 +19,7 @@ circle.size.value = NVector(100, 100)
 circle.position.value = NVector(220, 110)
 
 star = layer.add_shape(objects.Star())
-star.inner_radius.value = 10
+star.inner_radius.value = 20
 star.outer_radius.value = 50
 star.position.value = NVector(330, 110)
 

@@ -23,7 +23,7 @@ g1.add_shape(objects.Stroke(NVector(0, 0, 0), 5))
 
 g2 = layer.add_shape(objects.Group())
 star = g2.add_shape(objects.Star())
-star.inner_radius.value = 10
+star.inner_radius.value = 20
 star.outer_radius.value = 50
 star.position.value = NVector(300, 100)
 g2.add_shape(objects.Fill(NVector(0, 1, 0)))
