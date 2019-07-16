@@ -177,8 +177,8 @@ class Vector:
 
     def __getitem__(self, key):
         if key:
-            return self.val2
-        return self.val1
+            return round(self.val2, 3)
+        return round(self.val1, 3)
 
     def __setitem__(self, key, value):
         if key:
@@ -300,13 +300,14 @@ class Vector:
             (list) : Depending upon _type a list is returned
         """
         if self.type == "origin":
-            return [self.val1, self.val2]
+            ret = [self.val1, self.val2]
         elif self.type == "circle_radius":
-            return [self.val1, self.val1]
-        elif self.type in {"rectangle_size", "image_scale", "scale_layer_zoom"}:
-            return [self.val1, self.val3]
+            ret = [self.val1, self.val1]
+        elif self.type in {"rectangle_size", "image_scale", "scale_layer_zoom", "group_layer_scale"}:
+            ret = [self.val1, self.val3]
         else:
-            return [self.val1]
+            ret = [self.val1]
+        return ret
 
     def add_new_val(self, val3):
         """
@@ -487,7 +488,7 @@ def parse_position(animated, i):
         pos = [get_angle(float(animated[i][0].attrib["value"])),
                get_frame(animated[i])]
 
-    elif animated.attrib["type"] == "region_angle":
+    elif animated.attrib["type"] in {"region_angle", "star_angle_new"}:
         pos = [float(animated[i][0].attrib["value"]),
                get_frame(animated[i])]
 
@@ -527,6 +528,18 @@ def parse_position(animated, i):
         vec = Vector(val, val2, animated.attrib["type"])
         vec.add_new_val(val)
         return vec
+
+    elif animated.attrib["type"] == "group_layer_scale":
+        val1 = float(animated[i][0][0].text) * 100
+        val3 = float(animated[i][0][1].text) * 100
+        vec = Vector(val1, get_frame(animated[i]), animated.attrib["type"])
+        vec.add_new_val(val3)
+        return vec
+
+    elif animated.attrib["type"] == "time":
+        val = parse_time(animated[i][0].attrib["value"])    # Needed in seconds
+        val2 = get_frame(animated[i])   # Needed in frames
+        return Vector(val, val2, animated.attrib["type"])
 
     elif animated.attrib["type"] == "color":
         red = float(animated[i][0][0].text)
@@ -646,6 +659,7 @@ def get_color_hex(node):
     ret = "#{0:02x}{1:02x}{2:02x}".format(red, green, blue)
     return ret
 
+
 def get_frame(waypoint):
     """
     Given a waypoint, it parses the time to frames
@@ -661,6 +675,7 @@ def get_frame(waypoint):
     frame = round(frame)
     return frame
 
+
 def get_time(waypoint):
     """
     Given a waypoint, it parses the string time to float time
@@ -671,7 +686,20 @@ def get_time(waypoint):
     Returns:
         (float) : the time in seconds at which the waypoint is present
     """
-    time = waypoint.attrib["time"].split(" ")
+    return parse_time(waypoint.attrib["time"])
+
+
+def parse_time(time_in_str):
+    """
+    Given a string, it parses time to float time
+
+    Args:
+        time_in_str (str) : Time in string format
+
+    Returns:
+        (float) : the time in seconds at represented by the string
+    """
+    time = time_in_str.split(" ")
     final = 0
     for frame in time:
         if frame[-1] == "h":
@@ -683,6 +711,7 @@ def get_time(waypoint):
         elif frame[-1] == "f":  # This should never happen according to my code
             raise ValueError("In waypoint, time is never expected in frames.")
     return final
+
 
 def get_vector(waypoint):
     """
@@ -709,6 +738,7 @@ def get_vector(waypoint):
         y = float(waypoint[0][1].text)
     return Vector(x, y)
 
+
 def radial_to_tangent(radius, angle):
     """
     Converts a tangent from radius and angle format to x, y axis co-ordinate
@@ -718,6 +748,7 @@ def radial_to_tangent(radius, angle):
     x = radius * math.cos(angle)
     y = radius * math.sin(angle)
     return x, y
+
 
 def set_vector(waypoint, pos):
     """
@@ -731,3 +762,22 @@ def set_vector(waypoint, pos):
     """
     waypoint[0][0].text = str(pos.val1)
     waypoint[0][1].text = str(pos.val2)
+
+
+def set_layer_desc(layer, default, lottie):
+    """
+    Sets layer description if provided, else defaults to the given value
+    """
+    lottie["nm"] = default
+    if "desc" in layer.keys():
+        lottie["nm"] = layer.attrib["desc"] 
+
+
+def modify_final_dump(obj):
+    if isinstance(obj, float):
+        return round(obj, settings.FLOAT_PRECISION)
+    elif isinstance(obj, dict):
+        return dict((k, modify_final_dump(v)) for k, v in obj.items() if k not in ["synfig_i", "synfig_o"])
+    elif isinstance(obj, (list, tuple)):
+        return list(map(modify_final_dump, obj))
+    return obj

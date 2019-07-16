@@ -215,11 +215,11 @@ def cubic_to(vec, tan1, tan2, lottie, origin_cur):
     tan1 *= settings.PIX_PER_UNIT
     tan2 *= settings.PIX_PER_UNIT
     tan1, tan2 = convert_tangent_to_lottie(3*tan1, 3*tan2)
-    lottie["i"].append(tan1.get_list())
-    lottie["o"].append(tan2.get_list())
     pos = change_axis(vec[0], vec[1])
     for i in range(len(pos)):
         pos[i] += origin_cur[i]
+    lottie["i"].append(tan1.get_list())
+    lottie["o"].append(tan2.get_list())
     lottie["v"].append(pos)
 
 

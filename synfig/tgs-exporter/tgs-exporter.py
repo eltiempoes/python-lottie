@@ -17,6 +17,7 @@ import codecs
 from lxml import etree
 from canvas import gen_canvas
 from layers.driver import gen_layers
+from misc import modify_final_dump
 import settings
 
 
@@ -66,7 +67,7 @@ def parse(file_name):
     settings.lottie_format["layers"] = []
     gen_layers(settings.lottie_format["layers"], root, len(root) - 1)
 
-    return settings.lottie_format
+    return modify_final_dump(settings.lottie_format)
 
 
 def init_logs():

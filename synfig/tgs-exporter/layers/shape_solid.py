@@ -8,7 +8,7 @@ import settings
 from helpers.transform import gen_helpers_transform
 from helpers.blendMode import get_blend
 from helpers.mask import gen_mask
-from misc import Count, get_color_hex, is_animated
+from misc import set_layer_desc, Count, get_color_hex, is_animated
 from effects.fill import gen_effects_fill
 from synfig.group import update_layer, get_additional_width, get_additional_height
 sys.path.append("..")
@@ -33,7 +33,7 @@ def gen_layer_shape_solid(lottie, layer, idx):
     lottie["ddd"] = settings.DEFAULT_3D
     lottie["ind"] = idx
     lottie["ty"] = settings.LAYER_SOLID_TYPE
-    lottie["nm"] = settings.LAYER_SOLID_NAME + str(idx)
+    set_layer_desc(layer, settings.LAYER_SOLID_NAME + str(idx), lottie)
     lottie["sr"] = settings.LAYER_DEFAULT_STRETCH
     lottie["ks"] = {}   # Transform properties to be filled
     lottie["ef"] = []   # Stores the effects
@@ -80,7 +80,7 @@ def gen_layer_shape_solid(lottie, layer, idx):
     lottie["masksProperties"] = []
     lottie["masksProperties"].append({})
 
-    if layer.attrib["type"] in {"circle", "rectangle", "filled_rectangle"}:
+    if layer.attrib["type"] in {"star", "circle", "rectangle", "filled_rectangle"}:
         bline_point = layer
 
     gen_mask(lottie["masksProperties"][0], invert, bline_point, index.inc())

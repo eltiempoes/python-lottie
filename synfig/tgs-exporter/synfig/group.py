@@ -7,6 +7,7 @@ Synfig/precomp layer of Lottie
 import sys
 import settings
 from misc import is_animated, Vector
+from synfig.animation import print_animation
 sys.path.append("..")
 
 
@@ -43,7 +44,7 @@ def update_layer(node):
 
     update_dict = []
     if node.tag == "layer":
-        compare = {"origin", "point1", "point2", "tl", "br"}
+        compare = {"center", "origin", "point1", "point2", "tl", "br"}
         for child in node:
             if child.tag == "param" and child.attrib["name"] in compare:
                 update_dict.append(child)

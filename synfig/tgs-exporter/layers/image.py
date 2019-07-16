@@ -9,7 +9,7 @@ from lxml import etree
 import settings
 from helpers.transform import gen_helpers_transform
 from helpers.blendMode import get_blend
-from misc import is_animated, get_frame
+from misc import set_layer_desc, is_animated, get_frame
 from sources.image import add_image_asset
 from shapes.rectangle import gen_dummy_waypoint, get_vector_at_frame, to_Synfig_axis
 from properties.multiDimensionalKeyframed import gen_properties_multi_dimensional_keyframed
@@ -34,7 +34,7 @@ def gen_layer_image(lottie, layer, idx):
     lottie["ddd"] = settings.DEFAULT_3D
     lottie["ind"] = idx
     lottie["ty"] = settings.LAYER_IMAGE_TYPE
-    lottie["nm"] = settings.LAYER_IMAGE_NAME + str(idx)
+    set_layer_desc(layer, settings.LAYER_IMAGE_NAME + str(idx), lottie)
     lottie["sr"] = settings.LAYER_DEFAULT_STRETCH
     lottie["ks"] = {}   # Transform properties to be filled
 
@@ -58,9 +58,16 @@ def gen_layer_image(lottie, layer, idx):
         st["br"] = gen_dummy_waypoint(st["br"], "param", "vector")
 
     st["scale"] = gen_image_scale(st["tl"][0], st["br"][0], asset["w"], asset["h"])
-    anchor = [0, 0, 0]
 
-    gen_helpers_transform(lottie["ks"], layer, st["tl"][0], anchor, st["scale"][0])
+    anchor = settings.DEFAULT_ANCHOR
+    rotation = settings.DEFAULT_ROTATION
+
+    # Setting opacity in transform
+    for chld in layer:
+        if chld.tag == "param" and chld.attrib["name"] == "amount":
+            opacity = chld
+
+    gen_helpers_transform(lottie["ks"], layer, st["tl"][0], anchor, st["scale"][0], rotation, opacity[0])
 
 
     lottie["ao"] = settings.LAYER_DEFAULT_AUTO_ORIENT

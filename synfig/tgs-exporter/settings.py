@@ -6,6 +6,7 @@ This module contains all the global variables and constants
 from misc import Count
 
 # Constants
+FLOAT_PRECISION = 3
 LOTTIE_VERSION = "5.3.4"
 IN_POINT = 0
 OUT_POINT = 1.00000004073083
@@ -55,6 +56,12 @@ ADDITIONAL_PRECOMP_HEIGHT = 0
 NOT_SUPPORTED_TEXT = "Layer '%s' is not supported yet. For more information, contact us on Synfig forums or Github page"
 NOT_ACTIVE_TEXT = "Layer '%s' is not active"
 EXCLUDE_FROM_RENDERING = "Layer '%s' is excluded from rendering"
+SHAPE_LAYER = {"simple_circle"}
+SOLID_LAYER = {"SolidColor"}
+SHAPE_SOLID_LAYER = {"region", "polygon", "outline", "circle", "rectangle", "filled_rectangle", "star"}
+IMAGE_LAYER = {"import"}
+PRE_COMP_LAYER = {"rotate", "zoom", "translate"}
+GROUP_LAYER = {"group", "switch"}
 
 
 def init():
@@ -79,3 +86,5 @@ def init():
     file_name = {}
     global num_precomp
     num_precomp = Count()
+    global OUTLINE_GROW     # outline grow param of group layer
+    OUTLINE_GROW = [0]
