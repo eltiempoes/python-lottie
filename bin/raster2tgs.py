@@ -91,5 +91,3 @@ if ns.format == "lottie":
     export_lottie(animation, outfile)
 else:
     export_tgs(animation, outfile)
-
-from tgs.exporters import export_svg; export_svg(animation, "/tmp/out.svg")
