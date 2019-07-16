@@ -304,7 +304,7 @@ class SifBuilder(restructure.AbstractBuilder):
                 return
 
             inp = getattr(bezier, which_point)[point_index]
-            radius = math.hypot(*inp) * 3 * mult
+            radius = math.hypot(inp.x, inp.y) * 3 * mult
             elem.setAttribute("value", str(radius))
 
         def get_tangent_th(keyframe, elem):

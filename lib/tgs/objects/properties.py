@@ -59,6 +59,10 @@ class AnimatableMixin:
             self.keyframes = []
             self.animated = True
         else:
+            if self.keyframes[-1].time == time:
+                if value != self.keyframes[-1].start:
+                    self.keyframes[-1].start = value
+                return
             self.keyframes[-1].end = value
             self.keyframes[-1].set_tangents(time, interp)
 
