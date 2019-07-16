@@ -109,7 +109,7 @@ class TgsProp:
         elif isinstance(v, float):
             if v % 1 == 0:
                 return int(v)
-            return v
+            return round(v, 3)
         else:
             raise Exception("Unknown value %r" % v)
 
