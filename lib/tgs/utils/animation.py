@@ -249,6 +249,50 @@ class SineDisplacer(PointDisplacer):
         return NVector(x, y)
 
 
+class MultiSineDisplacer(PointDisplacer):
+    def __init__(
+        self,
+        waves,
+        time_start,
+        time_end,
+        n_frames,
+        speed=1,
+        axis=90,
+        amplitude_scale=1,
+    ):
+        """
+        Displaces points as if they were following a sine wave
+
+        prop        Multidimensional property to animate
+        waves       List of tuples (wavelength, amplitude)
+        time_start  When the animation shall start
+        time_end    When the animation shall end
+        n_frames    Number of keyframes to add
+        speed       Number of peaks a point will go through in the given time
+                    If negative, it will go the other way
+        axis        Wave peak direction
+        """
+        super().__init__(time_start, time_end, n_frames)
+
+        self.waves = waves
+        self.speed_f = math.pi * 2 * speed
+        self.axis = axis / 180 * math.pi
+        self.amplitude_scale = amplitude_scale
+
+    def _on_displace(self, startpos, f):
+        off = 0
+        for wavelength, amplitude in self.waves:
+            off -= math.sin(startpos[0]/wavelength*math.pi*2-f*self.speed_f/self.n_frames) * amplitude
+
+        off *= self.amplitude_scale
+
+        #off = -math.sin(startpos[0]/100*math.pi*2-f*self.speed_f/self.n_frames) * 12
+        x = startpos[0] + off * math.cos(self.axis)
+        y = startpos[1] + off * math.sin(self.axis)
+        return NVector(x, y)
+
+
+
 class DepthRotationAxis:
     def __init__(self, x, y, keep):
         self.x = x / x.length
