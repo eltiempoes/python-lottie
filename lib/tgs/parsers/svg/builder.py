@@ -77,7 +77,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         pos = transform.position.get_value(self.time).clone()
         anchor = transform.anchor_point.get_value(self.time).clone()
         pos -= anchor
-        if pos[0] != 0 or pos[0] != 0:
+        if pos[0] != 0 or pos[1] != 0:
             trans.append("translate(%s, %s)" % (pos.components[0], pos.components[1]))
 
         scale = transform.scale.get_value(self.time).clone()
@@ -212,8 +212,9 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             svgshape = self.build_rect(shape, out_parent)
         elif isinstance(shape, objects.Ellipse):
             svgshape = self.build_ellipse(shape, out_parent)
+        elif isinstance(shape, objects.Star):
+            svgshape = self.build_path([shape.to_bezier()], out_parent)
         else:
-            # TODO star
             return
         self.set_id(svgshape, shape)
         svgshape.attrib["style"] = self.group_to_style(shapegroup)

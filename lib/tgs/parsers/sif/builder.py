@@ -200,23 +200,12 @@ class SifBuilder(restructure.AbstractBuilder):
     def _on_shape(self, shape, group, dom_parent):
         layers = []
         if group.fill:
-            if isinstance(shape, objects.Rect):
-                sif_shape = self.build_rect(shape, dom_parent)
-            elif isinstance(shape, objects.Ellipse):
-                sif_shape = self.build_ellipse(shape, dom_parent)
-            elif isinstance(shape, objects.Shape):
-                sif_shape = self.build_path("region", shape, dom_parent)
-            else:
-                return []  # TODO star
+            sif_shape = self.build_path("region", shape.to_bezier(), dom_parent)
             layers.append(sif_shape)
             self.apply_group_fill(sif_shape, group.fill)
 
         if group.stroke:
-            if isinstance(shape, objects.Shape):
-                sif_shape = self.build_path("outline", shape, dom_parent)
-            else:
-                # TODO create bline for rect / ellipse etc
-                return layers
+            sif_shape = self.build_path("outline", shape.to_bezier(), dom_parent)
             self.apply_group_stroke(sif_shape, group.stroke)
             layers.append(sif_shape)
 
@@ -228,30 +217,6 @@ class SifBuilder(restructure.AbstractBuilder):
             if prop is not None and prop.animated:
                 keyframes.update({kf.time: kf for kf in prop.keyframes})
         return list(sorted(keyframes.values(), key=lambda kf: kf.time)) or None
-
-    def build_rect(self, shape, dom_parent):
-        # TODO if shape.rounded generate bline
-        layer = self.layer_from_lottie("rectangle", shape, dom_parent)
-
-        keyframes = self._merge_keyframes([shape.position, shape.size])
-
-        def getp1(kf, elem):
-            t = kf.time if kf else 0
-            pos = shape.position.get_value(t)
-            sz = shape.size.get_value(t)
-            self._settext(self._subelement(elem, "x"), str(pos[0] - sz[0]))
-            self._settext(self._subelement(elem, "y"), str(pos[1] - sz[1]))
-
-        def getp2(kf, elem):
-            t = kf.time if kf else 0
-            pos = shape.position.get_value(t)
-            sz = shape.size.get_value(t)
-            self._settext(self._subelement(elem, "x"), str(pos[0] + sz[0]))
-            self._settext(self._subelement(elem, "y"), str(pos[1] + sz[1]))
-
-        self.process_vector_ext("param", keyframes, layer, "vector", getp1).setAttribute("name", "point1")
-        self.process_vector_ext("param", keyframes, layer, "vector", getp2).setAttribute("name", "point2")
-        return layer
 
     def apply_group_fill(self, sif_shape, fill):
         # TODO gradients?
@@ -288,21 +253,6 @@ class SifBuilder(restructure.AbstractBuilder):
         self.simple_param("round_tip[0]", round_cap, sif_shape, "bool")
         self.simple_param("round_tip[1]", round_cap, sif_shape, "bool")
         self.process_scalar("real", "param", stroke.width, sif_shape).setAttribute("name", "width")
-
-    def build_ellipse(self, shape, dom_parent):
-        layer = self.layer_from_lottie("circle", shape, dom_parent)
-
-        # TODO if radii are different, generate a bline
-        def get_r(keyframe, elem):
-            if keyframe is None:
-                v = shape.size.value
-            else:
-                v = keyframe.start
-            sz = (v[0]+v[1])/2
-            elem.setAttribute("value", str(sz))
-        self.process_vector_ext("param", shape.size.keyframes, layer, "real", get_r).setAttribute("name", "radius")
-        self.process_vector("param", shape.position, layer).setAttribute("name", "origin")
-        return layer
 
     def _format_bool(self, value):
         return str(bool(value)).lower()

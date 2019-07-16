@@ -68,5 +68,3 @@ stroke = beziers.add_shape(objects.Stroke(NVector(1, 1, 1), 5))
 
 
 exporters.multiexport(an, "/tmp/shape_to_bezier")
-exporters.export_svg(an, "/tmp/out.svg")
-

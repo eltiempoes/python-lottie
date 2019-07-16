@@ -340,6 +340,9 @@ class Shape(TgsObject):
 
         return bb
 
+    def to_bezier(self):
+        return self
+
 
 class Group(TgsObject):
     _props = [
