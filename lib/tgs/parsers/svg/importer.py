@@ -384,7 +384,7 @@ class SvgParser(SvgHandler):
             self._parse_unit(element.attrib["cy"])
         )
         r = self._parse_unit(element.attrib["r"]) * 2
-        ellipse.size.value = [r, r]
+        ellipse.size.value = NVector(r, r)
         self.add_shapes(element, [ellipse], shape_parent)
 
     def _parseshape_rect(self, element, shape_parent):
