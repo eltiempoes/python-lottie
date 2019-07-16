@@ -7,7 +7,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs.parsers.raster import raster_frames_to_animation, QuanzationMode
+from tgs.parsers.raster import raster_frames_to_animation, QuanzationMode, raster_to_animation
 from tgs.exporters import export_tgs, export_lottie
 from tgs.parsers.svg.importer import parse_color
 
@@ -72,12 +72,15 @@ ns = parser.parse_args()
 
 cm = QuanzationMode.Nearest if ns.color_mode == "nearest" else QuanzationMode.Exact
 
-animation = raster_frames_to_animation(
-    ns.infile, ns.colors, ns.delay,
-    framerate=ns.framerate,
-    palette=ns.palette,
-    mode=cm
-)
+if len(ns.infile) == 1:
+    animation = raster_to_animation(ns.infile[0], ns.colors, ns.palette, cm)
+else:
+    animation = raster_frames_to_animation(
+        ns.infile, ns.colors, ns.delay,
+        framerate=ns.framerate,
+        palette=ns.palette,
+        mode=cm
+    )
 
 binary = ns.format == "tgs"
 if ns.output == "-":
@@ -88,6 +91,6 @@ else:
     outfile = open(ns.output, "w" + ("b" if binary else ""))
 
 if ns.format == "lottie":
-    export_lottie(animation, outfile)
+    export_lottie(animation, outfile, indent=4, sort_keys=True)
 else:
     export_tgs(animation, outfile)
