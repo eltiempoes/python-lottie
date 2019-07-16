@@ -37,6 +37,27 @@ Python 3.
 * pillow, pypotrace>=0.2, numpy, scipy To convert raster images into vectors
 
 
+Features
+--------
+
+Here is a list of features of the tgs python framework:
+
+* Loading compressed TGS and uncompressed lottie JSON
+* Importing SVG images
+* Importing raster images and convert them into vectors
+* Export lottie JSON or TGS
+* Export (non-animated) SVG
+* Export Synfig files
+* Manipulation of lottie objects
+* Simple animation presets (eg: shake, linear bounce)
+* Bezier path animations (eg: follow path, making paths appear and disappear)
+* Wave distortion animation (eg: for flags)
+* Pseudo-3D rotations
+* Animation easing functions
+* Inverse Kinematic solver
+* Pretty printing and comparison of lottie files
+
+
 Reverse Engineering
 -------------------
 
