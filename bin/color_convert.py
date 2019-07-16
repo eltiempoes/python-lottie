@@ -8,5 +8,5 @@ sys.path.append(os.path.join(
 ))
 from tgs.parsers.svg.importer import parse_color
 
-print(parse_color(sys.argv[1]))
+print(parse_color(sys.argv[1]).components)
 

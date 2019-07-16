@@ -272,7 +272,9 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
 
 def color_to_css(color):
-    return "rgb(%s, %s, %s)" % tuple(map(lambda c: round(c*255), color[:3]))
+    #if len(color) == 4:
+        #return ("rgba(%s, %s, %s" % tuple(map(lambda c: int(round(c*255)), color[:3]))) + ", %s)" % color[3]
+    return "rgb(%s, %s, %s)" % tuple(map(lambda c: int(round(c*255)), color[:3]))
 
 
 def to_svg(animation, time):

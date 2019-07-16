@@ -150,52 +150,52 @@ class SvgRadialGradient(SvgGradient):
         super().to_lottie(gradient_shape, shape, time)
 
 
-def parse_color(color, current_color=[0, 0, 0, 1]):
+def parse_color(color, current_color=NVector(0, 0, 0, 1)):
     # #fff
     if re.match(r"^#[0-9a-fA-F]{6}$", color):
-        return [int(color[1:3], 16) / 0xff, int(color[3:5], 16) / 0xff, int(color[5:7], 16) / 0xff, 1]
+        return NVector(int(color[1:3], 16) / 0xff, int(color[3:5], 16) / 0xff, int(color[5:7], 16) / 0xff, 1)
     # #112233
     if re.match(r"^#[0-9a-fA-F]{3}$", color):
-        return [int(color[1], 16) / 0xf, int(color[2], 16) / 0xf, int(color[3], 16) / 0xf, 1]
+        return NVector(int(color[1], 16) / 0xf, int(color[2], 16) / 0xf, int(color[3], 16) / 0xf, 1)
     # rgba(123, 123, 123, 0.7)
     match = re.match(r"^rgba\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9.eE]+)\s*\)$", color)
     if match:
-        return [int(match[1])/255, int(match[2])/255, int(match[3])/255, float(match[4])]
+        return NVector(int(match[1])/255, int(match[2])/255, int(match[3])/255, float(match[4]))
     # rgb(123, 123, 123)
     match = re.match(r"^rgb\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*\)$", color)
     if match:
-        return [int(match[1])/255, int(match[2])/255, int(match[3])/255, 1]
+        return NVector(int(match[1])/255, int(match[2])/255, int(match[3])/255, 1)
     # rgb(60%, 30%, 20%)
     match = re.match(r"^rgb\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*\)$", color)
     if match:
-        return [int(match[1])/100, int(match[2])/100, int(match[3])/100, 1]
+        return NVector(int(match[1])/100, int(match[2])/100, int(match[3])/100, 1)
     # rgba(60%, 30%, 20%, 0.7)
     match = re.match(r"^rgb\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
     if match:
-        return [int(match[1])/100, int(match[2])/100, int(match[3])/100, float(match[4])]
+        return NVector(int(match[1])/100, int(match[2])/100, int(match[3])/100, float(match[4]))
     # transparent
     if color == "transparent":
-        return [0, 0, 0, 0]
+        return NVector(0, 0, 0, 0)
     # hsl(60, 30%, 20%)
     match = re.match(r"^hsl\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*\)$", color)
     if match:
-        return hsl_to_rgb(int(match[1])/360, int(match[2])/100, int(match[3])/100) + [1]
+        return NVector(*(hsl_to_rgb(int(match[1])/360, int(match[2])/100, int(match[3])/100) + [1]))
     # hsla(60, 30%, 20%, 0.7)
     match = re.match(r"^hsl\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
     if match:
-        return hsl_to_rgb(int(match[1])/360, int(match[2])/100, int(match[3])/100) + [float(match[4])]
+        return NVector(*(hsl_to_rgb(int(match[1])/360, int(match[2])/100, int(match[3])/100) + [float(match[4])]))
     # currentColor
     if color in {"currentColor", "inherit"}:
         return current_color
     # red
-    return color_table[color]
+    return NVector(*color_table[color])
 
 
 class SvgParser(SvgHandler):
     def __init__(self, name_mode=NameMode.Inkscape):
         self.init_etree()
         self.name_mode = name_mode
-        self.current_color = [0, 0, 0, 1]
+        self.current_color = NVector(0, 0, 0, 1)
         self.gradients = {}
 
     def _get_name(self, element, inkscapequal):
@@ -219,7 +219,7 @@ class SvgParser(SvgHandler):
         return float(value) * mult
 
     def parse_color(self, color):
-        return NVector(*parse_color(color, self.current_color))
+        return parse_color(color, self.current_color)
 
     def parse_transform(self, element, group, dest_trans):
         itcx = self.qualified("inkscape", "transform-center-x")

@@ -371,6 +371,10 @@ class Group(TgsObject):
         self.shapes.insert(-1, shape)
         return shape
 
+    def insert_shape(self, index, shape):
+        self.shapes.insert(index, shape)
+        return shape
+
     @property
     def transform(self):
         return self.shapes[-1]
