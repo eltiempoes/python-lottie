@@ -268,7 +268,7 @@ class SvgParser(SvgHandler):
                 dest_trans.skew.value = params[0]
                 dest_trans.skew_axis.value = 90
             elif name == "matrix":
-                dest_trans.position.value = params[-2:]
+                dest_trans.position.value = NVector(*params[-2:])
                 v1 = NVector(*params[0:2])
                 v2 = NVector(*params[2:4])
                 dest_trans.scale.value = NVector(v1.length * 100, v2.length * 100)

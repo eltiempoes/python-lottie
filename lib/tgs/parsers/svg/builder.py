@@ -152,13 +152,13 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         epos = gradient.end_point.get_value(self.time)
 
         if gradient.gradient_type == objects.GradientType.Linear:
-            dom = ElementTree.SubElement(self.defs, "linerGradient")
+            dom = ElementTree.SubElement(self.defs, "linearGradient")
             dom.attrib["x1"] = str(spos[0])
             dom.attrib["y1"] = str(spos[1])
             dom.attrib["x2"] = str(epos[0])
             dom.attrib["y2"] = str(epos[1])
         elif gradient.gradient_type == objects.GradientType.Radial:
-            dom = ElementTree.SubElement(self.defs, "linerGradient")
+            dom = ElementTree.SubElement(self.defs, "radialGradient")
             dom.attrib["cx"] = str(spos[0])
             dom.attrib["cy"] = str(spos[1])
             dom.attrib["r"] = str((epos-spos).length)

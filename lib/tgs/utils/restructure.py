@@ -64,6 +64,7 @@ def restructure_animation(animation, merge_paths):
             laybuilder.layer = True
             for shape in layer.shapes:
                 restructure_shapegroup(shape, laybuilder.shapegroup, merge_paths)
+            laybuilder.shapegroup.finalize()
 
     top_layers = []
     for layer in flat_layers:
