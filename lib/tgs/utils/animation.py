@@ -185,7 +185,7 @@ class PointDisplacer:
         startpos = prop.get_value(self.time_start)
         for f in range(self.n_frames+1):
             p = self._on_displace(startpos, f)
-            prop.add_keyframe(f * self.time_delta + self.time_start, p)
+            prop.add_keyframe(self.frame_time(f), p)
 
     def _on_displace(self, startpos):
         raise NotImplementedError()
@@ -208,7 +208,10 @@ class PointDisplacer:
 
                 bezier.add_point(p, t1abs - p, t2abs - p)
 
-            prop.add_keyframe(f * self.time_delta + self.time_start, bezier)
+            prop.add_keyframe(self.frame_time(f), bezier)
+
+    def frame_time(self, f):
+        return f * self.time_delta + self.time_start
 
 
 class SineDisplacer(PointDisplacer):
@@ -290,7 +293,6 @@ class MultiSineDisplacer(PointDisplacer):
         x = startpos[0] + off * math.cos(self.axis)
         y = startpos[1] + off * math.sin(self.axis)
         return NVector(x, y)
-
 
 
 class DepthRotationAxis:
@@ -397,4 +399,52 @@ class DepthRotationDisplacer(PointDisplacer):
         if len(startpos) < 3:
             startpos = NVector(*(startpos.components + [self.depth]))
         return self.rotation.rotate3d(startpos, angle, self.axis)
+
+
+class EnvelopeDeformation(PointDisplacer):
+    def __init__(self, topleft, bottomright):
+        self.topleft = topleft
+        self.size = bottomright - topleft
+        self.keyframes = []
+
+    @property
+    def time_start(self):
+        return self.keyframes[0][0]
+
+    def add_reset_keyframe(self, time):
+        self.add_keyframe(
+            time,
+            self.topleft.clone(),
+            NVector(self.topleft.x + self.size.x, self.topleft.y),
+            NVector(self.topleft.x + self.size.x, self.topleft.y + self.size.y),
+            NVector(self.topleft.x, self.topleft.y + self.size.y),
+        )
+
+    def add_keyframe(self, time, tl, tr, br, bl):
+        self.keyframes.append([
+            time,
+            tl.clone(),
+            tr.clone(),
+            br.clone(),
+            bl.clone()
+        ])
+
+    def _on_displace(self, startpos, f):
+        _, tl, tr, br, bl = self.keyframes[f]
+        relp = startpos - self.topleft
+        relp.x /= self.size.x
+        relp.y /= self.size.y
+
+        x1 = tl.lerp(tr, relp.x)
+        x2 = bl.lerp(br, relp.x)
+
+        #return x1.lerp(x2, relp.y)
+        return x1.lerp(x2, relp.y)
+
+    @property
+    def n_frames(self):
+        return len(self.keyframes)-1
+
+    def frame_time(self, f):
+        return self.keyframes[f][0]
 

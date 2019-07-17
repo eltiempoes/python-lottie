@@ -79,13 +79,25 @@ class NVector():
     def x(self):
         return self.components[0]
 
+    @x.setter
+    def x(self, v):
+        self.components[0] = v
+
     @property
     def y(self):
         return self.components[1]
 
+    @y.setter
+    def y(self, v):
+        self.components[1] = v
+
     @property
     def z(self):
         return self.components[2]
+
+    @z.setter
+    def z(self, v):
+        self.components[2] = v
 
     def element_scaled(self, other):
         return NVector(*vop(operator.mul, self.components, other.components))

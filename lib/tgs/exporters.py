@@ -29,7 +29,15 @@ def lottie_display_html(rel_lottie_filename):
     <style>
         html, body { width: 100%%; height: 100%%; margin: 0; }
         body { display: flex; }
-        #bodymovin { width: 512px; height: 512px; background-color :#888; margin: auto;}
+        #bodymovin { width: 512px; height: 512px; margin: auto;
+            background-color: white;
+            background-size: 64px 64px;
+            background-image:
+                linear-gradient(to right, rgba(0, 0, 0, .3) 50%%, transparent 50%%),
+                linear-gradient(to bottom, rgba(0, 0, 0, .3) 50%%, transparent 50%%),
+                linear-gradient(to bottom, white 50%%, transparent 50%%),
+                linear-gradient(to right, transparent 50%%, rgba(0, 0, 0, .5) 50%%);
+        }
     </style>
      <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.3/lottie.js"></script>
 </head>
