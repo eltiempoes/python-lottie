@@ -107,14 +107,14 @@ class SvgLinearGradient(SvgGradient):
         gradient_shape should be a GradientFill or GradientStroke
         """
         bbox = shape.bounding_box(time)
-        gradient_shape.start_point.value = [
+        gradient_shape.start_point.value = NVector(
             self.x1.to_value(bbox),
             self.y1.to_value(bbox),
-        ]
-        gradient_shape.end_point.value = [
+        )
+        gradient_shape.end_point.value = NVector(
             self.x2.to_value(bbox),
             self.y2.to_value(bbox),
-        ]
+        )
         gradient_shape.gradient_type = objects.GradientType.Linear
 
         super().to_lottie(gradient_shape, shape, time)
@@ -136,9 +136,9 @@ class SvgRadialGradient(SvgGradient):
         bbox = shape.bounding_box(time)
         cx = self.cx.to_value(bbox)
         cy = self.cy.to_value(bbox)
-        gradient_shape.start_point.value = [cx, cy]
+        gradient_shape.start_point.value = NVector(cx, cy)
         r = self.r.to_value(bbox)
-        gradient_shape.end_point.value = [cx+r, cy]
+        gradient_shape.end_point.value = NVector(cx+r, cy)
 
         fx = self.fx.to_value(bbox, cx) - cx
         fy = self.fy.to_value(bbox, cy) - cy
@@ -472,6 +472,7 @@ class SvgParser(SvgHandler):
         self.parse_children(element, None, {"linearGradient", "radialGradient"})
 
     def _gradient(self, element, grad):
+        # TODO parse gradientTransform
         id = element.attrib["id"]
         if id in self.gradients:
             grad.colors = self.gradients[id].colors
@@ -485,11 +486,12 @@ class SvgParser(SvgHandler):
                 src = grad.__class__()
                 self.gradients[srcid] = src
             grad.colors = src.colors
-        else:
-            for stop in element.findall("./%s" % self.qualified("svg", "stop")):
-                off = float(stop.attrib["offset"].strip("%")) / 100
-                style = self.parse_style(stop)
-                grad.add_color(off, self.parse_color(style["stop-color"]))
+        for stop in element.findall("./%s" % self.qualified("svg", "stop")):
+            off = float(stop.attrib["offset"].strip("%"))
+            if stop.attrib["offset"].endswith("%"):
+                off /= 100
+            style = self.parse_style(stop)
+            grad.add_color(off, self.parse_color(style["stop-color"]))
         self.gradients[id] = grad
 
     def _parse_linearGradient(self, element):
