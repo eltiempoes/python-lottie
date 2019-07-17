@@ -225,12 +225,16 @@ class Bezier(TgsObject):
     def _split(self, t):
         i, t = self._index_t(t)
         cub = self._bezier_points(i, True)
+        split1, split2 = self._split_segment(t, cub)
+        return i, split1, split2
+
+    def _split_segment(self, t, cub):
         quad = self._solve_bezier_step(t, cub)
         lin = self._solve_bezier_step(t, quad)
         k = self._solve_bezier_step(t, lin)[0]
         split1 = [cub[0], quad[0]-cub[0], lin[0]-k, k]
         split2 = [k, lin[-1]-k, quad[-1]-cub[-1], cub[-1]]
-        return i, split1, split2
+        return split1, split2
 
     def split_at(self, t):
         i, split1, split2 = self._split(t)
@@ -289,6 +293,25 @@ class Bezier(TgsObject):
         self.vertices += seg2.vertices
         self.in_point += seg2.in_point
         self.out_point += seg2.out_point
+
+    def split_each_segment(self):
+        vertices = self.vertices
+        in_point = self.in_point
+        out_point = self.out_point
+
+        self.vertices = []
+        self.in_point = []
+        self.out_point = []
+
+        for i in range(len(vertices)-1):
+            tocut = [vertices[i], out_point[i]+vertices[i], in_point[i+1]+vertices[i+1], vertices[i+1]]
+            split1, split2 = self._split_segment(0.5, tocut)
+            if i:
+                self.out_point[-1] = split1[1]
+            else:
+                self.add_point(vertices[0], in_point[0], split1[1])
+            self.add_point(split1[3], split1[2], split2[1])
+            self.add_point(vertices[i+1], split2[2], NVector(0, 0))
 
     def split_self_chunks(self, n_chunks):
         splits = [i/n_chunks for i in range(1, n_chunks)]
