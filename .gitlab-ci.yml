@@ -1,7 +1,6 @@
 before_script:
-- apk update
-- apk add doxygen
-- apk add ttf-freefont graphviz
+- apt-get update -qq
+- apt-get install -y -qq doxygen ttf-freefont graphviz
 
 pages:
   script:
