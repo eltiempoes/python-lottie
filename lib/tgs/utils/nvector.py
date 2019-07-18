@@ -113,3 +113,26 @@ class NVector():
             a[2] * b[0] - a[0] * b[2],
             a[0] * b[1] - a[1] * b[0],
         )
+
+
+def Point(x, y):
+    return NVector(x, y)
+
+
+def Size(x, y):
+    return NVector(x, y)
+
+
+def Point3D(x, y, z):
+    return NVector(x, y, z)
+
+
+def Color(r, g, b):
+    return NVector(r, g, b)
+
+
+Color.from_uint8 = lambda r, g, b: NVector(r, g, b) / 255
+
+
+def PolarVector(length, theta):
+    return NVector(length * math.cos(theta), length * math.sin(theta))

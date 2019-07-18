@@ -7,7 +7,7 @@ sys.path.append(os.path.join(
 from tgs import exporters
 from tgs import objects
 from tgs.utils.animation import follow_path
-from tgs import NVector
+from tgs import Point, Color
 
 an = objects.Animation(180)
 
@@ -16,15 +16,15 @@ an.add_layer(layer)
 
 group = layer.add_shape(objects.Group())
 ball = group.add_shape(objects.Ellipse())
-ball.size.value = NVector(10, 10)
-group.add_shape(objects.Fill(NVector(0, 1, 0)))
+ball.size.value = Point(10, 10)
+group.add_shape(objects.Fill(Color(0, 1, 0)))
 
 group = layer.add_shape(objects.Group())
 bez = group.add_shape(objects.Shape())
-bez.vertices.value.add_point(NVector(256, 128), NVector(0, 0), NVector(64, 64))
-bez.vertices.value.add_point(NVector(256, 256), NVector(-64, -64), NVector(-64, 64))
-bez.vertices.value.add_point(NVector(256, 256+120), NVector(0, 0), NVector(0, 0))
-group.add_shape(objects.Stroke(NVector(1, 0, 0), 10))
+bez.vertices.value.add_point(Point(256, 128), Point(0, 0), Point(64, 64))
+bez.vertices.value.add_point(Point(256, 256), Point(-64, -64), Point(-64, 64))
+bez.vertices.value.add_point(Point(256, 256+120), Point(0, 0), Point(0, 0))
+group.add_shape(objects.Stroke(Color(1, 0, 0), 10))
 
 follow_path(ball.position, bez.vertices.value, 0, 90, 30)
 follow_path(ball.position, bez.vertices.value, 90, 180, 30, True)
