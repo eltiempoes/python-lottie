@@ -1,0 +1,14 @@
+before_script:
+- apk update
+- apk add doxygen
+- apk add ttf-freefont graphviz
+
+pages:
+  script:
+  - doxygen docs/Doxyfile
+  artifacts:
+    paths:
+    - docs/html
+  only:
+  - master
+

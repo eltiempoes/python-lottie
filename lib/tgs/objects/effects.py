@@ -105,7 +105,7 @@ class GroupEffect(TgsObject): # TODO check
         TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", float, False),
-        TgsProp("effects", "ef", IndexEffect, True),
+        TgsProp("effects", "ef", load_effect, True),
         TgsProp("enabled", "en", float, False),
     ]
 
@@ -292,7 +292,7 @@ class LayerEffect(TgsObject): # TODO check
         TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", float, False),
-        TgsProp("value", "v", todo_func, False),
+        TgsProp("value", "v", Value, False),
     ]
 
     def __init__(self):
