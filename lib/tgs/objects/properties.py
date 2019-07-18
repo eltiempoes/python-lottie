@@ -114,9 +114,11 @@ class GradientColors(TgsObject):
         TgsProp("count", "p", int),
     ]
 
-    def __init__(self):
+    def __init__(self, colors=[]):
         self.colors = MultiDimensional(NVector())
         self.count = 0
+        if colors:
+            self.set_colors(colors)
 
     def set_colors(self, colors, keyframe=None):
         flat = self._flatten_colors(colors)

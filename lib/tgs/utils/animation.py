@@ -3,6 +3,7 @@ import math
 from .nvector import NVector
 from ..objects.shapes import Shape
 from .. import objects
+from ..objects import easing
 
 
 def shake(position_prop, x_radius, y_radius, start_time, end_time, n_frames):
@@ -54,14 +55,22 @@ def spring_pull(position_prop, point, start_time, end_time, falloff=15, oscillat
     position_prop.add_keyframe(end_time, point)
 
 
-def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, reverse=False, offset=NVector(0, 0)):
-    delta = (end_time - start_time) / n_keyframes
+def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, reverse=False, offset=NVector(0, 0), start_t=0):
+    delta = (end_time - start_time) / (n_keyframes-1)
+    oldfact = 0
     for i in range(n_keyframes):
         time = start_time + i * delta
         fact = i / (n_keyframes-1)
         if reverse:
             fact = 1 - fact
-        position_prop.add_keyframe(time, bezier.point_at(fact)+offset)
+        fact += start_t
+        ease = easing.Linear()
+        if fact > 1:
+            fact = fact % 1
+            if fact < oldfact:
+                ease = easing.Jump()
+        oldfact = fact
+        position_prop.add_keyframe(time, bezier.point_at(fact)+offset, ease)
 
 
 def generate_path_appear(bezier, appear_start, appear_end, n_keyframes, reverse=False):

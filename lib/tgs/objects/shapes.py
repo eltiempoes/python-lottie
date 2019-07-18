@@ -37,6 +37,14 @@ class BoundingBox:
     def __repr__(self):
         return "<BoundingBox [%s, %s] - [%s, %s]>" % (self.x1, self.y1, self.x2, self.y2)
 
+    @property
+    def width(self):
+        return self.x2 - self.x1
+
+    @property
+    def height(self):
+        return self.y2 - self.y1
+
 
 def load_shape(lottiedict):
     shapes = {
@@ -433,7 +441,7 @@ class GradientFill(TgsObject):
         #bm int
     ]
 
-    def __init__(self):
+    def __init__(self, colors=[]):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
         # After Effect's Name. Used for expressions.
@@ -453,7 +461,7 @@ class GradientFill(TgsObject):
         # Highlight Angle. Only if type is Radial
         self.highlight_angle = Value()
         # Gradient Colors
-        self.colors = GradientColors()
+        self.colors = GradientColors(colors)
 
     def bounding_box(self, time=0):
         return BoundingBox()
