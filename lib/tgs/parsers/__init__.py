@@ -1,3 +1,3 @@
-from . import svg, raster, tgs, sif
-__all__ = ["svg", "raster", "tgs", "sif"]
+from . import svg, tgs, sif
+__all__ = ["svg", "tgs", "sif"]
 

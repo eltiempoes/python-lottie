@@ -39,7 +39,7 @@ def lottie_display_html_pre(width=512, height=512):
                 linear-gradient(to right, transparent 50%%, rgba(0, 0, 0, .5) 50%%);
         }
     </style>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.3/lottie.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.3/lottie.js"></script>
 </head>
 <body>
 

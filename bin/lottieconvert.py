@@ -11,6 +11,11 @@ sys.path.append(os.path.join(
 from tgs import exporters
 from tgs import parsers
 from tgs.parsers.svg.importer import parse_color
+try:
+    import tgs.parsers.raster
+    raster = True
+except ImportError:
+    raster = False
 
 
 class Exporter:
@@ -80,12 +85,15 @@ importers = [
         ExtraOption("framerate", type=int, default=60),
     ]),
     Importer("Lottie JSON / Telegram Sticker", ["json", "tgs"], parsers.tgs.parse_tgs, [], "lottie"),
-    Importer("Raster image", ["bmp", "png", "gif"], parsers.raster.raster_to_animation, [
-        ExtraOption("n_colors", type=int, default=1, help="Number of colors to quantize"),
-        ExtraOption("palette", type=parse_color, default=[], nargs="+", help="Custom palette"),
-        # TODO color mode
-    ]),
 ]
+if raster:
+    importers.append(
+        Importer("Raster image", ["bmp", "png", "gif"], tgs.parsers.raster.raster_to_animation, [
+            ExtraOption("n_colors", type=int, default=1, help="Number of colors to quantize"),
+            ExtraOption("palette", type=parse_color, default=[], nargs="+", help="Custom palette"),
+            # TODO color mode
+        ])
+    )
 
 
 desc = """Converts between multiple formats

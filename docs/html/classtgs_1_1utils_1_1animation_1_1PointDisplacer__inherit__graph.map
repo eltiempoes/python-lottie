@@ -1,7 +1,0 @@
-<map id="tgs.utils.animation.PointDisplacer" name="tgs.utils.animation.PointDisplacer">
-<area shape="rect" id="node2" href="$classtgs_1_1utils_1_1animation_1_1DepthRotationDisplacer.html" title="tgs.utils.animation.Depth\lRotationDisplacer" alt="" coords="226,5,393,47"/>
-<area shape="rect" id="node3" href="$classtgs_1_1utils_1_1animation_1_1DisplacerDampener.html" title="tgs.utils.animation.Displacer\lDampener" alt="" coords="216,71,403,112"/>
-<area shape="rect" id="node4" href="$classtgs_1_1utils_1_1animation_1_1EnvelopeDeformation.html" title="tgs.utils.animation.Envelope\lDeformation" alt="" coords="216,136,403,177"/>
-<area shape="rect" id="node5" href="$classtgs_1_1utils_1_1animation_1_1MultiSineDisplacer.html" title="tgs.utils.animation.Multi\lSineDisplacer" alt="" coords="229,201,389,243"/>
-<area shape="rect" id="node6" href="$classtgs_1_1utils_1_1animation_1_1SineDisplacer.html" title="tgs.utils.animation.Sine\lDisplacer" alt="" coords="230,267,389,308"/>
-</map>

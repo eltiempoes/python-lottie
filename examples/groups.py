@@ -38,4 +38,3 @@ g3.add_shape(objects.Stroke(Color(1, 1, 1), 5))
 
 
 exporters.multiexport(an, "/tmp/groups")
-
