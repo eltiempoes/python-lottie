@@ -5,9 +5,10 @@ before_script:
 pages:
   script:
   - doxygen docs/Doxyfile
+  - mv docs/html public
   artifacts:
     paths:
-    - docs/html
+    - public
   only:
   - master
 
