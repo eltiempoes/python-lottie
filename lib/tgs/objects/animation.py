@@ -1,7 +1,12 @@
 from .base import TgsObject, TgsProp, PseudoBool, todo_func, Index
 from .layers import load_layer
 
+##\defgroup Lottie Lottie
+#
+# Objects of the lottie file structure
 
+
+##\ingroup Lottie
 class Animation(TgsObject):
     _props = {
         TgsProp("in_point", "ip", float, False),
@@ -20,26 +25,27 @@ class Animation(TgsObject):
     _version = "5.5.2"
 
     def __init__(self, n_frames=60, framerate=60):
+        ## Marks as telegram sticker
         self.tgs = 1
-        # In Point of the Time Ruler. Sets the initial Frame of the animation.
+        ## In Point of the Time Ruler. Sets the initial Frame of the animation.
         self.in_point = 0
-        # Out Point of the Time Ruler. Sets the final Frame of the animation
+        ## Out Point of the Time Ruler. Sets the final Frame of the animation
         self.out_point = n_frames
-        # Frame Rate
+        ## Frame Rate
         self.frame_rate = framerate
-        # Composition Width
+        ## Composition Width
         self.width = 512
-        # Composition has 3-D layers
+        ## Composition has 3-D layers
         self.threedimensional = False
-        # Composition Height
+        ## Composition Height
         self.height = 512
-        # Bodymovin Version
+        ## Bodymovin Version
         self.version = self._version
-        # Composition name
+        ## Composition name
         self.name = None
-        # List of Composition Layers
+        ## List of Composition Layers
         self.layers = [] # ShapeLayer, SolidLayer, CompLayer, ImageLayer, NullLayer, TextLayer
-        # source items that can be used in multiple places. Comps and Images for now.
+        ## source items that can be used in multiple places. Comps and Images for now.
         self.assets = [] # Image, Precomp
         # source chars for text layers
         #self.chars = [] # Chars

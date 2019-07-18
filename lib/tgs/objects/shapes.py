@@ -66,6 +66,7 @@ def load_shape(lottiedict):
     return shapes[lottiedict["ty"]].load(lottiedict)
 
 
+##\ingroup Lottie
 class Rect(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -80,17 +81,17 @@ class Rect(TgsObject):
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        # Shape content type.
+        ## Shape content type.
         self.type = 'rc'
-        # Rect's position
+        ## Rect's position
         self.position = MultiDimensional(NVector(0, 0))
-        # Rect's size
+        ## Rect's size
         self.size = MultiDimensional(NVector(0, 0))
-        # Rect's rounded corners
+        ## Rect's rounded corners
         self.rounded = Value()
 
     def bounding_box(self, time=0):
@@ -152,11 +153,13 @@ class Rect(TgsObject):
         return bezier
 
 
+##\ingroup Lottie
 class StarType(TgsEnum):
     Star = 1
     Polygon = 2
 
 
+##\ingroup Lottie
 class Star(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -176,27 +179,27 @@ class Star(TgsObject):
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        # Shape content type.
+        ## Shape content type.
         self.type = 'sr'
-        # Star's position
+        ## Star's position
         self.position = MultiDimensional(NVector(0, 0))
-        # Star's inner radius. (Star only)
+        ## Star's inner radius. (Star only)
         self.inner_radius = Value()
-        # Star's inner roundness. (Star only)
+        ## Star's inner roundness. (Star only)
         self.inner_roundness = Value()
-        # Star's outer radius.
+        ## Star's outer radius.
         self.outer_radius = Value()
-        # Star's outer roundness.
+        ## Star's outer roundness.
         self.outer_roundness = Value()
-        # Star's rotation.
+        ## Star's rotation.
         self.rotation = Value()
-        # Star's number of points.
+        ## Star's number of points.
         self.points = Value(5)
-        # Star's type. Polygon or Star.
+        ## Star's type. Polygon or Star.
         self.star_type = StarType.Star
 
     def bounding_box(self, time=0):
@@ -255,6 +258,7 @@ class Star(TgsObject):
         return bezier
 
 
+##\ingroup Lottie
 class Ellipse(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -268,15 +272,15 @@ class Ellipse(TgsObject):
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        # Shape content type.
+        ## Shape content type.
         self.type = 'el'
-        # Ellipse's position
+        ## Ellipse's position
         self.position = MultiDimensional(NVector(0, 0))
-        # Ellipse's size
+        ## Ellipse's size
         self.size = MultiDimensional(NVector(0, 0))
 
     def bounding_box(self, time=0):
@@ -318,6 +322,7 @@ class Ellipse(TgsObject):
         return bezier
 
 
+##\ingroup Lottie
 class Shape(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -330,13 +335,13 @@ class Shape(TgsObject):
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        # Shape content type.
+        ## Shape content type.
         self.type = 'sh'
-        # Shape's vertices
+        ## Shape's vertices
         self.vertices = ShapeProperty()
 
     def bounding_box(self, time=0):
@@ -352,6 +357,7 @@ class Shape(TgsObject):
         return self
 
 
+##\ingroup Lottie
 class Group(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -365,13 +371,13 @@ class Group(TgsObject):
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # Shape content type.
+        ## Shape content type.
         self.type = 'gr'
-        # Group number of properties. Used for expressions.
+        ## Group number of properties. Used for expressions.
         self.number_of_properties = None
-        # Group list of items
+        ## Group list of items
         self.shapes = [TransformShape()]
         self.property_index = None
 
@@ -395,6 +401,7 @@ class Group(TgsObject):
         return bb
 
 
+##\ingroup Lottie
 class Fill(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -407,24 +414,26 @@ class Fill(TgsObject):
     def __init__(self, color=None):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # Shape content type.
+        ## Shape content type.
         self.type = 'fl'
-        # Fill Opacity
+        ## Fill Opacity
         self.opacity = Value(100)
-        # Fill Color
+        ## Fill Color
         self.color = MultiDimensional(color or NVector(1, 1, 1))
 
     def bounding_box(self, time=0):
         return BoundingBox()
 
 
+##\ingroup Lottie
 class GradientType(TgsEnum):
     Linear = 1
     Radial = 2
 
 
+##\ingroup Lottie
 class GradientFill(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -444,41 +453,44 @@ class GradientFill(TgsObject):
     def __init__(self, colors=[]):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # Shape content type.
+        ## Shape content type.
         self.type = 'gf'
-        # Fill Opacity
+        ## Fill Opacity
         self.opacity = Value(100)
-        # Gradient Start Point
+        ## Gradient Start Point
         self.start_point = MultiDimensional(NVector(0, 0))
-        # Gradient End Point
+        ## Gradient End Point
         self.end_point = MultiDimensional(NVector(0, 0))
-        # Gradient Type
+        ## Gradient Type
         self.gradient_type = GradientType.Linear
-        # Gradient Highlight Length. Only if type is Radial
+        ## Gradient Highlight Length. Only if type is Radial
         self.highlight_length = Value()
-        # Highlight Angle. Only if type is Radial
+        ## Highlight Angle. Only if type is Radial
         self.highlight_angle = Value()
-        # Gradient Colors
+        ## Gradient Colors
         self.colors = GradientColors(colors)
 
     def bounding_box(self, time=0):
         return BoundingBox()
 
 
+##\ingroup Lottie
 class LineJoin(TgsEnum):
     Miter = 1
     Round = 2
     Bevel = 3
 
 
+##\ingroup Lottie
 class LineCap(TgsEnum):
     Butt = 1
     Round = 2
     Square = 3
 
 
+##\ingroup Lottie
 class Stroke(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -495,27 +507,28 @@ class Stroke(TgsObject):
     def __init__(self, color=None, width=1):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # Shape content type.
+        ## Shape content type.
         self.type = 'st'
-        # Stroke Line Cap
+        ## Stroke Line Cap
         self.line_cap = LineCap.Round
-        # Stroke Line Join
+        ## Stroke Line Join
         self.line_join = LineJoin.Round
-        # Stroke Miter Limit. Only if Line Join is set to Miter.
+        ## Stroke Miter Limit. Only if Line Join is set to Miter.
         self.miter_limit = 0
-        # Stroke Opacity
+        ## Stroke Opacity
         self.opacity = Value(100)
-        # Stroke Width
+        ## Stroke Width
         self.width = Value(width)
-        # Stroke Color
+        ## Stroke Color
         self.color = MultiDimensional(color or NVector(0, 0, 0))
 
     def bounding_box(self, time=0):
         return BoundingBox()
 
 
+##\ingroup Lottie
 class GradientStroke(TgsObject):
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -537,37 +550,38 @@ class GradientStroke(TgsObject):
     def __init__(self, stroke_width=1):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # Shape content type.
+        ## Shape content type.
         self.type = 'gs'
-        # Stroke Opacity
+        ## Stroke Opacity
         self.opacity = Value(100)
-        # Gradient Start Point
+        ## Gradient Start Point
         self.start_point = MultiDimensional(NVector(0, 0))
-        # Gradient End Point
+        ## Gradient End Point
         self.end_point = MultiDimensional(NVector(0, 0))
-        # Gradient Type
+        ## Gradient Type
         self.gradient_type = GradientType.Linear
-        # Gradient Highlight Length. Only if type is Radial
+        ## Gradient Highlight Length. Only if type is Radial
         self.highlight_length = Value()
-        # Highlight Angle. Only if type is Radial
+        ## Highlight Angle. Only if type is Radial
         self.highlight_angle = Value()
-        # Gradient Colors
+        ## Gradient Colors
         self.colors = GradientColors()
-        # Gradient Stroke Width
+        ## Gradient Stroke Width
         self.width = Value(stroke_width)
-        # Gradient Stroke Line Cap
+        ## Gradient Stroke Line Cap
         self.line_cap = LineCap.Round
-        # Gradient Stroke Line Join
+        ## Gradient Stroke Line Join
         self.line_join = LineJoin.Round
-        # Gradient Stroke Miter Limit. Only if Line Join is set to Miter.
+        ## Gradient Stroke Miter Limit. Only if Line Join is set to Miter.
         self.miter_limit = 0
 
     def bounding_box(self, time=0):
         return BoundingBox()
 
 
+##\ingroup Lottie
 class TransformShape(TgsObject):
     _props = [
         TgsProp("name", "nm", str, False),
@@ -583,27 +597,30 @@ class TransformShape(TgsObject):
     ]
 
     def __init__(self):
+        ## After Effect's Name. Used for expressions.
         self.name = None
+        ## Shape content type.
         self.type = 'tr'
-        # Transform Anchor Point
+        ## Transform Anchor Point
         self.anchor_point = MultiDimensional(NVector(0, 0))
-        # Transform Position
+        ## Transform Position
         self.position = MultiDimensional(NVector(0, 0))
-        # Transform Scale
+        ## Transform Scale
         self.scale = MultiDimensional(NVector(100, 100))
-        # Transform Rotation
+        ## Transform Rotation
         self.rotation = Value(0)
-        # Transform Opacity
+        ## Transform Opacity
         self.opacity = Value(100)
-        # Transform Skew
+        ## Transform Skew
         self.skew = Value(0)
-        # Transform Skew Axis
+        ## Transform Skew Axis
         self.skew_axis = Value(0)
 
     def bounding_box(self, time=0):
         return BoundingBox()
 
 
+##\ingroup Lottie
 class Trim(TgsObject): # TODO check
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -617,18 +634,19 @@ class Trim(TgsObject): # TODO check
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # Shape content type.
+        ## Shape content type.
         self.type = 'tm'
-        # Trim Start.
+        ## Trim Start.
         self.start = Value()
-        # Trim End.
+        ## Trim End.
         self.end = Value()
-        # Trim Offset.
+        ## Trim Offset.
         self.offset = Value()
 
 
+##\ingroup Lottie
 class Composite(TgsEnum):
     Above = 1
     Below = 2
@@ -648,20 +666,21 @@ class Repeater(TgsObject): # TODO check
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # Shape content type.
+        ## Shape content type.
         self.type = 'rp'
-        # Number of Copies
+        ## Number of Copies
         self.copies = Value()
-        # Offset of Copies
+        ## Offset of Copies
         self.offset = Value()
-        # Composite of copies
+        ## Composite of copies
         self.composite = Composite.Above
-        # Transform values for each repeater copy
+        ## Transform values for each repeater copy
         self.transform = Transform()
 
 
+##\ingroup Lottie
 class Round(TgsObject): # TODO check
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -673,14 +692,15 @@ class Round(TgsObject): # TODO check
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # Shape content type.
+        ## Shape content type.
         self.type = 'rd'
-        # Rounded Corner Radius
+        ## Rounded Corner Radius
         self.radius = Value()
 
 
+##\ingroup Lottie
 class Merge(TgsObject): # TODO check
     _props = [
         #TgsProp("match_name", "mn", str, False),
@@ -692,9 +712,9 @@ class Merge(TgsObject): # TODO check
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = None
-        # Shape content type. THIS FEATURE IS NOT SUPPORTED. It's exported because if you export it, they will come.
+        ## Shape content type. THIS FEATURE IS NOT SUPPORTED. It's exported because if you export it, they will come.
         self.type = 'mm'
-        # Merge Mode
+        ## Merge Mode
         self.merge_mode = 1

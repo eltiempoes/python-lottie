@@ -1,6 +1,7 @@
 from .base import TgsEnum
 
 
+##\ingroup Lottie
 class TestBased(TgsEnum):
     Characters = 1
     CharacterExcludingSpaces = 2
@@ -12,6 +13,7 @@ class TestBased(TgsEnum):
         return cls.Characters
 
 
+##\ingroup Lottie
 class TextShape(TgsEnum):
     Square = 1
     RampUp = 2
@@ -25,6 +27,7 @@ class TextShape(TgsEnum):
         return cls.Square
 
 
+##\ingroup Lottie
 class TextGrouping(TgsEnum):
     Characters = 1
     Word = 2

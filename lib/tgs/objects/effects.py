@@ -3,7 +3,10 @@ from .properties import Value, MultiDimensional
 
 load_effect = todo_func
 
+## \ingroup Lottie
 
+
+##\ingroup Lottie
 class FillEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
@@ -14,18 +17,19 @@ class FillEffect(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions.
+        ## Effect Index. Used for expressions.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 21
-        # Effect List of properties.
+        ## Effect List of properties.
         self.effects = [] # PointEffect, DropDownEffect, ColorEffect, DropDownEffect, SliderEffect, SliderEffect, SliderEffect
 
 
+##\ingroup Lottie
 class StrokeEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
@@ -36,18 +40,19 @@ class StrokeEffect(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions.
+        ## Effect Index. Used for expressions.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 22
-        # Effect List of properties.
+        ## Effect List of properties.
         self.effects = [] # ColorEffect, CheckboxEffect, CheckboxEffect, ColorEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, DropDownEffect, DropDownEffect
 
 
+##\ingroup Lottie
 class DropDownEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
@@ -58,65 +63,68 @@ class DropDownEffect(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions.
+        ## Effect Index. Used for expressions.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 7
-        # Effect value.
-        self.value = Value() # Value, ValueKeyframed
+        ## Effect value.
+        self.value = Value()
 
 
+##\ingroup Lottie
 class TritoneEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", float, False),
-        TgsProp("effects", "ef", todo_func, True),
+        TgsProp("effects", "ef", load_effect, True),
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions.
+        ## Effect Index. Used for expressions.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 23
-        # Effect List of properties.
+        ## Effect List of properties.
         self.effects = [] # ColorEffect, ColorEffect, ColorEffect, SliderEffect
 
 
+##\ingroup Lottie
 class GroupEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", float, False),
-        TgsProp("effects", "ef", load_effect, True),
+        TgsProp("effects", "ef", IndexEffect, True),
         TgsProp("enabled", "en", float, False),
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions.
+        ## Effect Index. Used for expressions.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 5
-        # Effect List of properties.
-        self.effects = []
-        # Enabled AE property value
+        ## Effect List of properties.
+        self.effects = [] # IndexEffect
+        ## Enabled AE property value
         self.enabled = 0
 
 
+##\ingroup Lottie
 class ColorEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
@@ -127,40 +135,42 @@ class ColorEffect(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions.
+        ## Effect Index. Used for expressions.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 2
-        # Effect value.
-        self.value = MultiDimensional() # MultiDimensional, MultiDimensionalKeyframed
+        ## Effect value.
+        self.value = MultiDimensional()
 
 
+##\ingroup Lottie
 class ProLevelsEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", float, False),
-        TgsProp("effects", "ef", todo_func, True),
+        TgsProp("effects", "ef", load_effect, True),
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions.
+        ## Effect Index. Used for expressions.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 23
-        # ffect List of properties.
+        ## ffect List of properties.
         self.effects = [] # DropDownEffect, NoValueEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect
 
 
+##\ingroup Lottie
 class AngleEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
@@ -171,18 +181,19 @@ class AngleEffect(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions. NOT USED. EQUALS SLIDER.
+        ## Effect Index. Used for expressions. NOT USED. EQUALS SLIDER.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 1
-        # Effect value.
-        self.value = Value() # Value, ValueKeyframed
+        ## Effect value.
+        self.value = Value()
 
 
+##\ingroup Lottie
 class SliderEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
@@ -193,18 +204,19 @@ class SliderEffect(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions.
+        ## Effect Index. Used for expressions.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 0
-        # Effect value.
-        self.value = Value() # Value, ValueKeyframed
+        ## Effect value.
+        self.value = Value()
 
 
+##\ingroup Lottie
 class CheckBoxEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
@@ -215,79 +227,82 @@ class CheckBoxEffect(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions.
+        ## Effect Index. Used for expressions.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 7
-        # Effect value.
-        self.value = Value() # Value, ValueKeyframed
+        ## Effect value.
+        self.value = Value()
 
 
+##\ingroup Lottie
 class PointEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", float, False),
-        TgsProp("value", "v", MultiDimensional, True),
+        TgsProp("value", "v", todo_func, True),
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions.
+        ## Effect Index. Used for expressions.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 2
-        # Effect value.
+        ## Effect value.
         self.value = []
 
 
+##\ingroup Lottie
 class TintEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", float, False),
-        TgsProp("effects", "ef", todo_func, True),
+        TgsProp("effects", "ef", load_effect, True),
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions.
+        ## Effect Index. Used for expressions.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 20
-        # Effect List of properties.
+        ## Effect List of properties.
         self.effects = [] # ColorEffect, ColorEffect, SliderEffect
 
 
+##\ingroup Lottie
 class LayerEffect(TgsObject): # TODO check
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", float, False),
-        TgsProp("value", "v", Value, False),
+        TgsProp("value", "v", todo_func, False),
     ]
 
     def __init__(self):
-        # Effect Index. Used for expressions. NOT USED. EQUALS SLIDER.
+        ## Effect Index. Used for expressions. NOT USED. EQUALS SLIDER.
         self.effect_index = 0
-        # After Effect's Match Name. Used for expressions.
+        ## After Effect's Match Name. Used for expressions.
         self.match_name = ""
-        # After Effect's Name. Used for expressions.
+        ## After Effect's Name. Used for expressions.
         self.name = ""
-        # Effect type.
+        ## Effect type.
         self.type = 0
-        # Effect value.
+        ## Effect value.
         self.value = Value()

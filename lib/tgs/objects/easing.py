@@ -2,6 +2,7 @@ import math
 from .base import TgsObject, TgsProp, PseudoList, PseudoBool
 
 
+## \ingroup Lottie
 class KeyframeBezierPoint(TgsObject):
     _props = [
         TgsProp("x", "x", list=PseudoList),

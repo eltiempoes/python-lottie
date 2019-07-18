@@ -5,6 +5,7 @@ from . import easing
 from ..utils.nvector import NVector
 
 
+##\ingroup Lottie
 class OffsetKeyframe(TgsObject):
     _props = {
         TgsProp("start", "s", NVector, False),
@@ -19,19 +20,19 @@ class OffsetKeyframe(TgsObject):
 
     def __init__(self, time=0, start=None, end=None,
                  in_value=None, out_value=None, in_tan=None, out_tan=None):
-        # Start value of keyframe segment.
+        ## Start value of keyframe segment.
         self.start = start
+        ## End value of keyframe segment.
         self.end = end
-        # Start time of keyframe segment.
+        ## Start time of keyframe segment.
         self.time = time
-        # Bezier curve easing in value.
+        ## Bezier curve easing in value.
         self.in_value = in_value
-        # Bezier curve easing out value.
+        ## Bezier curve easing out value.
         self.out_value = out_value
-        #self.h = 1 #???
-        # In Spatial Tangent. Only for spatial properties. Array of numbers.
+        ## In Spatial Tangent. Only for spatial properties. Array of numbers.
         self.in_tan = in_tan
-        # Out Spatial Tangent. Only for spatial properties. Array of numbers.
+        ## Out Spatial Tangent. Only for spatial properties. Array of numbers.
         self.out_tan = out_tan
 
     def set_tangents(self, end_time, interp):
@@ -49,8 +50,11 @@ class AnimatableMixin:
         self.keyframes = None
 
     def clear_animation(self, value):
+        ## Non-animated value
         self.value = value
+        ## Whether it's animated
         self.animated = False
+        ## Keyframe list
         self.keyframes = None
 
     def add_keyframe(self, time, value, interp=easing.Linear()):
@@ -97,6 +101,7 @@ class AnimatableMixin:
         return val
 
 
+##\ingroup Lottie
 class MultiDimensional(TgsObject, AnimatableMixin):
     keyframe_type = OffsetKeyframe
     _props = [
@@ -107,7 +112,8 @@ class MultiDimensional(TgsObject, AnimatableMixin):
     ]
 
 
-# TODO use a more convenient representation and convert to the weird array on import/export
+##\ingroup Lottie
+# \todo use a more convenient representation and convert to the weird array on import/export
 class GradientColors(TgsObject):
     _props = [
         TgsProp("colors", "k", MultiDimensional),
@@ -160,6 +166,7 @@ class GradientColors(TgsObject):
         self.colors.add_keyframe(time, self._flatten_colors(colors) if colors else NVector(), ease)
 
 
+##\ingroup Lottie
 class Value(TgsObject, AnimatableMixin):
     keyframe_type = OffsetKeyframe
     _props = [
@@ -182,7 +189,8 @@ class Value(TgsObject, AnimatableMixin):
         return v
 
 
-# TODO Use BezierPoint and convert to in_point/out_point/vertices on inport/export
+##\ingroup Lottie
+# \todo Use BezierPoint and convert to in_point/out_point/vertices on inport/export
 class Bezier(TgsObject):
     _props = [
         TgsProp("closed", "c", bool, False),
@@ -192,13 +200,13 @@ class Bezier(TgsObject):
     ]
 
     def __init__(self):
-        # Closed property of shape
+        ## Closed property of shape
         self.closed = False
-        # Bezier curve In points. Array of 2 dimensional arrays.
+        ## Bezier curve In points. Array of 2 dimensional arrays.
         self.in_point = []
-        # Bezier curve Out points. Array of 2 dimensional arrays.
+        ## Bezier curve Out points. Array of 2 dimensional arrays.
         self.out_point = []
-        # Bezier curve Vertices. Array of 2 dimensional arrays.
+        ## Bezier curve Vertices. Array of 2 dimensional arrays.
         self.vertices = []
 
     def insert_point(self, index, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
@@ -391,6 +399,7 @@ class ShapePropKeyframe(TgsObject):
         interp(self, 0, 0, end_time)
 
 
+##\ingroup Lottie
 class ShapeProperty(TgsObject, AnimatableMixin):
     keyframe_type = ShapePropKeyframe
     _props = [

@@ -1,6 +1,7 @@
 from .base import TgsObject, TgsProp, todo_func
 
 
+##\ingroup Lottie
 class Image(TgsObject): # TODO check
     _props = [
         TgsProp("height", "h", float, False),
@@ -11,18 +12,19 @@ class Image(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Image Height
+        ## Image Height
         self.height = 0
-        # Image Width
+        ## Image Width
         self.width = 0
-        # Image ID
+        ## Image ID
         self.id = ""
-        # Image name
+        ## Image name
         self.image_name = ""
-        # Image path
+        ## Image path
         self.image_path = ""
 
 
+##\ingroup Lottie
 class Chars(TgsObject): # TODO check
     _props = [
         TgsProp("character", "ch", str, False),
@@ -34,20 +36,21 @@ class Chars(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Character Value
+        ## Character Value
         self.character = ""
-        # Character Font Family
+        ## Character Font Family
         self.font_family = ""
-        # Character Font Size
+        ## Character Font Size
         self.font_size = ""
-        # Character Font Style
+        ## Character Font Style
         self.font_style = ""
-        # Character Width
+        ## Character Width
         self.width = 0
-        # Character Data
+        ## Character Data
         self.character_data = None
 
 
+##\ingroup Lottie
 class Precomp(TgsObject): # TODO check
     _props = [
         TgsProp("id", "id", str, False),
@@ -55,7 +58,7 @@ class Precomp(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Precomp ID
+        ## Precomp ID
         self.id = ""
-        # List of Precomp Layers
+        ## List of Precomp Layers
         self.layers = [] # ShapeLayer, SolidLayer, CompLayer, ImageLayer, NullLayer, TextLayer

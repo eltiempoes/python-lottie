@@ -21,7 +21,7 @@ def schema2enum(out, filename, data):
     if filename.endswith("/boolean.json"):
         return
 
-    out.write("\n\nclass ")
+    out.write("\n\n##\ingroup Lottie\nclass ")
     out.write(class_name(filename))
     out.write("(TgsEnum):\n")
     vals = {}
@@ -55,6 +55,10 @@ class ClassProp:
             self.value = repr(data["const"])
         else:
             self._get_value(data)
+            if self.value_comment == "MultiDimensional, MultiDimensionalKeyframed":
+                self.value_comment = None
+            elif self.value_comment == "Value, ValueKeyframed":
+                self.value_comment = None
 
     def ensure_unique_name(self, properties):
         if self._check_unique_name(properties):
@@ -149,16 +153,16 @@ class ClassProp:
                         class_name(oo["$ref"])
                         for oo in data["oneOf"]
                     )
-                    if self.value_comment == "MultiDimensional, MultiDimensionalKeyframed":
-                        self.type = "MultiDimensional"
-                    elif self.value_comment == "Value, ValueKeyframed":
-                        self.type = "Value"
-                    else:
-                        self.type = "todo_func"
+                if self.value_comment == "MultiDimensional, MultiDimensionalKeyframed":
+                    self.type = "MultiDimensional"
+                elif self.value_comment == "Value, ValueKeyframed":
+                    self.type = "Value"
+                else:
+                    self.type = "todo_func"
 
     def write_init(self, out, indent):
         out.write(indent)
-        out.write("# %s\n" % self.raw["description"])
+        out.write("## %s\n" % self.raw["description"])
         out.write(indent)
         out.write("self.%s = %s" % (self.name, self.value))
         if self.value_comment:
@@ -170,7 +174,7 @@ def schema2class(out, filename, data, ei=""):
     if "properties" not in data:
         return
 
-    out.write("\n\nclass ")
+    out.write("\n\n##\ingroup Lottie\nclass ")
     out.write(class_name(filename))
     out.write("(TgsObject): # TODO check\n")
     properties = []

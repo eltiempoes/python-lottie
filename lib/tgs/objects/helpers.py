@@ -2,6 +2,7 @@ from .base import TgsObject, TgsProp, todo_func
 from .properties import MultiDimensional, Value, NVector
 
 
+##\ingroup Lottie
 class Transform(TgsObject):
     _props = [
         TgsProp("anchor_point", "a", MultiDimensional, False),
@@ -17,15 +18,15 @@ class Transform(TgsObject):
     ]
 
     def __init__(self):
-        # Transform Anchor Point
+        ## Transform Anchor Point
         self.anchor_point = MultiDimensional(NVector(0, 0, 0))
-        # Transform Position
+        ## Transform Position
         self.position = MultiDimensional(NVector(0, 0))
-        # Transform Scale
+        ## Transform Scale
         self.scale = MultiDimensional(NVector(100, 100))
-        # Transform Rotation
+        ## Transform Rotation
         self.rotation = Value(0)
-        # Transform Opacity
+        ## Transform Opacity
         self.opacity = Value(100)
         # Transform Position X
         #self.position_x = Value()
@@ -33,12 +34,13 @@ class Transform(TgsObject):
         #self.position_y = Value()
         ## Transform Position Z
         #self.position_z = Value()
-        # Transform Skew
+        ## Transform Skew
         self.skew = Value()
-        # Transform Skew Axis
+        ## Transform Skew Axis
         self.skew_axis = Value()
 
 
+##\ingroup Lottie
 class Mask(TgsObject): # TODO check
     _props = [
         TgsProp("inverted", "inv", float, False),
@@ -49,13 +51,13 @@ class Mask(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Inverted Mask flag
+        ## Inverted Mask flag
         self.inverted = None
-        # Mask name. Used for expressions and effects.
+        ## Mask name. Used for expressions and effects.
         self.name = ""
-        # Mask vertices
+        ## Mask vertices
         self.points = ShapeProperty() # ShapeProperty, ShapePropertyKeyframed
-        # Mask opacity.
+        ## Mask opacity.
         self.opacity = Value(100) # Const, ConstKeyframed
-        # Mask mode. Not all mask types are supported.
+        ## Mask mode. Not all mask types are supported.
         self.mode = ""

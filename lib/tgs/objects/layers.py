@@ -4,6 +4,7 @@ from .helpers import Transform
 from .shapes import load_shape
 
 
+##\ingroup Lottie
 class BlendMode(TgsEnum):
     Normal = 0
     Multiply = 1
@@ -35,6 +36,7 @@ def load_layer(lottiedict):
     return layers[lottiedict["ty"]].load(lottiedict)
 
 
+##\ingroup Lottie
 class NullLayer(TgsObject):
     _props = [
         TgsProp("type", "ty", float, False),
@@ -54,36 +56,37 @@ class NullLayer(TgsObject):
     ]
 
     def __init__(self):
-        # Type of layer: Null.
+        ## Type of layer: Null.
         self.type = 3
-        # Transform properties
+        ## Transform properties
         self.transform = Transform()
-        # Auto-Orient along path AE property.
+        ## Auto-Orient along path AE property.
         self.auto_orient = False
-        # 3d layer flag
+        ## 3d layer flag
         self.threedimensional = False
-        # Layer index in AE. Used for parenting and expressions.
+        ## Layer index in AE. Used for parenting and expressions.
         self.index = None
         # Parsed layer name used as html class on SVG/HTML renderer
         #self.css_class = ""
         # Parsed layer name used as html id on SVG/HTML renderer
         #self.layer_html_id = ""
-        # In Point of layer. Sets the initial frame of the layer.
+        ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = None
-        # Out Point of layer. Sets the final frame of the layer.
+        ## Out Point of layer. Sets the final frame of the layer.
         self.out_point = None
-        # Start Time of layer. Sets the start time of the layer.
+        ## Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
-        # After Effects Layer Name. Used for expressions.
+        ## After Effects Layer Name. Used for expressions.
         self.name = None
-        # List of Effects
+        ## List of Effects
         self.effects = [] # IndexEffect
-        # Layer Time Stretching
+        ## Layer Time Stretching
         self.stretch = 1
-        # Layer Parent. Uses ind of parent.
+        ## Layer Parent. Uses ind of parent.
         self.parent = None
 
 
+##\ingroup Lottie
 class TextLayer(TgsObject): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
@@ -107,44 +110,45 @@ class TextLayer(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Type of layer: Text.
+        ## Type of layer: Text.
         self.type = 0
-        # Transform properties
+        ## Transform properties
         self.transform = Transform()
-        # Auto-Orient along path AE property.
+        ## Auto-Orient along path AE property.
         self.auto_orient = False
-        # Blend Mode
+        ## Blend Mode
         self.blend_mode = BlendMode.Normal
-        # 3d layer flag
+        ## 3d layer flag
         self.threedimensional = False
-        # Layer index in AE. Used for parenting and expressions.
+        ## Layer index in AE. Used for parenting and expressions.
         self.index = None
-        # Parsed layer name used as html class on SVG/HTML renderer
+        ## Parsed layer name used as html class on SVG/HTML renderer
         self.css_class = ""
-        # Parsed layer name used as html id on SVG/HTML renderer
+        ## Parsed layer name used as html id on SVG/HTML renderer
         self.layer_html_id = ""
-        # In Point of layer. Sets the initial frame of the layer.
+        ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = 0
-        # Out Point of layer. Sets the final frame of the layer.
+        ## Out Point of layer. Sets the final frame of the layer.
         self.out_point = 0
-        # Start Time of layer. Sets the start time of the layer.
+        ## Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
-        # After Effects Layer Name. Used for expressions.
+        ## After Effects Layer Name. Used for expressions.
         self.name = 0
-        # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
+        ## Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
         self.has_masks = 0
-        # List of Masks
+        ## List of Masks
         self.masks_properties = [] # Mask
-        # Auto-Orient along path AE property.
+        ## Auto-Orient along path AE property.
         self.effects = False
-        # Layer Time Stretching
+        ## Layer Time Stretching
         self.stretch = 0
-        # Layer Parent. Uses ind of parent.
+        ## Layer Parent. Uses ind of parent.
         self.parent = None
-        # Text Data
+        ## Text Data
         self.text_data = None
 
 
+##\ingroup Lottie
 class ShapeLayer(TgsObject):
     _props = [
         TgsProp("type", "ty", int, False),
@@ -168,41 +172,41 @@ class ShapeLayer(TgsObject):
     ]
 
     def __init__(self):
-        # Type of layer: Shape.
+        ## Type of layer: Shape.
         self.type = 4
-        # Transform properties
+        ## Transform properties
         self.transform = Transform()
-        # Auto-Orient along path AE property.
+        ## Auto-Orient along path AE property.
         self.auto_orient = False
-        # Blend Mode
+        ## Blend Mode
         self.blend_mode = BlendMode.Normal
-        # 3d layer flag
+        ## 3d layer flag
         self.threedimensional = False
-        # Layer index in AE. Used for parenting and expressions.
+        ## Layer index in AE. Used for parenting and expressions.
         self.index = None
         ## Parsed layer name used as html class on SVG/HTML renderer
         #self.css_class = ""
         ## Parsed layer name used as html id on SVG/HTML renderer
         #self.layer_html_id = ""
-        # In Point of layer. Sets the initial frame of the layer.
+        ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = None
-        # Out Point of layer. Sets the final frame of the layer.
+        ## Out Point of layer. Sets the final frame of the layer.
         self.out_point = None
-        # Start Time of layer. Sets the start time of the layer.
+        ## Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
-        # After Effects Layer Name. Used for expressions.
+        ## After Effects Layer Name. Used for expressions.
         self.name = None
-        # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
-        #self.has_masks = 0
-        # List of Masks
-        #self.masks_properties = [] # Mask
-        # List of Effects
+        ## Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
+        ##self.has_masks = 0
+        ## List of Masks
+        ##self.masks_properties = [] # Mask
+        ## List of Effects
         self.effects = None # IndexEffect
-        # Layer Time Stretching
+        ## Layer Time Stretching
         self.stretch = 1
-        # Layer Parent. Uses ind of parent.
+        ## Layer Parent. Uses ind of parent.
         self.parent = None
-        # Shape list of items
+        ## Shape list of items
         self.shapes = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, Repeater
 
     def add_shape(self, shape):
@@ -214,6 +218,7 @@ class ShapeLayer(TgsObject):
         return shape
 
 
+##\ingroup Lottie
 class ImageLayer(TgsObject): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
@@ -237,44 +242,45 @@ class ImageLayer(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Type of layer: Image.
+        ## Type of layer: Image.
         self.type = 2
-        # Transform properties
+        ## Transform properties
         self.transform = Transform()
-        # Auto-Orient along path AE property.
+        ## Auto-Orient along path AE property.
         self.auto_orient = False
-        # Blend Mode
+        ## Blend Mode
         self.blend_mode = BlendMode.Normal
-        # 3d layer flag
+        ## 3d layer flag
         self.threedimensional = False
-        # Layer index in AE. Used for parenting and expressions.
+        ## Layer index in AE. Used for parenting and expressions.
         self.index = None
-        # Parsed layer name used as html class on SVG/HTML renderer
+        ## Parsed layer name used as html class on SVG/HTML renderer
         self.css_class = ""
-        # Parsed layer name used as html id on SVG/HTML renderer
+        ## Parsed layer name used as html id on SVG/HTML renderer
         self.layer_html_id = ""
-        # In Point of layer. Sets the initial frame of the layer.
+        ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = 0
-        # Out Point of layer. Sets the final frame of the layer.
+        ## Out Point of layer. Sets the final frame of the layer.
         self.out_point = 0
-        # Start Time of layer. Sets the start time of the layer.
+        ## Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
-        # After Effects Layer Name. Used for expressions.
+        ## After Effects Layer Name. Used for expressions.
         self.name = 0
-        # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
+        ## Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
         self.has_masks = 0
-        # List of Masks
+        ## List of Masks
         self.masks_properties = [] # Mask
-        # List of Effects
+        ## List of Effects
         self.effects = [] # IndexEffect
-        # Layer Time Stretching
+        ## Layer Time Stretching
         self.stretch = 0
-        # Layer Parent. Uses ind of parent.
+        ## Layer Parent. Uses ind of parent.
         self.parent = None
-        # id pointing to the source image defined on 'assets' object
+        ## id pointing to the source image defined on 'assets' object
         self.reference_id = ""
 
 
+##\ingroup Lottie
 class PreCompLayer(TgsObject): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
@@ -299,46 +305,47 @@ class PreCompLayer(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Type of layer: Precomp.
+        ## Type of layer: Precomp.
         self.type = 0
-        # Transform properties
+        ## Transform properties
         self.transform = Transform()
-        # Auto-Orient along path AE property.
+        ## Auto-Orient along path AE property.
         self.auto_orient = False
-        # Blend Mode
+        ## Blend Mode
         self.blend_mode = BlendMode.Normal
-        # 3d layer flag
+        ## 3d layer flag
         self.threedimensional = False
-        # Layer index in AE. Used for parenting and expressions.
+        ## Layer index in AE. Used for parenting and expressions.
         self.index = None
-        # Parsed layer name used as html class on SVG/HTML renderer
+        ## Parsed layer name used as html class on SVG/HTML renderer
         self.css_class = ""
-        # Parsed layer name used as html id on SVG/HTML renderer
+        ## Parsed layer name used as html id on SVG/HTML renderer
         self.layer_html_id = ""
-        # In Point of layer. Sets the initial frame of the layer.
+        ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = 0
-        # Out Point of layer. Sets the final frame of the layer.
+        ## Out Point of layer. Sets the final frame of the layer.
         self.out_point = 0
-        # Start Time of layer. Sets the start time of the layer.
+        ## Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
-        # After Effects Layer Name. Used for expressions.
+        ## After Effects Layer Name. Used for expressions.
         self.name = 0
-        # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
+        ## Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
         self.has_masks = 0
-        # List of Masks
+        ## List of Masks
         self.masks_properties = [] # Mask
-        # List of Effects
+        ## List of Effects
         self.effects = [] # IndexEffect
-        # Layer Time Stretching
+        ## Layer Time Stretching
         self.stretch = 0
-        # Layer Parent. Uses ind of parent.
+        ## Layer Parent. Uses ind of parent.
         self.parent = None
-        # id pointing to the source composition defined on 'assets' object
+        ## id pointing to the source composition defined on 'assets' object
         self.reference_id = ""
-        # Comp's Time remapping
+        ## Comp's Time remapping
         self.time_remapping = Value()
 
 
+##\ingroup Lottie
 class SolidLayer(TgsObject): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
@@ -364,43 +371,43 @@ class SolidLayer(TgsObject): # TODO check
     ]
 
     def __init__(self):
-        # Type of layer: Solid.
+        ## Type of layer: Solid.
         self.type = 0
-        # Transform properties
+        ## Transform properties
         self.transform = Transform()
-        # Auto-Orient along path AE property.
+        ## Auto-Orient along path AE property.
         self.auto_orient = False
-        # Blend Mode
+        ## Blend Mode
         self.blend_mode = BlendMode.Normal
-        # 3d layer flag
+        ## 3d layer flag
         self.threedimensional = False
-        # Layer index in AE. Used for parenting and expressions.
+        ## Layer index in AE. Used for parenting and expressions.
         self.index = None
-        # Parsed layer name used as html class on SVG/HTML renderer
+        ## Parsed layer name used as html class on SVG/HTML renderer
         self.css_class = ""
-        # Parsed layer name used as html id on SVG/HTML renderer
+        ## Parsed layer name used as html id on SVG/HTML renderer
         self.layer_html_id = ""
-        # In Point of layer. Sets the initial frame of the layer.
+        ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = 0
-        # Out Point of layer. Sets the final frame of the layer.
+        ## Out Point of layer. Sets the final frame of the layer.
         self.out_point = 0
-        # Start Time of layer. Sets the start time of the layer.
+        ## Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
-        # After Effects Layer Name. Used for expressions.
+        ## After Effects Layer Name. Used for expressions.
         self.name = 0
-        # Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
+        ## Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
         self.has_masks = 0
-        # List of Masks
+        ## List of Masks
         self.masks_properties = [] # Mask
-        # Auto-Orient along path AE property.
+        ## Auto-Orient along path AE property.
         self.effects = False
-        # Layer Time Stretching
+        ## Layer Time Stretching
         self.stretch = 0
-        # Layer Parent. Uses ind of parent.
+        ## Layer Parent. Uses ind of parent.
         self.parent = None
-        # Color of the solid in hex
+        ## Color of the solid in hex
         self.solid_color = ""
-        # Height of the solid.
+        ## Height of the solid.
         self.solid_height = 0
-        # Width of the solid.
+        ## Width of the solid.
         self.solid_width = 0
