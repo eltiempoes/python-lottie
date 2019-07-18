@@ -441,3 +441,28 @@ class EnvelopeDeformation(PointDisplacer):
     def frame_time(self, f):
         return self.keyframes[f][0]
 
+
+class DisplacerDampener(PointDisplacer):
+    """
+    Given a displacer and a function that returns a factor for a point,
+    multiplies the effect of the displacer by the factor
+    """
+    def __init__(self, displacer, dampener):
+        self.displacer = displacer
+        self.dampener = dampener
+
+    @property
+    def time_start(self):
+        return self.displacer.time_start
+
+    def _on_displace(self, startpos, f):
+        disp = self.displacer._on_displace(startpos, f)
+        damp = self.dampener(startpos)
+        return disp * damp
+
+    @property
+    def n_frames(self):
+        return self.displacer.n_frames
+
+    def frame_time(self, f):
+        return self.displacer.frame_time(f)

@@ -15,7 +15,9 @@ layer = objects.ShapeLayer()
 an.add_layer(layer)
 g = layer.add_shape(objects.Group())
 
-displacer = anutils.SineDisplacer(300, 50, 0, 60, 10, 1, 45)
+sine_displacer = anutils.SineDisplacer(300, 50, 0, 60, 10, 1, 45)
+# Keep the left side fixed
+displacer = anutils.DisplacerDampener(sine_displacer, lambda p: p.x / 128 if p.x < 128 else 1)
 
 for i in range(0, 512+1, 16):
     b = g.add_shape(objects.Ellipse())
