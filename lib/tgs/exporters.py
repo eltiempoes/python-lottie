@@ -20,7 +20,8 @@ def export_tgs(animation, file):
         export_lottie(animation, codecs.getwriter('utf-8')(gzfile))
 
 
-def lottie_display_html(rel_lottie_filename):
+
+def lottie_display_html_pre(width=512, height=512):
     return '''
 <!DOCTYPE html>
 <html>
@@ -29,7 +30,7 @@ def lottie_display_html(rel_lottie_filename):
     <style>
         html, body { width: 100%%; height: 100%%; margin: 0; }
         body { display: flex; }
-        #bodymovin { width: 512px; height: 512px; margin: auto;
+        #bodymovin { width: %spx; height: %spx; margin: auto;
             background-color: white;
             background-size: 64px 64px;
             background-image:
@@ -51,12 +52,33 @@ def lottie_display_html(rel_lottie_filename):
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        path: %r,
+''' % (width, height)
+
+
+def lottie_display_html_post():
+    return '''
     };
     var anim = bodymovin.loadAnimation(animData);
 </script>
 </body>
-</html>''' % rel_lottie_filename
+</html>'''
+
+
+def export_embedded_html(animation, fp):
+    if isinstance(fp, str):
+        fp = open(fp, "w")
+    fp.write(lottie_display_html_pre(animation.width, animation.height))
+    fp.write("animationData: ")
+    export_lottie(animation, fp, indent=4)
+    fp.write(lottie_display_html_post())
+
+
+def export_linked_html(fp, path):
+    if isinstance(fp, str):
+        fp = open(fp, "w")
+    fp.write(lottie_display_html_pre(animation.width, animation.height))
+    fp.write("path: %r" % path)
+    fp.write(lottie_display_html_post())
 
 
 def _prettyprint_scalar(tgs_object, out=sys.stdout):
@@ -123,14 +145,16 @@ def prettyprint_summary(tgs_object, out=sys.stdout, indent="   ", _i=""):
             out.write(']\n')
 
 
-def multiexport(animation, basename, lottie_json=True, lottie_html=True, tgs=True):
+def multiexport(animation, basename, lottie_json=True, lottie_html=True, tgs=True, embedded_html=True):
     if lottie_json:
         with open(basename+".json", "w") as lottieout:
             export_lottie(animation, lottieout, sort_keys=True, indent=4)
 
     if lottie_html:
-        with open(basename+".html", "w") as htmlout:
-            htmlout.write(lottie_display_html(basename+".json"))
+        if embedded_html:
+            export_embedded_html(animation, basename+".html")
+        else:
+            export_linked_html(basename+".html", basename+".json")
 
     if tgs:
         with open(basename+".tgs", "wb") as tgsout:
