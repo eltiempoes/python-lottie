@@ -5,6 +5,7 @@ Telegram Animated Stickers Tools
 Scripts
 -------
 
+* bin/lottieconvert.py  Script that can convert between several formats, including lottie / TGS
 * bin/tgs2lottie.py Will extract a tgs file into a pretty printed JSON
 * bin/lottie2tgs.py Will convert a lottie file into a tgs file
 * bin/svg2tgs.pt    Converts an SVG file into a lottie or tgs file

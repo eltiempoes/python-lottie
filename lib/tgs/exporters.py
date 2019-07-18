@@ -20,7 +20,6 @@ def export_tgs(animation, file):
         export_lottie(animation, codecs.getwriter('utf-8')(gzfile))
 
 
-
 def lottie_display_html_pre(width=512, height=512):
     return '''
 <!DOCTYPE html>
