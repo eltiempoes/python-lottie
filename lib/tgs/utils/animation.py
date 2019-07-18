@@ -185,7 +185,7 @@ class PointDisplacer:
         startpos = prop.get_value(self.time_start)
         for f in range(self.n_frames+1):
             p = self._on_displace(startpos, f)
-            prop.add_keyframe(self.frame_time(f), p)
+            prop.add_keyframe(self.frame_time(f), startpos+p)
 
     def _on_displace(self, startpos):
         raise NotImplementedError()
@@ -199,14 +199,13 @@ class PointDisplacer:
 
             for pi in range(len(initial.vertices)):
                 startpos = initial.vertices[pi]
-
-                p = self._on_displace(startpos, f)
+                dp = self._on_displace(startpos, f)
                 t1sp = initial.in_point[pi] + startpos
-                t1abs = self._on_displace(t1sp, f)
+                t1fin = initial.in_point[pi] + self._on_displace(t1sp, f) - dp
                 t2sp = initial.out_point[pi] + startpos
-                t2abs = self._on_displace(t2sp, f)
+                t2fin = initial.out_point[pi] + self._on_displace(t2sp, f) - dp
 
-                bezier.add_point(p, t1abs - p, t2abs - p)
+                bezier.add_point(dp + startpos, t1fin, t2fin)
 
             prop.add_keyframe(self.frame_time(f), bezier)
 
@@ -247,9 +246,7 @@ class SineDisplacer(PointDisplacer):
 
     def _on_displace(self, startpos, f):
         off = -math.sin(startpos[0]/self.wavelength*math.pi*2-f*self.speed_f/self.n_frames) * self.amplitude
-        x = startpos[0] + off * math.cos(self.axis)
-        y = startpos[1] + off * math.sin(self.axis)
-        return NVector(x, y)
+        return NVector(off * math.cos(self.axis), off * math.sin(self.axis))
 
 
 class MultiSineDisplacer(PointDisplacer):
@@ -288,11 +285,7 @@ class MultiSineDisplacer(PointDisplacer):
             off -= math.sin(startpos[0]/wavelength*math.pi*2-f*self.speed_f/self.n_frames) * amplitude
 
         off *= self.amplitude_scale
-
-        #off = -math.sin(startpos[0]/100*math.pi*2-f*self.speed_f/self.n_frames) * 12
-        x = startpos[0] + off * math.cos(self.axis)
-        y = startpos[1] + off * math.sin(self.axis)
-        return NVector(x, y)
+        return NVector(off * math.cos(self.axis), off * math.sin(self.axis))
 
 
 class DepthRotationAxis:
@@ -398,7 +391,7 @@ class DepthRotationDisplacer(PointDisplacer):
         angle = self.anglestart + self.angle * f / self.n_frames
         if len(startpos) < 3:
             startpos = NVector(*(startpos.components + [self.depth]))
-        return self.rotation.rotate3d(startpos, angle, self.axis)
+        return self.rotation.rotate3d(startpos, angle, self.axis) - startpos
 
 
 class EnvelopeDeformation(PointDisplacer):
@@ -439,7 +432,7 @@ class EnvelopeDeformation(PointDisplacer):
         x2 = bl.lerp(br, relp.x)
 
         #return x1.lerp(x2, relp.y)
-        return x1.lerp(x2, relp.y)
+        return x1.lerp(x2, relp.y) - startpos
 
     @property
     def n_frames(self):
