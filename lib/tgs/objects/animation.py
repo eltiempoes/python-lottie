@@ -8,6 +8,9 @@ from .layers import load_layer
 
 ##\ingroup Lottie
 class Animation(TgsObject):
+    """!
+    Top level object, describing the animation
+    """
     _props = {
         TgsProp("in_point", "ip", float, False),
         TgsProp("out_point", "op", float, False),

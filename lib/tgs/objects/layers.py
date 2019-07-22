@@ -1,7 +1,7 @@
 from .base import TgsObject, TgsProp, PseudoBool, TgsEnum
 from .effects import load_effect
 from .helpers import Transform
-from .shapes import load_shape
+from .shapes import load_shape_element
 
 
 ##\ingroup Lottie
@@ -37,7 +37,12 @@ def load_layer(lottiedict):
 
 
 ##\ingroup Lottie
-class NullLayer(TgsObject):
+class Layer(TgsObject):
+    pass
+
+
+##\ingroup Lottie
+class NullLayer(Layer):
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
@@ -87,7 +92,7 @@ class NullLayer(TgsObject):
 
 
 ##\ingroup Lottie
-class TextLayer(TgsObject): # TODO check
+class TextLayer(Layer): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
@@ -149,7 +154,7 @@ class TextLayer(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class ShapeLayer(TgsObject):
+class ShapeLayer(Layer):
     _props = [
         TgsProp("type", "ty", int, False),
         TgsProp("transform", "ks", Transform, False),
@@ -168,7 +173,7 @@ class ShapeLayer(TgsObject):
         TgsProp("effects", "ef", load_effect, True),
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", int, False),
-        TgsProp("shapes", "shapes", load_shape, True),
+        TgsProp("shapes", "shapes", load_shape_element, True),
     ]
 
     def __init__(self):
@@ -219,7 +224,7 @@ class ShapeLayer(TgsObject):
 
 
 ##\ingroup Lottie
-class ImageLayer(TgsObject): # TODO check
+class ImageLayer(Layer): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
@@ -281,7 +286,7 @@ class ImageLayer(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class PreCompLayer(TgsObject): # TODO check
+class PreCompLayer(Layer): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
@@ -346,7 +351,7 @@ class PreCompLayer(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class SolidLayer(TgsObject): # TODO check
+class SolidLayer(Layer): # TODO check
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),

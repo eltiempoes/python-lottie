@@ -5,6 +5,7 @@ before_script:
 pages:
   script:
   - python3 docs/dox_examples.py
+  - python3 docs/dox_lottie.py
   - doxygen docs/Doxyfile
   - mv docs/html public
   artifacts:

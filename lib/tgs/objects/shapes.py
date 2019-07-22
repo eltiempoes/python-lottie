@@ -46,7 +46,7 @@ class BoundingBox:
         return self.y2 - self.y1
 
 
-def load_shape(lottiedict):
+def load_shape_element(lottiedict):
     shapes = {
         'sh': Shape,
         'rc': Rect,
@@ -67,7 +67,12 @@ def load_shape(lottiedict):
 
 
 ##\ingroup Lottie
-class Rect(TgsObject):
+class ShapeElement(TgsObject):
+    pass
+
+
+##\ingroup Lottie
+class Rect(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -85,7 +90,7 @@ class Rect(TgsObject):
         self.name = None
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'rc'
         ## Rect's position
         self.position = MultiDimensional(NVector(0, 0))
@@ -160,7 +165,7 @@ class StarType(TgsEnum):
 
 
 ##\ingroup Lottie
-class Star(TgsObject):
+class Star(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -183,7 +188,7 @@ class Star(TgsObject):
         self.name = None
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'sr'
         ## Star's position
         self.position = MultiDimensional(NVector(0, 0))
@@ -259,7 +264,7 @@ class Star(TgsObject):
 
 
 ##\ingroup Lottie
-class Ellipse(TgsObject):
+class Ellipse(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -276,7 +281,7 @@ class Ellipse(TgsObject):
         self.name = None
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'el'
         ## Ellipse's position
         self.position = MultiDimensional(NVector(0, 0))
@@ -323,7 +328,7 @@ class Ellipse(TgsObject):
 
 
 ##\ingroup Lottie
-class Shape(TgsObject):
+class Shape(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -339,7 +344,7 @@ class Shape(TgsObject):
         self.name = None
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'sh'
         ## Shape's vertices
         self.vertices = ShapeProperty()
@@ -358,13 +363,13 @@ class Shape(TgsObject):
 
 
 ##\ingroup Lottie
-class Group(TgsObject):
+class Group(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", str, False),
         TgsProp("number_of_properties", "np", float, False),
-        TgsProp("shapes", "it", load_shape, True),
+        TgsProp("shapes", "it", load_shape_element, True),
         TgsProp("property_index", "ix", int, False),
     ]
 
@@ -373,7 +378,7 @@ class Group(TgsObject):
         #self.match_name = ""
         ## After Effect's Name. Used for expressions.
         self.name = None
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'gr'
         ## Group number of properties. Used for expressions.
         self.number_of_properties = None
@@ -402,7 +407,7 @@ class Group(TgsObject):
 
 
 ##\ingroup Lottie
-class Fill(TgsObject):
+class Fill(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -416,7 +421,7 @@ class Fill(TgsObject):
         #self.match_name = ""
         ## After Effect's Name. Used for expressions.
         self.name = None
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'fl'
         ## Fill Opacity
         self.opacity = Value(100)
@@ -434,7 +439,7 @@ class GradientType(TgsEnum):
 
 
 ##\ingroup Lottie
-class GradientFill(TgsObject):
+class GradientFill(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -455,7 +460,7 @@ class GradientFill(TgsObject):
         #self.match_name = ""
         ## After Effect's Name. Used for expressions.
         self.name = None
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'gf'
         ## Fill Opacity
         self.opacity = Value(100)
@@ -491,7 +496,7 @@ class LineCap(TgsEnum):
 
 
 ##\ingroup Lottie
-class Stroke(TgsObject):
+class Stroke(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -509,7 +514,7 @@ class Stroke(TgsObject):
         #self.match_name = ""
         ## After Effect's Name. Used for expressions.
         self.name = None
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'st'
         ## Stroke Line Cap
         self.line_cap = LineCap.Round
@@ -529,7 +534,7 @@ class Stroke(TgsObject):
 
 
 ##\ingroup Lottie
-class GradientStroke(TgsObject):
+class GradientStroke(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -552,7 +557,7 @@ class GradientStroke(TgsObject):
         #self.match_name = ""
         ## After Effect's Name. Used for expressions.
         self.name = None
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'gs'
         ## Stroke Opacity
         self.opacity = Value(100)
@@ -582,7 +587,7 @@ class GradientStroke(TgsObject):
 
 
 ##\ingroup Lottie
-class TransformShape(TgsObject):
+class TransformShape(ShapeElement):
     _props = [
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", str, False),
@@ -599,7 +604,7 @@ class TransformShape(TgsObject):
     def __init__(self):
         ## After Effect's Name. Used for expressions.
         self.name = None
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'tr'
         ## Transform Anchor Point
         self.anchor_point = MultiDimensional(NVector(0, 0))
@@ -621,7 +626,7 @@ class TransformShape(TgsObject):
 
 
 ##\ingroup Lottie
-class Trim(TgsObject): # TODO check
+class Trim(ShapeElement): # TODO check
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -636,7 +641,7 @@ class Trim(TgsObject): # TODO check
         #self.match_name = ""
         ## After Effect's Name. Used for expressions.
         self.name = None
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'tm'
         ## Trim Start.
         self.start = Value()
@@ -652,7 +657,7 @@ class Composite(TgsEnum):
     Below = 2
 
 
-class Repeater(TgsObject): # TODO check
+class Repeater(ShapeElement): # TODO check
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -668,7 +673,7 @@ class Repeater(TgsObject): # TODO check
         #self.match_name = ""
         ## After Effect's Name. Used for expressions.
         self.name = None
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'rp'
         ## Number of Copies
         self.copies = Value()
@@ -681,7 +686,7 @@ class Repeater(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class Round(TgsObject): # TODO check
+class Round(ShapeElement): # TODO check
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -694,14 +699,14 @@ class Round(TgsObject): # TODO check
         #self.match_name = ""
         ## After Effect's Name. Used for expressions.
         self.name = None
-        ## Shape content type.
+        ## %Shape type.
         self.type = 'rd'
         ## Rounded Corner Radius
         self.radius = Value()
 
 
 ##\ingroup Lottie
-class Merge(TgsObject): # TODO check
+class Merge(ShapeElement): # TODO check
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -714,7 +719,7 @@ class Merge(TgsObject): # TODO check
         #self.match_name = ""
         ## After Effect's Name. Used for expressions.
         self.name = None
-        ## Shape content type. THIS FEATURE IS NOT SUPPORTED. It's exported because if you export it, they will come.
+        ## %Shape type. THIS FEATURE IS NOT SUPPORTED. It's exported because if you export it, they will come.
         self.type = 'mm'
         ## Merge Mode
         self.merge_mode = 1
