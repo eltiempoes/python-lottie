@@ -3,7 +3,7 @@ from .layers import load_layer
 
 ##\defgroup Lottie Lottie
 #
-# Objects of the lottie file structure
+# Objects of the lottie file structure.
 
 
 ##\ingroup Lottie

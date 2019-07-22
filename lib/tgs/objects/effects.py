@@ -6,8 +6,9 @@ load_effect = todo_func
 ## \ingroup Lottie
 
 
-##\ingroup Lottie
-class FillEffect(TgsObject): # TODO check
+## \ingroup Lottie
+## \todo check
+class FillEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -30,7 +31,8 @@ class FillEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class StrokeEffect(TgsObject): # TODO check
+## \todo check
+class StrokeEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -53,7 +55,8 @@ class StrokeEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class DropDownEffect(TgsObject): # TODO check
+## \todo check
+class DropDownEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -76,7 +79,8 @@ class DropDownEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class TritoneEffect(TgsObject): # TODO check
+## \todo check
+class TritoneEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -99,7 +103,8 @@ class TritoneEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class GroupEffect(TgsObject): # TODO check
+## \todo check
+class GroupEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -125,7 +130,8 @@ class GroupEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class ColorEffect(TgsObject): # TODO check
+## \todo check
+class ColorEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -148,7 +154,8 @@ class ColorEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class ProLevelsEffect(TgsObject): # TODO check
+## \todo check
+class ProLevelsEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -171,7 +178,8 @@ class ProLevelsEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class AngleEffect(TgsObject): # TODO check
+## \todo check
+class AngleEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -194,7 +202,8 @@ class AngleEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class SliderEffect(TgsObject): # TODO check
+## \todo check
+class SliderEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -217,7 +226,8 @@ class SliderEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class CheckBoxEffect(TgsObject): # TODO check
+## \todo check
+class CheckBoxEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -240,7 +250,8 @@ class CheckBoxEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class PointEffect(TgsObject): # TODO check
+## \todo check
+class PointEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -263,7 +274,8 @@ class PointEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class TintEffect(TgsObject): # TODO check
+## \todo check
+class TintEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),
@@ -286,7 +298,8 @@ class TintEffect(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class LayerEffect(TgsObject): # TODO check
+## \todo check
+class LayerEffect(TgsObject):
     _props = [
         TgsProp("effect_index", "ix", float, False),
         TgsProp("match_name", "mn", str, False),

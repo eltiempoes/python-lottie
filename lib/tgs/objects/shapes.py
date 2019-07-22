@@ -626,7 +626,8 @@ class TransformShape(ShapeElement):
 
 
 ##\ingroup Lottie
-class Trim(ShapeElement): # TODO check
+## \todo check
+class Trim(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -657,7 +658,9 @@ class Composite(TgsEnum):
     Below = 2
 
 
-class Repeater(ShapeElement): # TODO check
+##\ingroup Lottie
+## \todo check
+class Repeater(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -686,7 +689,8 @@ class Repeater(ShapeElement): # TODO check
 
 
 ##\ingroup Lottie
-class Round(ShapeElement): # TODO check
+## \todo check
+class Round(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -706,7 +710,8 @@ class Round(ShapeElement): # TODO check
 
 
 ##\ingroup Lottie
-class Merge(ShapeElement): # TODO check
+## \todo check
+class Merge(ShapeElement):
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),

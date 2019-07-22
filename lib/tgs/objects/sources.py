@@ -2,7 +2,8 @@ from .base import TgsObject, TgsProp, todo_func
 
 
 ##\ingroup Lottie
-class Image(TgsObject): # TODO check
+## \todo check
+class Image(TgsObject):
     _props = [
         TgsProp("height", "h", float, False),
         TgsProp("width", "w", float, False),
@@ -25,7 +26,8 @@ class Image(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class Chars(TgsObject): # TODO check
+## \todo check
+class Chars(TgsObject):
     _props = [
         TgsProp("character", "ch", str, False),
         TgsProp("font_family", "fFamily", str, False),
@@ -51,7 +53,8 @@ class Chars(TgsObject): # TODO check
 
 
 ##\ingroup Lottie
-class Precomp(TgsObject): # TODO check
+## \todo check
+class Precomp(TgsObject):
     _props = [
         TgsProp("id", "id", str, False),
         TgsProp("layers", "layers", todo_func, True),

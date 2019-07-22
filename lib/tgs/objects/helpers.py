@@ -41,7 +41,8 @@ class Transform(TgsObject):
 
 
 ##\ingroup Lottie
-class Mask(TgsObject): # TODO check
+## \todo check
+class Mask(TgsObject):
     _props = [
         TgsProp("inverted", "inv", float, False),
         TgsProp("name", "nm", str, False),

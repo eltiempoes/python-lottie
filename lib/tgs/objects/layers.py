@@ -71,10 +71,12 @@ class NullLayer(Layer):
         self.threedimensional = False
         ## Layer index in AE. Used for parenting and expressions.
         self.index = None
+
         # Parsed layer name used as html class on SVG/HTML renderer
         #self.css_class = ""
         # Parsed layer name used as html id on SVG/HTML renderer
         #self.layer_html_id = ""
+
         ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = None
         ## Out Point of layer. Sets the final frame of the layer.
@@ -92,7 +94,8 @@ class NullLayer(Layer):
 
 
 ##\ingroup Lottie
-class TextLayer(Layer): # TODO check
+## \todo check
+class TextLayer(Layer):
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
@@ -100,8 +103,8 @@ class TextLayer(Layer): # TODO check
         TgsProp("blend_mode", "bm", float, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", int, False),
-        TgsProp("css_class", "cl", str, False),
-        TgsProp("layer_html_id", "ln", str, False),
+        #TgsProp("css_class", "cl", str, False),
+        #TgsProp("layer_html_id", "ln", str, False),
         TgsProp("in_point", "ip", float, False),
         TgsProp("out_point", "op", float, False),
         TgsProp("start_time", "st", float, False),
@@ -127,10 +130,12 @@ class TextLayer(Layer): # TODO check
         self.threedimensional = False
         ## Layer index in AE. Used for parenting and expressions.
         self.index = None
+
         ## Parsed layer name used as html class on SVG/HTML renderer
-        self.css_class = ""
+        #self.css_class = ""
         ## Parsed layer name used as html id on SVG/HTML renderer
-        self.layer_html_id = ""
+        #self.layer_html_id = ""
+
         ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = 0
         ## Out Point of layer. Sets the final frame of the layer.
@@ -224,7 +229,8 @@ class ShapeLayer(Layer):
 
 
 ##\ingroup Lottie
-class ImageLayer(Layer): # TODO check
+## \todo check
+class ImageLayer(Layer):
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
@@ -286,7 +292,8 @@ class ImageLayer(Layer): # TODO check
 
 
 ##\ingroup Lottie
-class PreCompLayer(Layer): # TODO check
+## \todo check
+class PreCompLayer(Layer):
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
@@ -351,7 +358,8 @@ class PreCompLayer(Layer): # TODO check
 
 
 ##\ingroup Lottie
-class SolidLayer(Layer): # TODO check
+## \todo check
+class SolidLayer(Layer):
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
@@ -359,8 +367,8 @@ class SolidLayer(Layer): # TODO check
         TgsProp("blend_mode", "bm", float, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", int, False),
-        TgsProp("css_class", "cl", str, False),
-        TgsProp("layer_html_id", "ln", str, False),
+        #TgsProp("css_class", "cl", str, False),
+        #TgsProp("layer_html_id", "ln", str, False),
         TgsProp("in_point", "ip", float, False),
         TgsProp("out_point", "op", float, False),
         TgsProp("start_time", "st", float, False),
@@ -388,10 +396,12 @@ class SolidLayer(Layer): # TODO check
         self.threedimensional = False
         ## Layer index in AE. Used for parenting and expressions.
         self.index = None
+
         ## Parsed layer name used as html class on SVG/HTML renderer
-        self.css_class = ""
+        #self.css_class = ""
         ## Parsed layer name used as html id on SVG/HTML renderer
-        self.layer_html_id = ""
+        #self.layer_html_id = ""
+
         ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = 0
         ## Out Point of layer. Sets the final frame of the layer.
