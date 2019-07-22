@@ -26,9 +26,10 @@ class PseudoList:
 
 
 class TgsConverter:
-    def __init__(self, py, lottie):
+    def __init__(self, py, lottie, name=None):
         self.py = py
         self.lottie = lottie
+        self.name = name or "%s but displayed as %s" % (self.py.__name__, self.lottie.__name__)
 
     def py_to_lottie(self, val):
         return self.lottie(val)
@@ -38,10 +39,10 @@ class TgsConverter:
 
     @property
     def __name__(self):
-        return "%s but displayed as %s" % (self.py.__name__, self.lottie.__name__)
+        return self.name
 
 
-PseudoBool = TgsConverter(bool, int)
+PseudoBool = TgsConverter(bool, int, "0-1 int")
 
 
 class TgsProp:
