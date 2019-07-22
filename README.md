@@ -1,18 +1,43 @@
 Telegram Animated Stickers Tools
 ================================
 
+A Python framework to work with Telegram animated stickers.
+
 
 Scripts
 -------
 
-* bin/lottieconvert.py  Script that can convert between several formats, including lottie / TGS
-* bin/tgs2lottie.py Will extract a tgs file into a pretty printed JSON
-* bin/lottie2tgs.py Will convert a lottie file into a tgs file
-* bin/svg2tgs.pt    Converts an SVG file into a lottie or tgs file
-* bin/lottiecat.py  Prints the given lottie file into a human-readable format
-* bin/lottiediff.py Shows a side-by-side diff of the human-readable rendition of two lottie files
-* bin/lottie2svg.py Extracts a frame as SVG from a lottie/tgs file
-* bin/raster2tgs.py Converts a sequence of raster images into a lottie/tgs file
+* `bin/lottieconvert.py`
+
+  Script that can convert between several formats, including lottie / TGS
+
+* `bin/tgs2lottie.py`
+
+  Will extract a tgs file into a pretty printed JSON
+
+* `bin/lottie2tgs.py`
+
+  Will convert a lottie file into a tgs file
+
+* `bin/svg2tgs.pt`
+
+  Converts an SVG file into a lottie or tgs file
+
+* `bin/lottiecat.py`
+
+  Prints the given lottie file into a human-readable format
+
+* `bin/lottiediff.py`
+
+  Shows a side-by-side diff of the human-readable rendition of two lottie files
+
+* `bin/lottie2svg.py`
+
+  Extracts a frame as SVG from a lottie/tgs file
+
+* `bin/raster2tgs.py`
+
+  Converts a sequence of raster images into a lottie/tgs file
 
 
 Installation
@@ -65,9 +90,8 @@ Reverse Engineering
 I had to reverse engineer the format because Telegram couldn't be bothered
 providing the specs.
 
-Seems a gzip compressed json, with a modified version of this format:
-https://github.com/airbnb/lottie-web/tree/master/docs/json
-
+A TGS file is a gzip compressed JSON, the JSON data is described here:
+https://mattia.basaglia.gitlab.io/tgs/group__Lottie.html#lottie_json
 
 ### Making your own exporters converters
 
@@ -75,7 +99,7 @@ https://github.com/airbnb/lottie-web/tree/master/docs/json
 
 If you can get the source image into lottie format, that's 90% of the work done.
 
-I've ripped the format schema into Python classes in lib/tgs.py which *should*
+I've ripped the format schema into Python classes in lib/tgs/objects/ which *should*
 output the correct json. Eg:
 
     foo = tgs.Animation()
