@@ -196,7 +196,7 @@ class PointDisplacer:
             p = self._on_displace(startpos, f)
             prop.add_keyframe(self.frame_time(f), startpos+p)
 
-    def _on_displace(self, startpos):
+    def _on_displace(self, startpos, f):
         raise NotImplementedError()
 
     def animate_bezier(self, prop):
@@ -475,3 +475,31 @@ class DisplacerDampener(PointDisplacer):
 
     def frame_time(self, f):
         return self.displacer.frame_time(f)
+
+
+class FollowDisplacer(PointDisplacer):
+    def __init__(
+        self,
+        origin,
+        range,
+        offset_func,
+        time_start, time_end, n_frames,
+        falloff_exp=1,
+    ):
+        """!
+        \brief Uses a custom offset function, and applies a falloff to the displacement
+
+        \param origin       Origin point for the falloff
+        \param range        Radius after which the points will not move
+        \param offset_func  Function returning an offset given a ratio of the time
+        \param falloff_exp  Exponent for the falloff
+        """
+        super().__init__(time_start, time_end, n_frames)
+        self.origin = origin
+        self.range = range
+        self.offset_func = offset_func
+        self.falloff_exp = falloff_exp
+
+    def _on_displace(self, startpos, f):
+        influence = 1 - min(1, (startpos - self.origin).length / self.range) ** self.falloff_exp
+        return self.offset_func(f / self.n_frames) * influence
