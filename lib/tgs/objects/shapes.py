@@ -405,6 +405,18 @@ class Group(ShapeElement):
 
         return bb
 
+    def find_all(self, type=ShapeElement, predicate=None, recursive=True):
+        results = []
+        for e in self.shapes:
+            include = isinstance(e, type)
+            if predicate and include:
+                include = predicate(e)
+            if include:
+                results.append(e)
+            if recursive and isinstance(e, Group):
+                results += e.find_all(type, predicate, recursive)
+        return results
+
 
 ##\ingroup Lottie
 class Fill(ShapeElement):
