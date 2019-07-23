@@ -26,7 +26,7 @@ class RasterImage:
         return cls.from_pil(Image.open(filename))
 
     def k_means(self, n_colors):
-        """
+        """!
         Returns a list of centroids
         """
         colors = []
@@ -44,7 +44,7 @@ class RasterImage:
         return 255
 
     def quantize(self, codebook, quantization_mode=QuanzationMode.Nearest):
-        """
+        """!
         Returns a list of tuple [color, data] where for each color in codebook
         data is a bit mask for the image
 
@@ -80,7 +80,7 @@ class RasterImage:
         return mono_data
 
     def mono(self):
-        """
+        """!
         Returns a bit mask of opaque pixels
         """
         mono_data = numpy.zeros(self.data.shape[:2])

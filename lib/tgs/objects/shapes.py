@@ -6,6 +6,9 @@ from ..utils.ellipse import Ellipse as EllipseConverter
 
 
 class BoundingBox:
+    """!
+    Shape bounding box
+    """
     def __init__(self, x1=None, y1=None, x2=None, y2=None):
         self.x1 = x1
         self.y1 = y1
@@ -13,6 +16,9 @@ class BoundingBox:
         self.y2 = y2
 
     def include(self, x, y):
+        """!
+        Expands the box to include the point at x, y
+        """
         if x is not None:
             if self.x1 is None or self.x1 > x:
                 self.x1 = x
@@ -25,13 +31,22 @@ class BoundingBox:
                 self.y2 = y
 
     def expand(self, other):
+        """!
+        Expands the bounding box to include another bounding box
+        """
         self.include(other.x1, other.y1)
         self.include(other.x2, other.y2)
 
     def center(self):
+        """!
+        Center point of the bounding box
+        """
         return NVector((self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2)
 
     def isnull(self):
+        """!
+        Whether the box is default-initialized
+        """
         return self.x1 is None or self.y2 is None
 
     def __repr__(self):
@@ -68,11 +83,21 @@ def load_shape_element(lottiedict):
 
 ##\ingroup Lottie
 class ShapeElement(TgsObject):
-    pass
+    """!
+    Base class for all elements of ShapeLayer and Group
+    """
+    def bounding_box(self, time=0):
+        """!
+        Bounding box of the shape element at the given time
+        """
+        return BoundingBox()
 
 
 ##\ingroup Lottie
 class Rect(ShapeElement):
+    """!
+    A simple rectangle shape
+    """
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -86,6 +111,7 @@ class Rect(ShapeElement):
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
+
         ## After Effect's Name. Used for expressions.
         self.name = None
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
@@ -111,6 +137,9 @@ class Rect(ShapeElement):
         )
 
     def to_bezier(self):
+        """!
+        Returns a Shape corresponding to this rect
+        """
         shape = Shape()
         kft = set()
         if self.position.animated:
@@ -166,6 +195,9 @@ class StarType(TgsEnum):
 
 ##\ingroup Lottie
 class Star(ShapeElement):
+    """!
+    Star shape
+    """
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -184,6 +216,7 @@ class Star(ShapeElement):
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
+
         ## After Effect's Name. Used for expressions.
         self.name = None
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
@@ -219,6 +252,9 @@ class Star(ShapeElement):
         )
 
     def to_bezier(self):
+        """!
+        Returns a Shape corresponding to this star
+        """
         shape = Shape()
         kft = set()
         if self.position.animated:
@@ -265,6 +301,9 @@ class Star(ShapeElement):
 
 ##\ingroup Lottie
 class Ellipse(ShapeElement):
+    """!
+    Ellipse shape
+    """
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -277,6 +316,7 @@ class Ellipse(ShapeElement):
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
+
         ## After Effect's Name. Used for expressions.
         self.name = None
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
@@ -300,6 +340,9 @@ class Ellipse(ShapeElement):
         )
 
     def to_bezier(self):
+        """!
+        Returns a Shape corresponding to this ellipse
+        """
         shape = Shape()
         kft = set()
         if self.position.animated:
@@ -329,6 +372,9 @@ class Ellipse(ShapeElement):
 
 ##\ingroup Lottie
 class Shape(ShapeElement):
+    """!
+    Animatable Bezier curve
+    """
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -340,6 +386,7 @@ class Shape(ShapeElement):
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
+
         ## After Effect's Name. Used for expressions.
         self.name = None
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
@@ -364,6 +411,10 @@ class Shape(ShapeElement):
 
 ##\ingroup Lottie
 class Group(ShapeElement):
+    """!
+    ShapeElement that can contain other shapes
+    \note Shapes inside the same group will create "holes" in other shapes
+    """
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -406,6 +457,9 @@ class Group(ShapeElement):
         return bb
 
     def find_all(self, type=ShapeElement, predicate=None, recursive=True):
+        """!
+        Returns all the child shapes matching a predicate
+        """
         results = []
         for e in self.shapes:
             include = isinstance(e, type)
@@ -420,6 +474,9 @@ class Group(ShapeElement):
 
 ##\ingroup Lottie
 class Fill(ShapeElement):
+    """!
+    Solid fill color
+    """
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -440,9 +497,6 @@ class Fill(ShapeElement):
         ## Fill Color
         self.color = MultiDimensional(color or NVector(1, 1, 1))
 
-    def bounding_box(self, time=0):
-        return BoundingBox()
-
 
 ##\ingroup Lottie
 class GradientType(TgsEnum):
@@ -452,6 +506,9 @@ class GradientType(TgsEnum):
 
 ##\ingroup Lottie
 class GradientFill(ShapeElement):
+    """!
+    Gradient fill
+    """
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -489,9 +546,6 @@ class GradientFill(ShapeElement):
         ## Gradient Colors
         self.colors = GradientColors(colors)
 
-    def bounding_box(self, time=0):
-        return BoundingBox()
-
 
 ##\ingroup Lottie
 class LineJoin(TgsEnum):
@@ -509,6 +563,9 @@ class LineCap(TgsEnum):
 
 ##\ingroup Lottie
 class Stroke(ShapeElement):
+    """!
+    Solid stroke
+    """
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -541,12 +598,13 @@ class Stroke(ShapeElement):
         ## Stroke Color
         self.color = MultiDimensional(color or NVector(0, 0, 0))
 
-    def bounding_box(self, time=0):
-        return BoundingBox()
-
 
 ##\ingroup Lottie
 class GradientStroke(ShapeElement):
+    """!
+    Gradient stroke
+    \todo move the common bit together with Stroke to minimize duplication
+    """
     _props = [
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
@@ -600,6 +658,10 @@ class GradientStroke(ShapeElement):
 
 ##\ingroup Lottie
 class TransformShape(ShapeElement):
+    """!
+    Group transform
+    \todo Inherit from Transform
+    """
     _props = [
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", str, False),
@@ -632,9 +694,6 @@ class TransformShape(ShapeElement):
         self.skew = Value(0)
         ## Transform Skew Axis
         self.skew_axis = Value(0)
-
-    def bounding_box(self, time=0):
-        return BoundingBox()
 
 
 ##\ingroup Lottie

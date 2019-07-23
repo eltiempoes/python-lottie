@@ -43,6 +43,9 @@ class Layer(TgsObject):
 
 ##\ingroup Lottie
 class NullLayer(Layer):
+    """!
+    Layer with no data, useful to group layers together
+    """
     _props = [
         TgsProp("type", "ty", float, False),
         TgsProp("transform", "ks", Transform, False),
@@ -72,10 +75,12 @@ class NullLayer(Layer):
         ## Layer index in AE. Used for parenting and expressions.
         self.index = None
 
+        """
         # Parsed layer name used as html class on SVG/HTML renderer
         #self.css_class = ""
         # Parsed layer name used as html id on SVG/HTML renderer
         #self.layer_html_id = ""
+        """
 
         ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = None
@@ -131,10 +136,12 @@ class TextLayer(Layer):
         ## Layer index in AE. Used for parenting and expressions.
         self.index = None
 
+        """
         ## Parsed layer name used as html class on SVG/HTML renderer
         #self.css_class = ""
         ## Parsed layer name used as html id on SVG/HTML renderer
         #self.layer_html_id = ""
+        """
 
         ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = 0
@@ -160,6 +167,9 @@ class TextLayer(Layer):
 
 ##\ingroup Lottie
 class ShapeLayer(Layer):
+    """!
+    Layer containing ShapeElement objects
+    """
     _props = [
         TgsProp("type", "ty", int, False),
         TgsProp("transform", "ks", Transform, False),
@@ -192,24 +202,30 @@ class ShapeLayer(Layer):
         self.blend_mode = BlendMode.Normal
         ## 3d layer flag
         self.threedimensional = False
-        ## Layer index in AE. Used for parenting and expressions.
+        ## %Layer index in AE. Used for parenting and expressions.
         self.index = None
+
+        """
         ## Parsed layer name used as html class on SVG/HTML renderer
         #self.css_class = ""
         ## Parsed layer name used as html id on SVG/HTML renderer
         #self.layer_html_id = ""
+        """
+
         ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = None
         ## Out Point of layer. Sets the final frame of the layer.
         self.out_point = None
         ## Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
-        ## After Effects Layer Name. Used for expressions.
+        ## After Effects %Layer Name. Used for expressions.
         self.name = None
+
         ## Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
         ##self.has_masks = 0
         ## List of Masks
         ##self.masks_properties = [] # Mask
+
         ## List of Effects
         self.effects = None # IndexEffect
         ## Layer Time Stretching
@@ -397,10 +413,12 @@ class SolidLayer(Layer):
         ## Layer index in AE. Used for parenting and expressions.
         self.index = None
 
+        """
         ## Parsed layer name used as html class on SVG/HTML renderer
         #self.css_class = ""
         ## Parsed layer name used as html id on SVG/HTML renderer
         #self.layer_html_id = ""
+        """
 
         ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = 0

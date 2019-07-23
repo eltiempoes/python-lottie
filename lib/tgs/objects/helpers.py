@@ -4,6 +4,9 @@ from .properties import MultiDimensional, Value, NVector
 
 ##\ingroup Lottie
 class Transform(TgsObject):
+    """!
+    Layer transform
+    """
     _props = [
         TgsProp("anchor_point", "a", MultiDimensional, False),
         TgsProp("position", "p", MultiDimensional, False),
@@ -28,15 +31,20 @@ class Transform(TgsObject):
         self.rotation = Value(0)
         ## Transform Opacity
         self.opacity = Value(100)
+
+        """
         # Transform Position X
         #self.position_x = Value()
         ## Transform Position Y
         #self.position_y = Value()
         ## Transform Position Z
         #self.position_z = Value()
+        """
+
         ## Transform Skew
         self.skew = Value()
-        ## Transform Skew Axis
+        ## Transform Skew Axis.
+        ## An angle, if 0 skews on the X axis, if 90 skews on the Y axis
         self.skew_axis = Value()
 
 

@@ -7,12 +7,15 @@ from ..utils.nvector import NVector
 
 ##\ingroup Lottie
 class OffsetKeyframe(TgsObject):
+    """!
+    Keyframe for MultiDimensional values
+    """
     _props = {
         TgsProp("start", "s", NVector, False),
         TgsProp("end", "e", NVector, False),
         TgsProp("time", "t", float, False),
-        TgsProp("in_value", "i", easing.KeyframeBezierPoint, False),
-        TgsProp("out_value", "o", easing.KeyframeBezierPoint, False),
+        TgsProp("in_value", "i", easing.KeyframeBezierHandle, False),
+        TgsProp("out_value", "o", easing.KeyframeBezierHandle, False),
         TgsProp("in_tan", "ti", float, True),
         TgsProp("out_tan", "to", float, True),
         #TgsProp("h" ,"h"),
@@ -36,6 +39,11 @@ class OffsetKeyframe(TgsObject):
         self.out_tan = out_tan
 
     def set_tangents(self, end_time, interp):
+        """!
+        Updates the bezier tangents for this keyframe
+        \param end_time The time of the next keyframe
+        \param interp   Callable that performs the easing
+        """
         to_val = lambda vals: math.sqrt(sum(map(lambda x: x**2, vals)))
         start = to_val(self.start)
         end = to_val(self.end)
@@ -44,20 +52,30 @@ class OffsetKeyframe(TgsObject):
 
 class AnimatableMixin:
     def __init__(self, value=None):
-        self.value = value
-        self.property_index = None
-        self.animated = False
-        self.keyframes = None
-
-    def clear_animation(self, value):
         ## Non-animated value
         self.value = value
+        ## Property index
+        self.property_index = None
         ## Whether it's animated
         self.animated = False
         ## Keyframe list
         self.keyframes = None
 
+    def clear_animation(self, value):
+        """!
+        Sets a fixed value, removing animated keyframes
+        """
+        self.value = value
+        self.animated = False
+        self.keyframes = None
+
     def add_keyframe(self, time, value, interp=easing.Linear()):
+        """!
+        \param time     The time this keyframe appears in
+        \param value    The value the property should have at \p time
+        \param interp   The easing callable used to update the tangents of the previous keyframe
+        \note Always call add_keyframe with increasing \p time value
+        """
         if not self.animated:
             self.value = None
             self.keyframes = []
@@ -77,6 +95,10 @@ class AnimatableMixin:
         ))
 
     def get_value(self, time=0):
+        """!
+        \brief Returns the value of the property at the given frame/time
+        \todo honour easing
+        """
         if not self.animated:
             return self.value
 
@@ -103,6 +125,9 @@ class AnimatableMixin:
 
 ##\ingroup Lottie
 class MultiDimensional(TgsObject, AnimatableMixin):
+    """!
+    An animatable property that holds a NVector
+    """
     keyframe_type = OffsetKeyframe
     _props = [
         TgsProp("value", "k", NVector, False, lambda l: not l["a"]),
@@ -115,13 +140,18 @@ class MultiDimensional(TgsObject, AnimatableMixin):
 ##\ingroup Lottie
 # \todo use a more convenient representation and convert to the weird array on import/export
 class GradientColors(TgsObject):
+    """!
+    Represents colors and offsets in a gradient
+    """
     _props = [
         TgsProp("colors", "k", MultiDimensional),
         TgsProp("count", "p", int),
     ]
 
     def __init__(self, colors=[]):
+        ## Animatable colors, as a vector containing [offset, r, g, b] values as a flat array
         self.colors = MultiDimensional(NVector())
+        ## Number of colors
         self.count = 0
         if colors:
             self.set_colors(colors)
@@ -168,6 +198,9 @@ class GradientColors(TgsObject):
 
 ##\ingroup Lottie
 class Value(TgsObject, AnimatableMixin):
+    """!
+    An animatable property that holds a float
+    """
     keyframe_type = OffsetKeyframe
     _props = [
         TgsProp("value", "k", float, False, lambda l: not l["a"]),
@@ -190,8 +223,11 @@ class Value(TgsObject, AnimatableMixin):
 
 
 ##\ingroup Lottie
-# \todo Use BezierPoint and convert to in_point/out_point/vertices on inport/export
+# \todo Use BezierPoint and convert to in_point/out_point/vertices on import/export
 class Bezier(TgsObject):
+    """!
+    Single bezier curve
+    """
     _props = [
         TgsProp("closed", "c", bool, False),
         TgsProp("in_point", "i", NVector, True),
@@ -210,24 +246,48 @@ class Bezier(TgsObject):
         self.vertices = []
 
     def insert_point(self, index, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
+        """!
+        Inserts a point at the given index
+        \param index    Index to insert the point at
+        \param pos      Point to add
+        \param inp      Tangent entering the point, as a vector relative to \p pos
+        \param outp     Tangent exiting the point, as a vector relative to \p pos
+        \returns \c self, for easy chaining
+        """
         self.vertices.insert(index, pos)
         self.in_point.insert(index, inp.clone())
         self.out_point.insert(index, outp.clone())
         return self
 
     def add_point(self, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
+        """!
+        Appends a point to the curve
+        \see insert_point
+        """
         self.insert_point(len(self.vertices), pos, inp, outp)
         return self
 
     def add_smooth_point(self, pos, inp):
+        """!
+        Appends a point with symmetrical tangents
+        \see insert_point
+        """
         self.add_point(pos, inp, -inp)
         return self
 
     def close(self, closed=True):
+        """!
+        Updates self.closed
+        \returns \c self, for easy chaining
+        """
         self.closed = closed
         return self
 
     def point_at(self, t):
+        """!
+        \param t    A value between 0 and 1, percentage along the length of the curve
+        \returns    The point at \p t in the curve
+        """
         i, t = self._index_t(t)
         points = self._bezier_points(i, True)
         return self._solve_bezier(t, points)
@@ -247,6 +307,11 @@ class Bezier(TgsObject):
         return split1, split2
 
     def split_at(self, t):
+        """!
+        Get two pieces out of a Bezier curve
+        \param t    A value between 0 and 1, percentage along the length of the curve
+        \returns Two Bezier objects that correspond to self, but split at \p t
+        """
         i, split1, split2 = self._split(t)
 
         seg1 = Bezier()
@@ -265,6 +330,12 @@ class Bezier(TgsObject):
         return seg1, seg2
 
     def segment(self, t1, t2):
+        """!
+        Splits a Bezier in two points and returns the segment between the
+        \param t1   A value between 0 and 1, percentage along the length of the curve
+        \param t2   A value between 0 and 1, percentage along the length of the curve
+        \returns Bezier object that correspond to the segment between \p t1 and \p t2
+        """
         if t1 > t2:
             [t1, t2] = [t2, t1]
         elif t1 == t2:
@@ -280,6 +351,10 @@ class Bezier(TgsObject):
         return seg3
 
     def split_self_multi(self, positions):
+        """!
+        Adds more points to the Bezier
+        \param positions    list of percentages along the curve
+        """
         if not len(positions):
             return
         t1 = positions[0]
@@ -305,6 +380,9 @@ class Bezier(TgsObject):
         self.out_point += seg2.out_point
 
     def split_each_segment(self):
+        """!
+        Adds a point in the middle of the segment between every pair of points in the Bezier
+        """
         vertices = self.vertices
         in_point = self.in_point
         out_point = self.out_point
@@ -324,6 +402,9 @@ class Bezier(TgsObject):
             self.add_point(vertices[i+1], split2[2], NVector(0, 0))
 
     def split_self_chunks(self, n_chunks):
+        """!
+        Adds points the Bezier, splitting it into \p n_chunks additional chunks.
+        """
         splits = [i/n_chunks for i in range(1, n_chunks)]
         return self.split_self_multi(splits)
 
@@ -368,6 +449,9 @@ class Bezier(TgsObject):
         return i, (t - (i/n)) * n
 
     def reverse(self):
+        """!
+        Reverses the Bezier curve
+        """
         self.vertices = list(reversed(self.vertices))
         out_point = list(reversed(self.in_point))
         in_point = list(reversed(self.out_point))
@@ -375,32 +459,45 @@ class Bezier(TgsObject):
         self.out_point = out_point
 
 
+##\ingroup Lottie
 class ShapePropKeyframe(TgsObject):
+    """!
+    Keyframe holding Bezier objects
+    """
     _props = [
         TgsProp("start", "s", Bezier, PseudoList),
         TgsProp("end", "e", Bezier, PseudoList),
         TgsProp("time", "t", float, False),
-        TgsProp("in_value", "i", easing.KeyframeBezierPoint, False),
-        TgsProp("out_value", "o", easing.KeyframeBezierPoint, False),
+        TgsProp("in_value", "i", easing.KeyframeBezierHandle, False),
+        TgsProp("out_value", "o", easing.KeyframeBezierHandle, False),
     ]
 
     def __init__(self, time=0, start=None, end=None):
-        # Start value of keyframe segment.
+        ## Start value of keyframe segment.
         self.start = start
+        ## End value of keyframe segment.
         self.end = end
-        # Start time of keyframe segment.
+        ## Start time of keyframe segment.
         self.time = time
-        # Bezier curve easing in value.
+        ## Bezier curve easing in value.
         self.in_value = None
-        # Bezier curve easing out value.
+        ## Bezier curve easing out value.
         self.out_value = None
 
     def set_tangents(self, end_time, interp=easing.Linear()):
+        """!
+        Updates the bezier tangents for this keyframe
+        \param end_time The time of the next keyframe
+        \param interp   Callable that performs the easing
+        """
         interp(self, 0, 0, end_time)
 
 
 ##\ingroup Lottie
 class ShapeProperty(TgsObject, AnimatableMixin):
+    """!
+    An animatable property that holds a Bezier
+    """
     keyframe_type = ShapePropKeyframe
     _props = [
         TgsProp("value", "k", Bezier, False, lambda l: not l["a"]),

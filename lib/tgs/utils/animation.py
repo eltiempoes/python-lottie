@@ -185,9 +185,18 @@ def generate_path_segment(bezier, appear_start, appear_end, disappear_start, dis
 
 class PointDisplacer:
     def __init__(self, time_start, time_end, n_frames):
+        """!
+        \param time_start   When the animation shall start
+        \param time_end     When the animation shall end
+        \param n_frames     Number of frames in the animation
+        """
+        ## When the animation shall start
         self.time_start = time_start
+        ## When the animation shall end
         self.time_end = time_end
+        ## Number of frames in the animation
         self.n_frames = n_frames
+        ## Length of a frame
         self.time_delta = (time_end - time_start) / n_frames
 
     def animate_point(self, prop):
@@ -233,18 +242,17 @@ class SineDisplacer(PointDisplacer):
         speed=1,
         axis=90,
     ):
-        """
+        """!
         Displaces points as if they were following a sine wave
 
-        prop        Multidimensional property to animate
-        wavelength  Distance between consecutive peaks
-        amplitude   Distance from a peak to the original position
-        time_start  When the animation shall start
-        time_end    When the animation shall end
-        n_frames    Number of keyframes to add
-        speed       Number of peaks a point will go through in the given time
-                    If negative, it will go the other way
-        axis        Wave peak direction
+        \param wavelength  Distance between consecutive peaks
+        \param amplitude   Distance from a peak to the original position
+        \param time_start  When the animation shall start
+        \param time_end    When the animation shall end
+        \param n_frames    Number of keyframes to add
+        \param speed       Number of peaks a point will go through in the given time
+                           If negative, it will go the other way
+        \param axis        Wave peak direction
         """
         super().__init__(time_start, time_end, n_frames)
 
@@ -269,17 +277,17 @@ class MultiSineDisplacer(PointDisplacer):
         axis=90,
         amplitude_scale=1,
     ):
-        """
+        """!
         Displaces points as if they were following a sine wave
 
-        prop        Multidimensional property to animate
-        waves       List of tuples (wavelength, amplitude)
-        time_start  When the animation shall start
-        time_end    When the animation shall end
-        n_frames    Number of keyframes to add
-        speed       Number of peaks a point will go through in the given time
-                    If negative, it will go the other way
-        axis        Wave peak direction
+        \param waves       List of tuples (wavelength, amplitude)
+        \param time_start  When the animation shall start
+        \param time_end    When the animation shall end
+        \param n_frames    Number of keyframes to add
+        \param speed       Number of peaks a point will go through in the given time
+                           If negative, it will go the other way
+        \param axis        Wave peak direction
+        \param amplitude_scale  Multiplies the resulting amplitude by this factor
         """
         super().__init__(time_start, time_end, n_frames)
 
@@ -452,7 +460,7 @@ class EnvelopeDeformation(PointDisplacer):
 
 
 class DisplacerDampener(PointDisplacer):
-    """
+    """!
     Given a displacer and a function that returns a factor for a point,
     multiplies the effect of the displacer by the factor
     """
@@ -492,6 +500,9 @@ class FollowDisplacer(PointDisplacer):
         \param origin       Origin point for the falloff
         \param range        Radius after which the points will not move
         \param offset_func  Function returning an offset given a ratio of the time
+        \param time_start   When the animation shall start
+        \param time_end     When the animation shall end
+        \param n_frames     Number of frames in the animation
         \param falloff_exp  Exponent for the falloff
         """
         super().__init__(time_start, time_end, n_frames)

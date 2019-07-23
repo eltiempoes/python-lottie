@@ -27,7 +27,7 @@ class Chain:
             self.joints.append(self.joints[-1] + segment)
 
     def backward(self, target):
-        """
+        """!
         target -> -> start
         """
         self.joints[-1] = target
@@ -37,7 +37,7 @@ class Chain:
             self.joints[i] = self.joints[i+1].lerp(self.joints[i], l)
 
     def forward(self, target):
-        """
+        """!
         start -> -> tail
         """
         self.joints[0] = target

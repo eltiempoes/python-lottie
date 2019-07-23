@@ -1,3 +1,6 @@
+"""!
+Package with all the Lottie Python bindings
+"""
 from . import animation, base, effects, enums, helpers, layers, shapes, sources, easing
 from .animation import Animation
 from .layers import *

@@ -4,7 +4,7 @@ from ..objects import Animation
 
 
 def parse_tgs_json(filename):
-    """
+    """!
     Reads both tgs and lottie files, returns the json structure
     """
     with open(filename, "r") as file:
@@ -18,7 +18,7 @@ def parse_tgs_json(filename):
 
 
 def parse_tgs(filename):
-    """
+    """!
     Reads both tgs and lottie files
     """
     lottie = parse_tgs_json(filename)

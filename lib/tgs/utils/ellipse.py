@@ -13,9 +13,9 @@ class BezierPoint:
 class Ellipse:
     def __init__(self, center, radii, xrot):
         """
-        center      2D vector, center of the ellipse
-        radii       2D vector, x/y radius of the ellipse
-        xrot        Angle between the main axis of the ellipse and the x axis (in radians)
+        \param center      2D vector, center of the ellipse
+        \param radii       2D vector, x/y radius of the ellipse
+        \param xrot        Angle between the main axis of the ellipse and the x axis (in radians)
         """
         self.center = center
         self.radii = radii

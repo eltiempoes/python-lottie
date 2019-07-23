@@ -78,8 +78,11 @@ class SvgGradient:
         self.colors.append((offset, color[:3]))
 
     def to_lottie(self, gradient_shape, shape, time=0):
-        """
-        gradient_shape should be a GradientFill or GradientStroke
+        """!
+        \param gradient_shape   Should be a GradientFill or GradientStroke
+        \param shape            ShapeElement to apply the gradient to
+        \param time             Time to fetch properties from \p shape
+
         """
         for off, col in self.colors:
             gradient_shape.colors.add_color(off, col)
@@ -103,9 +106,6 @@ class SvgLinearGradient(SvgGradient):
         self.add_coord(SvgGradientCoord("y2", "y", 0, True))
 
     def to_lottie(self, gradient_shape, shape, time=0):
-        """
-        gradient_shape should be a GradientFill or GradientStroke
-        """
         bbox = shape.bounding_box(time)
         gradient_shape.start_point.value = NVector(
             self.x1.to_value(bbox),
@@ -130,9 +130,6 @@ class SvgRadialGradient(SvgGradient):
         self.add_coord(SvgGradientCoord("r", "w", 0.5, True))
 
     def to_lottie(self, gradient_shape, shape, time=0):
-        """
-        gradient_shape should be a GradientFill or GradientStroke
-        """
         bbox = shape.bounding_box(time)
         cx = self.cx.to_value(bbox)
         cy = self.cy.to_value(bbox)

@@ -104,7 +104,7 @@ class NVector():
 
     def cross(self, other):
         """
-        Pre: len(self) == len(other) == 3
+        \pre len(self) == len(other) == 3
         """
         a = self
         b = other
