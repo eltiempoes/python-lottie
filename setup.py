@@ -22,7 +22,7 @@ def find_packages(root="tgs"):
 
 setuptools.setup(
     name="tgs",
-    version="0.1.0",
+    version="0.1.1",
     author="Mattia Basaglia",
     author_email="mattia.basaglia@gmail.com",
     description="A framework to work with lottie / tgs files",
