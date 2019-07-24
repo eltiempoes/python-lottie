@@ -1,16 +1,30 @@
-before_script:
-- apt-get update -qq
-- apt-get install -y -qq doxygen fonts-freefont-ttf graphviz
 
 pages:
-  script:
-  - python3 docs/dox_examples.py
-  - python3 docs/dox_lottie.py
-  - doxygen docs/Doxyfile
-  - mv docs/html public
-  artifacts:
-    paths:
-    - public
-  only:
-  - master
+    before_script:
+        - apt-get update -qq
+        - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz
+    script:
+        - python3 docs/dox_examples.py
+        - python3 docs/dox_lottie.py
+        - doxygen docs/Doxyfile
+        - mv docs/html public
+    post_script:
+        - mv htmlcov public/coverage
+    artifacts:
+        paths:
+            - public
+    only:
+        - master
+    dependencies:
+        - test
 
+test:
+    before_script:
+        - apt-get install python-pip
+        - pip install coverage
+    script:
+        - ./test.sh
+    artifacts:
+        paths:
+            - htmlcov/
+        when: always
