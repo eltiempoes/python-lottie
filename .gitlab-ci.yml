@@ -1,5 +1,9 @@
+stages:
+    - test
+    - pages
 
 pages:
+    stage: pages
     before_script:
         - apt-get update -qq
         - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz
@@ -8,7 +12,7 @@ pages:
         - python3 docs/dox_lottie.py
         - doxygen docs/Doxyfile
         - mv docs/html public
-    post_script:
+    after_script:
         - mv htmlcov public/coverage
     artifacts:
         paths:
@@ -19,6 +23,7 @@ pages:
         - test
 
 test:
+    stage: test
     before_script:
         - apt-get install python-pip
         - pip install coverage
@@ -28,3 +33,5 @@ test:
         paths:
             - htmlcov/
         when: always
+
+# https://gitlab.com/mattia.basaglia/tgs/-/ci/lint
