@@ -25,7 +25,8 @@ pages:
 test:
     stage: test
     before_script:
-        - apt-get install python-pip
+        - apt-get update -qq
+        - apt-get install -y -qq python3-pip
         - pip install coverage
     script:
         - ./test.sh
