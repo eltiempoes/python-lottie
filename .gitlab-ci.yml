@@ -27,7 +27,7 @@ test:
     before_script:
         - apt-get update -qq
         - apt-get install -y -qq python3-pip
-        - pip install coverage
+        - pip3 install coverage
     script:
         - ./test.sh
     artifacts:
