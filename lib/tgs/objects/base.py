@@ -171,11 +171,11 @@ class TgsProp:
 
 class TgsObjectMeta(type):
     def __new__(cls, name, bases, attr):
-        props = attr.get("_props", [])
+        props = []
         for base in bases:
             if type(base) == cls:
                 props += base._props
-        attr["_props"] = props
+        attr["_props"] = props + attr.get("_props", [])
         return super().__new__(cls, name, bases, attr)
 
 

@@ -580,13 +580,14 @@ class GradientStroke(ShapeElement, BaseStroke, Gradient):
 
 
 ##\ingroup Lottie
-class TransformShape(Transform, ShapeElement):
+class TransformShape(ShapeElement, Transform):
     """!
     Group transform
     """
     def __init__(self):
         ShapeElement.__init__(self, "tr")
         Transform.__init__(self)
+        self.anchor_point = MultiDimensional(NVector(0, 0))
 
 
 ##\ingroup Lottie
@@ -608,32 +609,48 @@ class Trim(ShapeElement):
         self.offset = Value()
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Composite(TgsEnum):
     Above = 1
     Below = 2
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+class RepeaterTransform(Transform):
+    _props = [
+        TgsProp("start_opacity", "so", Value, False),
+        TgsProp("end_opacity", "eo", Value, False),
+    ]
+
+    def __init__(self):
+        Transform.__init__(self)
+        self.start_opacity = Value(100)
+        self.end_opacity = Value(100)
+
+
+## \ingroup Lottie
+## \todo Implement SVG/SIF Export
 class Repeater(ShapeElement):
+    """
+    Duplicates previous shapes in a group
+    """
     _props = [
         TgsProp("copies", "c", Value, False),
         TgsProp("offset", "o", Value, False),
         TgsProp("composite", "m", Composite, False),
-        TgsProp("transform", "tr", Transform, False),
+        TgsProp("transform", "tr", RepeaterTransform, False),
     ]
 
-    def __init__(self):
+    def __init__(self, copies=1):
         ShapeElement.__init__(self, "rp")
         ## Number of Copies
-        self.copies = Value()
+        self.copies = Value(copies)
         ## Offset of Copies
         self.offset = Value()
         ## Composite of copies
         self.composite = Composite.Above
         ## Transform values for each repeater copy
-        self.transform = Transform()
+        self.transform = RepeaterTransform()
 
 
 ##\ingroup Lottie
