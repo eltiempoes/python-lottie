@@ -117,6 +117,40 @@ The tgs file is the JSON described above compressed into a gzip,
 and renamed to .tgs
 
 
+#### Unsupported features
+
+Telegram doesn't support everything in the Lottie format.
+https://core.telegram.org/animated_stickers lists some things that are unsupported
+but what is listed there isn't correct.
+
+There are several things marked as unsupported in telegram animated stickers that are actually supported:
+
+* Masks
+* Mattes
+* Star Shapes
+* Gradient Strokes
+* Repeaters
+
+
+The following things are actually unsupported:
+
+* Layer Effects
+* Images
+* Skew transforms (this isn't listed in the unsupported features)
+
+
+Things marked as unsupported that I haven't tested:
+
+* Expressions
+* Solids
+* Texts
+* 3D Layers
+* Merge Paths
+* Time Stretching
+* Time Remapping
+* Auto-Oriented Layers
+
+
 License
 -------
 
