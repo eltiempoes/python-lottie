@@ -42,10 +42,10 @@ class Transform(TgsObject):
         """
 
         ## Transform Skew
-        self.skew = Value()
+        self.skew = Value(0)
         ## Transform Skew Axis.
         ## An angle, if 0 skews on the X axis, if 90 skews on the Y axis
-        self.skew_axis = Value()
+        self.skew_axis = Value(0)
 
 
 ##\ingroup Lottie

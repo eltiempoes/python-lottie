@@ -86,6 +86,21 @@ class ShapeElement(TgsObject):
     """!
     Base class for all elements of ShapeLayer and Group
     """
+    _props = [
+        #TgsProp("match_name", "mn", str, False),
+        TgsProp("name", "nm", str, False),
+        TgsProp("type", "ty", str, False),
+    ]
+
+    def __init__(self, type):
+        # After Effect's Match Name. Used for expressions.
+        #self.match_name = ""
+
+        ## After Effect's Name. Used for expressions.
+        self.name = None
+        ## %Shape type.
+        self.type = type
+
     def bounding_box(self, time=0):
         """!
         Bounding box of the shape element at the given time
@@ -99,25 +114,16 @@ class Rect(ShapeElement):
     A simple rectangle shape
     """
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
         TgsProp("direction", "d", float, False),
-        TgsProp("type", "ty", str, False),
         TgsProp("position", "p", MultiDimensional, False),
         TgsProp("size", "s", MultiDimensional, False),
         TgsProp("rounded", "r", Value, False),
     ]
 
     def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-
-        ## After Effect's Name. Used for expressions.
-        self.name = None
+        ShapeElement.__init__(self, "rc")
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        ## %Shape type.
-        self.type = 'rc'
         ## Rect's position
         self.position = MultiDimensional(NVector(0, 0))
         ## Rect's size
@@ -199,10 +205,7 @@ class Star(ShapeElement):
     Star shape
     """
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
         TgsProp("direction", "d", float, False),
-        TgsProp("type", "ty", str, False),
         TgsProp("position", "p", MultiDimensional, False),
         TgsProp("inner_radius", "ir", Value, False),
         TgsProp("inner_roundness", "is", Value, False),
@@ -214,15 +217,9 @@ class Star(ShapeElement):
     ]
 
     def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-
-        ## After Effect's Name. Used for expressions.
-        self.name = None
+        ShapeElement.__init__(self, "sr")
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        ## %Shape type.
-        self.type = 'sr'
         ## Star's position
         self.position = MultiDimensional(NVector(0, 0))
         ## Star's inner radius. (Star only)
@@ -305,24 +302,15 @@ class Ellipse(ShapeElement):
     Ellipse shape
     """
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
         TgsProp("direction", "d", float, False),
-        TgsProp("type", "ty", str, False),
         TgsProp("position", "p", MultiDimensional, False),
         TgsProp("size", "s", MultiDimensional, False),
     ]
 
     def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-
-        ## After Effect's Name. Used for expressions.
-        self.name = None
+        ShapeElement.__init__(self, "el")
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        ## %Shape type.
-        self.type = 'el'
         ## Ellipse's position
         self.position = MultiDimensional(NVector(0, 0))
         ## Ellipse's size
@@ -376,23 +364,14 @@ class Shape(ShapeElement):
     Animatable Bezier curve
     """
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
         TgsProp("direction", "d", float, False),
-        TgsProp("type", "ty", str, False),
         TgsProp("vertices", "ks", ShapeProperty, False),
     ]
 
     def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-
-        ## After Effect's Name. Used for expressions.
-        self.name = None
+        ShapeElement.__init__(self, "sh")
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
-        ## %Shape type.
-        self.type = 'sh'
         ## Shape's vertices
         self.vertices = ShapeProperty()
 
@@ -416,21 +395,13 @@ class Group(ShapeElement):
     \note Shapes inside the same group will create "holes" in other shapes
     """
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
         TgsProp("number_of_properties", "np", float, False),
         TgsProp("shapes", "it", load_shape_element, True),
         TgsProp("property_index", "ix", int, False),
     ]
 
     def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        ## After Effect's Name. Used for expressions.
-        self.name = None
-        ## %Shape type.
-        self.type = 'gr'
+        ShapeElement.__init__(self, "gr")
         ## Group number of properties. Used for expressions.
         self.number_of_properties = None
         ## Group list of items
@@ -478,20 +449,12 @@ class Fill(ShapeElement):
     Solid fill color
     """
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
         TgsProp("opacity", "o", Value, False),
         TgsProp("color", "c", MultiDimensional, False),
     ]
 
     def __init__(self, color=None):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        ## After Effect's Name. Used for expressions.
-        self.name = None
-        ## %Shape type.
-        self.type = 'fl'
+        ShapeElement.__init__(self, "fl")
         ## Fill Opacity
         self.opacity = Value(100)
         ## Fill Color
@@ -505,32 +468,17 @@ class GradientType(TgsEnum):
 
 
 ##\ingroup Lottie
-class GradientFill(ShapeElement):
-    """!
-    Gradient fill
-    """
+class Gradient(TgsObject):
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
-        TgsProp("opacity", "o", Value, False),
         TgsProp("start_point", "s", MultiDimensional, False),
         TgsProp("end_point", "e", MultiDimensional, False),
         TgsProp("gradient_type", "t", GradientType, False),
         TgsProp("highlight_length", "h", Value, False),
         TgsProp("highlight_angle", "a", Value, False),
         TgsProp("colors", "g", GradientColors, False),
-        #r int
-        #bm int
     ]
 
     def __init__(self, colors=[]):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        ## After Effect's Name. Used for expressions.
-        self.name = None
-        ## %Shape type.
-        self.type = 'gf'
         ## Fill Opacity
         self.opacity = Value(100)
         ## Gradient Start Point
@@ -548,6 +496,22 @@ class GradientFill(ShapeElement):
 
 
 ##\ingroup Lottie
+class GradientFill(ShapeElement, Gradient):
+    """!
+    Gradient fill
+    """
+    _props = [
+        TgsProp("opacity", "o", Value, False),
+    ]
+
+    def __init__(self, colors=[]):
+        ShapeElement.__init__(self, "gf")
+        Gradient.__init__(self, colors)
+        ## Fill Opacity
+        self.opacity = Value(100)
+
+
+##\ingroup Lottie
 class LineJoin(TgsEnum):
     Miter = 1
     Round = 2
@@ -562,29 +526,16 @@ class LineCap(TgsEnum):
 
 
 ##\ingroup Lottie
-class Stroke(ShapeElement):
-    """!
-    Solid stroke
-    """
+class BaseStroke(TgsObject):
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
         TgsProp("line_cap", "lc", LineCap, False),
         TgsProp("line_join", "lj", LineJoin, False),
         TgsProp("miter_limit", "ml", float, False),
         TgsProp("opacity", "o", Value, False),
         TgsProp("width", "w", Value, False),
-        TgsProp("color", "c", MultiDimensional, False),
     ]
 
-    def __init__(self, color=None, width=1):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        ## After Effect's Name. Used for expressions.
-        self.name = None
-        ## %Shape type.
-        self.type = 'st'
+    def __init__(self, width=1):
         ## Stroke Line Cap
         self.line_cap = LineCap.Round
         ## Stroke Line Join
@@ -595,126 +546,60 @@ class Stroke(ShapeElement):
         self.opacity = Value(100)
         ## Stroke Width
         self.width = Value(width)
+
+
+##\ingroup Lottie
+class Stroke(ShapeElement, BaseStroke):
+    """!
+    Solid stroke
+    """
+    _props = [
+        TgsProp("color", "c", MultiDimensional, False),
+    ]
+
+    def __init__(self, color=None, width=1):
+        ShapeElement.__init__(self, "st")
+        BaseStroke.__init__(self, width)
         ## Stroke Color
         self.color = MultiDimensional(color or NVector(0, 0, 0))
 
 
 ##\ingroup Lottie
-class GradientStroke(ShapeElement):
+class GradientStroke(ShapeElement, BaseStroke, Gradient):
     """!
     Gradient stroke
     \todo move the common bit together with Stroke to minimize duplication
     """
-    _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
-        TgsProp("opacity", "o", Value, False),
-        TgsProp("start_point", "s", MultiDimensional, False),
-        TgsProp("end_point", "e", MultiDimensional, False),
-        TgsProp("gradient_type", "t", GradientType, False),
-        TgsProp("highlight_length", "h", Value, False),
-        TgsProp("highlight_angle", "a", Value, False),
-        TgsProp("colors", "g", GradientColors, False),
-        TgsProp("width", "w", Value, False),
-        TgsProp("line_cap", "lc", LineCap, False),
-        TgsProp("line_join", "lj", LineJoin, False),
-        TgsProp("miter_limit", "ml", float, False),
-    ]
-
     def __init__(self, stroke_width=1):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        ## After Effect's Name. Used for expressions.
-        self.name = None
-        ## %Shape type.
-        self.type = 'gs'
-        ## Stroke Opacity
-        self.opacity = Value(100)
-        ## Gradient Start Point
-        self.start_point = MultiDimensional(NVector(0, 0))
-        ## Gradient End Point
-        self.end_point = MultiDimensional(NVector(0, 0))
-        ## Gradient Type
-        self.gradient_type = GradientType.Linear
-        ## Gradient Highlight Length. Only if type is Radial
-        self.highlight_length = Value()
-        ## Highlight Angle. Only if type is Radial
-        self.highlight_angle = Value()
-        ## Gradient Colors
-        self.colors = GradientColors()
-        ## Gradient Stroke Width
-        self.width = Value(stroke_width)
-        ## Gradient Stroke Line Cap
-        self.line_cap = LineCap.Round
-        ## Gradient Stroke Line Join
-        self.line_join = LineJoin.Round
-        ## Gradient Stroke Miter Limit. Only if Line Join is set to Miter.
-        self.miter_limit = 0
+        ShapeElement.__init__(self, "gs")
+        BaseStroke.__init__(self, stroke_width)
+        Gradient.__init__(self)
 
     def bounding_box(self, time=0):
         return BoundingBox()
 
 
 ##\ingroup Lottie
-class TransformShape(ShapeElement):
+class TransformShape(Transform, ShapeElement):
     """!
     Group transform
-    \todo Inherit from Transform
     """
-    _props = [
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
-
-        TgsProp("anchor_point", "a", MultiDimensional, False),
-        TgsProp("position", "p", MultiDimensional, False),
-        TgsProp("scale", "s", MultiDimensional, False),
-        TgsProp("rotation", "r", Value, False),
-        TgsProp("opacity", "o", Value, False),
-        TgsProp("skew", "sk", Value, False),
-        TgsProp("skew_axis", "sa", Value, False),
-    ]
-
     def __init__(self):
-        ## After Effect's Name. Used for expressions.
-        self.name = None
-        ## %Shape type.
-        self.type = 'tr'
-        ## Transform Anchor Point
-        self.anchor_point = MultiDimensional(NVector(0, 0))
-        ## Transform Position
-        self.position = MultiDimensional(NVector(0, 0))
-        ## Transform Scale
-        self.scale = MultiDimensional(NVector(100, 100))
-        ## Transform Rotation
-        self.rotation = Value(0)
-        ## Transform Opacity
-        self.opacity = Value(100)
-        ## Transform Skew
-        self.skew = Value(0)
-        ## Transform Skew Axis
-        self.skew_axis = Value(0)
+        ShapeElement.__init__(self, "tr")
+        Transform.__init__(self)
 
 
 ##\ingroup Lottie
 ## \todo check
 class Trim(ShapeElement):
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
         TgsProp("start", "s", Value, False),
         TgsProp("end", "e", Value, False),
         TgsProp("offset", "o", Value, False),
     ]
 
     def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        ## After Effect's Name. Used for expressions.
-        self.name = None
-        ## %Shape type.
-        self.type = 'tm'
+        ShapeElement.__init__(self, "tm")
         ## Trim Start.
         self.start = Value()
         ## Trim End.
@@ -733,9 +618,6 @@ class Composite(TgsEnum):
 ## \todo check
 class Repeater(ShapeElement):
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
         TgsProp("copies", "c", Value, False),
         TgsProp("offset", "o", Value, False),
         TgsProp("composite", "m", Composite, False),
@@ -743,12 +625,7 @@ class Repeater(ShapeElement):
     ]
 
     def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        ## After Effect's Name. Used for expressions.
-        self.name = None
-        ## %Shape type.
-        self.type = 'rp'
+        ShapeElement.__init__(self, "rp")
         ## Number of Copies
         self.copies = Value()
         ## Offset of Copies
@@ -763,19 +640,11 @@ class Repeater(ShapeElement):
 ## \todo check
 class Round(ShapeElement):
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
         TgsProp("radius", "r", Value, False),
     ]
 
     def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        ## After Effect's Name. Used for expressions.
-        self.name = None
-        ## %Shape type.
-        self.type = 'rd'
+        ShapeElement.__init__(self, "rd")
         ## Rounded Corner Radius
         self.radius = Value()
 
@@ -784,18 +653,10 @@ class Round(ShapeElement):
 ## \todo check
 class Merge(ShapeElement):
     _props = [
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", str, False),
         TgsProp("merge_mode", "mm", float, False),
     ]
 
     def __init__(self):
-        # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
-        ## After Effect's Name. Used for expressions.
-        self.name = None
-        ## %Shape type. THIS FEATURE IS NOT SUPPORTED. It's exported because if you export it, they will come.
-        self.type = 'mm'
+        ShapeElement.__init__(self, "mm")
         ## Merge Mode
         self.merge_mode = 1

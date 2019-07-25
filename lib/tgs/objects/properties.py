@@ -10,7 +10,7 @@ class OffsetKeyframe(TgsObject):
     """!
     Keyframe for MultiDimensional values
     """
-    _props = {
+    _props = [
         TgsProp("start", "s", NVector, False),
         TgsProp("end", "e", NVector, False),
         TgsProp("time", "t", float, False),
@@ -19,7 +19,7 @@ class OffsetKeyframe(TgsObject):
         TgsProp("in_tan", "ti", float, True),
         TgsProp("out_tan", "to", float, True),
         #TgsProp("h" ,"h"),
-    }
+    ]
 
     def __init__(self, time=0, start=None, end=None,
                  in_value=None, out_value=None, in_tan=None, out_tan=None):

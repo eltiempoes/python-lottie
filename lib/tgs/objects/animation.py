@@ -11,7 +11,7 @@ class Animation(TgsObject):
     """!
     Top level object, describing the animation
     """
-    _props = {
+    _props = [
         TgsProp("in_point", "ip", float, False),
         TgsProp("out_point", "op", float, False),
         TgsProp("frame_rate", "fr", float, False),
@@ -24,7 +24,7 @@ class Animation(TgsObject):
         TgsProp("assets", "assets", todo_func, True),
         #TgsProp("chars", "chars", Chars, True),
         TgsProp("tgs", "tgs", PseudoBool, False),
-    }
+    ]
     _version = "5.5.2"
 
     def __init__(self, n_frames=60, framerate=60):

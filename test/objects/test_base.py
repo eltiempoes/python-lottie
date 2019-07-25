@@ -175,6 +175,11 @@ class MockObject(base.TgsObject):
 MockObject._props[0].type = MockObject
 
 
+class Derived(MockObject):
+    _props = [
+        base.TgsProp("awoo", "ft", int)
+    ]
+
 
 class TestTgsObject(TestCase):
     def test_to_dict(self):
@@ -199,3 +204,8 @@ class TestTgsObject(TestCase):
     def test_find_child(self):
         obj = MockObject([], MockObject([], 789, "foo"))
         self.assertEqual(obj.find("foo").bar, 789)
+
+    def test_inherit_properties(self):
+        obj = Derived([], 123)
+        obj.awoo = 621
+        self.assertDictEqual(obj.to_dict(), {"f": [], "b": 123, "ft": 621})

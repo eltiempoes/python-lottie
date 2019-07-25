@@ -169,7 +169,17 @@ class TgsProp:
         return "<TgsProp %s:%s>" % (self.name, self.lottie)
 
 
-class TgsObject(Tgs):
+class TgsObjectMeta(type):
+    def __new__(cls, name, bases, attr):
+        props = attr.get("_props", [])
+        for base in bases:
+            if type(base) == cls:
+                props += base._props
+        attr["_props"] = props
+        return super().__new__(cls, name, bases, attr)
+
+
+class TgsObject(Tgs, metaclass=TgsObjectMeta):
     """!
     \brief Base class for mapping Python classes into Lottie JSON objects
     """
