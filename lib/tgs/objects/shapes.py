@@ -90,6 +90,7 @@ class ShapeElement(TgsObject):
         #TgsProp("match_name", "mn", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", str, False),
+        TgsProp("property_index", "ix", int, False),
     ]
 
     def __init__(self, type):
@@ -100,6 +101,7 @@ class ShapeElement(TgsObject):
         self.name = None
         ## %Shape type.
         self.type = type
+        self.property_index = None
 
     def bounding_box(self, time=0):
         """!
@@ -397,7 +399,6 @@ class Group(ShapeElement):
     _props = [
         TgsProp("number_of_properties", "np", float, False),
         TgsProp("shapes", "it", load_shape_element, True),
-        TgsProp("property_index", "ix", int, False),
     ]
 
     def __init__(self):
@@ -406,7 +407,6 @@ class Group(ShapeElement):
         self.number_of_properties = None
         ## Group list of items
         self.shapes = [TransformShape()]
-        self.property_index = None
 
     def add_shape(self, shape):
         self.shapes.insert(-1, shape)

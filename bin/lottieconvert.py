@@ -71,7 +71,7 @@ def add_options(parser, ie, object):
 
 exporters = [
     Exporter("Telegram Animated Sticker", ["tgs"], exporters.export_tgs),
-    Exporter("Lottie JSON", ["json"], exporters.export_tgs, [], dict(sort_keys=True, indent=4), "lottie"),
+    Exporter("Lottie JSON", ["json"], exporters.export_lottie, [], dict(sort_keys=True, indent=4), "lottie"),
     Exporter("Lottie HTML", ["html", "htm"], exporters.export_embedded_html),
     Exporter("SVG", ["svg"], exporters.export_svg, [
         ExtraOption("time", type=int, default=0, help="Frame to extract")

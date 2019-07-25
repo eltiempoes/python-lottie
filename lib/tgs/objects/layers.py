@@ -24,6 +24,16 @@ class BlendMode(TgsEnum):
     Luminosity = 15
 
 
+## \ingroup Lottie
+## \todo SVG masks, transparent gradients
+class MatteMode(TgsEnum):
+    Normal = 0
+    Alpha = 1
+    InvertedAlpha = 2
+    Luma = 3
+    InvertedLuma = 4
+
+
 def load_layer(lottiedict):
     layers = {
         0: PreCompLayer,
@@ -38,20 +48,12 @@ def load_layer(lottiedict):
 
 ##\ingroup Lottie
 class Layer(TgsObject):
-    @property
-    def has_masks(self):
-        return bool(self.masks) if getattr(self, "masks") is not None else None
-
-
-##\ingroup Lottie
-class NullLayer(Layer):
-    """!
-    Layer with no data, useful to group layers together
-    """
     _props = [
-        TgsProp("type", "ty", float, False),
+        TgsProp("type", "ty", int, False),
         TgsProp("transform", "ks", Transform, False),
         TgsProp("auto_orient", "ao", PseudoBool, False),
+        TgsProp("blend_mode", "bm", BlendMode, False),
+        TgsProp("matte_mode", "tt", MatteMode, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", int, False),
         #TgsProp("css_class", "cl", str, False),
@@ -60,14 +62,20 @@ class NullLayer(Layer):
         TgsProp("out_point", "op", float, False),
         TgsProp("start_time", "st", float, False),
         TgsProp("name", "nm", str, False),
+        TgsProp("has_masks", "hasMask", bool, False),
+        TgsProp("masks", "masksProperties", Mask, True),
         TgsProp("effects", "ef", load_effect, True),
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", int, False),
     ]
 
-    def __init__(self):
-        ## Type of layer: Null.
-        self.type = 3
+    @property
+    def has_masks(self):
+        return bool(self.masks) if getattr(self, "masks") is not None else None
+
+    def __init__(self, type):
+        ## Type of layer
+        self.type = type
         ## Transform properties
         self.transform = Transform()
         ## Auto-Orient along path AE property.
@@ -83,7 +91,6 @@ class NullLayer(Layer):
         # Parsed layer name used as html id on SVG/HTML renderer
         #self.layer_html_id = ""
         """
-
         ## In Point of layer. Sets the initial frame of the layer.
         self.in_point = None
         ## Out Point of layer. Sets the final frame of the layer.
@@ -93,74 +100,37 @@ class NullLayer(Layer):
         ## After Effects Layer Name. Used for expressions.
         self.name = None
         ## List of Effects
-        self.effects = [] # IndexEffect
+        self.effects = None
         ## Layer Time Stretching
         self.stretch = 1
         ## Layer Parent. Uses ind of parent.
         self.parent = None
+        ## List of Masks
+        self.masks = None
+        ## Blend Mode
+        self.blend_mode = BlendMode.Normal
+        ## Matte mode, the layer will inherit the transparency from the layer above
+        self.matte_mode = None
+
+
+##\ingroup Lottie
+class NullLayer(Layer):
+    """!
+    Layer with no data, useful to group layers together
+    """
+    def __init__(self):
+        Layer.__init__(self, 3)
 
 
 ##\ingroup Lottie
 ## \todo check
 class TextLayer(Layer):
     _props = [
-        TgsProp("type", "ty", float, False),
-        TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", PseudoBool, False),
-        TgsProp("blend_mode", "bm", float, False),
-        TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("index", "ind", int, False),
-        #TgsProp("css_class", "cl", str, False),
-        #TgsProp("layer_html_id", "ln", str, False),
-        TgsProp("in_point", "ip", float, False),
-        TgsProp("out_point", "op", float, False),
-        TgsProp("start_time", "st", float, False),
-        TgsProp("name", "nm", float, False),
-        TgsProp("has_masks", "hasMask", bool, False),
-        TgsProp("masks", "masksProperties", Mask, True),
-        TgsProp("effects", "ef", PseudoBool, False),
-        TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", int, False),
         TgsProp("text_data", "t", float, False),
     ]
 
     def __init__(self):
-        ## Type of layer: Text.
-        self.type = 0
-        ## Transform properties
-        self.transform = Transform()
-        ## Auto-Orient along path AE property.
-        self.auto_orient = False
-        ## Blend Mode
-        self.blend_mode = BlendMode.Normal
-        ## 3d layer flag
-        self.threedimensional = False
-        ## Layer index in AE. Used for parenting and expressions.
-        self.index = None
-
-        """
-        ## Parsed layer name used as html class on SVG/HTML renderer
-        #self.css_class = ""
-        ## Parsed layer name used as html id on SVG/HTML renderer
-        #self.layer_html_id = ""
-        """
-
-        ## In Point of layer. Sets the initial frame of the layer.
-        self.in_point = 0
-        ## Out Point of layer. Sets the final frame of the layer.
-        self.out_point = 0
-        ## Start Time of layer. Sets the start time of the layer.
-        self.start_time = 0
-        ## After Effects Layer Name. Used for expressions.
-        self.name = 0
-        ## List of Masks
-        self.masks = None
-        ## Auto-Orient along path AE property.
-        self.effects = False
-        ## Layer Time Stretching
-        self.stretch = 0
-        ## Layer Parent. Uses ind of parent.
-        self.parent = None
+        Layer.__init__(self, 0)
         ## Text Data
         self.text_data = None
 
@@ -171,63 +141,11 @@ class ShapeLayer(Layer):
     Layer containing ShapeElement objects
     """
     _props = [
-        TgsProp("type", "ty", int, False),
-        TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", PseudoBool, False),
-        TgsProp("blend_mode", "bm", BlendMode, False),
-        TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("index", "ind", int, False),
-        #TgsProp("css_class", "cl", str, False),
-        #TgsProp("layer_html_id", "ln", str, False),
-        TgsProp("in_point", "ip", float, False),
-        TgsProp("out_point", "op", float, False),
-        TgsProp("start_time", "st", float, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("has_masks", "hasMask", bool, False),
-        TgsProp("masks", "masksProperties", Mask, True),
-        TgsProp("effects", "ef", load_effect, True),
-        TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", int, False),
         TgsProp("shapes", "shapes", load_shape_element, True),
     ]
 
     def __init__(self):
-        ## Type of layer: Shape.
-        self.type = 4
-        ## Transform properties
-        self.transform = Transform()
-        ## Auto-Orient along path AE property.
-        self.auto_orient = False
-        ## Blend Mode
-        self.blend_mode = BlendMode.Normal
-        ## 3d layer flag
-        self.threedimensional = False
-        ## %Layer index in AE. Used for parenting and expressions.
-        self.index = None
-
-        """
-        ## Parsed layer name used as html class on SVG/HTML renderer
-        #self.css_class = ""
-        ## Parsed layer name used as html id on SVG/HTML renderer
-        #self.layer_html_id = ""
-        """
-
-        ## In Point of layer. Sets the initial frame of the layer.
-        self.in_point = None
-        ## Out Point of layer. Sets the final frame of the layer.
-        self.out_point = None
-        ## Start Time of layer. Sets the start time of the layer.
-        self.start_time = 0
-        ## After Effects %Layer Name. Used for expressions.
-        self.name = None
-        ## List of Masks
-        self.masks = None
-        ## List of Effects
-        self.effects = None # IndexEffect
-        ## Layer Time Stretching
-        self.stretch = 1
-        ## Layer Parent. Uses ind of parent.
-        self.parent = None
+        Layer.__init__(self, 4)
         ## Shape list of items
         self.shapes = [] # ShapeElement
 
@@ -245,63 +163,11 @@ class ShapeLayer(Layer):
 ## \todo importers for raster images without vectorization
 class ImageLayer(Layer):
     _props = [
-        TgsProp("type", "ty", float, False),
-        TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", PseudoBool, False),
-        TgsProp("blend_mode", "bm", float, False),
-        TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("index", "ind", int, False),
-        #TgsProp("css_class", "cl", str, False),
-        #TgsProp("layer_html_id", "ln", str, False),
-        TgsProp("in_point", "ip", float, False),
-        TgsProp("out_point", "op", float, False),
-        TgsProp("start_time", "st", float, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("has_masks", "hasMask", bool, False),
-        TgsProp("masks", "masksProperties", Mask, True),
-        TgsProp("effects", "ef", load_effect, True),
-        TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", int, False),
         TgsProp("image_id", "refId", str, False),
     ]
 
     def __init__(self, image_id=""):
-        ## Type of layer: Image.
-        self.type = 2
-        ## Transform properties
-        self.transform = Transform()
-        ## Auto-Orient along path AE property.
-        self.auto_orient = False
-        ## Blend Mode
-        self.blend_mode = BlendMode.Normal
-        ## 3d layer flag
-        self.threedimensional = False
-        ## Layer index in AE. Used for parenting and expressions.
-        self.index = None
-
-        """
-        ## Parsed layer name used as html class on SVG/HTML renderer
-        self.css_class = ""
-        ## Parsed layer name used as html id on SVG/HTML renderer
-        self.layer_html_id = ""
-        """
-
-        ## In Point of layer. Sets the initial frame of the layer.
-        self.in_point = None
-        ## Out Point of layer. Sets the final frame of the layer.
-        self.out_point = None
-        ## Start Time of layer. Sets the start time of the layer.
-        self.start_time = 0
-        ## After Effects Layer Name. Used for expressions.
-        self.name = None
-        ## List of Masks
-        self.masks = None
-        ## List of Effects
-        self.effects = [] # IndexEffect
-        ## Layer Time Stretching
-        self.stretch = 0
-        ## Layer Parent. Uses ind of parent.
-        self.parent = None
+        Layer.__init__(self, 2)
         ## id pointing to the source image defined on 'assets' object
         self.image_id = image_id
 
@@ -310,60 +176,12 @@ class ImageLayer(Layer):
 ## \todo check
 class PreCompLayer(Layer):
     _props = [
-        TgsProp("type", "ty", float, False),
-        TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", PseudoBool, False),
-        TgsProp("blend_mode", "bm", float, False),
-        TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("index", "ind", int, False),
-        TgsProp("css_class", "cl", str, False),
-        TgsProp("layer_html_id", "ln", str, False),
-        TgsProp("in_point", "ip", float, False),
-        TgsProp("out_point", "op", float, False),
-        TgsProp("start_time", "st", float, False),
-        TgsProp("name", "nm", float, False),
-        TgsProp("has_masks", "hasMask", bool, False),
-        TgsProp("masks", "masksProperties", Mask, True),
-        TgsProp("effects", "ef", load_effect, True),
-        TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", int, False),
         TgsProp("reference_id", "refId", str, False),
         TgsProp("time_remapping", "tm", float, False),
     ]
 
     def __init__(self):
-        ## Type of layer: Precomp.
-        self.type = 0
-        ## Transform properties
-        self.transform = Transform()
-        ## Auto-Orient along path AE property.
-        self.auto_orient = False
-        ## Blend Mode
-        self.blend_mode = BlendMode.Normal
-        ## 3d layer flag
-        self.threedimensional = False
-        ## Layer index in AE. Used for parenting and expressions.
-        self.index = None
-        ## Parsed layer name used as html class on SVG/HTML renderer
-        self.css_class = ""
-        ## Parsed layer name used as html id on SVG/HTML renderer
-        self.layer_html_id = ""
-        ## In Point of layer. Sets the initial frame of the layer.
-        self.in_point = 0
-        ## Out Point of layer. Sets the final frame of the layer.
-        self.out_point = 0
-        ## Start Time of layer. Sets the start time of the layer.
-        self.start_time = 0
-        ## After Effects Layer Name. Used for expressions.
-        self.name = 0
-        ## List of Masks
-        self.masks = None
-        ## List of Effects
-        self.effects = [] # IndexEffect
-        ## Layer Time Stretching
-        self.stretch = 0
-        ## Layer Parent. Uses ind of parent.
-        self.parent = None
+        Layer.__init__(self, 0)
         ## id pointing to the source composition defined on 'assets' object
         self.reference_id = ""
         ## Comp's Time remapping
@@ -374,65 +192,13 @@ class PreCompLayer(Layer):
 ## \todo check
 class SolidLayer(Layer):
     _props = [
-        TgsProp("type", "ty", float, False),
-        TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", PseudoBool, False),
-        TgsProp("blend_mode", "bm", float, False),
-        TgsProp("threedimensional", "ddd", PseudoBool, False),
-        TgsProp("index", "ind", int, False),
-        #TgsProp("css_class", "cl", str, False),
-        #TgsProp("layer_html_id", "ln", str, False),
-        TgsProp("in_point", "ip", float, False),
-        TgsProp("out_point", "op", float, False),
-        TgsProp("start_time", "st", float, False),
-        TgsProp("name", "nm", float, False),
-        TgsProp("has_masks", "hasMask", bool, False),
-        TgsProp("masks", "masksProperties", Mask, True),
-        TgsProp("effects", "ef", PseudoBool, False),
-        TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", int, False),
         TgsProp("solid_color", "sc", str, False),
         TgsProp("solid_height", "sh", float, False),
         TgsProp("solid_width", "sw", float, False),
     ]
 
     def __init__(self):
-        ## Type of layer: Solid.
-        self.type = 0
-        ## Transform properties
-        self.transform = Transform()
-        ## Auto-Orient along path AE property.
-        self.auto_orient = False
-        ## Blend Mode
-        self.blend_mode = BlendMode.Normal
-        ## 3d layer flag
-        self.threedimensional = False
-        ## Layer index in AE. Used for parenting and expressions.
-        self.index = None
-
-        """
-        ## Parsed layer name used as html class on SVG/HTML renderer
-        #self.css_class = ""
-        ## Parsed layer name used as html id on SVG/HTML renderer
-        #self.layer_html_id = ""
-        """
-
-        ## In Point of layer. Sets the initial frame of the layer.
-        self.in_point = 0
-        ## Out Point of layer. Sets the final frame of the layer.
-        self.out_point = 0
-        ## Start Time of layer. Sets the start time of the layer.
-        self.start_time = 0
-        ## After Effects Layer Name. Used for expressions.
-        self.name = 0
-        ## List of Masks
-        self.masks = None
-        ## Auto-Orient along path AE property.
-        self.effects = False
-        ## Layer Time Stretching
-        self.stretch = 1
-        ## Layer Parent. Uses ind of parent.
-        self.parent = None
+        Layer.__init__(self, 1)
         ## Color of the solid in hex
         self.solid_color = ""
         ## Height of the solid.

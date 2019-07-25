@@ -93,6 +93,8 @@ class TgsProp:
         """!
         Sets the value of the property from a Python object
         """
+        if isinstance(getattr(obj.__class__, self.name, None), property):
+            return
         return setattr(obj, self.name, value)
 
     def load_from_parent(self, lottiedict):

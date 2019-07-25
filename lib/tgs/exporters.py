@@ -12,6 +12,8 @@ from .parsers.sif.builder import to_sif
 
 
 def export_lottie(animation, fp, **kw):
+    if isinstance(fp, str):
+        fp = open(fp, "w")
     json.dump(animation.to_dict(), fp, **kw)
 
 

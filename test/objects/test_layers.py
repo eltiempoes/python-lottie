@@ -15,7 +15,7 @@ class TestNullLayer(base.TestCase):
                 "ddd": 0,
                 "st": 0,
                 "sr": 1,
-                "ef": [],
+                "bm": 0,
             }
         )
 
@@ -34,5 +34,6 @@ class TestShapeLayer(base.TestCase):
                 "st": 0,
                 "sr": 1,
                 "shapes": [],
+                "bm": 0,
             }
         )
