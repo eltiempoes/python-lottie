@@ -656,9 +656,12 @@ class Repeater(ShapeElement):
         self.transform = RepeaterTransform()
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \todo Implement SVG/SIF Export
 class Round(ShapeElement):
+    """
+    Rounds corners of other shapes
+    """
     _props = [
         TgsProp("radius", "r", Value, False),
     ]

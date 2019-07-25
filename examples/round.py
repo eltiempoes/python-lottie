@@ -27,13 +27,13 @@ star.inner_radius.value = 20
 star.outer_radius.value = 50
 star.position.value = Point(256, 256)
 
-trim = layer.add_shape(objects.Trim())
-trim.angle.add_keyframe(0, 0)
-trim.angle.add_keyframe(last_frame, 360)
-trim.start.value = 0
-trim.end.value = 50
+round = layer.add_shape(objects.Round())
+round.radius.add_keyframe(0, 0)
+round.radius.add_keyframe(last_frame/2, 30)
+round.radius.add_keyframe(last_frame, 0)
 
 stroke = group.add_shape(objects.Stroke(Color(1, 1, 0), 10))
 
 
-exporters.multiexport(an, "/tmp/trim")
+exporters.multiexport(an, "/tmp/round")
+
