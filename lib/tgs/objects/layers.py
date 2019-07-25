@@ -38,7 +38,9 @@ def load_layer(lottiedict):
 
 ##\ingroup Lottie
 class Layer(TgsObject):
-    pass
+    @property
+    def has_masks(self):
+        return bool(self.masks) if getattr(self, "masks") is not None else None
 
 
 ##\ingroup Lottie
@@ -162,10 +164,6 @@ class TextLayer(Layer):
         ## Text Data
         self.text_data = None
 
-    @property
-    def has_masks(self):
-        return bool(self.masks)
-
 
 ## \ingroup Lottie
 class ShapeLayer(Layer):
@@ -241,10 +239,6 @@ class ShapeLayer(Layer):
         self.shapes.insert(index, shape)
         return shape
 
-    @property
-    def has_masks(self):
-        return bool(self.masks)
-
 
 ##\ingroup Lottie
 ## \todo check
@@ -305,10 +299,6 @@ class ImageLayer(Layer):
         self.parent = None
         ## id pointing to the source image defined on 'assets' object
         self.reference_id = ""
-
-    @property
-    def has_masks(self):
-        return bool(self.masks)
 
 
 ##\ingroup Lottie
@@ -373,10 +363,6 @@ class PreCompLayer(Layer):
         self.reference_id = ""
         ## Comp's Time remapping
         self.time_remapping = Value()
-
-    @property
-    def has_masks(self):
-        return bool(self.masks)
 
 
 ##\ingroup Lottie
@@ -448,7 +434,3 @@ class SolidLayer(Layer):
         self.solid_height = 0
         ## Width of the solid.
         self.solid_width = 0
-
-    @property
-    def has_masks(self):
-        return bool(self.masks)
