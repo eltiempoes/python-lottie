@@ -61,6 +61,7 @@ Python 3.
 
 * `coverage` To show unit test coverage, used optionally by `test.sh`
 * pillow, pypotrace>=0.2, numpy, scipy To convert raster images into vectors
+* pillow to load image assets
 
 
 Features

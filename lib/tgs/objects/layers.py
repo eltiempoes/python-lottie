@@ -229,7 +229,7 @@ class ShapeLayer(Layer):
         ## Layer Parent. Uses ind of parent.
         self.parent = None
         ## Shape list of items
-        self.shapes = [] # Shape, Rect, Ellipse, Star, Fill, GFill, GStroke, Stroke, Merge, Trim, Group, RoundedCorners, Repeater
+        self.shapes = [] # ShapeElement
 
     def add_shape(self, shape):
         self.shapes.append(shape)
@@ -240,8 +240,9 @@ class ShapeLayer(Layer):
         return shape
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \todo SVG/SIF I/O
+## \todo importers for raster images without vectorization
 class ImageLayer(Layer):
     _props = [
         TgsProp("type", "ty", float, False),
@@ -250,21 +251,21 @@ class ImageLayer(Layer):
         TgsProp("blend_mode", "bm", float, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("index", "ind", int, False),
-        TgsProp("css_class", "cl", str, False),
-        TgsProp("layer_html_id", "ln", str, False),
+        #TgsProp("css_class", "cl", str, False),
+        #TgsProp("layer_html_id", "ln", str, False),
         TgsProp("in_point", "ip", float, False),
         TgsProp("out_point", "op", float, False),
         TgsProp("start_time", "st", float, False),
-        TgsProp("name", "nm", float, False),
+        TgsProp("name", "nm", str, False),
         TgsProp("has_masks", "hasMask", bool, False),
         TgsProp("masks", "masksProperties", Mask, True),
         TgsProp("effects", "ef", load_effect, True),
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", int, False),
-        TgsProp("reference_id", "refId", str, False),
+        TgsProp("image_id", "refId", str, False),
     ]
 
-    def __init__(self):
+    def __init__(self, image_id=""):
         ## Type of layer: Image.
         self.type = 2
         ## Transform properties
@@ -277,18 +278,22 @@ class ImageLayer(Layer):
         self.threedimensional = False
         ## Layer index in AE. Used for parenting and expressions.
         self.index = None
+
+        """
         ## Parsed layer name used as html class on SVG/HTML renderer
         self.css_class = ""
         ## Parsed layer name used as html id on SVG/HTML renderer
         self.layer_html_id = ""
+        """
+
         ## In Point of layer. Sets the initial frame of the layer.
-        self.in_point = 0
+        self.in_point = None
         ## Out Point of layer. Sets the final frame of the layer.
-        self.out_point = 0
+        self.out_point = None
         ## Start Time of layer. Sets the start time of the layer.
         self.start_time = 0
         ## After Effects Layer Name. Used for expressions.
-        self.name = 0
+        self.name = None
         ## List of Masks
         self.masks = None
         ## List of Effects
@@ -298,7 +303,7 @@ class ImageLayer(Layer):
         ## Layer Parent. Uses ind of parent.
         self.parent = None
         ## id pointing to the source image defined on 'assets' object
-        self.reference_id = ""
+        self.image_id = image_id
 
 
 ##\ingroup Lottie
@@ -425,7 +430,7 @@ class SolidLayer(Layer):
         ## Auto-Orient along path AE property.
         self.effects = False
         ## Layer Time Stretching
-        self.stretch = 0
+        self.stretch = 1
         ## Layer Parent. Uses ind of parent.
         self.parent = None
         ## Color of the solid in hex
