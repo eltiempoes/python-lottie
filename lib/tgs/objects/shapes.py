@@ -590,23 +590,26 @@ class TransformShape(ShapeElement, Transform):
         self.anchor_point = MultiDimensional(NVector(0, 0))
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \todo Implement SVG/SIF Export
 class Trim(ShapeElement):
+    """
+    Trims shapes into a segment
+    """
     _props = [
         TgsProp("start", "s", Value, False),
         TgsProp("end", "e", Value, False),
-        TgsProp("offset", "o", Value, False),
+        TgsProp("angle", "o", Value, False),
     ]
 
     def __init__(self):
         ShapeElement.__init__(self, "tm")
-        ## Trim Start.
-        self.start = Value()
-        ## Trim End.
-        self.end = Value()
-        ## Trim Offset.
-        self.offset = Value()
+        ## Start of the segment, as a percentage
+        self.start = Value(0)
+        ## End of the segment, as a percentage
+        self.end = Value(100)
+        ## Angle where to start
+        self.angle = Value(0)
 
 
 ## \ingroup Lottie
@@ -668,6 +671,7 @@ class Round(ShapeElement):
 
 ##\ingroup Lottie
 ## \todo check
+## \note marked as unsipported by lottie
 class Merge(ShapeElement):
     _props = [
         TgsProp("merge_mode", "mm", float, False),
