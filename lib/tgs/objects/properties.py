@@ -235,7 +235,7 @@ class Bezier(TgsObject):
         TgsProp("vertices", "v", NVector, True),
     ]
 
-    def __init__(self):
+    def __init__(self, rel_tangents=True):
         ## Closed property of shape
         self.closed = False
         ## Bezier curve In points. Array of 2 dimensional arrays.
@@ -244,6 +244,16 @@ class Bezier(TgsObject):
         self.out_point = []
         ## Bezier curve Vertices. Array of 2 dimensional arrays.
         self.vertices = []
+        self.rel_tangents = rel_tangents
+
+    def clone(self):
+        clone = Bezier()
+        clone.closed = self.closed
+        clone.in_point = [p.clone() for p in self.in_point]
+        clone.out_point = [p.clone() for p in self.out_point]
+        clone.vertices = [p.clone() for p in self.vertices]
+        clone.rel_tangents = self.rel_tangents
+        return clone
 
     def insert_point(self, index, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
         """!
@@ -257,6 +267,9 @@ class Bezier(TgsObject):
         self.vertices.insert(index, pos)
         self.in_point.insert(index, inp.clone())
         self.out_point.insert(index, outp.clone())
+        if not self.rel_tangents:
+            self.in_point[-1] += pos
+            self.out_point[-1] += pos
         return self
 
     def add_point(self, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
@@ -457,6 +470,15 @@ class Bezier(TgsObject):
         in_point = list(reversed(self.out_point))
         self.in_point = in_point
         self.out_point = out_point
+
+    def to_absolute(self):
+        if self.rel_tangents:
+            self.rel_tangents = False
+            for i in range(len(self.vertices)):
+                p = self.vertices[i]
+                self.in_point[i] += p
+                self.out_point[i] += p
+        return self
 
 
 ##\ingroup Lottie

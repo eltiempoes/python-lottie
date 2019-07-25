@@ -1,5 +1,5 @@
-from .base import TgsObject, TgsProp, todo_func
-from .properties import MultiDimensional, Value, NVector
+from .base import TgsObject, TgsProp, TgsEnum, todo_func
+from .properties import MultiDimensional, Value, NVector, ShapeProperty
 
 
 ##\ingroup Lottie
@@ -48,25 +48,45 @@ class Transform(TgsObject):
         self.skew_axis = Value(0)
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+class MaskMode(TgsEnum):
+    """!
+    How masks interact with each other
+    \see https://helpx.adobe.com/after-effects/using/alpha-channels-masks-mattes.html
+    """
+    No = "n"
+    Add = "a"
+    Subtract = "s"
+    Intersect = "i"
+    ## \note Not in lottie web
+    Lightent = "l"
+    ## \note Not in lottie web
+    Darken = "d"
+    ## \note Not in lottie web
+    Difference = "f"
+
+
+## \ingroup Lottie
+## \todo Implement SVG/SIF I/O
 class Mask(TgsObject):
     _props = [
-        TgsProp("inverted", "inv", float, False),
+        TgsProp("inverted", "inv", bool, False),
         TgsProp("name", "nm", str, False),
-        TgsProp("points", "pt", todo_func, False),
-        TgsProp("opacity", "o", todo_func, False),
-        TgsProp("mode", "mode", str, False),
+        TgsProp("points", "pt", ShapeProperty, False),
+        TgsProp("opacity", "o", float, False),
+        TgsProp("mode", "mode", MaskMode, False),
+        TgsProp("dilate", "x", float, False),
     ]
 
     def __init__(self):
         ## Inverted Mask flag
-        self.inverted = None
+        self.inverted = False
         ## Mask name. Used for expressions and effects.
-        self.name = ""
+        self.name = None
         ## Mask vertices
-        self.points = ShapeProperty() # ShapeProperty, ShapePropertyKeyframed
+        self.points = ShapeProperty()
         ## Mask opacity.
-        self.opacity = Value(100) # Const, ConstKeyframed
+        self.opacity = Value(100)
         ## Mask mode. Not all mask types are supported.
-        self.mode = ""
+        self.mode = MaskMode.Intersect
+        self.dilate = Value(0)

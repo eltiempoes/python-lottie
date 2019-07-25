@@ -1,6 +1,6 @@
 from .base import TgsObject, TgsProp, PseudoBool, TgsEnum
 from .effects import load_effect
-from .helpers import Transform
+from .helpers import Transform, Mask
 from .shapes import load_shape_element
 
 
@@ -114,8 +114,8 @@ class TextLayer(Layer):
         TgsProp("out_point", "op", float, False),
         TgsProp("start_time", "st", float, False),
         TgsProp("name", "nm", float, False),
-        #TgsProp("has_masks", "hasMask", float, False),
-        #TgsProp("masks_properties", "masksProperties", Mask, True),
+        TgsProp("has_masks", "hasMask", bool, False),
+        TgsProp("masks", "masksProperties", Mask, True),
         TgsProp("effects", "ef", PseudoBool, False),
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", int, False),
@@ -151,10 +151,8 @@ class TextLayer(Layer):
         self.start_time = 0
         ## After Effects Layer Name. Used for expressions.
         self.name = 0
-        ## Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
-        self.has_masks = 0
         ## List of Masks
-        self.masks_properties = [] # Mask
+        self.masks = None
         ## Auto-Orient along path AE property.
         self.effects = False
         ## Layer Time Stretching
@@ -164,8 +162,12 @@ class TextLayer(Layer):
         ## Text Data
         self.text_data = None
 
+    @property
+    def has_masks(self):
+        return bool(self.masks)
 
-##\ingroup Lottie
+
+## \ingroup Lottie
 class ShapeLayer(Layer):
     """!
     Layer containing ShapeElement objects
@@ -183,8 +185,8 @@ class ShapeLayer(Layer):
         TgsProp("out_point", "op", float, False),
         TgsProp("start_time", "st", float, False),
         TgsProp("name", "nm", str, False),
-        #TgsProp("has_masks", "hasMask", float, False),
-        #TgsProp("masks_properties", "masksProperties", Mask, True),
+        TgsProp("has_masks", "hasMask", bool, False),
+        TgsProp("masks", "masksProperties", Mask, True),
         TgsProp("effects", "ef", load_effect, True),
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", int, False),
@@ -220,12 +222,8 @@ class ShapeLayer(Layer):
         self.start_time = 0
         ## After Effects %Layer Name. Used for expressions.
         self.name = None
-
-        ## Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
-        ##self.has_masks = 0
         ## List of Masks
-        ##self.masks_properties = [] # Mask
-
+        self.masks = None
         ## List of Effects
         self.effects = None # IndexEffect
         ## Layer Time Stretching
@@ -242,6 +240,10 @@ class ShapeLayer(Layer):
     def insert_shape(self, index, shape):
         self.shapes.insert(index, shape)
         return shape
+
+    @property
+    def has_masks(self):
+        return bool(self.masks)
 
 
 ##\ingroup Lottie
@@ -260,8 +262,8 @@ class ImageLayer(Layer):
         TgsProp("out_point", "op", float, False),
         TgsProp("start_time", "st", float, False),
         TgsProp("name", "nm", float, False),
-        #TgsProp("has_masks", "hasMask", float, False),
-        #TgsProp("masks_properties", "masksProperties", Mask, True),
+        TgsProp("has_masks", "hasMask", bool, False),
+        TgsProp("masks", "masksProperties", Mask, True),
         TgsProp("effects", "ef", load_effect, True),
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", int, False),
@@ -293,10 +295,8 @@ class ImageLayer(Layer):
         self.start_time = 0
         ## After Effects Layer Name. Used for expressions.
         self.name = 0
-        ## Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
-        self.has_masks = 0
         ## List of Masks
-        self.masks_properties = [] # Mask
+        self.masks = None
         ## List of Effects
         self.effects = [] # IndexEffect
         ## Layer Time Stretching
@@ -305,6 +305,10 @@ class ImageLayer(Layer):
         self.parent = None
         ## id pointing to the source image defined on 'assets' object
         self.reference_id = ""
+
+    @property
+    def has_masks(self):
+        return bool(self.masks)
 
 
 ##\ingroup Lottie
@@ -323,8 +327,8 @@ class PreCompLayer(Layer):
         TgsProp("out_point", "op", float, False),
         TgsProp("start_time", "st", float, False),
         TgsProp("name", "nm", float, False),
-        #TgsProp("has_masks", "hasMask", float, False),
-        #TgsProp("masks_properties", "masksProperties", Mask, True),
+        TgsProp("has_masks", "hasMask", bool, False),
+        TgsProp("masks", "masksProperties", Mask, True),
         TgsProp("effects", "ef", load_effect, True),
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", int, False),
@@ -357,10 +361,8 @@ class PreCompLayer(Layer):
         self.start_time = 0
         ## After Effects Layer Name. Used for expressions.
         self.name = 0
-        ## Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
-        self.has_masks = 0
         ## List of Masks
-        self.masks_properties = [] # Mask
+        self.masks = None
         ## List of Effects
         self.effects = [] # IndexEffect
         ## Layer Time Stretching
@@ -371,6 +373,10 @@ class PreCompLayer(Layer):
         self.reference_id = ""
         ## Comp's Time remapping
         self.time_remapping = Value()
+
+    @property
+    def has_masks(self):
+        return bool(self.masks)
 
 
 ##\ingroup Lottie
@@ -389,8 +395,8 @@ class SolidLayer(Layer):
         TgsProp("out_point", "op", float, False),
         TgsProp("start_time", "st", float, False),
         TgsProp("name", "nm", float, False),
-        #TgsProp("has_masks", "hasMask", float, False),
-        #TgsProp("masks_properties", "masksProperties", Mask, True),
+        TgsProp("has_masks", "hasMask", bool, False),
+        TgsProp("masks", "masksProperties", Mask, True),
         TgsProp("effects", "ef", PseudoBool, False),
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", int, False),
@@ -428,10 +434,8 @@ class SolidLayer(Layer):
         self.start_time = 0
         ## After Effects Layer Name. Used for expressions.
         self.name = 0
-        ## Boolean when layer has a mask. Will be deprecated in favor of checking masksProperties.
-        self.has_masks = 0
         ## List of Masks
-        self.masks_properties = [] # Mask
+        self.masks = None
         ## Auto-Orient along path AE property.
         self.effects = False
         ## Layer Time Stretching
@@ -444,3 +448,7 @@ class SolidLayer(Layer):
         self.solid_height = 0
         ## Width of the solid.
         self.solid_width = 0
+
+    @property
+    def has_masks(self):
+        return bool(self.masks)
