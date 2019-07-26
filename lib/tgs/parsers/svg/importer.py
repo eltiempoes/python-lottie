@@ -10,6 +10,12 @@ from ...utils.ellipse import Ellipse
 nocolor = {"none"}
 
 
+def _sign(x):
+    if x < 0:
+        return -1
+    return 1
+
+
 def hsl_to_rgb(h, s, l):
     if l < 0.5:
         m2 = l * (s + 1)
@@ -219,17 +225,21 @@ class SvgParser(SvgHandler):
         return parse_color(color, self.current_color)
 
     def parse_transform(self, element, group, dest_trans):
-        itcx = self.qualified("inkscape", "transform-center-x")
-        if itcx in element.attrib:
-            cx = float(element.attrib[itcx])
-            cy = float(element.attrib[self.qualified("inkscape", "transform-center-y")])
-            bb = group.bounding_box()
-            if not bb.isnull():
+        bb = group.bounding_box()
+        if not bb.isnull():
+            itcx = self.qualified("inkscape", "transform-center-x")
+            if itcx in element.attrib:
+                cx = float(element.attrib[itcx])
+                cy = float(element.attrib[self.qualified("inkscape", "transform-center-y")])
                 bbx, bby = bb.center()
                 cx += bbx
                 cy = bby - cy
                 dest_trans.anchor_point.value = NVector(cx, cy)
                 dest_trans.position.value = NVector(cx, cy)
+            #else:
+                #c = bb.center()
+                #dest_trans.anchor_point.value = c
+                #dest_trans.position.value = c.clone()
 
         if "transform" not in element.attrib:
             return
@@ -238,9 +248,9 @@ class SvgParser(SvgHandler):
             name = t[1]
             params = list(map(float, t[2].strip().replace(",", " ").split()))
             if name == "translate":
-                dest_trans.position.value = NVector(
-                    dest_trans.position.value[0] + params[0],
-                    dest_trans.position.value[1] + (params[1] if len(params) > 1 else 0),
+                dest_trans.position.value += NVector(
+                    params[0],
+                    (params[1] if len(params) > 1 else 0),
                 )
             elif name == "scale":
                 xfac = params[0]
@@ -255,7 +265,7 @@ class SvgParser(SvgHandler):
                     y = params[2]
                     ap = NVector(x, y)
                     dap = ap - dest_trans.position.value
-                    dest_trans.position.value = ap
+                    dest_trans.position.value += ap
                     dest_trans.anchor_point.value += dap
                 dest_trans.rotation.value = ang
             elif name == "skewX":
@@ -265,15 +275,33 @@ class SvgParser(SvgHandler):
                 dest_trans.skew.value = params[0]
                 dest_trans.skew_axis.value = 90
             elif name == "matrix":
-                dest_trans.position.value = NVector(*params[-2:])
-                v1 = NVector(*params[0:2])
-                v2 = NVector(*params[2:4])
-                dest_trans.scale.value = NVector(v1.length * 100, v2.length * 100)
-                v1 /= v1.length
-                #v2 /= v2.length
-                angle = math.atan2(v1[1], v1[0])
-                #angle1 = math.atan2(v2[1], v2[0])
-                dest_trans.rotation.value = angle / math.pi * 180
+                a, b, c, d, tx, ty = params
+
+                delta = a * d - b * c
+                if a != 0 or b != 0:
+                    r = math.hypot(a, b)
+                    angle = _sign(b) * math.acos(a/r)
+                    sx = r
+                    sy = delta / r
+                    dest_trans.skew_axis.value = 0
+                    sm = -1
+                else:
+                    r = math.hypot(c, d)
+                    angle = math.pi / 2 - _sign(d) * math.acos(c / r)
+                    sx = delta / r
+                    sy = r
+                    dest_trans.skew_axis.value = 90
+                    sm = 1
+
+                dest_trans.position.value += NVector(tx, ty)
+
+                dest_trans.rotation.value += angle / math.pi * 180
+
+                dest_trans.scale.value[0] = (dest_trans.scale.value[0] / 100 * sx) * 100
+                dest_trans.scale.value[1] = (dest_trans.scale.value[1] / 100 * sy) * 100
+
+                skew = sm * math.atan2(a * c + b * d, r * r)
+                dest_trans.skew.value = skew * 180 / math.pi
 
     def parse_style(self, element):
         style = {}
