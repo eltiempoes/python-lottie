@@ -22,7 +22,16 @@ class Tgs:
         raise NotImplementedError
 
 
-class TgsEnum(Tgs, enum.Enum):
+class EnumMeta(enum.EnumMeta):
+    """!
+    Hack to counter-hack the hack in enum meta
+    """
+    def __new__(cls, name, bases, classdict):
+        classdict["__reduce_ex__"] = lambda *a, **kw: None
+        return super().__new__(cls, name, bases, classdict)
+
+
+class TgsEnum(Tgs, enum.Enum, metaclass=EnumMeta):
     """!
     Base class for enum-like types in the Lottie JSON structure
     """

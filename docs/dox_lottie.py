@@ -124,9 +124,15 @@ with open(dox_classdoc, "w") as out_classdoc, open(dox_summary, "w") as out_summ
         \\page lottie_json Lottie JSON Format
         \\ingroup Lottie
     """)
-    for module in modules:
-        #out_summary.write("""\n\\section lottie_{0} {0}\n""".format(module.name))
 
+    out_summary.write("""\n\\section lottie_index Index\n""")
+    for module in modules:
+        out_summary.write(" - %s\n" % module.name)
+        for cls in module.classes:
+            out_summary.write("   - <a href='#lottie_{name}'>{name}</a>\n".format(name=cls.__name__))
+        out_summary.write("\n")
+
+    for module in modules:
         for cls in module.classes:
             clsname = cls.__name__
             if issubclass(cls, TgsObject):
