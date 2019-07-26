@@ -21,7 +21,7 @@ def schema2enum(out, filename, data):
     if filename.endswith("/boolean.json"):
         return
 
-    out.write("\n\n##\ingroup Lottie\nclass ")
+    out.write("\n\n## \ingroup Lottie\nclass ")
     out.write(class_name(filename))
     out.write("(TgsEnum):\n")
     vals = {}
@@ -174,7 +174,7 @@ def schema2class(out, filename, data, ei=""):
     if "properties" not in data:
         return
 
-    out.write("\n\n##\ingroup Lottie\nclass ")
+    out.write("\n\n## \ingroup Lottie\nclass ")
     out.write(class_name(filename))
     out.write("(TgsObject): # TODO check\n")
     properties = []

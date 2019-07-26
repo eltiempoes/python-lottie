@@ -6,8 +6,12 @@ from .assets import Asset
 #
 # Objects of the lottie file structure.
 
+## \defgroup LottieCheck Lottie (to check)
+#
+# Lottie objects that have not been tested
 
-##\ingroup Lottie
+
+## \ingroup Lottie
 class Animation(TgsObject):
     """!
     Top level object, describing the animation

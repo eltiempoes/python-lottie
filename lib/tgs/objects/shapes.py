@@ -61,7 +61,7 @@ class BoundingBox:
         return self.y2 - self.y1
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class ShapeElement(TgsObject):
     """!
     Base class for all elements of ShapeLayer and Group
@@ -101,7 +101,7 @@ class ShapeElement(TgsObject):
         return ShapeElement._shape_classses[lottiedict["ty"]]
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Rect(ShapeElement):
     """!
     A simple rectangle shape
@@ -188,13 +188,13 @@ class Rect(ShapeElement):
         return bezier
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class StarType(TgsEnum):
     Star = 1
     Polygon = 2
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Star(ShapeElement):
     """!
     Star shape
@@ -293,7 +293,7 @@ class Star(ShapeElement):
         return bezier
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Ellipse(ShapeElement):
     """!
     Ellipse shape
@@ -357,7 +357,7 @@ class Ellipse(ShapeElement):
         return bezier
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Path(ShapeElement):
     """!
     Animatable Bezier curve
@@ -389,7 +389,7 @@ class Path(ShapeElement):
         return self
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Group(ShapeElement):
     """!
     ShapeElement that can contain other shapes
@@ -444,7 +444,7 @@ class Group(ShapeElement):
         return results
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Fill(ShapeElement):
     """!
     Solid fill color
@@ -464,13 +464,13 @@ class Fill(ShapeElement):
         self.color = MultiDimensional(color or NVector(1, 1, 1))
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class GradientType(TgsEnum):
     Linear = 1
     Radial = 2
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Gradient(TgsObject):
     _props = [
         TgsProp("start_point", "s", MultiDimensional, False),
@@ -498,7 +498,7 @@ class Gradient(TgsObject):
         self.colors = GradientColors(colors)
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class GradientFill(ShapeElement, Gradient):
     """!
     Gradient fill
@@ -516,21 +516,21 @@ class GradientFill(ShapeElement, Gradient):
         self.opacity = Value(100)
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class LineJoin(TgsEnum):
     Miter = 1
     Round = 2
     Bevel = 3
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class LineCap(TgsEnum):
     Butt = 1
     Round = 2
     Square = 3
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class BaseStroke(TgsObject):
     _props = [
         TgsProp("line_cap", "lc", LineCap, False),
@@ -553,7 +553,7 @@ class BaseStroke(TgsObject):
         self.width = Value(width)
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Stroke(ShapeElement, BaseStroke):
     """!
     Solid stroke
@@ -571,7 +571,7 @@ class Stroke(ShapeElement, BaseStroke):
         self.color = MultiDimensional(color or NVector(0, 0, 0))
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class GradientStroke(ShapeElement, BaseStroke, Gradient):
     """!
     Gradient stroke
@@ -588,7 +588,7 @@ class GradientStroke(ShapeElement, BaseStroke, Gradient):
         return BoundingBox()
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class TransformShape(ShapeElement, Transform):
     """!
     Group transform
@@ -691,8 +691,8 @@ class Round(ShapeElement):
         self.radius = Value()
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 ## @note marked as unsupported by lottie
 class Merge(ShapeElement):
     _props = [

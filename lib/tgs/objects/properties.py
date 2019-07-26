@@ -5,7 +5,7 @@ from . import easing
 from ..utils.nvector import NVector
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class OffsetKeyframe(TgsObject):
     """!
     Keyframe for MultiDimensional values
@@ -123,7 +123,7 @@ class AnimatableMixin:
         return val
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class MultiDimensional(TgsObject, AnimatableMixin):
     """!
     An animatable property that holds a NVector
@@ -137,7 +137,7 @@ class MultiDimensional(TgsObject, AnimatableMixin):
     ]
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 # \todo use a more convenient representation and convert to the weird array on import/export
 class GradientColors(TgsObject):
     """!
@@ -196,7 +196,7 @@ class GradientColors(TgsObject):
         self.colors.add_keyframe(time, self._flatten_colors(colors) if colors else NVector(), ease)
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Value(TgsObject, AnimatableMixin):
     """!
     An animatable property that holds a float
@@ -222,7 +222,7 @@ class Value(TgsObject, AnimatableMixin):
         return v
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 # \todo Use BezierPoint and convert to in_point/out_point/vertices on import/export
 class Bezier(TgsObject):
     """!
@@ -481,7 +481,7 @@ class Bezier(TgsObject):
         return self
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class ShapePropKeyframe(TgsObject):
     """!
     Keyframe holding Bezier objects
@@ -515,7 +515,7 @@ class ShapePropKeyframe(TgsObject):
         interp(self, 0, 0, end_time)
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class ShapeProperty(TgsObject, AnimatableMixin):
     """!
     An animatable property that holds a Bezier

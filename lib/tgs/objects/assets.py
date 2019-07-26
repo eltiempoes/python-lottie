@@ -2,6 +2,7 @@ from .base import TgsObject, TgsProp, PseudoBool
 from .layers import Layer
 
 
+## \ingroup Lottie
 class Asset(TgsObject):
     @classmethod
     def _load_get_class(cls, lottiedict):
@@ -13,8 +14,7 @@ class Asset(TgsObject):
             return Precomp
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
 class Image(Asset):
     _props = [
         TgsProp("height", "h", float, False),
@@ -67,8 +67,8 @@ class Image(Asset):
         return self
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 class Chars(Asset):
     _props = [
         TgsProp("character", "ch", str, False),
@@ -94,8 +94,8 @@ class Chars(Asset):
         self.character_data = None
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 class Precomp(Asset):
     _props = [
         TgsProp("id", "id", str, False),

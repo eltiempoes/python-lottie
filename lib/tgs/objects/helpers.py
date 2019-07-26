@@ -2,7 +2,7 @@ from .base import TgsObject, TgsProp, TgsEnum
 from .properties import MultiDimensional, Value, NVector, ShapeProperty
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Transform(TgsObject):
     """!
     Layer transform

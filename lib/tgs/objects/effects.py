@@ -3,6 +3,8 @@ from .properties import Value, MultiDimensional
 from ..utils.nvector import NVector
 
 
+#5: EffectsManager,
+#11: MaskEffect,
 class EffectValue(TgsObject):
     """!
     Value for an effect
@@ -39,9 +41,6 @@ class EffectValue(TgsObject):
         return EffectValue._classses[lottiedict["ty"]]
 
 
-#EffectNoValue ?
-#5: EffectsManager,
-#11: MaskEffect,
 ## \ingroup Lottie
 class Effect(TgsObject):
     """!
@@ -100,8 +99,7 @@ class Effect(TgsObject):
         return super().__getattr__(key)
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
 class EffectValueAngle(EffectValue):
     _props = [
         TgsProp("value", "v", Value, False),
@@ -115,14 +113,13 @@ class EffectValueAngle(EffectValue):
         self.value = Value(angle)
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 class EffectNoValue(EffectValue):
     _props = []
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
 class EffectValueSlider(EffectValue):
     _props = [
         TgsProp("value", "v", Value, False),
@@ -136,8 +133,7 @@ class EffectValueSlider(EffectValue):
         self.value = Value(value)
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
 class EffectValueCheckbox(EffectValue):
     _props = [
         TgsProp("value", "v", Value, False),
@@ -151,8 +147,7 @@ class EffectValueCheckbox(EffectValue):
         self.value = Value(value)
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
 class EffectValuePoint(EffectValue):
     _props = [
         TgsProp("value", "v", MultiDimensional, False),
@@ -166,8 +161,8 @@ class EffectValuePoint(EffectValue):
         self.value = MultiDimensional(value)
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 class EffectValueDropDown(EffectValue):
     _props = [
         TgsProp("value", "v", Value, False),
@@ -181,8 +176,8 @@ class EffectValueDropDown(EffectValue):
         self.value = Value(value)
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 class EffectValueLayer(EffectValue):
     _props = [
         TgsProp("value", "v", Value, False),
@@ -196,8 +191,7 @@ class EffectValueLayer(EffectValue):
         self.value = Value()
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
 class EffectValueColor(EffectValue):
     _props = [
         TgsProp("value", "v", MultiDimensional, False),
@@ -212,7 +206,6 @@ class EffectValueColor(EffectValue):
 
 
 ## \ingroup Lottie
-## \todo check
 class FillEffect(Effect):
     """!
     Replaces the whole layer with the given color
@@ -231,8 +224,7 @@ class FillEffect(Effect):
     type = 21
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
 class StrokeEffect(Effect):
     _effects = [
         ("00", EffectValueColor),
@@ -266,8 +258,8 @@ class TritoneEffect(Effect):
 
 
 """
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 class GroupEffect(Effect):
     _props = [
         TgsProp("enabled", "en", PseudoBool, False),
@@ -280,8 +272,8 @@ class GroupEffect(Effect):
 """
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 class ProLevelsEffect(Effect):
     _effects = [
         ("00", EffectValueDropDown),
@@ -356,8 +348,8 @@ class DropShadowEffect(Effect):
     type = 25
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 class Matte3Effect(Effect):
     _effects = [
         ("index", EffectValueSlider),

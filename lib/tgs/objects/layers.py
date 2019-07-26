@@ -4,7 +4,7 @@ from .helpers import Transform, Mask
 from .shapes import ShapeElement
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class BlendMode(TgsEnum):
     Normal = 0
     Multiply = 1
@@ -34,7 +34,7 @@ class MatteMode(TgsEnum):
     InvertedLuma = 4
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class Layer(TgsObject):
     _props = [
         TgsProp("type", "ty", int, False),
@@ -114,7 +114,7 @@ class Layer(TgsObject):
         return Layer._classses[lottiedict["ty"]]
 
 
-##\ingroup Lottie
+## \ingroup Lottie
 class NullLayer(Layer):
     """!
     Layer with no data, useful to group layers together
@@ -126,8 +126,8 @@ class NullLayer(Layer):
         Layer.__init__(self)
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 class TextLayer(Layer):
     _props = [
         TgsProp("text_data", "t", float, False),
@@ -182,8 +182,8 @@ class ImageLayer(Layer):
         self.image_id = image_id
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 class PreCompLayer(Layer):
     _props = [
         TgsProp("reference_id", "refId", str, False),
@@ -200,8 +200,8 @@ class PreCompLayer(Layer):
         self.time_remapping = Value()
 
 
-##\ingroup Lottie
-## \todo check
+## \ingroup Lottie
+## \ingroup LottieCheck
 class SolidLayer(Layer):
     _props = [
         TgsProp("solid_color", "sc", str, False),
