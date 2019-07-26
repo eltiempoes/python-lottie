@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import setuptools
 import os
 here = os.path.dirname(os.path.abspath(__file__))
@@ -49,4 +50,17 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Topic :: Multimedia :: Graphics",
     ],
+    zip_safe=True,
+    python_requires=">=3",
+    extras_require={
+        "Vectorization": ["pillow", "pypotrace>=0.2", "numpy", "scipy"],
+        "Load image": ["pillow"],
+    },
+    test_suite="test",
+    project_urls={
+        "Code": "https://gitlab.com/mattia.basaglia/tgs/",
+        "Documentation": "https://mattia.basaglia.gitlab.io/tgs/index.html",
+        "Chat": "https://t.me/tgs_stuff",
+        "Coverage": "https://mattia.basaglia.gitlab.io/tgs/coverage/",
+    },
 )

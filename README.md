@@ -175,7 +175,17 @@ Credits
 Copyright 2019 (C) Mattia Basaglia
 
 
-Documentation
--------------
+Links
+-----
+
+### Documentation
 
 https://mattia.basaglia.gitlab.io/tgs/index.html
+
+### Code
+
+https://gitlab.com/mattia.basaglia/tgs/
+
+### Chat
+
+https://t.me/tgs_stuff
