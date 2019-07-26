@@ -7,37 +7,49 @@ A Python framework to work with Telegram animated stickers.
 Scripts
 -------
 
-* `bin/lottieconvert.py`
+* `bin/tgsconvert.py`
 
   Script that can convert between several formats, including lottie / TGS
 
-* `bin/tgs2lottie.py`
+* `bin/tgscat.py`
 
-  Will extract a tgs file into a pretty printed JSON
+  Prints the given tgs / lottie file into a human-readable format
 
-* `bin/lottie2tgs.py`
+* `bin/tgsdiff.py`
 
-  Will convert a lottie file into a tgs file
+  Shows a side-by-side diff of the human-readable rendition of two tgs / lottie files
 
-* `bin/svg2tgs.pt`
+* `bin/tgs2svg.py`
 
-  Converts an SVG file into a lottie or tgs file
-
-* `bin/lottiecat.py`
-
-  Prints the given lottie file into a human-readable format
-
-* `bin/lottiediff.py`
-
-  Shows a side-by-side diff of the human-readable rendition of two lottie files
-
-* `bin/lottie2svg.py`
-
-  Extracts a frame as SVG from a lottie/tgs file
+  Extracts a frame as SVG from a lottie/tgs file, has a couple more options than `bin/tgsconvert.py`
 
 * `bin/raster2tgs.py`
 
-  Converts a sequence of raster images into a lottie/tgs file
+  Converts a sequence of raster images into a lottie/tgs file, has a couple more options than `bin/tgsconvert.py`
+
+* `bin/raster_palette.py`
+
+  Shows the palette of a raster image, to use with `bin/raster2tgs.py`
+
+* `bin/tgscolor.py`
+
+  Converts a CSS color into a normalized array, as used in lottie
+
+* `bin/jsoncat.py`
+
+  Pretty prints a JSON file (useful to debug / diff lottie files)
+
+* `bin/jsondiff.py`
+
+  Pretty prints two JSON files side by side, highlighting differences (useful to debug / diff lottie files)
+
+* `bin/tgscat.py`
+
+  Pretty prints a tgs / lottie file with more readable annotations (useful to debug / diff lottie files)
+
+* `bin/tgsdiff.py`
+
+  Pretty prints two tgs / lottie files side by side, highlighting differences (useful to debug / diff lottie files)
 
 
 Installation

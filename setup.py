@@ -32,11 +32,13 @@ setuptools.setup(
     package_dir={'': 'lib'},
     packages=find_packages(),
     scripts=[
-        os.path.join("bin", "lottie2tgs.py"),
-        os.path.join("bin", "lottiecat.py"),
-        os.path.join("bin", "lottiediff.py"),
-        os.path.join("bin", "svg2tgs.py"),
-        os.path.join("bin", "tgs2lottie.py"),
+        os.path.join("bin", "raster2tgs.py"),
+        os.path.join("bin", "raster_palette.py"),
+        os.path.join("bin", "tgs2svg.py"),
+        os.path.join("bin", "tgscat.py"),
+        os.path.join("bin", "tgscolor.py"),
+        os.path.join("bin", "tgsconvert.py"),
+        os.path.join("bin", "tgsdiff.py"),
     ],
     keywords="telegram stickers tgs lottie svg animation",
     # https://pypi.org/classifiers/
