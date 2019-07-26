@@ -2,6 +2,7 @@ from .base import TgsObject, TgsProp, PseudoBool, TgsEnum
 from .effects import Effect
 from .helpers import Transform, Mask
 from .shapes import ShapeElement
+from .text import TextAnimatorData
 
 
 ## \ingroup Lottie
@@ -127,10 +128,9 @@ class NullLayer(Layer):
 
 
 ## \ingroup Lottie
-## \ingroup LottieCheck
 class TextLayer(Layer):
     _props = [
-        TgsProp("text_data", "t", float, False),
+        TgsProp("data", "t", TextAnimatorData, False),
     ]
     ## %Layer type.
     type = 5
@@ -138,7 +138,7 @@ class TextLayer(Layer):
     def __init__(self):
         Layer.__init__(self)
         ## Text Data
-        self.text_data = None
+        self.data = TextAnimatorData()
 
 
 ## \ingroup Lottie

@@ -1,21 +1,10 @@
 from .base import TgsObject, TgsProp, PseudoBool
 from .layers import Layer
+from .shapes import ShapeElement
 
 
 ## \ingroup Lottie
-class Asset(TgsObject):
-    @classmethod
-    def _load_get_class(cls, lottiedict):
-        if "p" in lottiedict or "u" in lottiedict:
-            return Image
-        if "ch" in lottiedict:
-            return Chars
-        if "layers" in lottiedict:
-            return Precomp
-
-
-## \ingroup Lottie
-class Image(Asset):
+class Image(TgsObject):
     _props = [
         TgsProp("height", "h", float, False),
         TgsProp("width", "w", float, False),
@@ -68,15 +57,30 @@ class Image(Asset):
 
 
 ## \ingroup Lottie
-## \ingroup LottieCheck
-class Chars(Asset):
+class CharacterData(TgsObject):
+    """!
+    Character shapes
+    """
+    _props = [
+        TgsProp("shapes", "shapes", ShapeElement, True),
+    ]
+
+    def __init__(self):
+        self.shapes = []
+
+
+## \ingroup Lottie
+class Chars(TgsObject):
+    """!
+    Defines character shapes to avoid loading system fonts
+    """
     _props = [
         TgsProp("character", "ch", str, False),
         TgsProp("font_family", "fFamily", str, False),
-        TgsProp("font_size", "size", str, False),
+        TgsProp("font_size", "size", float, False),
         TgsProp("font_style", "style", str, False),
         TgsProp("width", "w", float, False),
-        TgsProp("character_data", "data", float, False),
+        TgsProp("data", "data", CharacterData, False),
     ]
 
     def __init__(self):
@@ -85,18 +89,22 @@ class Chars(Asset):
         ## Character Font Family
         self.font_family = ""
         ## Character Font Size
-        self.font_size = ""
+        self.font_size = 0
         ## Character Font Style
-        self.font_style = ""
+        self.font_style = "" # Regular
         ## Character Width
         self.width = 0
         ## Character Data
-        self.character_data = None
+        self.data = CharacterData()
+
+    @property
+    def shapes(self):
+        return self.data.shapes
 
 
 ## \ingroup Lottie
 ## \ingroup LottieCheck
-class Precomp(Asset):
+class Precomp(TgsObject):
     _props = [
         TgsProp("id", "id", str, False),
         TgsProp("layers", "layers", Layer, True),

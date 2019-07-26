@@ -1,6 +1,7 @@
 from .base import TgsObject, TgsProp, PseudoBool, Index
 from .layers import Layer
-from .assets import Asset
+from .assets import Image, Chars
+from .text import FontList
 
 ##\defgroup Lottie Lottie
 #
@@ -26,8 +27,9 @@ class Animation(TgsObject):
         TgsProp("version", "v", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("layers", "layers", Layer, True),
-        TgsProp("assets", "assets", Asset, True),
-        #TgsProp("chars", "chars", Chars, True),
+        TgsProp("assets", "assets", Image, True),
+        TgsProp("chars", "chars", Chars, True),
+        TgsProp("fonts", "fonts", FontList),
         TgsProp("tgs", "tgs", PseudoBool, False),
     ]
     _version = "5.5.2"
@@ -55,8 +57,10 @@ class Animation(TgsObject):
         self.layers = [] # ShapeLayer, SolidLayer, CompLayer, ImageLayer, NullLayer, TextLayer
         ## source items that can be used in multiple places. Comps and Images for now.
         self.assets = [] # Image, Precomp
-        # source chars for text layers
-        #self.chars = [] # Chars
+        ## source chars for text layers
+        self.chars = None
+        ## Available fonts
+        self.fonts = None
         self._index_gen = Index()
 
     def add_layer(self, layer):

@@ -142,6 +142,7 @@ There are several things marked as unsupported in telegram animated stickers tha
 * Star Shapes
 * Gradient Strokes
 * Repeaters
+* Solids
 
 
 The following things are actually unsupported:
@@ -149,13 +150,12 @@ The following things are actually unsupported:
 * Layer Effects
 * Images
 * Skew transforms (this isn't listed in the unsupported features)
+* Texts
 
 
 Things marked as unsupported that I haven't tested:
 
 * Expressions
-* Solids
-* Texts
 * 3D Layers
 * Merge Paths
 * Time Stretching
