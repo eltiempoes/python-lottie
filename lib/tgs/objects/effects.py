@@ -1,11 +1,15 @@
 from .base import TgsObject, TgsProp, PseudoBool
 from .properties import Value, MultiDimensional
 
+
 #NoValueEffect ?
 #5: EffectsManager,
 #11: MaskEffect,
 ## \ingroup Lottie
 class Effect(TgsObject):
+    """!
+    Layer effect
+    """
     ## %Effect type.
     type = None
     _classses = {}
@@ -38,11 +42,47 @@ class Effect(TgsObject):
         return Effect._classses[lottiedict["ty"]]
 
 
+class EffectValue(TgsObject):
+    """!
+    Value for an effect
+    """
+    ## %Effect value type.
+    type = None
+    _classses = {}
+
+    _props = [
+        TgsProp("effect_index", "ix", int, False),
+        #TgsProp("match_name", "mn", str, False),
+        TgsProp("name", "nm", str, False),
+        TgsProp("type", "ty", int, False),
+    ]
+
+    def __init__(self):
+        ## Effect Index. Used for expressions.
+        self.effect_index = None
+        ## After Effect's Name. Used for expressions.
+        self.name = None
+
+        """
+        ## After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        """
+
+    @classmethod
+    def _load_get_class(cls, lottiedict):
+        if not EffectValue._classses:
+            EffectValue._classses = {
+                sc.type: sc
+                for sc in EffectValue.__subclasses__()
+            }
+        return EffectValue._classses[lottiedict["ty"]]
+
+
 ## \ingroup Lottie
 ## \todo check
 class FillEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", Effect, True),
+        TgsProp("effects", "ef", EffectValue, True),
     ]
     ## %Effect type.
     type = 21
@@ -50,14 +90,14 @@ class FillEffect(Effect):
     def __init__(self):
         Effect.__init__(self)
         ## Effect List of properties.
-        self.effects = [] # PointEffect, DropDownEffect, ColorEffect, DropDownEffect, SliderEffect, SliderEffect, SliderEffect
+        self.effects = [] # EffectValuePoint, EffectValueDropDown, EffectValueColor, EffectValueDropDown, EffectValueSlider, EffectValueSlider, EffectValueSlider
 
 
 ##\ingroup Lottie
 ## \todo check
 class StrokeEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", Effect, True),
+        TgsProp("effects", "ef", EffectValue, True),
     ]
     ## %Effect type.
     type = 22
@@ -65,12 +105,12 @@ class StrokeEffect(Effect):
     def __init__(self):
         Effect.__init__(self)
         ## Effect List of properties.
-        self.effects = [] # ColorEffect, CheckboxEffect, CheckboxEffect, ColorEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, DropDownEffect, DropDownEffect
+        self.effects = [] # EffectValueColor, EffectValueCheckbox, EffectValueCheckbox, EffectValueColor, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueDropDown, EffectValueDropDown
 
 
 ##\ingroup Lottie
 ## \todo check
-class DropDownEffect(Effect):
+class EffectValueDropDown(EffectValue):
     _props = [
         TgsProp("value", "v", Value, False),
     ]
@@ -87,7 +127,7 @@ class DropDownEffect(Effect):
 ## \todo check
 class TritoneEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", Effect, True),
+        TgsProp("effects", "ef", EffectValue, True),
     ]
     ## %Effect type.
     type = 23
@@ -95,14 +135,14 @@ class TritoneEffect(Effect):
     def __init__(self):
         Effect.__init__(self)
         ## Effect List of properties.
-        self.effects = [] # ColorEffect, ColorEffect, ColorEffect, SliderEffect
+        self.effects = [] # EffectValueColor, EffectValueColor, EffectValueColor, EffectValueSlider
 
 
 ##\ingroup Lottie
 ## \todo check
 class GroupEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", Effect, True),
+        TgsProp("effects", "ef", EffectValue, True),
         TgsProp("enabled", "en", PseudoBool, False),
     ]
 
@@ -116,7 +156,7 @@ class GroupEffect(Effect):
 
 ##\ingroup Lottie
 ## \todo check
-class ColorEffect(Effect):
+class EffectValueColor(EffectValue):
     _props = [
         TgsProp("value", "v", MultiDimensional, False),
     ]
@@ -133,7 +173,7 @@ class ColorEffect(Effect):
 ## \todo check
 class ProLevelsEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", Effect, True),
+        TgsProp("effects", "ef", EffectValue, True),
     ]
     ## %Effect type.
     type = 24
@@ -141,12 +181,12 @@ class ProLevelsEffect(Effect):
     def __init__(self):
         Effect.__init__(self)
         ## ffect List of properties.
-        self.effects = [] # DropDownEffect, NoValueEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, NoValueEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect, SliderEffect
+        self.effects = [] # EffectValueDropDown, NoValueEffect, NoValueEffect, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, NoValueEffect, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, NoValueEffect, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, NoValueEffect, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, NoValueEffect, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider
 
 
 ##\ingroup Lottie
 ## \todo check
-class AngleEffect(Effect):
+class EffectValueAngle(EffectValue):
     _props = [
         TgsProp("value", "v", Value, False),
     ]
@@ -161,7 +201,7 @@ class AngleEffect(Effect):
 
 ##\ingroup Lottie
 ## \todo check
-class SliderEffect(Effect):
+class EffectValueSlider(EffectValue):
     _props = [
         TgsProp("value", "v", Value, False),
     ]
@@ -176,7 +216,7 @@ class SliderEffect(Effect):
 
 ##\ingroup Lottie
 ## \todo check
-class CheckboxEffect(Effect):
+class EffectValueCheckbox(EffectValue):
     _props = [
         TgsProp("value", "v", Value, False),
     ]
@@ -191,7 +231,7 @@ class CheckboxEffect(Effect):
 
 ##\ingroup Lottie
 ## \todo check
-class PointEffect(Effect):
+class EffectValuePoint(EffectValue):
     _props = [
         TgsProp("value", "v", MultiDimensional, False),
     ]
@@ -208,7 +248,7 @@ class PointEffect(Effect):
 ## \todo check
 class TintEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", Effect, True),
+        TgsProp("effects", "ef", EffectValue, True),
     ]
     ## %Effect type.
     type = 20
@@ -216,12 +256,12 @@ class TintEffect(Effect):
     def __init__(self):
         Effect.__init__(self)
         ## Effect List of properties.
-        self.effects = [] # ColorEffect, ColorEffect, SliderEffect
+        self.effects = [] # EffectValueColor, EffectValueColor, EffectValueSlider
 
 
 ##\ingroup Lottie
 ## \todo check
-class LayerEffect(Effect):
+class EffectValueLayer(EffectValue):
     _props = [
         TgsProp("value", "v", Value, False),
     ]
@@ -263,14 +303,14 @@ class Matte3Effect(Effect):
 ## \ingroup Lottie
 class GaussianBlurEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", Effect, True),
+        TgsProp("effects", "ef", EffectValue, True),
     ]
     ## %Effect type.
     type = 29
 
     def __init__(self, sigma=0, dimensions=0, wrap=0):
         Effect.__init__(self)
-        self.effects = [SliderEffect(sigma), SliderEffect(dimensions), CheckboxEffect(wrap)]
+        self.effects = [EffectValueSlider(sigma), EffectValueSlider(dimensions), EffectValueCheckbox(wrap)]
 
     @property
     def sigma(self):
