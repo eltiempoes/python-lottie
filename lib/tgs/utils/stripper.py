@@ -5,7 +5,7 @@ from .nvector import NVector
 
 def strip(tgs_object):
     if isinstance(tgs_object, Bezier):
-        tgs_object.vertices = [NVector(x.x, x.y) for x in tgs_object.vertices]
+        tgs_object.shape = [NVector(x.x, x.y) for x in tgs_object.shape]
         tgs_object.in_point = [NVector(x.x, x.y) for x in tgs_object.in_point]
         tgs_object.out_point = [NVector(x.x, x.y) for x in tgs_object.out_point]
 

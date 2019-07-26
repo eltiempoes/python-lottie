@@ -1,7 +1,7 @@
 import random
 import math
 from .nvector import NVector
-from ..objects.shapes import Shape
+from ..objects.shapes import Path
 from .. import objects
 from ..objects import easing
 
@@ -74,7 +74,7 @@ def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, revers
 
 
 def generate_path_appear(bezier, appear_start, appear_end, n_keyframes, reverse=False):
-    obj = Shape()
+    obj = Path()
     beziers = []
     maxp = 0
 
@@ -94,10 +94,10 @@ def generate_path_appear(bezier, appear_start, appear_end, n_keyframes, reverse=
         if len(segment.vertices) > maxp:
             maxp = len(segment.vertices)
 
-        obj.vertices.add_keyframe(time, segment)
+        obj.shape.add_keyframe(time, segment)
 
     for segment in beziers:
-        deltap = maxp - len(segment.vertices)
+        deltap = maxp - len(segment.shape)
         if deltap > 0:
             segment.vertices += [segment.vertices[-1]] * deltap
             segment.in_point += [NVector(0,0)] * deltap
@@ -107,7 +107,7 @@ def generate_path_appear(bezier, appear_start, appear_end, n_keyframes, reverse=
 
 
 def generate_path_disappear(bezier, disappear_start, disappear_end, n_keyframes, reverse=False):
-    obj = Shape()
+    obj = Path()
     beziers = []
     maxp = 0
 
@@ -126,7 +126,7 @@ def generate_path_disappear(bezier, disappear_start, disappear_end, n_keyframes,
         if len(segment.vertices) > maxp:
             maxp = len(segment.vertices)
 
-        obj.vertices.add_keyframe(time, segment)
+        obj.shape.add_keyframe(time, segment)
 
     for segment in beziers:
         deltap = maxp - len(segment.vertices)
@@ -139,7 +139,7 @@ def generate_path_disappear(bezier, disappear_start, disappear_end, n_keyframes,
 
 
 def generate_path_segment(bezier, appear_start, appear_end, disappear_start, disappear_end, n_keyframes, reverse=False):
-    obj = Shape()
+    obj = Path()
     beziers = []
     maxp = 0
 
@@ -170,7 +170,7 @@ def generate_path_segment(bezier, appear_start, appear_end, disappear_start, dis
         if len(segment.vertices) > maxp:
             maxp = len(segment.vertices)
 
-        obj.vertices.add_keyframe(time, segment)
+        obj.shape.add_keyframe(time, segment)
 
     for segment in beziers:
         deltap = maxp - len(segment.vertices)

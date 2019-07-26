@@ -110,7 +110,7 @@ class Vectorizer:
             group = layer.add_shape(objects.Group())
             group.name = "bitmap"
             layer._max_verts[group.name] = 0
-            group.add_shape(objects.Shape())
+            group.add_shape(objects.Path())
             group.add_shape(objects.Fill(NVector(0, 0, 0)))
         else:
             for color in self.palette:
@@ -134,9 +134,9 @@ class Vectorizer:
         path = bmp.trace()
         shapes = []
         for curve in path:
-            shape = group.insert_shape(0, objects.Shape())
+            shape = group.insert_shape(0, objects.Path())
             shapes.append(shape)
-            bezier = shape.vertices.value
+            bezier = shape.shape.value
             bezier.add_point(NVector(*curve.start_point))
             for segment in curve:
                 if segment.is_corner:
@@ -162,12 +162,12 @@ class Vectorizer:
             shapes = self.raster_to_bezier(group, bitmap)
             if shapes:
                 # TODO handle multiple shapes
-                nverts = len(shapes[0].vertices.value.vertices)
+                nverts = len(shapes[0].shape.value.vertices)
                 if nverts > layer._max_verts[group.name]:
                     layer._max_verts[group.name] = nverts
                 for shape in shapes:
-                    bezier = shape.vertices.value
-                    shape.vertices.add_keyframe(time, bezier)
+                    bezier = shape.shape.value
+                    shape.shape.add_keyframe(time, bezier)
 
     def adjust_missing_vertices(self, layer_name):
         layer = self.layers[layer_name]
@@ -175,7 +175,7 @@ class Vectorizer:
             # TODO handle multiple shapes
             shape = group.shapes[0]
             nverts = layer._max_verts[group.name]
-            for kf in shape.vertices.keyframes:
+            for kf in shape.shape.keyframes:
                 bezier = kf.start
                 count = nverts - len(bezier.vertices)
                 bezier.vertices += [bezier.vertices[-1]] * count
@@ -186,8 +186,8 @@ class Vectorizer:
         layer = self.layers[layer_name]
         for group in layer.shapes:
             shape = group.shapes[0]
-            bezier = shape.vertices.keyframes[0].start
-            group.shapes[0].vertices.add_keyframe(time, bezier)
+            bezier = shape.shape.keyframes[0].start
+            group.shapes[0].shape.add_keyframe(time, bezier)
 
 
 def raster_to_animation(filename, n_colors=1, palette=[], mode=QuanzationMode.Nearest):

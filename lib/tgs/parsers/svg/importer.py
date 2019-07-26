@@ -399,22 +399,22 @@ class SvgParser(SvgHandler):
         self.add_shapes(element, [rect], shape_parent)
 
     def _parseshape_line(self, element, shape_parent):
-        line = objects.Shape()
-        line.vertices.value.add_point(NVector(
+        line = objects.Path()
+        line.shape.value.add_point(NVector(
             self._parse_unit(element.attrib["x1"]),
             self._parse_unit(element.attrib["y1"])
         ))
-        line.vertices.value.add_point(NVector(
+        line.shape.value.add_point(NVector(
             self._parse_unit(element.attrib["x2"]),
             self._parse_unit(element.attrib["y2"])
         ))
         self.add_shapes(element, [line], shape_parent)
 
     def _handle_poly(self, element):
-        line = objects.Shape()
+        line = objects.Path()
         coords = list(map(float, element.attrib["points"].replace(",", " ").split()))
         for i in range(0, len(coords), 2):
-            line.vertices.value.add_point(coords[i:i+2])
+            line.shape.value.add_point(coords[i:i+2])
         return line
 
     def _parseshape_polyline(self, element, shape_parent):
@@ -423,7 +423,7 @@ class SvgParser(SvgHandler):
 
     def _parseshape_polygon(self, element, shape_parent):
         line = self._handle_poly(element)
-        line.vertices.value.close()
+        line.shape.value.close()
         self.add_shapes(element, [line], shape_parent)
 
     def _parseshape_path(self, element, shape_parent):
@@ -431,8 +431,8 @@ class SvgParser(SvgHandler):
         d_parser.parse()
         paths = []
         for path in d_parser.paths:
-            p = objects.Shape()
-            p.vertices.value = path
+            p = objects.Path()
+            p.shape.value = path
             paths.append(p)
         #if len(d_parser.paths) > 1:
             #paths.append(objects.shapes.Merge())

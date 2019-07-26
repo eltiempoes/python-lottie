@@ -24,8 +24,8 @@ heart.add_smooth_point(Point(100, 50), Point(-5, 10))
 heart.closed = True
 
 g1 = layer.add_shape(objects.Group())
-shape = g1.add_shape(objects.Shape())
-shape.vertices.value = heart
+shape = g1.add_shape(objects.Path())
+shape.shape.value = heart
 fill = layer.add_shape(objects.Fill(Color(1, 0, 0)))
 stroke = layer.add_shape(objects.Stroke(Color(0, 0, 0), 5))
 
@@ -33,11 +33,11 @@ stroke = layer.add_shape(objects.Stroke(Color(0, 0, 0), 5))
 
 g2 = layer.add_shape(objects.Group())
 bb = shape.bounding_box()
-shapeb = g2.add_shape(objects.Shape())
-shapeb.vertices.value.add_point(Point(bb.x1, bb.y1))
-shapeb.vertices.value.add_point(Point(bb.x2, bb.y1))
-shapeb.vertices.value.add_point(Point(bb.x2, bb.y2))
-shapeb.vertices.value.add_point(Point(bb.x1, bb.y2))
+shapeb = g2.add_shape(objects.Path())
+shapeb.shape.value.add_point(Point(bb.x1, bb.y1))
+shapeb.shape.value.add_point(Point(bb.x2, bb.y1))
+shapeb.shape.value.add_point(Point(bb.x2, bb.y2))
+shapeb.shape.value.add_point(Point(bb.x1, bb.y2))
 fill = layer.add_shape(objects.Fill([1, 1, 0]))
 
 
@@ -66,8 +66,8 @@ env.add_keyframe(
     Point(256+128, 256+128),
 )
 
-env.animate_bezier(shape.vertices)
-env.animate_bezier(shapeb.vertices)
+env.animate_bezier(shape.shape)
+env.animate_bezier(shapeb.shape)
 
 
 exporters.multiexport(an, "/tmp/envelope_deformation")

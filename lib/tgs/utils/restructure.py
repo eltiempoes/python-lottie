@@ -82,7 +82,7 @@ def restructure_shapegroup(shape, shape_group, merge_paths):
         shape_group.fill = shape
     elif isinstance(shape, (objects.Stroke, objects.GradientStroke)):
         shape_group.stroke = shape
-    elif isinstance(shape, (objects.Shape)):
+    elif isinstance(shape, (objects.Path)):
         if merge_paths:
             if not shape_group.paths:
                 shape_group.paths = RestructuredPathMerger()

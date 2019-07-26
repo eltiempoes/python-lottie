@@ -20,14 +20,14 @@ ball.size.value = Point(10, 10)
 group.add_shape(objects.Fill(Color(0, 1, 0)))
 
 group = layer.add_shape(objects.Group())
-bez = group.add_shape(objects.Shape())
-bez.vertices.value.add_point(Point(256, 128), Point(0, 0), Point(64, 64))
-bez.vertices.value.add_point(Point(256, 256), Point(-64, -64), Point(-64, 64))
-bez.vertices.value.add_point(Point(256, 256+120), Point(0, 0), Point(0, 0))
+bez = group.add_shape(objects.Path())
+bez.shape.value.add_point(Point(256, 128), Point(0, 0), Point(64, 64))
+bez.shape.value.add_point(Point(256, 256), Point(-64, -64), Point(-64, 64))
+bez.shape.value.add_point(Point(256, 256+120), Point(0, 0), Point(0, 0))
 group.add_shape(objects.Stroke(Color(1, 0, 0), 10))
 
-follow_path(ball.position, bez.vertices.value, 0, 90, 30)
-follow_path(ball.position, bez.vertices.value, 90, 180, 30, True)
+follow_path(ball.position, bez.shape.value, 0, 90, 30)
+follow_path(ball.position, bez.shape.value, 90, 180, 30, True)
 
 
 exporters.multiexport(an, "/tmp/follow_path")

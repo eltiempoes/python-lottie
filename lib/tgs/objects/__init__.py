@@ -12,7 +12,7 @@ __all__ = [
     "easing",
     "Animation",
     "NullLayer", "TextLayer", "ShapeLayer", "ImageLayer", "PreCompLayer", "SolidLayer",
-    "Rect", "Fill", "Trim", "Repeater", "GFill", "Stroke", "Round", "Shape",
+    "Rect", "Fill", "Trim", "Repeater", "GFill", "Stroke", "Round", "Path",
     "TransformShape", "Group", "Star", "Ellipse", "Merge", "GStroke",
     "Bezier",
 ]

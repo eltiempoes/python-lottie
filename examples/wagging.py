@@ -33,14 +33,14 @@ handle_length = 30
 
 def setup(offset, exp):
     g = layer.add_shape(objects.Group())
-    shape1 = g.add_shape(objects.Shape())
-    bez1 = shape1.vertices.value
+    shape1 = g.add_shape(objects.Path())
+    bez1 = shape1.shape.value
     g.transform.opacity.value = 60
     g.add_shape(objects.Fill(Color(0, 1, 1)))
 
     g = layer.add_shape(objects.Group())
-    shape2 = g.add_shape(objects.Shape())
-    bez2 = shape2.vertices.value
+    shape2 = g.add_shape(objects.Path())
+    bez2 = shape2.shape.value
     g.add_shape(objects.Fill(Color(0, 0, 1)))
 
     for i in range(6):
@@ -67,8 +67,8 @@ def setup(offset, exp):
         bez2.add_smooth_point(p2, t2)
 
     displacer = anutils.FollowDisplacer(Point(400, offset), 200, displace, 0, last_frame, 10, exp)
-    displacer.animate_bezier(shape1.vertices)
-    displacer.animate_bezier(shape2.vertices)
+    displacer.animate_bezier(shape1.shape)
+    displacer.animate_bezier(shape2.shape)
 
 
 setup(128, 1/2)

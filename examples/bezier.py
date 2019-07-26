@@ -31,15 +31,15 @@ antiheart = (
 
 g1 = layer.add_shape(objects.Group())
 g1.transform.position.value = Point(100, 200)
-shape = g1.add_shape(objects.Shape())
-shape.vertices.value = heart
+shape = g1.add_shape(objects.Path())
+shape.shape.value = heart
 
 g2 = layer.add_shape(objects.Group())
 g2.transform.position.value = Point(300, 200)
-animated = g2.add_shape(objects.Shape())
-animated.vertices.add_keyframe(0, heart)
-animated.vertices.add_keyframe(30, antiheart)
-animated.vertices.add_keyframe(59, heart)
+animated = g2.add_shape(objects.Path())
+animated.shape.add_keyframe(0, heart)
+animated.shape.add_keyframe(30, antiheart)
+animated.shape.add_keyframe(59, heart)
 
 
 fill = layer.add_shape(objects.Fill(Color.from_uint8(255, 0, 0)))

@@ -45,7 +45,7 @@ def chain_bezier(chain):
 
 
 g = layer.add_shape(objects.Group())
-s = g.add_shape(objects.Shape())
+s = g.add_shape(objects.Path())
 g.add_shape(objects.Stroke(Color(1, 0, 0), 5))
 
 chain = ik.Chain(Point(0, 0))
@@ -73,7 +73,7 @@ ch2.add_joint(Point(512, 312))
 
 g = layer.add_shape(objects.Group())
 octshapes = {
-    n: g.add_shape(objects.Shape())
+    n: g.add_shape(objects.Path())
     for n in oct.chains.keys()
 }
 g.add_shape(objects.Stroke(Color(0, 0, 1), 5))
@@ -84,10 +84,10 @@ for i in range(an.out_point):
     p1 = Point(math.cos(t*math.pi*2)/2+1, math.sin(t*math.pi*2)/2+1) * 256
     p2 = Point(math.sin(2*t*math.pi*2)/2+1, -math.cos(t*math.pi*2)/2+1) * 256
     chain.reach(p1)
-    s.vertices.add_keyframe(i, chain_bezier(chain))
+    s.shape.add_keyframe(i, chain_bezier(chain))
 
     oct.reach({"ch1": p1, "ch2": p2})
     for name, ochain in oct.chains.items():
-        octshapes[name].vertices.add_keyframe(i, chain_bezier(ochain))
+        octshapes[name].shape.add_keyframe(i, chain_bezier(ochain))
 
 exporters.multiexport(an, "/tmp/ik")

@@ -27,9 +27,9 @@ class PathTester(unittest.TestCase):
     def assert_path(self, path, vertices, in_point, out_point):
         anim = self.parse_svg_path(path)
         path = anim.find("path")
-        self.assertIsInstance(path.shapes[0], objects.Shape)
+        self.assertIsInstance(path.shapes[0], objects.Path)
         self.assertIsInstance(path.shapes[1], objects.Stroke)
-        bezier = path.shapes[0].vertices.value
+        bezier = path.shapes[0].shape.value
         self.assertListEqual(bezier.vertices, vertices)
         self.assertListEqual(bezier.in_point, in_point)
         self.assertListEqual(bezier.out_point, out_point)
@@ -68,13 +68,13 @@ class TestMove(PathTester):
             M 20, 10 L 10, 20 20, 20
         """)
         path = anim.find("path")
-        bezier = path.shapes[0].vertices.value
+        bezier = path.shapes[0].shape.value
         self.assertListEqual(bezier.vertices, [
             NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
         self.assertFalse(bezier.closed)
 
-        bezier = path.shapes[1].vertices.value
+        bezier = path.shapes[1].shape.value
         self.assertListEqual(bezier.vertices, [
             NVector(20, 10), NVector(10, 20), NVector(20, 20),
         ])
@@ -86,13 +86,13 @@ class TestMove(PathTester):
             m 0,-10 L 10, 20 20, 20
         """)
         path = anim.find("path")
-        bezier = path.shapes[0].vertices.value
+        bezier = path.shapes[0].shape.value
         self.assertListEqual(bezier.vertices, [
             NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
         self.assertFalse(bezier.closed)
 
-        bezier = path.shapes[1].vertices.value
+        bezier = path.shapes[1].shape.value
         self.assertListEqual(bezier.vertices, [
             NVector(20, 10), NVector(10, 20), NVector(20, 20),
         ])
@@ -198,9 +198,9 @@ class TestArc(PathTester):
             A 6 4 10 1 0 14,10
         """)
         path = anim.find("path")
-        self.assertIsInstance(path.shapes[0], objects.Shape)
+        self.assertIsInstance(path.shapes[0], objects.Path)
         self.assertIsInstance(path.shapes[1], objects.Stroke)
-        bezier = path.shapes[0].vertices.value
+        bezier = path.shapes[0].shape.value
         self.assert_list_almost_equal(bezier.vertices, [
             NVector(6, 10), NVector(6.8626965, 15.758131), NVector(15.2322608, 15.9819042), NVector(14, 10),
         ])
@@ -217,9 +217,9 @@ class TestArc(PathTester):
             A 6 4 10 1 1 14,10
         """)
         path = anim.find("path")
-        self.assertIsInstance(path.shapes[0], objects.Shape)
+        self.assertIsInstance(path.shapes[0], objects.Path)
         self.assertIsInstance(path.shapes[1], objects.Stroke)
-        bezier = path.shapes[0].vertices.value
+        bezier = path.shapes[0].shape.value
         self.assert_list_almost_equal(bezier.vertices, [
             NVector(6, 10), NVector(4.4903685, 4.24186895), NVector(12.7677392, 4.0180958), NVector(14, 10),
         ])
@@ -236,9 +236,9 @@ class TestArc(PathTester):
             A 6 4 10 0 0 14,10
         """)
         path = anim.find("path")
-        self.assertIsInstance(path.shapes[0], objects.Shape)
+        self.assertIsInstance(path.shapes[0], objects.Path)
         self.assertIsInstance(path.shapes[1], objects.Stroke)
-        bezier = path.shapes[0].vertices.value
+        bezier = path.shapes[0].shape.value
         self.assert_list_almost_equal(bezier.vertices, [
             NVector(6, 10), NVector(14, 10),
         ])
@@ -255,9 +255,9 @@ class TestArc(PathTester):
             A 6 4 10 0 1 14,10
         """)
         path = anim.find("path")
-        self.assertIsInstance(path.shapes[0], objects.Shape)
+        self.assertIsInstance(path.shapes[0], objects.Path)
         self.assertIsInstance(path.shapes[1], objects.Stroke)
-        bezier = path.shapes[0].vertices.value
+        bezier = path.shapes[0].shape.value
         self.assert_list_almost_equal(bezier.vertices, [
             NVector(6, 10), NVector(14, 10),
         ])
@@ -275,7 +275,7 @@ class TestClosePath(PathTester):
             M 10, 10 L 10, 20, 20, 20
         """)
         path = anim.find("path")
-        bezier = path.shapes[0].vertices.value
+        bezier = path.shapes[0].shape.value
         self.assertListEqual(bezier.vertices, [
             NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
@@ -286,7 +286,7 @@ class TestClosePath(PathTester):
             M 10, 10 L 10, 20, 20, 20 Z
         """)
         path = anim.find("path")
-        bezier = path.shapes[0].vertices.value
+        bezier = path.shapes[0].shape.value
         self.assertListEqual(bezier.vertices, [
             NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
@@ -297,7 +297,7 @@ class TestClosePath(PathTester):
             M 10, 10 L 10, 20, 20, 20 z
         """)
         path = anim.find("path")
-        bezier = path.shapes[0].vertices.value
+        bezier = path.shapes[0].shape.value
         self.assertListEqual(bezier.vertices, [
             NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
@@ -309,13 +309,13 @@ class TestClosePath(PathTester):
             L 20, 10  20, 20 Z
         """)
         path = anim.find("path")
-        bezier = path.shapes[0].vertices.value
+        bezier = path.shapes[0].shape.value
         self.assertListEqual(bezier.vertices, [
             NVector(10, 10), NVector(10, 20), NVector(20, 20),
         ])
         self.assertTrue(bezier.closed)
 
-        bezier = path.shapes[1].vertices.value
+        bezier = path.shapes[1].shape.value
         self.assertListEqual(bezier.vertices, [
             NVector(10, 10), NVector(20, 10), NVector(20, 20),
         ])

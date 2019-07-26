@@ -263,7 +263,7 @@ class SifBuilder(restructure.AbstractBuilder):
         bline_par.setAttribute("name", "bline")
         bline = self._subelement(bline_par, "bline")
         bline.setAttribute("type", "bline_point")
-        startbez = path.vertices.get_value()
+        startbez = path.shape.get_value()
         bline.setAttribute("loop", self._format_bool(startbez.closed))
         nverts = len(startbez.vertices)
         for point in range(nverts):
@@ -277,7 +277,7 @@ class SifBuilder(restructure.AbstractBuilder):
 
         def get_point(keyframe, elem):
             if keyframe is None:
-                bezier = lottie_path.vertices.value
+                bezier = lottie_path.shape.value
             else:
                 bezier = keyframe.start
             if not bezier:
@@ -287,7 +287,7 @@ class SifBuilder(restructure.AbstractBuilder):
             self._settext(self._subelement(elem, "x"), str(vert[0]))
             self._settext(self._subelement(elem, "y"), str(vert[1]))
 
-        self.process_vector_ext("point", lottie_path.vertices.keyframes, composite, "vector", get_point)
+        self.process_vector_ext("point", lottie_path.shape.keyframes, composite, "vector", get_point)
         self.simple_composite_param("split", "true", composite, "bool")
         self.simple_composite_param("split_radius", "true", composite, "bool")
         self.simple_composite_param("split_angle", "true", composite, "bool")
@@ -296,7 +296,7 @@ class SifBuilder(restructure.AbstractBuilder):
 
         def get_tangent_r(keyframe, elem):
             if keyframe is None:
-                bezier = lottie_path.vertices.value
+                bezier = lottie_path.shape.value
             else:
                 bezier = keyframe.start
             if not bezier:
@@ -309,7 +309,7 @@ class SifBuilder(restructure.AbstractBuilder):
 
         def get_tangent_th(keyframe, elem):
             if keyframe is None:
-                bezier = lottie_path.vertices.value
+                bezier = lottie_path.shape.value
             else:
                 bezier = keyframe.start
             if not bezier:
@@ -324,15 +324,15 @@ class SifBuilder(restructure.AbstractBuilder):
         which_point = "in_point"
         radial_composite = self._subelement(self._subelement(composite, "t1"), "radial_composite")
         radial_composite.setAttribute("type", "vector")
-        self.process_vector_ext("radius", lottie_path.vertices.keyframes, radial_composite, "real", get_tangent_r)
-        self.process_vector_ext("theta", lottie_path.vertices.keyframes, radial_composite, "angle", get_tangent_th)
+        self.process_vector_ext("radius", lottie_path.shape.keyframes, radial_composite, "real", get_tangent_r)
+        self.process_vector_ext("theta", lottie_path.shape.keyframes, radial_composite, "angle", get_tangent_th)
 
         mult = 1
         which_point = "out_point"
         radial_composite = self._subelement(self._subelement(composite, "t2"), "radial_composite")
         radial_composite.setAttribute("type", "vector")
-        self.process_vector_ext("radius", lottie_path.vertices.keyframes, radial_composite, "real", get_tangent_r)
-        self.process_vector_ext("theta", lottie_path.vertices.keyframes, radial_composite, "angle", get_tangent_th)
+        self.process_vector_ext("radius", lottie_path.shape.keyframes, radial_composite, "real", get_tangent_r)
+        self.process_vector_ext("theta", lottie_path.shape.keyframes, radial_composite, "angle", get_tangent_th)
 
     def _on_shapegroup(self, shape_group, dom_parent):
         if shape_group.empty():

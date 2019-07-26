@@ -244,7 +244,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         path = ElementTree.SubElement(parent, "path")
         d = ""
         for shape in shapes:
-            bez = shape.vertices.get_value(self.time)
+            bez = shape.shape.get_value(self.time)
             d += "M %s,%s " % tuple(bez.vertices[0].components[:2])
             for i in range(1, len(bez.vertices)):
                 qfrom = bez.vertices[i-1]

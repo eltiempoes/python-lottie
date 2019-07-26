@@ -42,8 +42,8 @@ g.add_shape(objects.Fill(Color(1, 0, 0)))
 
 
 g = layer.insert_shape(0, objects.Group())
-mouth = g.add_shape(objects.Shape())
-bez = mouth.vertices.value
+mouth = g.add_shape(objects.Path())
+bez = mouth.shape.value
 bez.add_smooth_point(Point3D(256-80, 256+30, -80), Point3D(0, 0, 0))
 bez.add_smooth_point(Point3D(256, 256+70, -100), -Point3D(50, 0, 0))
 bez.add_smooth_point(Point3D(256+80, 256+30, -80), Point3D(0, 0, 0))
@@ -54,19 +54,19 @@ dr = anutils.DepthRotationDisplacer(Point3D(256, 256, 0), 0, 30, 10, Point3D(0, 
 dr.animate_point(eye1.position)
 dr.animate_point(eye2.position)
 dr.animate_point(nose.position)
-dr.animate_bezier(mouth.vertices)
+dr.animate_bezier(mouth.shape)
 
 dr = anutils.DepthRotationDisplacer(Point3D(256, 256, 0), 30, 90, 10, Point3D(0, 4, 1), 0, -60)
 dr.animate_point(eye1.position)
 dr.animate_point(eye2.position)
 dr.animate_point(nose.position)
-dr.animate_bezier(mouth.vertices)
+dr.animate_bezier(mouth.shape)
 
 dr = anutils.DepthRotationDisplacer(Point3D(256, 256, 0), 90, 120, 10, Point3D(0, 4, 1), 0, 30)
 dr.animate_point(eye1.position)
 dr.animate_point(eye2.position)
 dr.animate_point(nose.position)
-dr.animate_bezier(mouth.vertices)
+dr.animate_bezier(mouth.shape)
 
 
 exporters.multiexport(an, "/tmp/3d_face")

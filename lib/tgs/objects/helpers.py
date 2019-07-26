@@ -72,7 +72,7 @@ class Mask(TgsObject):
     _props = [
         TgsProp("inverted", "inv", bool, False),
         TgsProp("name", "nm", str, False),
-        TgsProp("points", "pt", ShapeProperty, False),
+        TgsProp("shape", "pt", ShapeProperty, False),
         TgsProp("opacity", "o", float, False),
         TgsProp("mode", "mode", MaskMode, False),
         TgsProp("dilate", "x", float, False),
@@ -84,7 +84,7 @@ class Mask(TgsObject):
         ## Mask name. Used for expressions and effects.
         self.name = None
         ## Mask vertices
-        self.points = ShapeProperty()
+        self.shape = ShapeProperty()
         ## Mask opacity.
         self.opacity = Value(100)
         ## Mask mode. Not all mask types are supported.

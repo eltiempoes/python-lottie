@@ -27,7 +27,7 @@ maskbez = maskshape.to_bezier()
 
 mask = objects.Mask()
 an.layers[0].masks = [mask]
-mask.points.value = maskbez.vertices.value
+mask.shape.value = maskbez.shape.value
 
 g = an.layers[0].add_shape(objects.Group())
 r = g.add_shape(objects.Rect())

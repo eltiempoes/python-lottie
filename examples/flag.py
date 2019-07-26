@@ -26,29 +26,29 @@ for i in range(0, 512+1, 16):
     displacer.animate_point(b.position)
 
 
-bez = g.add_shape(objects.Shape())
-bez.vertices.value.add_smooth_point(Point(256, 200), Point(50, 0))
-bez.vertices.value.add_smooth_point(Point(156, 300), Point(0, -50))
-bez.vertices.value.add_smooth_point(Point(256, 400), Point(-50, 0))
-bez.vertices.value.add_smooth_point(Point(356, 300), Point(0, 50))
-bez.vertices.value.close()
-bez.vertices.value.split_self_chunks(8)
-displacer.animate_bezier(bez.vertices)
+bez = g.add_shape(objects.Path())
+bez.shape.value.add_smooth_point(Point(256, 200), Point(50, 0))
+bez.shape.value.add_smooth_point(Point(156, 300), Point(0, -50))
+bez.shape.value.add_smooth_point(Point(256, 400), Point(-50, 0))
+bez.shape.value.add_smooth_point(Point(356, 300), Point(0, 50))
+bez.shape.value.close()
+bez.shape.value.split_self_chunks(8)
+displacer.animate_bezier(bez.shape)
 
 g.add_shape(objects.Fill(Color(1, 1, 0)))
 
 
 g = layer.add_shape(objects.Group())
-bez = g.add_shape(objects.Shape())
+bez = g.add_shape(objects.Path())
 g.add_shape(objects.Stroke(Color(1, 0, 0), 5))
 g.add_shape(objects.Fill(Color(0, 0, 1)))
 for i in range(9):
-    bez.vertices.value.add_point(Point(i*64, 160), Point(-20, 0), Point(20, 0))
+    bez.shape.value.add_point(Point(i*64, 160), Point(-20, 0), Point(20, 0))
 
 for i in range(9):
-    bez.vertices.value.add_point(Point(512-i*64, 420), Point(20, 0), Point(-20, 0))
-bez.vertices.value.close()
-displacer.animate_bezier(bez.vertices)
+    bez.shape.value.add_point(Point(512-i*64, 420), Point(20, 0), Point(-20, 0))
+bez.shape.value.close()
+displacer.animate_bezier(bez.shape)
 
 
 exporters.multiexport(an, "/tmp/flag")

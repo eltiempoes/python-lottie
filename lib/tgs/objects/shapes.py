@@ -141,7 +141,7 @@ class Rect(ShapeElement):
         """!
         Returns a Shape corresponding to this rect
         """
-        shape = Shape()
+        shape = Path()
         kft = set()
         if self.position.animated:
             kft |= set(kf.time for kf in self.position.keyframes)
@@ -150,10 +150,10 @@ class Rect(ShapeElement):
         if self.rounded.animated:
             kft |= set(kf.time for kf in self.rounded.keyframes)
         if not kft:
-            shape.vertices.value = self._bezier_t(0)
+            shape.shape.value = self._bezier_t(0)
         else:
             for time in sorted(kft):
-                shape.vertices.add_keyframe(time, self._bezier_t(time))
+                shape.shape.add_keyframe(time, self._bezier_t(time))
         return shape
 
     def _bezier_t(self, time):
@@ -249,7 +249,7 @@ class Star(ShapeElement):
         """!
         Returns a Shape corresponding to this star
         """
-        shape = Shape()
+        shape = Path()
         kft = set()
         if self.position.animated:
             kft |= set(kf.time for kf in self.position.keyframes)
@@ -263,10 +263,10 @@ class Star(ShapeElement):
             kft |= set(kf.time for kf in self.rotation.keyframes)
         # TODO inner_roundness / outer_roundness
         if not kft:
-            shape.vertices.value = self._bezier_t(0)
+            shape.shape.value = self._bezier_t(0)
         else:
             for time in sorted(kft):
-                shape.vertices.add_keyframe(time, self._bezier_t(time))
+                shape.shape.add_keyframe(time, self._bezier_t(time))
         return shape
 
     def _bezier_t(self, time):
@@ -330,17 +330,17 @@ class Ellipse(ShapeElement):
         """!
         Returns a Shape corresponding to this ellipse
         """
-        shape = Shape()
+        shape = Path()
         kft = set()
         if self.position.animated:
             kft |= set(kf.time for kf in self.position.keyframes)
         if self.size.animated:
             kft |= set(kf.time for kf in self.size.keyframes)
         if not kft:
-            shape.vertices.value = self._bezier_t(0)
+            shape.shape.value = self._bezier_t(0)
         else:
             for time in sorted(kft):
-                shape.vertices.add_keyframe(time, self._bezier_t(time))
+                shape.shape.add_keyframe(time, self._bezier_t(time))
         return shape
 
     def _bezier_t(self, time):
@@ -358,13 +358,13 @@ class Ellipse(ShapeElement):
 
 
 ##\ingroup Lottie
-class Shape(ShapeElement):
+class Path(ShapeElement):
     """!
     Animatable Bezier curve
     """
     _props = [
         TgsProp("direction", "d", float, False),
-        TgsProp("vertices", "ks", ShapeProperty, False),
+        TgsProp("shape", "ks", ShapeProperty, False),
     ]
     ## %Shape type.
     type = "sh"
@@ -374,10 +374,10 @@ class Shape(ShapeElement):
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
         ## Shape's vertices
-        self.vertices = ShapeProperty()
+        self.shape = ShapeProperty()
 
     def bounding_box(self, time=0):
-        pos = self.vertices.get_value(time)
+        pos = self.shape.get_value(time)
 
         bb = BoundingBox()
         for v in pos.vertices:
