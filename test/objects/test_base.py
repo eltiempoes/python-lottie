@@ -21,9 +21,6 @@ class TestTgs(TestCase):
         self.assertEqual(TestEnum.Foo.to_dict(), 1)
         self.assertEqual(TestEnum.load(2), TestEnum.Bar)
 
-    def test_todo(self):
-        self.assertRaises(NotImplementedError, base.todo_func, None)
-
 
 class TestTgsConverter(TestCase):
     def test_p2l(self):
