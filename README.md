@@ -138,7 +138,7 @@ but what is listed there isn't correct.
 There are several things marked as unsupported in telegram animated stickers that are actually supported:
 
 * Masks
-* Mattes
+* Mattes (Works on desktop but not on Android)
 * Star Shapes
 * Gradient Strokes
 * Repeaters

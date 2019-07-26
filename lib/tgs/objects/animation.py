@@ -57,15 +57,15 @@ class Animation(TgsObject):
 
     def add_layer(self, layer):
         """!
-        \brief Appends a layer to the animation
+        @brief Appends a layer to the animation
         \see insert_layer
         """
         return self.insert_layer(len(self.layers), layer)
 
     def insert_layer(self, index, layer):
         """!
-        \brief Inserts a layer to the animation
-        \note Layers added first will be rendered on top of later layers
+        @brief Inserts a layer to the animation
+        @note Layers added first will be rendered on top of later layers
         """
         self.layers.insert(index, layer)
         if layer.index is None:

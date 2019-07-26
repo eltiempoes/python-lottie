@@ -1,45 +1,6 @@
 from .base import TgsObject, TgsProp, PseudoBool
 from .properties import Value, MultiDimensional
-
-
-#NoValueEffect ?
-#5: EffectsManager,
-#11: MaskEffect,
-## \ingroup Lottie
-class Effect(TgsObject):
-    """!
-    Layer effect
-    """
-    ## %Effect type.
-    type = None
-    _classses = {}
-
-    _props = [
-        TgsProp("effect_index", "ix", int, False),
-        #TgsProp("match_name", "mn", str, False),
-        TgsProp("name", "nm", str, False),
-        TgsProp("type", "ty", int, False),
-    ]
-
-    def __init__(self):
-        ## Effect Index. Used for expressions.
-        self.effect_index = None
-        ## After Effect's Name. Used for expressions.
-        self.name = None
-
-        """
-        ## After Effect's Match Name. Used for expressions.
-        self.match_name = ""
-        """
-
-    @classmethod
-    def _load_get_class(cls, lottiedict):
-        if not Effect._classses:
-            Effect._classses = {
-                sc.type: sc
-                for sc in Effect.__subclasses__()
-            }
-        return Effect._classses[lottiedict["ty"]]
+from ..utils.nvector import NVector
 
 
 class EffectValue(TgsObject):
@@ -78,110 +39,65 @@ class EffectValue(TgsObject):
         return EffectValue._classses[lottiedict["ty"]]
 
 
+#EffectNoValue ?
+#5: EffectsManager,
+#11: MaskEffect,
 ## \ingroup Lottie
-## \todo check
-class FillEffect(Effect):
+class Effect(TgsObject):
+    """!
+    Layer effect
+    """
+    ## %Effect type.
+    type = None
+    _classses = {}
+
     _props = [
+        TgsProp("effect_index", "ix", int, False),
+        #TgsProp("match_name", "mn", str, False),
+        TgsProp("name", "nm", str, False),
+        TgsProp("type", "ty", int, False),
         TgsProp("effects", "ef", EffectValue, True),
     ]
-    ## %Effect type.
-    type = 21
+    _effects = []
 
-    def __init__(self):
-        Effect.__init__(self)
-        ## Effect List of properties.
-        self.effects = [] # EffectValuePoint, EffectValueDropDown, EffectValueColor, EffectValueDropDown, EffectValueSlider, EffectValueSlider, EffectValueSlider
+    def __init__(self, *args, **kwargs):
+        ## Effect Index. Used for expressions.
+        self.effect_index = None
+        ## After Effect's Name. Used for expressions.
+        self.name = None
+        ## Effect parameters
+        self.effects = self._load_values(*args, **kwargs)
 
+        """
+        ## After Effect's Match Name. Used for expressions.
+        self.match_name = ""
+        """
 
-##\ingroup Lottie
-## \todo check
-class StrokeEffect(Effect):
-    _props = [
-        TgsProp("effects", "ef", EffectValue, True),
-    ]
-    ## %Effect type.
-    type = 22
+    @classmethod
+    def _load_get_class(cls, lottiedict):
+        if not Effect._classses:
+            Effect._classses = {
+                sc.type: sc
+                for sc in Effect.__subclasses__()
+            }
+        return Effect._classses[lottiedict["ty"]]
 
-    def __init__(self):
-        Effect.__init__(self)
-        ## Effect List of properties.
-        self.effects = [] # EffectValueColor, EffectValueCheckbox, EffectValueCheckbox, EffectValueColor, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueDropDown, EffectValueDropDown
+    def _load_values(self, *args, **kwargs):
+        values = []
+        for i, (name, type) in enumerate(self._effects):
+            val = []
+            if len(args) > i:
+                val = [args[i]]
+            if name in kwargs:
+                val = [kwargs[name]]
+            values.append(type(*val))
+        return values
 
-
-##\ingroup Lottie
-## \todo check
-class EffectValueDropDown(EffectValue):
-    _props = [
-        TgsProp("value", "v", Value, False),
-    ]
-    ## %Effect type.
-    type = 7
-
-    def __init__(self):
-        Effect.__init__(self)
-        ## Effect value.
-        self.value = Value()
-
-
-##\ingroup Lottie
-## \todo check
-class TritoneEffect(Effect):
-    _props = [
-        TgsProp("effects", "ef", EffectValue, True),
-    ]
-    ## %Effect type.
-    type = 23
-
-    def __init__(self):
-        Effect.__init__(self)
-        ## Effect List of properties.
-        self.effects = [] # EffectValueColor, EffectValueColor, EffectValueColor, EffectValueSlider
-
-
-##\ingroup Lottie
-## \todo check
-class GroupEffect(Effect):
-    _props = [
-        TgsProp("effects", "ef", EffectValue, True),
-        TgsProp("enabled", "en", PseudoBool, False),
-    ]
-
-    def __init__(self, effects=[]):
-        Effect.__init__(self, type)
-        ## Effect List of properties.
-        self.effects = effects
-        ## Enabled AE property value
-        self.enabled = True
-
-
-##\ingroup Lottie
-## \todo check
-class EffectValueColor(EffectValue):
-    _props = [
-        TgsProp("value", "v", MultiDimensional, False),
-    ]
-    ## %Effect type.
-    type = 2
-
-    def __init__(self):
-        Effect.__init__(self)
-        ## Effect value.
-        self.value = MultiDimensional()
-
-
-##\ingroup Lottie
-## \todo check
-class ProLevelsEffect(Effect):
-    _props = [
-        TgsProp("effects", "ef", EffectValue, True),
-    ]
-    ## %Effect type.
-    type = 24
-
-    def __init__(self):
-        Effect.__init__(self)
-        ## ffect List of properties.
-        self.effects = [] # EffectValueDropDown, NoValueEffect, NoValueEffect, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, NoValueEffect, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, NoValueEffect, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, NoValueEffect, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, NoValueEffect, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider, EffectValueSlider
+    def __getattr__(self, key):
+        for i, (name, type) in enumerate(self._effects):
+            if name == key:
+                return self.effects[i].value
+        return super().__getattr__(key)
 
 
 ##\ingroup Lottie
@@ -193,10 +109,16 @@ class EffectValueAngle(EffectValue):
     ## %Effect type.
     type = 1
 
-    def __init__(self):
-        Effect.__init__(self)
+    def __init__(self, angle=0):
+        EffectValue.__init__(self)
         ## Effect value.
-        self.value = Value()
+        self.value = Value(angle)
+
+
+##\ingroup Lottie
+## \todo check
+class EffectNoValue(EffectValue):
+    _props = []
 
 
 ##\ingroup Lottie
@@ -209,7 +131,7 @@ class EffectValueSlider(EffectValue):
     type = 0
 
     def __init__(self, value=0):
-        Effect.__init__(self)
+        EffectValue.__init__(self)
         ## Effect value.
         self.value = Value(value)
 
@@ -224,7 +146,7 @@ class EffectValueCheckbox(EffectValue):
     type = 4
 
     def __init__(self, value=0):
-        Effect.__init__(self)
+        EffectValue.__init__(self)
         ## Effect value.
         self.value = Value(value)
 
@@ -238,25 +160,25 @@ class EffectValuePoint(EffectValue):
     ## %Effect type.
     type = 3
 
-    def __init__(self):
-        Effect.__init__(self)
+    def __init__(self, value=NVector(0, 0)):
+        EffectValue.__init__(self)
         ## Effect value.
-        self.value = MultiDimensional()
+        self.value = MultiDimensional(value)
 
 
 ##\ingroup Lottie
 ## \todo check
-class TintEffect(Effect):
+class EffectValueDropDown(EffectValue):
     _props = [
-        TgsProp("effects", "ef", EffectValue, True),
+        TgsProp("value", "v", Value, False),
     ]
     ## %Effect type.
-    type = 20
+    type = 7
 
-    def __init__(self):
-        Effect.__init__(self)
-        ## Effect List of properties.
-        self.effects = [] # EffectValueColor, EffectValueColor, EffectValueSlider
+    def __init__(self, value=0):
+        EffectValue.__init__(self)
+        ## Effect value.
+        self.value = Value(value)
 
 
 ##\ingroup Lottie
@@ -269,57 +191,190 @@ class EffectValueLayer(EffectValue):
     type = 10
 
     def __init__(self):
-        Effect.__init__(self)
+        EffectValue.__init__(self)
         ## Effect value.
         self.value = Value()
 
 
 ##\ingroup Lottie
 ## \todo check
-class DropShadowEffect(Effect):
+class EffectValueColor(EffectValue):
     _props = [
-        # ?
+        TgsProp("value", "v", MultiDimensional, False),
     ]
     ## %Effect type.
-    type = 25
+    type = 2
+
+    def __init__(self, value=NVector(0, 0, 0)):
+        EffectValue.__init__(self)
+        ## Effect value.
+        self.value = MultiDimensional(value)
+
+
+## \ingroup Lottie
+## \todo check
+class FillEffect(Effect):
+    """!
+    Replaces the whole layer with the given color
+    @note Opacity is in [0, 1]
+    """
+    _effects = [
+        ("00", EffectValuePoint),
+        ("01", EffectValueDropDown),
+        ("color", EffectValueColor),
+        ("03", EffectValueDropDown),
+        ("04", EffectValueSlider),
+        ("05", EffectValueSlider),
+        ("opacity", EffectValueSlider),
+    ]
+    ## %Effect type.
+    type = 21
+
+
+##\ingroup Lottie
+## \todo check
+class StrokeEffect(Effect):
+    _effects = [
+        ("00", EffectValueColor),
+        ("01", EffectValueCheckbox),
+        ("02", EffectValueCheckbox),
+        ("color", EffectValueColor),
+        ("04", EffectValueSlider),
+        ("05", EffectValueSlider),
+        ("06", EffectValueSlider),
+        ("07", EffectValueSlider),
+        ("08", EffectValueSlider),
+        ("09", EffectValueDropDown),
+        ("type", EffectValueDropDown),
+    ]
+    ## %Effect type.
+    type = 22
+
+
+## \ingroup Lottie
+class TritoneEffect(Effect):
+    """!
+    Maps layers colors based on bright/mid/dark colors
+    """
+    _effects = [
+        ("bright", EffectValueColor),
+        ("mid", EffectValueColor),
+        ("dark", EffectValueColor),
+    ]
+    ## %Effect type.
+    type = 23
+
+
+"""
+##\ingroup Lottie
+## \todo check
+class GroupEffect(Effect):
+    _props = [
+        TgsProp("enabled", "en", PseudoBool, False),
+    ]
 
     def __init__(self):
         Effect.__init__(self)
+        ## Enabled AE property value
+        self.enabled = True
+"""
+
+
+##\ingroup Lottie
+## \todo check
+class ProLevelsEffect(Effect):
+    _effects = [
+        ("00", EffectValueDropDown),
+        ("01", EffectNoValue),
+        ("02", EffectNoValue),
+        ("comp_inblack", EffectValueSlider),
+        ("comp_inwhite", EffectValueSlider),
+        ("comp_gamma", EffectValueSlider),
+        ("comp_outblack", EffectValueSlider),
+        ("comp_outwhite", EffectNoValue),
+        ("08", EffectNoValue),
+        ("09", EffectValueSlider),
+        ("r_inblack", EffectValueSlider),
+        ("r_inwhite", EffectValueSlider),
+        ("r_gamma", EffectValueSlider),
+        ("r_outblack", EffectValueSlider),
+        ("r_outwhite", EffectNoValue),
+        ("15", EffectValueSlider),
+        ("16", EffectValueSlider),
+        ("g_inblack", EffectValueSlider),
+        ("g_inwhite", EffectValueSlider),
+        ("g_gamma", EffectValueSlider),
+        ("g_outblack", EffectValueSlider),
+        ("g_outwhite", EffectNoValue),
+        ("22", EffectValueSlider),
+        ("b3", EffectValueSlider),
+        ("b_inblack", EffectValueSlider),
+        ("b_inwhite", EffectValueSlider),
+        ("b_gamma", EffectValueSlider),
+        ("b_outblack", EffectValueSlider),
+        ("b_outwhite", EffectNoValue),
+        ("29", EffectValueSlider),
+        ("a_inblack", EffectValueSlider),
+        ("a_inwhite", EffectValueSlider),
+        ("a_gamma", EffectValueSlider),
+        ("a_outblack", EffectValueSlider),
+        ("a_outwhite", EffectNoValue),
+    ]
+    ## %Effect type.
+    type = 24
+
+
+## \ingroup Lottie
+class TintEffect(Effect):
+    """!
+    Colorizes the layer
+    @note Opacity is in [0, 100]
+    """
+    _effects = [
+        ("color_black", EffectValueColor),
+        ("color_white", EffectValueColor),
+        ("opacity", EffectValueSlider),
+    ]
+    ## %Effect type.
+    type = 20
+
+
+## \ingroup Lottie
+class DropShadowEffect(Effect):
+    """!
+    Adds a shadow to the layer
+    @note Opacity is in [0, 255]
+    """
+    _effects = [
+        ("color", EffectValueColor),
+        ("opacity", EffectValueSlider),
+        ("angle", EffectValueAngle),
+        ("distance", EffectValueSlider),
+        ("blur", EffectValueSlider),
+    ]
+    ## %Effect type.
+    type = 25
 
 
 ##\ingroup Lottie
 ## \todo check
 class Matte3Effect(Effect):
-    _props = [
-        # ?
+    _effects = [
+        ("index", EffectValueSlider),
     ]
     ## %Effect type.
     type = 28
 
-    def __init__(self):
-        Effect.__init__(self)
-
 
 ## \ingroup Lottie
 class GaussianBlurEffect(Effect):
-    _props = [
-        TgsProp("effects", "ef", EffectValue, True),
+    """!
+    Gaussian blur
+    """
+    _effects = [
+        ("sigma", EffectValueSlider),
+        ("dimensions", EffectValueSlider),
+        ("wrap", EffectValueCheckbox),
     ]
     ## %Effect type.
     type = 29
-
-    def __init__(self, sigma=0, dimensions=0, wrap=0):
-        Effect.__init__(self)
-        self.effects = [EffectValueSlider(sigma), EffectValueSlider(dimensions), EffectValueCheckbox(wrap)]
-
-    @property
-    def sigma(self):
-        return self.effects[0].value
-
-    @property
-    def dimensions(self):
-        return self.effects[1].value
-
-    @property
-    def wrap(self):
-        return bool(self.effects[2].value)

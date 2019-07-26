@@ -48,14 +48,22 @@ def extract_type(prop, linkmode):
     return name
 
 
-def class_summary(clsname):
+def class_summary(cls):
     #out_summary.write(
         #"""\n\\section lottie_{0} {0}\nPython class: \\ref {1}::{0} "{0}"\n\n\\copybrief {1}::{0}\n\n"""
         #.format(clsname, type_modules[clsname])
     #)
+    clsname = cls.__name__
     out_summary.write(
-        """<h2><a name='lottie_{0}'></a><a href='#lottie_{0}'>{0}</a></h2>\n\\par\nPython class: \\ref {1}::{0} "{0}"\n\\par\n\\copybrief {1}::{0}\n\\par\n"""
-        .format(clsname, type_modules[clsname])
+        r"""
+<h2><a name='lottie_{0}'></a><a href='#lottie_{0}'>{0}</a></h2>
+\par
+Python class: \ref {1}::{0} "{0}"
+\par
+{2}
+\par
+        """
+        .format(clsname, type_modules[clsname], (inspect.getdoc(cls) or "").lstrip("!").lstrip().replace("@brief", ""))
     )
 
 
@@ -87,13 +95,23 @@ def proptable(out, cls, module, mode):
             t = getattr(cls, prop.name)
             if isinstance(t, prop.type):
                 type += " = %r" % t
+        extra = ""
+        if prop.lottie == "ef" and hasattr(cls, "_effects"):
+            extra = "[%s]" % ", ".join(
+                "<a href='#lottie_{0}'>{1}</a>".format(efcls.__name__, name)
+                if mode is extract_type_summary
+                else name
+                for name, efcls in cls._effects
+            )
+
         out.write(
-            "{lottie} | {type} | \\copybrief {fqn} | \\ref {fqn} \"{name}\" \n"
+            "{lottie} | {type} | \\copybrief {fqn} {extra} | \\ref {fqn} \"{name}\" \n"
             .format(
                 lottie=prop.lottie,
                 type=type,
                 fqn=fqn,
-                name=prop.name
+                name=prop.name,
+                extra=extra,
             )
         )
 
@@ -113,7 +131,7 @@ with open(dox_classdoc, "w") as out_classdoc, open(dox_summary, "w") as out_summ
             clsname = cls.__name__
             if issubclass(cls, TgsObject):
                 props = getattr(cls, "_props", None)
-                class_summary(clsname)
+                class_summary(cls)
                 sub = cls.__subclasses__()
                 if sub:
                     out_summary.write("Subclasses:\n")
@@ -121,6 +139,7 @@ with open(dox_classdoc, "w") as out_classdoc, open(dox_summary, "w") as out_summ
                         out_summary.write(" - <a href='#lottie_{name}'>{name}</a>\n".format(
                             name=sc.__name__
                         ))
+                    out_summary.write("\n\par\n")
                 if props:
                     out_classdoc.write("\\class %s.%s\n\\par Lottie JSON\n" % (module.fullname, clsname))
                     proptable(out_classdoc, cls, module, extract_type_classdoc)
@@ -129,7 +148,7 @@ with open(dox_classdoc, "w") as out_classdoc, open(dox_summary, "w") as out_summ
                     proptable(out_summary, cls, module, extract_type_summary)
                 out_summary.write("\n\n")
             elif issubclass(cls, TgsEnum):
-                class_summary(clsname)
+                class_summary(cls)
                 out_summary.write("Lottie Value|Name|Description| Attribute\n")
                 out_summary.write("------------|----|-----------|---------\n")
                 for name, val in cls.__members__.items():

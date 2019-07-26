@@ -58,11 +58,11 @@ class MaskMode(TgsEnum):
     Add = "a"
     Subtract = "s"
     Intersect = "i"
-    ## \note Not in lottie web
+    ## @note Not in lottie web
     Lightent = "l"
-    ## \note Not in lottie web
+    ## @note Not in lottie web
     Darken = "d"
-    ## \note Not in lottie web
+    ## @note Not in lottie web
     Difference = "f"
 
 

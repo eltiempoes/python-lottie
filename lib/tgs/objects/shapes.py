@@ -393,7 +393,7 @@ class Path(ShapeElement):
 class Group(ShapeElement):
     """!
     ShapeElement that can contain other shapes
-    \note Shapes inside the same group will create "holes" in other shapes
+    @note Shapes inside the same group will create "holes" in other shapes
     """
     _props = [
         TgsProp("number_of_properties", "np", float, False),
@@ -693,7 +693,7 @@ class Round(ShapeElement):
 
 ##\ingroup Lottie
 ## \todo check
-## \note marked as unsupported by lottie
+## @note marked as unsupported by lottie
 class Merge(ShapeElement):
     _props = [
         TgsProp("merge_mode", "mm", float, False),

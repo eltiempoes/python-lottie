@@ -74,7 +74,7 @@ class AnimatableMixin:
         \param time     The time this keyframe appears in
         \param value    The value the property should have at \p time
         \param interp   The easing callable used to update the tangents of the previous keyframe
-        \note Always call add_keyframe with increasing \p time value
+        @note Always call add_keyframe with increasing \p time value
         """
         if not self.animated:
             self.value = None
@@ -96,7 +96,7 @@ class AnimatableMixin:
 
     def get_value(self, time=0):
         """!
-        \brief Returns the value of the property at the given frame/time
+        @brief Returns the value of the property at the given frame/time
         \todo honour easing
         """
         if not self.animated:

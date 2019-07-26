@@ -495,7 +495,7 @@ class FollowDisplacer(PointDisplacer):
         falloff_exp=1,
     ):
         """!
-        \brief Uses a custom offset function, and applies a falloff to the displacement
+        @brief Uses a custom offset function, and applies a falloff to the displacement
 
         \param origin       Origin point for the falloff
         \param range        Radius after which the points will not move

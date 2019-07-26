@@ -62,6 +62,9 @@ class Layer(TgsObject):
 
     @property
     def has_masks(self):
+        """!
+        Whether the layer has some masks applied
+        """
         return bool(self.masks) if getattr(self, "masks") is not None else None
 
     def __init__(self):

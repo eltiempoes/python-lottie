@@ -183,7 +183,7 @@ class TgsObjectMeta(type):
 
 class TgsObject(Tgs, metaclass=TgsObjectMeta):
     """!
-    \brief Base class for mapping Python classes into Lottie JSON objects
+    @brief Base class for mapping Python classes into Lottie JSON objects
     """
     def to_dict(self):
         return {
@@ -208,7 +208,7 @@ class TgsObject(Tgs, metaclass=TgsObjectMeta):
         """!
         \param search   The value of the property to search
         \param propname The name of the property used to search
-        \brief Recursively searches for child objects with a matching property
+        @brief Recursively searches for child objects with a matching property
         """
         if getattr(self, propname, None) == search:
             return self
@@ -228,7 +228,7 @@ class TgsObject(Tgs, metaclass=TgsObjectMeta):
 
 class Index:
     """!
-    \brief Simple iterator to generate increasing integers
+    @brief Simple iterator to generate increasing integers
     """
     def __init__(self):
         self._i = -1
