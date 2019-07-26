@@ -133,7 +133,7 @@ class TextLayer(Layer):
         TgsProp("text_data", "t", float, False),
     ]
     ## %Layer type.
-    type = 0
+    type = 5
 
     def __init__(self):
         Layer.__init__(self)
@@ -201,21 +201,24 @@ class PreCompLayer(Layer):
 
 
 ## \ingroup Lottie
-## \ingroup LottieCheck
-class SolidLayer(Layer):
+class SolidColorLayer(Layer):
+    """!
+    Layer with a solid color rectangle
+    """
     _props = [
-        TgsProp("solid_color", "sc", str, False),
-        TgsProp("solid_height", "sh", float, False),
-        TgsProp("solid_width", "sw", float, False),
+        TgsProp("color", "sc", str, False),
+        TgsProp("height", "sh", float, False),
+        TgsProp("width", "sw", float, False),
     ]
     ## %Layer type.
     type = 1
 
-    def __init__(self):
+    def __init__(self, color="", width=0, height=0):
         Layer.__init__(self)
-        ## Color of the solid in hex
-        self.solid_color = ""
-        ## Height of the solid.
-        self.solid_height = 0
-        ## Width of the solid.
-        self.solid_width = 0
+        ## Color of the layer as a \c \#rrggbb hex
+        # \todo Convert NVector to string
+        self.color = color
+        ## Height of the layer.
+        self.height = height
+        ## Width of the layer.
+        self.width = width
