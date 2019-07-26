@@ -92,15 +92,16 @@ class ShapeElement(TgsObject):
         TgsProp("type", "ty", str, False),
         TgsProp("property_index", "ix", int, False),
     ]
+    ## %Shape type.
+    type = None
 
-    def __init__(self, type):
+    def __init__(self):
         # After Effect's Match Name. Used for expressions.
         #self.match_name = ""
 
         ## After Effect's Name. Used for expressions.
         self.name = None
-        ## %Shape type.
-        self.type = type
+        ## Property index
         self.property_index = None
 
     def bounding_box(self, time=0):
@@ -121,9 +122,11 @@ class Rect(ShapeElement):
         TgsProp("size", "s", MultiDimensional, False),
         TgsProp("rounded", "r", Value, False),
     ]
+    ## %Shape type.
+    type = "rc"
 
     def __init__(self):
-        ShapeElement.__init__(self, "rc")
+        ShapeElement.__init__(self)
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
         ## Rect's position
@@ -217,9 +220,11 @@ class Star(ShapeElement):
         TgsProp("points", "pt", Value, False),
         TgsProp("star_type", "sy", StarType, False),
     ]
+    ## %Shape type.
+    type = "sr"
 
     def __init__(self):
-        ShapeElement.__init__(self, "sr")
+        ShapeElement.__init__(self)
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
         ## Star's position
@@ -308,9 +313,11 @@ class Ellipse(ShapeElement):
         TgsProp("position", "p", MultiDimensional, False),
         TgsProp("size", "s", MultiDimensional, False),
     ]
+    ## %Shape type.
+    type = "el"
 
     def __init__(self):
-        ShapeElement.__init__(self, "el")
+        ShapeElement.__init__(self)
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
         ## Ellipse's position
@@ -369,9 +376,11 @@ class Shape(ShapeElement):
         TgsProp("direction", "d", float, False),
         TgsProp("vertices", "ks", ShapeProperty, False),
     ]
+    ## %Shape type.
+    type = "sh"
 
     def __init__(self):
-        ShapeElement.__init__(self, "sh")
+        ShapeElement.__init__(self)
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
         ## Shape's vertices
@@ -400,9 +409,11 @@ class Group(ShapeElement):
         TgsProp("number_of_properties", "np", float, False),
         TgsProp("shapes", "it", load_shape_element, True),
     ]
+    ## %Shape type.
+    type = "gr"
 
     def __init__(self):
-        ShapeElement.__init__(self, "gr")
+        ShapeElement.__init__(self)
         ## Group number of properties. Used for expressions.
         self.number_of_properties = None
         ## Group list of items
@@ -452,9 +463,11 @@ class Fill(ShapeElement):
         TgsProp("opacity", "o", Value, False),
         TgsProp("color", "c", MultiDimensional, False),
     ]
+    ## %Shape type.
+    type = "fl"
 
     def __init__(self, color=None):
-        ShapeElement.__init__(self, "fl")
+        ShapeElement.__init__(self)
         ## Fill Opacity
         self.opacity = Value(100)
         ## Fill Color
@@ -503,9 +516,11 @@ class GradientFill(ShapeElement, Gradient):
     _props = [
         TgsProp("opacity", "o", Value, False),
     ]
+    ## %Shape type.
+    type = "gf"
 
     def __init__(self, colors=[]):
-        ShapeElement.__init__(self, "gf")
+        ShapeElement.__init__(self)
         Gradient.__init__(self, colors)
         ## Fill Opacity
         self.opacity = Value(100)
@@ -556,9 +571,11 @@ class Stroke(ShapeElement, BaseStroke):
     _props = [
         TgsProp("color", "c", MultiDimensional, False),
     ]
+    ## %Shape type.
+    type = "st"
 
     def __init__(self, color=None, width=1):
-        ShapeElement.__init__(self, "st")
+        ShapeElement.__init__(self)
         BaseStroke.__init__(self, width)
         ## Stroke Color
         self.color = MultiDimensional(color or NVector(0, 0, 0))
@@ -568,10 +585,12 @@ class Stroke(ShapeElement, BaseStroke):
 class GradientStroke(ShapeElement, BaseStroke, Gradient):
     """!
     Gradient stroke
-    \todo move the common bit together with Stroke to minimize duplication
     """
+    ## %Shape type.
+    type = "gs"
+
     def __init__(self, stroke_width=1):
-        ShapeElement.__init__(self, "gs")
+        ShapeElement.__init__(self)
         BaseStroke.__init__(self, stroke_width)
         Gradient.__init__(self)
 
@@ -584,8 +603,11 @@ class TransformShape(ShapeElement, Transform):
     """!
     Group transform
     """
+    ## %Shape type.
+    type = "tr"
+
     def __init__(self):
-        ShapeElement.__init__(self, "tr")
+        ShapeElement.__init__(self)
         Transform.__init__(self)
         self.anchor_point = MultiDimensional(NVector(0, 0))
 
@@ -601,9 +623,11 @@ class Trim(ShapeElement):
         TgsProp("end", "e", Value, False),
         TgsProp("angle", "o", Value, False),
     ]
+    ## %Shape type.
+    type = "tm"
 
     def __init__(self):
-        ShapeElement.__init__(self, "tm")
+        ShapeElement.__init__(self)
         ## Start of the segment, as a percentage
         self.start = Value(0)
         ## End of the segment, as a percentage
@@ -643,9 +667,11 @@ class Repeater(ShapeElement):
         TgsProp("composite", "m", Composite, False),
         TgsProp("transform", "tr", RepeaterTransform, False),
     ]
+    ## %Shape type.
+    type = "rp"
 
     def __init__(self, copies=1):
-        ShapeElement.__init__(self, "rp")
+        ShapeElement.__init__(self)
         ## Number of Copies
         self.copies = Value(copies)
         ## Offset of Copies
@@ -665,22 +691,26 @@ class Round(ShapeElement):
     _props = [
         TgsProp("radius", "r", Value, False),
     ]
+    ## %Shape type.
+    type = "rd"
 
     def __init__(self):
-        ShapeElement.__init__(self, "rd")
+        ShapeElement.__init__(self)
         ## Rounded Corner Radius
         self.radius = Value()
 
 
 ##\ingroup Lottie
 ## \todo check
-## \note marked as unsipported by lottie
+## \note marked as unsupported by lottie
 class Merge(ShapeElement):
     _props = [
         TgsProp("merge_mode", "mm", float, False),
     ]
+    ## %Shape type.
+    type = "mm"
 
     def __init__(self):
-        ShapeElement.__init__(self, "mm")
+        ShapeElement.__init__(self)
         ## Merge Mode
         self.merge_mode = 1

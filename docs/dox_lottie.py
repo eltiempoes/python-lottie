@@ -86,11 +86,16 @@ def proptable(out, cls, module, mode):
     out.write("-----------|----|-----------|---------\n")
     for prop in cls._props:
         fqn = "%s::%s::%s" % (module.fullname.replace(".", "::"), cls.__name__, prop.name)
+        type = extract_type(prop, mode)
+        if hasattr(cls, prop.name):
+            t = getattr(cls, prop.name)
+            if isinstance(t, prop.type):
+                type += " = %r" % t
         out.write(
             "{lottie} | {type} | \\copybrief {fqn} | \\ref {fqn} \"{name}\" \n"
             .format(
                 lottie=prop.lottie,
-                type=extract_type(prop, mode),
+                type=type,
                 fqn=fqn,
                 name=prop.name
             )
@@ -128,7 +133,7 @@ with open(dox_classdoc, "w") as out_classdoc, open(dox_summary, "w") as out_summ
             elif issubclass(cls, TgsEnum):
                 class_summary(clsname)
                 out_summary.write("Lottie Value|Name|Description| Attribute\n")
-                out_summary.write("-----------|----|-----------|---------\n")
+                out_summary.write("------------|----|-----------|---------\n")
                 for name, val in cls.__members__.items():
                     fqn = "%s::%s::%s" % (module.fullname.replace(".", "::"), clsname, name)
                     out_summary.write("{value} | {name} | \\copybrief {fqn} | \\ref {fqn} \"{name}\"\n".format(

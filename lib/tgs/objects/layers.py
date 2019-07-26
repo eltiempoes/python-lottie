@@ -68,14 +68,14 @@ class Layer(TgsObject):
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", int, False),
     ]
+    ## %Layer type.
+    type = None
 
     @property
     def has_masks(self):
         return bool(self.masks) if getattr(self, "masks") is not None else None
 
-    def __init__(self, type):
-        ## Type of layer
-        self.type = type
+    def __init__(self):
         ## Transform properties
         self.transform = Transform()
         ## Auto-Orient along path AE property.
@@ -118,8 +118,11 @@ class NullLayer(Layer):
     """!
     Layer with no data, useful to group layers together
     """
+    ## %Layer type.
+    type = 3
+
     def __init__(self):
-        Layer.__init__(self, 3)
+        Layer.__init__(self)
 
 
 ##\ingroup Lottie
@@ -128,9 +131,11 @@ class TextLayer(Layer):
     _props = [
         TgsProp("text_data", "t", float, False),
     ]
+    ## %Layer type.
+    type = 0
 
     def __init__(self):
-        Layer.__init__(self, 0)
+        Layer.__init__(self)
         ## Text Data
         self.text_data = None
 
@@ -143,9 +148,11 @@ class ShapeLayer(Layer):
     _props = [
         TgsProp("shapes", "shapes", load_shape_element, True),
     ]
+    ## %Layer type.
+    type = 4
 
     def __init__(self):
-        Layer.__init__(self, 4)
+        Layer.__init__(self)
         ## Shape list of items
         self.shapes = [] # ShapeElement
 
@@ -165,9 +172,11 @@ class ImageLayer(Layer):
     _props = [
         TgsProp("image_id", "refId", str, False),
     ]
+    ## %Layer type.
+    type = 2
 
     def __init__(self, image_id=""):
-        Layer.__init__(self, 2)
+        Layer.__init__(self)
         ## id pointing to the source image defined on 'assets' object
         self.image_id = image_id
 
@@ -179,9 +188,11 @@ class PreCompLayer(Layer):
         TgsProp("reference_id", "refId", str, False),
         TgsProp("time_remapping", "tm", float, False),
     ]
+    ## %Layer type.
+    type = 0
 
     def __init__(self):
-        Layer.__init__(self, 0)
+        Layer.__init__(self)
         ## id pointing to the source composition defined on 'assets' object
         self.reference_id = ""
         ## Comp's Time remapping
@@ -196,9 +207,11 @@ class SolidLayer(Layer):
         TgsProp("solid_height", "sh", float, False),
         TgsProp("solid_width", "sw", float, False),
     ]
+    ## %Layer type.
+    type = 1
 
     def __init__(self):
-        Layer.__init__(self, 1)
+        Layer.__init__(self)
         ## Color of the solid in hex
         self.solid_color = ""
         ## Height of the solid.
