@@ -12,21 +12,21 @@ root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 example_path = os.path.join(root, "examples")
 doxpath = os.path.join(root, "docs", "dox", "examples")
 
+if len(sys.argv) > 1:
+    examples = sys.argv[1:]
+else:
+    examples = [
+        fname[:-3]
+        for fname in sorted(os.listdir(example_path))
+        if fname.endswith(".py")
+    ]
 
+    if os.path.exists(doxpath):
+        shutil.rmtree(doxpath)
 
-
-if os.path.exists(doxpath):
-    shutil.rmtree(doxpath)
-os.makedirs(doxpath)
-
-examples = [
-    fname[:-3]
-    for fname in sorted(os.listdir(example_path))
-    if fname.endswith(".py")
-]
+os.makedirs(doxpath, exist_ok=True)
 
 for example in examples:
-    print(example)
     subprocess.run(["python3", os.path.join(example_path, example + ".py")])
     with open("/tmp/%s.html" % example, "r") as f:
         html = f.read()

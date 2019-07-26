@@ -6,12 +6,10 @@ pages:
     stage: pages
     before_script:
         - apt-get update -qq
-        - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip
+        - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make
         - pip3 install Pillow
     script:
-        - python3 docs/dox_examples.py
-        - python3 docs/dox_lottie.py
-        - doxygen docs/Doxyfile
+        - make -B docs
         - mv docs/html public
     after_script:
         - mv htmlcov public/coverage
