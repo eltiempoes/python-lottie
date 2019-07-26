@@ -1,5 +1,6 @@
-from .base import TgsObject, TgsProp, PseudoBool, todo_func, Index
-from .layers import load_layer
+from .base import TgsObject, TgsProp, PseudoBool, Index
+from .layers import Layer
+from .assets import Asset
 
 ##\defgroup Lottie Lottie
 #
@@ -20,8 +21,8 @@ class Animation(TgsObject):
         TgsProp("height", "h", int, False),
         TgsProp("version", "v", str, False),
         TgsProp("name", "nm", str, False),
-        TgsProp("layers", "layers", load_layer, True),
-        TgsProp("assets", "assets", todo_func, True),
+        TgsProp("layers", "layers", Layer, True),
+        TgsProp("assets", "assets", Asset, True),
         #TgsProp("chars", "chars", Chars, True),
         TgsProp("tgs", "tgs", PseudoBool, False),
     ]

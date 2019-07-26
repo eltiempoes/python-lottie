@@ -194,10 +194,15 @@ class TgsObject(Tgs, metaclass=TgsObjectMeta):
 
     @classmethod
     def load(cls, lottiedict):
+        cls = cls._load_get_class(lottiedict)
         obj = cls()
         for prop in cls._props:
             prop.load_into(lottiedict, obj)
         return obj
+
+    @classmethod
+    def _load_get_class(cls, lottiedict):
+        return cls
 
     def find(self, search, propname="name"):
         """!
@@ -231,10 +236,3 @@ class Index:
     def __next__(self):
         self._i += 1
         return self._i
-
-
-def todo_func(x):
-    """!
-    Placeholder for TgsObjects loaders that haven't been implemented
-    """
-    raise NotImplementedError()

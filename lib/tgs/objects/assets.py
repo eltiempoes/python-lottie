@@ -1,9 +1,21 @@
-from .base import TgsObject, TgsProp, PseudoBool, todo_func
+from .base import TgsObject, TgsProp, PseudoBool
+from .layers import Layer
+
+
+class Asset(TgsObject):
+    @classmethod
+    def _load_get_class(cls, lottiedict):
+        if "p" in lottiedict or "u" in lottiedict:
+            return Image
+        if "ch" in lottiedict:
+            return Chars
+        if "layers" in lottiedict:
+            return Precomp
 
 
 ##\ingroup Lottie
 ## \todo check
-class Image(TgsObject):
+class Image(Asset):
     _props = [
         TgsProp("height", "h", float, False),
         TgsProp("width", "w", float, False),
@@ -57,7 +69,7 @@ class Image(TgsObject):
 
 ##\ingroup Lottie
 ## \todo check
-class Chars(TgsObject):
+class Chars(Asset):
     _props = [
         TgsProp("character", "ch", str, False),
         TgsProp("font_family", "fFamily", str, False),
@@ -84,14 +96,14 @@ class Chars(TgsObject):
 
 ##\ingroup Lottie
 ## \todo check
-class Precomp(TgsObject):
+class Precomp(Asset):
     _props = [
         TgsProp("id", "id", str, False),
-        TgsProp("layers", "layers", todo_func, True),
+        TgsProp("layers", "layers", Layer, True),
     ]
 
     def __init__(self):
         ## Precomp ID
         self.id = ""
         ## List of Precomp Layers
-        self.layers = [] # ShapeLayer, SolidLayer, CompLayer, ImageLayer, NullLayer, TextLayer
+        self.layers = []

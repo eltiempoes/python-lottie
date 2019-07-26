@@ -1,4 +1,4 @@
-from .base import TgsObject, TgsProp, TgsEnum, todo_func
+from .base import TgsObject, TgsProp, TgsEnum
 from .properties import MultiDimensional, Value, NVector, ShapeProperty
 
 

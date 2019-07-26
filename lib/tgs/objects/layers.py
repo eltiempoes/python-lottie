@@ -1,7 +1,7 @@
 from .base import TgsObject, TgsProp, PseudoBool, TgsEnum
-from .effects import load_effect
+from .effects import Effect
 from .helpers import Transform, Mask
-from .shapes import load_shape_element
+from .shapes import ShapeElement
 
 
 ##\ingroup Lottie
@@ -34,18 +34,6 @@ class MatteMode(TgsEnum):
     InvertedLuma = 4
 
 
-def load_layer(lottiedict):
-    layers = {
-        0: PreCompLayer,
-        1: SolidLayer,
-        2: ImageLayer,
-        3: NullLayer,
-        4: ShapeLayer,
-        5: TextLayer,
-    }
-    return layers[lottiedict["ty"]].load(lottiedict)
-
-
 ##\ingroup Lottie
 class Layer(TgsObject):
     _props = [
@@ -64,12 +52,13 @@ class Layer(TgsObject):
         TgsProp("name", "nm", str, False),
         TgsProp("has_masks", "hasMask", bool, False),
         TgsProp("masks", "masksProperties", Mask, True),
-        TgsProp("effects", "ef", load_effect, True),
+        TgsProp("effects", "ef", Effect, True),
         TgsProp("stretch", "sr", float, False),
         TgsProp("parent", "parent", int, False),
     ]
     ## %Layer type.
     type = None
+    _classses = {}
 
     @property
     def has_masks(self):
@@ -112,6 +101,15 @@ class Layer(TgsObject):
         ## Matte mode, the layer will inherit the transparency from the layer above
         self.matte_mode = None
 
+    @classmethod
+    def _load_get_class(cls, lottiedict):
+        if not Layer._classses:
+            Layer._classses = {
+                sc.type: sc
+                for sc in Layer.__subclasses__()
+            }
+        return Layer._classses[lottiedict["ty"]]
+
 
 ##\ingroup Lottie
 class NullLayer(Layer):
@@ -146,7 +144,7 @@ class ShapeLayer(Layer):
     Layer containing ShapeElement objects
     """
     _props = [
-        TgsProp("shapes", "shapes", load_shape_element, True),
+        TgsProp("shapes", "shapes", ShapeElement, True),
     ]
     ## %Layer type.
     type = 4

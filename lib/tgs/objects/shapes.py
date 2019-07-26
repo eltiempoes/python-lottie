@@ -1,5 +1,5 @@
 import math
-from .base import TgsObject, TgsProp, TgsEnum, todo_func, NVector
+from .base import TgsObject, TgsProp, TgsEnum, NVector
 from .properties import Value, MultiDimensional, GradientColors, ShapeProperty, Bezier
 from .helpers import Transform
 from ..utils.ellipse import Ellipse as EllipseConverter
@@ -61,26 +61,6 @@ class BoundingBox:
         return self.y2 - self.y1
 
 
-def load_shape_element(lottiedict):
-    shapes = {
-        'sh': Shape,
-        'rc': Rect,
-        'el': Ellipse,
-        'sr': Star,
-        'fl': Fill,
-        'gf': GradientFill,
-        'gs': GradientStroke,
-        'st': Stroke,
-        'mm': Merge,
-        'tm': Trim,
-        'gr': Group,
-        'rp': Repeater,
-        'tr': TransformShape,
-        # RoundedCorners? mentioned but not defined
-    }
-    return shapes[lottiedict["ty"]].load(lottiedict)
-
-
 ##\ingroup Lottie
 class ShapeElement(TgsObject):
     """!
@@ -94,6 +74,7 @@ class ShapeElement(TgsObject):
     ]
     ## %Shape type.
     type = None
+    _shape_classses = None
 
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
@@ -109,6 +90,15 @@ class ShapeElement(TgsObject):
         Bounding box of the shape element at the given time
         """
         return BoundingBox()
+
+    @classmethod
+    def _load_get_class(cls, lottiedict):
+        if not ShapeElement._shape_classses:
+            ShapeElement._shape_classses = {
+                sc.type: sc
+                for sc in ShapeElement.__subclasses__()
+            }
+        return ShapeElement._shape_classses[lottiedict["ty"]]
 
 
 ##\ingroup Lottie
@@ -407,7 +397,7 @@ class Group(ShapeElement):
     """
     _props = [
         TgsProp("number_of_properties", "np", float, False),
-        TgsProp("shapes", "it", load_shape_element, True),
+        TgsProp("shapes", "it", ShapeElement, True),
     ]
     ## %Shape type.
     type = "gr"
@@ -684,6 +674,7 @@ class Repeater(ShapeElement):
 
 ## \ingroup Lottie
 ## \todo Implement SVG/SIF Export
+## \todo rename to RoundedCorners
 class Round(ShapeElement):
     """
     Rounds corners of other shapes

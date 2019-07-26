@@ -17,7 +17,7 @@ image_filename = os.path.join(
 last_frame = 60
 an = objects.Animation(last_frame)
 
-image = objects.Image().load(image_filename)
+image = objects.assets.Image().load(image_filename)
 an.assets.append(image)
 
 an.add_layer(objects.ImageLayer(image.id))

@@ -1,35 +1,14 @@
 from .base import TgsObject, TgsProp, PseudoBool
 from .properties import Value, MultiDimensional
 
-
-def load_effect(lottiedict):
-    layers = {
-        0: SliderEffect,
-        1: AngleEffect,
-        2: ColorEffect,
-        3: PointEffect,
-        4: CheckboxEffect,
-        #5: EffectsManager,
-        7: DropDownEffect,
-        10: LayerEffect,
-        #11: MaskEffect,
-        20: TintEffect,
-        21: FillEffect,
-        22: StrokeEffect,
-        23: TritoneEffect,
-        24: ProLevelsEffect,
-        25: DropShadowEffect,
-        28: Matte3Effect,
-        29: GaussianBlurEffect,
-    }
-    #NoValueEffect ?
-    return layers[lottiedict["ty"]].load(lottiedict)
-
-
+#NoValueEffect ?
+#5: EffectsManager,
+#11: MaskEffect,
 ## \ingroup Lottie
 class Effect(TgsObject):
     ## %Effect type.
     type = None
+    _classses = {}
 
     _props = [
         TgsProp("effect_index", "ix", int, False),
@@ -49,12 +28,21 @@ class Effect(TgsObject):
         self.match_name = ""
         """
 
+    @classmethod
+    def _load_get_class(cls, lottiedict):
+        if not Effect._classses:
+            Effect._classses = {
+                sc.type: sc
+                for sc in Effect.__subclasses__()
+            }
+        return Effect._classses[lottiedict["ty"]]
+
 
 ## \ingroup Lottie
 ## \todo check
 class FillEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", load_effect, True),
+        TgsProp("effects", "ef", Effect, True),
     ]
     ## %Effect type.
     type = 21
@@ -69,7 +57,7 @@ class FillEffect(Effect):
 ## \todo check
 class StrokeEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", load_effect, True),
+        TgsProp("effects", "ef", Effect, True),
     ]
     ## %Effect type.
     type = 22
@@ -99,7 +87,7 @@ class DropDownEffect(Effect):
 ## \todo check
 class TritoneEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", load_effect, True),
+        TgsProp("effects", "ef", Effect, True),
     ]
     ## %Effect type.
     type = 23
@@ -114,7 +102,7 @@ class TritoneEffect(Effect):
 ## \todo check
 class GroupEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", load_effect, True),
+        TgsProp("effects", "ef", Effect, True),
         TgsProp("enabled", "en", PseudoBool, False),
     ]
 
@@ -145,7 +133,7 @@ class ColorEffect(Effect):
 ## \todo check
 class ProLevelsEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", load_effect, True),
+        TgsProp("effects", "ef", Effect, True),
     ]
     ## %Effect type.
     type = 24
@@ -220,7 +208,7 @@ class PointEffect(Effect):
 ## \todo check
 class TintEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", load_effect, True),
+        TgsProp("effects", "ef", Effect, True),
     ]
     ## %Effect type.
     type = 20
@@ -275,7 +263,7 @@ class Matte3Effect(Effect):
 ## \ingroup Lottie
 class GaussianBlurEffect(Effect):
     _props = [
-        TgsProp("effects", "ef", load_effect, True),
+        TgsProp("effects", "ef", Effect, True),
     ]
     ## %Effect type.
     type = 29

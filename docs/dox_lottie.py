@@ -34,10 +34,6 @@ def extract_type_summary(name):
 
 def extract_type(prop, linkmode):
     name = prop.type.__name__
-    if name.startswith("load_"):
-        name = re.sub("(^|_)([a-z])", lambda x: x.group(2).upper(), name[5:])
-    elif name == "todo_func":
-        name = "unknown objects"
 
     if name in type_modules:
         name = linkmode(name)
