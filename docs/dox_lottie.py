@@ -15,8 +15,8 @@ from tgs.objects.base import TgsEnum, TgsObject, PseudoList, Tgs
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 doxpath = os.path.join(root, "docs", "dox")
-dox_classdoc = os.path.join(root, "docs", "dox", "lottie_class.dox")
-dox_summary = os.path.join(root, "docs", "dox", "lottie.dox")
+dox_classdoc = os.path.join(doxpath, "lottie_class.dox")
+dox_summary = os.path.join(doxpath, "lottie.dox")
 
 
 type_modules = {}
@@ -97,6 +97,8 @@ def proptable(out, cls, module, mode):
             )
         )
 
+
+os.makedirs(doxpath, exist_ok=True)
 
 with open(dox_classdoc, "w") as out_classdoc, open(dox_summary, "w") as out_summary:
     out_classdoc.write("/**\n")

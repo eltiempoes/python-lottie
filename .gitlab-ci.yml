@@ -9,7 +9,7 @@ pages:
         - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make
         - pip3 install Pillow
     script:
-        - make -B docs
+        - make -B docs -j 4
         - mv docs/html public
     after_script:
         - mv htmlcov public/coverage
