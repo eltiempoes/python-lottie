@@ -1,6 +1,12 @@
 import os
+import sys
 import shutil
 import subprocess
+import importlib
+sys.path.append(os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "examples"
+))
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 example_path = os.path.join(root, "examples")
@@ -34,27 +40,13 @@ for example in examples:
     with open(os.path.join(doxpath, example + ".dox"), "w") as f:
         f.write("""
 /*!
-    \page example_{example} {example}.py
+    \example {example}.py
 
     \htmlonly[block]
     <style>{html_include}
     \endhtmlonly
 
-    \include {example}.py
+    {extra}
 */
 
-""".format(example=example, html_include=html_include))
-
-with open(os.path.join(doxpath, "examples.dox"), "w") as f:
-    f.write("""
-/**
-    \page examples Examples
-
-{list}
-*/
-""".format(
-    list="\n".join(
-        "- \subpage example_{example}".format(example=example)
-        for example in examples
-    )
-))
+""".format(example=example, html_include=html_include, extra=importlib.import_module(example).__doc__))

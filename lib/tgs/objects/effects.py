@@ -17,7 +17,7 @@ class Effect(TgsObject):
         TgsProp("type", "ty", int, False),
     ]
 
-    def __init__(self, ty):
+    def __init__(self):
         ## Effect Index. Used for expressions.
         self.effect_index = None
         ## After Effect's Name. Used for expressions.
