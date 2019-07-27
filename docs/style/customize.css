@@ -1,6 +1,39 @@
 .sm-dox, .navpath ul {
+    background: #f3f6ff;
+}
+
+#nav-tree {
+    background: #fff;
+}
+
+.ui-resizable-e {
+    background: #f3f6ff;
+}
+
+div.header {
     background-image: none;
-    background: #e0e0f0;
+}
+
+.sm-dox a:hover, .sm-dox ul a:hover, #nav-tree .selected {
+    background: #4867a6;
+    text-shadow: none;
+}
+
+div.ah, span.ah {
+    box-shadow: none;
+    background-image: none;
+}
+
+div.fragment {
+    background: #fff;
+}
+
+span.lineno a {
+    background-color: #e0e0e0;
+}
+
+span.lineno {
+    background-color: #eeeeee;
 }
 
 @media (max-width: 800px) {
