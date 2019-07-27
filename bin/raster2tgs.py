@@ -7,7 +7,6 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs.parsers.raster import raster_frames_to_animation, QuanzationMode, raster_to_animation
 from tgs.exporters import export_tgs, export_lottie
 from tgs.parsers.svg.importer import parse_color
 
@@ -69,6 +68,7 @@ parser.add_argument(
 )
 
 if __name__ == "__main__":
+    from tgs.parsers.raster import raster_frames_to_animation, QuanzationMode, raster_to_animation
     ns = parser.parse_args()
 
     cm = QuanzationMode.Nearest if ns.color_mode == "nearest" else QuanzationMode.Exact
