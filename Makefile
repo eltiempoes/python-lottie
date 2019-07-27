@@ -32,3 +32,6 @@ docs/html/index.html: $(foreach file,$(wildcard examples/*.py), docs/dox/example
 docs/html/index.html: docs/dox/lottie.dox
 docs/html/index.html: $(SRC)
 	doxygen docs/Doxyfile
+
+dist/tgs-inkscape.zip: $(wildcard inkscape/*)
+	zip --junk-paths $@ $^

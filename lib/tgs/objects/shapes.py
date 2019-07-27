@@ -278,7 +278,7 @@ class Star(ShapeElement):
         p = self.points.get_value(time)
         halfd = math.pi / p
 
-        for i in range(p):
+        for i in range(int(p)):
             main_angle = rot + i * halfd * 2
             dx = r2 * math.sin(main_angle)
             dy = r2 * math.cos(main_angle)

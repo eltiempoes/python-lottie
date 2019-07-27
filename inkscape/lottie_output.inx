@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+    <_name>Lottie Export</_name>
+    <id>best.dragon.tgs.inkscape.lottie_output</id>
+    <dependency type="executable" location="extensions">tgs_output.py</dependency>
+    <param name="tab" type="notebook">
+        <page name="options" _gui-text="Options">
+            <param name="frames" type="int" min="1" max="180" gui-text="Number of frames">60</param>
+            <param name="fps" type="int" min="1" max="180" gui-text="Frames per secons">60</param>
+            <param name="pretty" type="boolean" gui-text="Pretty print JSON">0</param>
+            <param name="format" type="string" gui-hidden="true">lottie</param>
+            <param name="tgspath" type="string" gui-text="Path to the tgs packge installation path"></param>
+        </page>
+        <page name="help" _gui-text="Help">
+            <param name="helptext" type="description" xml:space="preserve">
+                You need to have the tgs python module installed
+
+                See also: https://pypi.org/project/tgs/
+            </param>
+        </page>
+    </param>
+    <output>
+        <extension>.json</extension>
+        <mimetype>application/json</mimetype>
+        <filetypename>Lottie JSON (*.json)</filetypename>
+    </output>
+    <script>
+        <command reldir="extensions" interpreter="python">tgs_output.py</command>
+    </script>
+</inkscape-extension>
+

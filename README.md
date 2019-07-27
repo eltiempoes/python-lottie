@@ -62,6 +62,25 @@ There's a Synfig studio plugin to export telegram stickers.
 To install, just copy (or symlink) ./synfig/tgs-exporter
 into the synfig plugin directory.
 
+(Note: the bulk of this code has nothing to do with this package)
+
+### Inkscape
+
+There are some import/export extensions for inkscape.
+
+Just copy (or symlink) the files under ./inkscape to the inkscape extension
+directory.
+On my system that's ~/.config/inkscape/extensions/ but you can double check from
+Inkscape: Edit > Preferences... > System > User extensions
+
+Note that the extensions require Python 3.
+If they are run with a python 2 interpreter, they will try to run themselves using `python3`.
+
+They also need the tgs framework to be in the python path, otherwise you can manually
+set the path on the import/export dialogues.
+
+See also https://inkscape.org/~mattia.basaglia/%E2%98%85tgslottie-importexport
+
 
 Requirements
 ------------

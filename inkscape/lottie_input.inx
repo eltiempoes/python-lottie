@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+    <_name>Lottie Import</_name>
+    <id>best.dragon.tgs.inkscape.lottie_input</id>
+    <dependency type="executable" location="extensions">tgs_input.py</dependency>
+    <param name="tab" type="notebook">
+        <page name="options" _gui-text="Options">
+            <param name="frame" type="int" min="0" gui-text="Frame to load">0</param>
+            <param name="tgspath" type="string" gui-text="Path to the tgs packge installation path"></param>
+        </page>
+        <page name="help" _gui-text="Help">
+            <param name="helptext" type="description" xml:space="preserve">
+                You need to have the tgs python module installed
+
+                See also: https://pypi.org/project/tgs/
+            </param>
+        </page>
+    </param>
+    <input>
+        <extension>.json</extension>
+        <mimetype>application/json</mimetype>
+        <filetypename>Lottie JSON (*.json)</filetypename>
+    </input>
+    <script>
+        <command reldir="extensions" interpreter="python">tgs_input.py</command>
+    </script>
+</inkscape-extension>
+
