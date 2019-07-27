@@ -1,0 +1,17 @@
+.sm-dox, .navpath ul {
+    background-image: none;
+    background: #e0e0f0;
+}
+
+@media (max-width: 800px) {
+    #doc-content {
+        overflow: unset !important;
+        height: auto !important;
+    }
+    #side-nav {
+        display: none !important;
+    }
+    #doc-content {
+        margin-left: 0 !important;
+    }
+}
