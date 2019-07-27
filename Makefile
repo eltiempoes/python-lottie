@@ -30,8 +30,13 @@ docs/dox/examples/%.dox: examples/%.py docs/dox_examples.py
 docs/html/index.html: docs/Doxyfile
 docs/html/index.html: $(foreach file,$(wildcard examples/*.py), docs/dox/examples/$(basename $(notdir $(file))).dox)
 docs/html/index.html: docs/dox/lottie.dox
+docs/html/index.html: docs/dox/scripts.dox
 docs/html/index.html: $(SRC)
 	doxygen docs/Doxyfile
 
 dist/tgs-inkscape.zip: $(wildcard inkscape/*)
 	zip --junk-paths $@ $^
+
+docs/dox/scripts.dox: docs/dox_scripts.py
+docs/dox/scripts.dox: $(wildcard bin/*.py)
+	$(PYTHON) docs/dox_scripts.py

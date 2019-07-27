@@ -13,7 +13,7 @@ from tgs.objects import Animation
 from tgs.parsers.tgs import parse_tgs
 
 parser = argparse.ArgumentParser(
-    description="Pretty prints a lottie/tgs file"
+    description="Pretty prints a tgs / lottie file with more readable annotations (useful to debug / diff lottie files)"
 )
 parser.add_argument(
     "infile",
@@ -26,12 +26,13 @@ parser.add_argument(
     help="Just show a short summary"
 )
 
-ns = parser.parse_args()
+if __name__ == "__main__":
+    ns = parser.parse_args()
 
-an = parse_tgs(ns.infile)
+    an = parse_tgs(ns.infile)
 
-if ns.summary:
-    prettyprint_summary(an)
-else:
-    prettyprint(an)
+    if ns.summary:
+        prettyprint_summary(an)
+    else:
+        prettyprint(an)
 

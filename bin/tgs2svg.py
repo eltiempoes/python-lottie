@@ -37,17 +37,16 @@ parser.add_argument(
     help="(Frame) time at which to get the snapshot, as a percentage (eg 50 => middle frame)"
 )
 
-ns = parser.parse_args()
+if __name__ == "__main__":
+    ns = parser.parse_args()
 
-an = parse_tgs(ns.infile)
+    an = parse_tgs(ns.infile)
 
-time = ns.frame
-if ns.percent is not None:
-    time = an.out_point * ns.percent / 100
+    time = ns.frame
+    if ns.percent is not None:
+        time = an.out_point * ns.percent / 100
 
-outfile = ns.outfile
-if outfile == "-":
-    outfile = sys.stdout
-export_svg(an, outfile, time)
-
-
+    outfile = ns.outfile
+    if outfile == "-":
+        outfile = sys.stdout
+    export_svg(an, outfile, time)

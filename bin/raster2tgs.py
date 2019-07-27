@@ -12,7 +12,7 @@ from tgs.exporters import export_tgs, export_lottie
 from tgs.parsers.svg.importer import parse_color
 
 parser = argparse.ArgumentParser(
-    description="Converts raster images into a TGS file"
+    description="Vectorizes raster images into a TGS file"
 )
 
 parser.add_argument(
@@ -68,29 +68,30 @@ parser.add_argument(
          " exact will only match exact colors"
 )
 
-ns = parser.parse_args()
+if __name__ == "__main__":
+    ns = parser.parse_args()
 
-cm = QuanzationMode.Nearest if ns.color_mode == "nearest" else QuanzationMode.Exact
+    cm = QuanzationMode.Nearest if ns.color_mode == "nearest" else QuanzationMode.Exact
 
-if len(ns.infile) == 1:
-    animation = raster_to_animation(ns.infile[0], ns.colors, ns.palette, cm)
-else:
-    animation = raster_frames_to_animation(
-        ns.infile, ns.colors, ns.delay,
-        framerate=ns.framerate,
-        palette=ns.palette,
-        mode=cm
-    )
+    if len(ns.infile) == 1:
+        animation = raster_to_animation(ns.infile[0], ns.colors, ns.palette, cm)
+    else:
+        animation = raster_frames_to_animation(
+            ns.infile, ns.colors, ns.delay,
+            framerate=ns.framerate,
+            palette=ns.palette,
+            mode=cm
+        )
 
-binary = ns.format == "tgs"
-if ns.output == "-":
-    outfile = sys.stdout
-    if binary:
-        outfile = outfile.buffer
-else:
-    outfile = open(ns.output, "w" + ("b" if binary else ""))
+    binary = ns.format == "tgs"
+    if ns.output == "-":
+        outfile = sys.stdout
+        if binary:
+            outfile = outfile.buffer
+    else:
+        outfile = open(ns.output, "w" + ("b" if binary else ""))
 
-if ns.format == "lottie":
-    export_lottie(animation, outfile, indent=4, sort_keys=True)
-else:
-    export_tgs(animation, outfile)
+    if ns.format == "lottie":
+        export_lottie(animation, outfile, indent=4, sort_keys=True)
+    else:
+        export_tgs(animation, outfile)

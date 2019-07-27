@@ -100,14 +100,14 @@ desc = """Converts between multiple formats
 
 Supported formats:
 
-    Input:
+- Input:
 %s
 
-    Output:
+- Output:
 %s
 """ % (
-    "\n".join("%s* %s" % (" "*8, e.name) for e in exporters),
-    "\n".join("%s* %s" % (" "*8, e.name) for e in importers)
+    "\n".join("%s- %s" % (" "*2, e.name) for e in exporters),
+    "\n".join("%s- %s" % (" "*2, e.name) for e in importers)
 )
 
 parser = argparse.ArgumentParser(
@@ -156,58 +156,57 @@ for exporter in exporters:
 for importer in importers:
     add_options(parser, "import", importer)
 
-ns = parser.parse_args()
+if __name__ == "__main__":
+    ns = parser.parse_args()
 
-infile = ns.infile
-importer = None
-if infile == "-":
-    infile = sys.stdin
-else:
-    suf = os.path.splitext(infile)[1][1:]
-    for p in importers:
-        if suf in p.extensions:
-            importer = p
-            break
-if ns.input_format:
+    infile = ns.infile
     importer = None
-    for p in importers:
-        if p.slug == ns.input_format:
-            importer = p
-            break
-if not importer:
-    sys.stderr.write("Unknown importer\n")
-    sys.exit(1)
+    if infile == "-":
+        infile = sys.stdin
+    else:
+        suf = os.path.splitext(infile)[1][1:]
+        for p in importers:
+            if suf in p.extensions:
+                importer = p
+                break
+    if ns.input_format:
+        importer = None
+        for p in importers:
+            if p.slug == ns.input_format:
+                importer = p
+                break
+    if not importer:
+        sys.stderr.write("Unknown importer\n")
+        sys.exit(1)
 
-
-outfile = ns.outfile
-exporter = None
-if outfile == "-":
-    outfile = sys.stdout
-else:
-    suf = os.path.splitext(outfile)[1][1:]
-    for p in exporters:
-        if suf in p.extensions:
-            exporter = p
-            break
-if ns.output_format:
+    outfile = ns.outfile
     exporter = None
-    for p in exporters:
-        if p.slug == ns.output_format:
-            exporter = p
-            break
-if not exporter:
-    sys.stderr.write("Unknown exporter\n")
-    sys.exit(1)
+    if outfile == "-":
+        outfile = sys.stdout
+    else:
+        suf = os.path.splitext(outfile)[1][1:]
+        for p in exporters:
+            if suf in p.extensions:
+                exporter = p
+                break
+    if ns.output_format:
+        exporter = None
+        for p in exporters:
+            if p.slug == ns.output_format:
+                exporter = p
+                break
+    if not exporter:
+        sys.stderr.write("Unknown exporter\n")
+        sys.exit(1)
 
 
-i_options = {}
-for opt in importer.extra_options:
-    i_options[opt.name] = getattr(ns, opt.nsvar(importer.slug))
+    i_options = {}
+    for opt in importer.extra_options:
+        i_options[opt.name] = getattr(ns, opt.nsvar(importer.slug))
 
-o_options = {}
-for opt in exporter.extra_options:
-    o_options[opt.name] = getattr(ns, opt.nsvar(exporter.slug))
+    o_options = {}
+    for opt in exporter.extra_options:
+        o_options[opt.name] = getattr(ns, opt.nsvar(exporter.slug))
 
-
-an = importer.load(infile, i_options)
-exporter.export(an, outfile, o_options, ns.pretty)
+    an = importer.load(infile, i_options)
+    exporter.export(an, outfile, o_options, ns.pretty)

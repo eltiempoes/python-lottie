@@ -23,16 +23,17 @@ parser.add_argument(
     help="Number of colors to quantize"
 )
 
-ns = parser.parse_args()
+if __name__ == "__main__":
+    ns = parser.parse_args()
 
-raster = RasterImage.open(ns.infile)
-palette = raster.k_means(ns.colors)
+    raster = RasterImage.open(ns.infile)
+    palette = raster.k_means(ns.colors)
 
-for color in palette:
-    print("#%02x%02x%02x %f : %s" % (
-        int(round(color[0])),
-        int(round(color[1])),
-        int(round(color[2])),
-        color[3] / 255,
-        list(color/255),
-    ))
+    for color in palette:
+        print("#%02x%02x%02x %f : %s" % (
+            int(round(color[0])),
+            int(round(color[1])),
+            int(round(color[2])),
+            color[3] / 255,
+            list(color/255),
+        ))

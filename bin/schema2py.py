@@ -213,20 +213,25 @@ def class_name(filename):
     return name
 
 
-p = argparse.ArgumentParser()
+p = argparse.ArgumentParser(
+    description="Generates Python classes from the lottie-web JSON schema"
+)
 p.add_argument("limit", nargs="*")
 schema_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "json")
 p.add_argument("--load", "-l", default=schema_path)
-ns = p.parse_args()
 
-outfile = sys.stdout
-limit = ns.limit
 
-for root, _, files in os.walk(ns.load):
-    for file in files:
-        filepath = os.path.join(root, file)
-        with open(filepath, "r") as fp:
-            data = json.load(fp)
-        if not data:
-            continue
-        schema2py(outfile, filepath, data, limit)
+if __name__ == "__main__":
+    ns = p.parse_args()
+
+    outfile = sys.stdout
+    limit = ns.limit
+
+    for root, _, files in os.walk(ns.load):
+        for file in files:
+            filepath = os.path.join(root, file)
+            with open(filepath, "r") as fp:
+                data = json.load(fp)
+            if not data:
+                continue
+            schema2py(outfile, filepath, data, limit)
