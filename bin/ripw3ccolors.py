@@ -1,8 +1,8 @@
-from lxml import etree
 import urllib.request
 
 
 if __name__ == "__main__":
+    from lxml import etree
     uri = "https://www.w3.org/TR/css-color-3/"
 
     html = etree.parse(urllib.request.urlopen(uri), etree.HTMLParser())
