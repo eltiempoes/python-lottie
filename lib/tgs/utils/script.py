@@ -38,7 +38,7 @@ def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosi
         "--formats", "-f",
         nargs="+",
         choices=list(exporter_map.keys()),
-        default=["html"],
+        default=formats,
         help="Formates to render",
         metavar="format"
     )

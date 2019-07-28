@@ -38,34 +38,34 @@ sider = add_shape(objects.Rect(), Color(1, 0, 0), side)
 
 width = 10
 
-face1.size.add_keyframe(rot_time*0, Point(256, 256))
-face1.size.add_keyframe(rot_time*1, Point(0, 256), easing.EaseIn())
+face1.size.add_keyframe(rot_time*0, Point(256, 256), easing.EaseIn())
+face1.size.add_keyframe(rot_time*1, Point(0, 256))
 face1.size.add_keyframe(rot_time*2, Point(0, 256))
-face1.size.add_keyframe(rot_time*3, Point(0, 256))
-face1.size.add_keyframe(rot_time*4, Point(256, 256), easing.EaseOut())
-face1.position.add_keyframe(rot_time*0, Point(256, 256))
-face1.position.add_keyframe(rot_time*1, Point(256-width, 256), easing.EaseIn())
+face1.size.add_keyframe(rot_time*3, Point(0, 256), easing.EaseOut())
+face1.size.add_keyframe(rot_time*4, Point(256, 256))
+face1.position.add_keyframe(rot_time*0, Point(256, 256), easing.EaseIn())
+face1.position.add_keyframe(rot_time*1, Point(256-width, 256))
 face1.position.add_keyframe(rot_time*2, Point(256-width, 256))
-face1.position.add_keyframe(rot_time*3, Point(256+width, 256))
-face1.position.add_keyframe(rot_time*4, Point(256, 256), easing.EaseOut())
+face1.position.add_keyframe(rot_time*3, Point(256+width, 256), easing.EaseOut())
+face1.position.add_keyframe(rot_time*4, Point(256, 256))
 
 
 face2.size.add_keyframe(rot_time*0, Point(0, 256))
-face2.size.add_keyframe(rot_time*1, Point(0, 256))
-face2.size.add_keyframe(rot_time*2, Point(256, 256), easing.EaseOut())
-face2.size.add_keyframe(rot_time*3, Point(0, 256), easing.EaseIn())
+face2.size.add_keyframe(rot_time*1, Point(0, 256), easing.EaseOut())
+face2.size.add_keyframe(rot_time*2, Point(256, 256), easing.EaseIn())
+face2.size.add_keyframe(rot_time*3, Point(0, 256))
 face2.position.add_keyframe(rot_time*0, Point(256+width, 256))
-face2.position.add_keyframe(rot_time*1, Point(256+width, 256))
-face2.position.add_keyframe(rot_time*2, Point(256, 256), easing.EaseOut())
-face2.position.add_keyframe(rot_time*3, Point(256-width, 256), easing.EaseIn())
+face2.position.add_keyframe(rot_time*1, Point(256+width, 256), easing.EaseOut())
+face2.position.add_keyframe(rot_time*2, Point(256, 256), easing.EaseIn())
+face2.position.add_keyframe(rot_time*3, Point(256-width, 256))
 
 
 side1.size = face1.size
-side1.position.add_keyframe(rot_time*0, Point(256, 256))
-side1.position.add_keyframe(rot_time*1, Point(256+width, 256), easing.EaseIn())
+side1.position.add_keyframe(rot_time*0, Point(256, 256), easing.EaseIn())
+side1.position.add_keyframe(rot_time*1, Point(256+width, 256))
 side1.position.add_keyframe(rot_time*2, Point(256-width, 256))
-side1.position.add_keyframe(rot_time*3, Point(256-width, 256))
-side1.position.add_keyframe(rot_time*4, Point(256, 256), easing.EaseOut())
+side1.position.add_keyframe(rot_time*3, Point(256-width, 256), easing.EaseOut())
+side1.position.add_keyframe(rot_time*4, Point(256, 256))
 
 sider.position.value = Point(256, 256)
 sider.size.add_keyframe(rot_time*0, Point(0, 256))
@@ -75,9 +75,9 @@ sider.size.add_keyframe(rot_time*3, Point(2*width, 256))
 
 side2.size = face2.size
 side2.position.add_keyframe(rot_time*0, Point(256-width, 256))
-side2.position.add_keyframe(rot_time*1, Point(256-width, 256))
-side2.position.add_keyframe(rot_time*2, Point(256, 256), easing.EaseOut())
-side2.position.add_keyframe(rot_time*3, Point(256+width, 256), easing.EaseIn())
+side2.position.add_keyframe(rot_time*1, Point(256-width, 256), easing.EaseOut())
+side2.position.add_keyframe(rot_time*2, Point(256, 256), easing.EaseIn())
+side2.position.add_keyframe(rot_time*3, Point(256+width, 256))
 side2.position.add_keyframe(rot_time*4, Point(256-width, 256))
 
 

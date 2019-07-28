@@ -6,51 +6,100 @@ from ..utils.nvector import NVector
 
 
 ## \ingroup Lottie
-class OffsetKeyframe(TgsObject):
+class Keyframe(TgsObject):
+    _props = [
+        TgsProp("time", "t", float, False),
+        TgsProp("in_value", "i", easing.KeyframeBezierHandle, False),
+        TgsProp("out_value", "o", easing.KeyframeBezierHandle, False),
+        TgsProp("jump", "h", PseudoBool),
+    ]
+
+    def __init__(self, time=0, easing_function=None):
+        """!
+        \param time             Start time of keyframe segment
+        \param easing_function  Callable that performs the easing
+        """
+        ## Start time of keyframe segment.
+        self.time = time
+        ## Bezier curve easing in value.
+        self.in_value = None
+        ## Bezier curve easing out value.
+        self.out_value = None
+        ## Jump to the end value
+        self.jump = False
+
+        if easing_function:
+            easing_function(self)
+
+    def bezier(self):
+        bez = Bezier()
+        if self.jump:
+            bez.add_point(NVector(0, 0))
+            bez.add_point(NVector(1, 0))
+            bez.add_point(NVector(1, 1))
+        else:
+            bez.add_point(NVector(0, 0), outp=NVector(self.out_value.x, self.out_value.y))
+            bez.add_point(NVector(1, 1), inp=NVector(self.in_value.x-1, self.in_value.y-1))
+        return bez
+
+    def to_dict(self):
+        return {
+            prop.lottie: prop.to_dict(self)
+            for prop in self._props
+            if prop.get(self) is not None and
+            (getattr(self, "end", None) is not None or prop.name not in {"in_value", "out_value"})
+        }
+
+
+## \ingroup Lottie
+class OffsetKeyframe(Keyframe):
     """!
     Keyframe for MultiDimensional values
+
+    @par Bezier easing
+    @parblock
+    Imagine a quadratic bezier, with starting point at (0, 0) and end point at (1, 1).
+
+    \p out_value and \p in_value are the other two handles for a quadratic bezier,
+    expressed as absoulte values in this 0-1 space.
+
+    See also https://cubic-bezier.com/
+    @endparblock
     """
     _props = [
         TgsProp("start", "s", NVector, False),
         TgsProp("end", "e", NVector, False),
-        TgsProp("time", "t", float, False),
-        TgsProp("in_value", "i", easing.KeyframeBezierHandle, False),
-        TgsProp("out_value", "o", easing.KeyframeBezierHandle, False),
         TgsProp("in_tan", "ti", float, True),
         TgsProp("out_tan", "to", float, True),
-        #TgsProp("h" ,"h"),
     ]
 
-    def __init__(self, time=0, start=None, end=None,
-                 in_value=None, out_value=None, in_tan=None, out_tan=None):
+    def __init__(self, time=0, start=None, end=None, easing_function=None):
+        Keyframe.__init__(self, time, easing_function)
         ## Start value of keyframe segment.
         self.start = start
         ## End value of keyframe segment.
         self.end = end
-        ## Start time of keyframe segment.
-        self.time = time
-        ## Bezier curve easing in value.
-        self.in_value = in_value
-        ## Bezier curve easing out value.
-        self.out_value = out_value
         ## In Spatial Tangent. Only for spatial properties. Array of numbers.
-        self.in_tan = in_tan
+        self.in_tan = None
         ## Out Spatial Tangent. Only for spatial properties. Array of numbers.
-        self.out_tan = out_tan
+        self.out_tan = None
 
-    def set_tangents(self, end_time, interp):
-        """!
-        Updates the bezier tangents for this keyframe
-        \param end_time The time of the next keyframe
-        \param interp   Callable that performs the easing
-        """
-        to_val = lambda vals: math.sqrt(sum(map(lambda x: x**2, vals)))
-        start = to_val(self.start)
-        end = to_val(self.end)
-        interp(self, start, end, end_time)
+    def interpolated_value(self, ratio):
+        if self.end is None:
+            return self.start
+        if not self.in_value or not self.out_value:
+            return self.start
+        if ratio == 1:
+            return self.end
+        if ratio == 0:
+            return self.start
+        lerpv = self.bezier().point_at(ratio)
+        return self.start.lerp(self.end, lerpv)
 
 
 class AnimatableMixin:
+    keyframe_type = Keyframe
+
     def __init__(self, value=None):
         ## Non-animated value
         self.value = value
@@ -85,13 +134,14 @@ class AnimatableMixin:
                 if value != self.keyframes[-1].start:
                     self.keyframes[-1].start = value
                 return
-            self.keyframes[-1].end = value
-            self.keyframes[-1].set_tangents(time, interp)
+            else:
+                self.keyframes[-1].end = value
 
         self.keyframes.append(self.keyframe_type(
             time,
             value,
             None,
+            interp
         ))
 
     def get_value(self, time=0):
@@ -235,7 +285,7 @@ class Bezier(TgsObject):
         TgsProp("vertices", "v", NVector, True),
     ]
 
-    def __init__(self, rel_tangents=True):
+    def __init__(self):
         ## Closed property of shape
         self.closed = False
         ## Bezier curve In points. Array of 2 dimensional arrays.
@@ -244,7 +294,7 @@ class Bezier(TgsObject):
         self.out_point = []
         ## Bezier curve Vertices. Array of 2 dimensional arrays.
         self.vertices = []
-        self.rel_tangents = rel_tangents
+        #self.rel_tangents = rel_tangents
 
     def clone(self):
         clone = Bezier()
@@ -252,7 +302,7 @@ class Bezier(TgsObject):
         clone.in_point = [p.clone() for p in self.in_point]
         clone.out_point = [p.clone() for p in self.out_point]
         clone.vertices = [p.clone() for p in self.vertices]
-        clone.rel_tangents = self.rel_tangents
+        #clone.rel_tangents = self.rel_tangents
         return clone
 
     def insert_point(self, index, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
@@ -267,9 +317,9 @@ class Bezier(TgsObject):
         self.vertices.insert(index, pos)
         self.in_point.insert(index, inp.clone())
         self.out_point.insert(index, outp.clone())
-        if not self.rel_tangents:
-            self.in_point[-1] += pos
-            self.out_point[-1] += pos
+        #if not self.rel_tangents:
+            #self.in_point[-1] += pos
+            #self.out_point[-1] += pos
         return self
 
     def add_point(self, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
@@ -471,48 +521,51 @@ class Bezier(TgsObject):
         self.in_point = in_point
         self.out_point = out_point
 
-    def to_absolute(self):
+    """def to_absolute(self):
         if self.rel_tangents:
             self.rel_tangents = False
             for i in range(len(self.vertices)):
                 p = self.vertices[i]
                 self.in_point[i] += p
                 self.out_point[i] += p
-        return self
+        return self"""
 
 
 ## \ingroup Lottie
-class ShapePropKeyframe(TgsObject):
+class ShapePropKeyframe(Keyframe):
     """!
     Keyframe holding Bezier objects
     """
     _props = [
         TgsProp("start", "s", Bezier, PseudoList),
         TgsProp("end", "e", Bezier, PseudoList),
-        TgsProp("time", "t", float, False),
-        TgsProp("in_value", "i", easing.KeyframeBezierHandle, False),
-        TgsProp("out_value", "o", easing.KeyframeBezierHandle, False),
     ]
 
-    def __init__(self, time=0, start=None, end=None):
+    def __init__(self, time=0, start=None, end=None, easing_function=None):
+        Keyframe.__init__(self, time, easing_function)
         ## Start value of keyframe segment.
         self.start = start
         ## End value of keyframe segment.
         self.end = end
-        ## Start time of keyframe segment.
-        self.time = time
-        ## Bezier curve easing in value.
-        self.in_value = None
-        ## Bezier curve easing out value.
-        self.out_value = None
 
-    def set_tangents(self, end_time, interp=easing.Linear()):
-        """!
-        Updates the bezier tangents for this keyframe
-        \param end_time The time of the next keyframe
-        \param interp   Callable that performs the easing
-        """
-        interp(self, 0, 0, end_time)
+    def interpolated_value(self, ratio):
+        if self.end is None:
+            return self.start
+        if not self.in_value or not self.out_value:
+            return self.start
+        if ratio == 1:
+            return self.end
+        if ratio == 0 or len(self.start.vertices) != len(self.end.vertices):
+            return self.start
+
+        lerpv = self.bezier().point_at(ratio)
+        bez = Bezier()
+        bez.closed = self.start.closed
+        for i in range(len(self.start.vertices)):
+            bez.vertices.append(self.start.vertices[i].lerp(self.end.vertices[i], lerpv))
+            bez.in_point.append(self.start.in_point[i].lerp(self.end.in_point[i], lerpv))
+            bez.out_point.append(self.start.out_point[i].lerp(self.end.out_point[i], lerpv))
+        return bez
 
 
 ## \ingroup Lottie

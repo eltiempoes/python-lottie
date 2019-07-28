@@ -42,15 +42,15 @@ def particle():
         lf = t * 2
         fill.color.add_keyframe(0, color1.lerp(color2, lf))
         fill.color.add_keyframe(last_frame*t, color2)
-        fill.color.add_keyframe((1 - t) * last_frame, color3)
-        fill.color.add_keyframe((1 - t) * last_frame+1, color1, easing.Jump())
+        fill.color.add_keyframe((1 - t) * last_frame, color3, easing.Jump())
+        fill.color.add_keyframe((1 - t) * last_frame+1, color1)
         fill.color.add_keyframe(last_frame, color1.lerp(color2, lf))
     else:
         lf = (t-0.5) * 2
         tf = (1-lf)/2
         fill.color.add_keyframe(0, color2.lerp(color3, lf))
-        fill.color.add_keyframe(last_frame*tf, color3)
-        fill.color.add_keyframe(last_frame*tf+1, color1, easing.Jump())
+        fill.color.add_keyframe(last_frame*tf, color3, easing.Jump())
+        fill.color.add_keyframe(last_frame*tf+1, color1)
         fill.color.add_keyframe((.5 + tf) * last_frame, color2)
         fill.color.add_keyframe(last_frame, color2.lerp(color3, lf))
 

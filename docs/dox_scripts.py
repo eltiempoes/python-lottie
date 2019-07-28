@@ -113,7 +113,6 @@ class DoxyHelpFormatter(argparse.HelpFormatter):
             result = ' '.join(formats) % get_metavar(action.nargs)
         return result
 
-
     def _format_action_invocation(self, action, doxyfy=False):
         if not action.option_strings:
             default = self._get_default_metavar_for_positional(action)
