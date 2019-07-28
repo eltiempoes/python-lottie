@@ -62,6 +62,15 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         self.svg.attrib["version"] = "1.1"
         self.set_id(self.svg, animation, self.qualified("sodipodi", "docname"))
         self.defs = ElementTree.SubElement(self.svg, "defs")
+        if self.name_mode == NameMode.Inkscape:
+            self.svg.attrib[self.qualified("inkscape", "export-xdpi")] = "96"
+            self.svg.attrib[self.qualified("inkscape", "export-ydpi")] = "96"
+            namedview = ElementTree.SubElement(self.svg, self.qualified("sodipodi", "namedview"))
+            namedview.attrib[self.qualified("inkscape", "pagecheckerboard")] = "true"
+            namedview.attrib["borderlayer"] = "true"
+            namedview.attrib["bordercolor"] = "#666666"
+            namedview.attrib["pagecolor"] = "#ffffff"
+
         return self.svg
 
     def _on_layer(self, layer_builder, dom_parent):
