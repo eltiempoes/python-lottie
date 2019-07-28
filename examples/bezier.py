@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs import Point, Color
 
@@ -46,4 +46,4 @@ fill = layer.add_shape(objects.Fill(Color.from_uint8(255, 0, 0)))
 stroke = layer.add_shape(objects.Stroke(Color(0, 0, 0), 5))
 
 
-exporters.multiexport(an, "/tmp/bezier")
+script.script_main(an)

@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs import Point, Color
 
@@ -32,5 +32,5 @@ repeater1 = layer.add_shape(objects.Repeater(4))
 repeater1.transform.position.value = Point(0, 110)
 repeater1.transform.end_opacity.value = 20
 
-exporters.multiexport(an, "/tmp/repeater")
+script.script_main(an)
 

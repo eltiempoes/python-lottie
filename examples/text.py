@@ -7,7 +7,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs import Color, Point
 
@@ -23,4 +23,4 @@ layer.data.add_keyframe(60, objects.text.TextItem("Here", 200, Color(0, 1, 0), "
 layer.transform.position.value = Point(30, 200)
 
 
-exporters.multiexport(an, "/tmp/text")
+script.script_main(an)

@@ -7,7 +7,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.parsers.svg import parse_svg_file
 from tgs import Point, Color
@@ -31,4 +31,4 @@ gaussian.sigma.add_keyframe(last_frame/2, 0)
 gaussian.sigma.add_keyframe(last_frame*3/4, 25)
 gaussian.sigma.add_keyframe(last_frame, 0)
 
-exporters.multiexport(an, "/tmp/effects")
+script.script_main(an)

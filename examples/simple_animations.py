@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs import Point, Color
 
@@ -28,6 +28,6 @@ fill.opacity.add_keyframe(30, 10)
 fill.opacity.add_keyframe(60, 100)
 
 
-exporters.multiexport(an, "/tmp/simple_animations")
+script.script_main(an)
 
 

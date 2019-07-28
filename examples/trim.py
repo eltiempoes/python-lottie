@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs import Point, Color
 
@@ -36,4 +36,4 @@ trim.end.value = 50
 stroke = group.add_shape(objects.Stroke(Color(1, 1, 0), 10))
 
 
-exporters.multiexport(an, "/tmp/trim")
+script.script_main(an)

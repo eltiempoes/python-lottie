@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.utils.animation import follow_path
 from tgs import Point, Color
@@ -30,4 +30,4 @@ follow_path(ball.position, bez.shape.value, 0, 90, 30)
 follow_path(ball.position, bez.shape.value, 90, 180, 30, True)
 
 
-exporters.multiexport(an, "/tmp/follow_path")
+script.script_main(an)

@@ -5,7 +5,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.utils import animation as anutils
 from tgs import Point, Color
@@ -90,4 +90,4 @@ for i in range(an.out_point):
     for name, ochain in oct.chains.items():
         octshapes[name].shape.add_keyframe(i, chain_bezier(ochain))
 
-exporters.multiexport(an, "/tmp/ik")
+script.script_main(an)

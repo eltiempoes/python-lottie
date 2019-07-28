@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs import Point, Color
 
@@ -37,4 +37,4 @@ g3.add_shape(objects.Fill(Color(0, 0, 1)))
 g3.add_shape(objects.Stroke(Color(1, 1, 1), 5))
 
 
-exporters.multiexport(an, "/tmp/groups")
+script.script_main(an)

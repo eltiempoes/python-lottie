@@ -5,7 +5,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.utils import animation as anutils
 from tgs import Point, Color
@@ -70,5 +70,5 @@ env.animate_bezier(shape.shape)
 env.animate_bezier(shapeb.shape)
 
 
-exporters.multiexport(an, "/tmp/envelope_deformation")
+script.script_main(an)
 

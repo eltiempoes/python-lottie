@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.utils.animation import shake, rot_shake
 from tgs import Point, Color
@@ -31,4 +31,4 @@ rot_shake(g.transform.rotation, Point(-15, 15), 0, 60, 10)
 layer.add_shape(objects.Fill(Color(1, 1, 0)))
 
 
-exporters.multiexport(an, "/tmp/shake")
+script.script_main(an)

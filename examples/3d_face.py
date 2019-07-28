@@ -5,7 +5,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.utils import animation as anutils
 from tgs import Size, Point3D, Point, Color
@@ -69,4 +69,4 @@ dr.animate_point(nose.position)
 dr.animate_bezier(mouth.shape)
 
 
-exporters.multiexport(an, "/tmp/3d_face")
+script.script_main(an)

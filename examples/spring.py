@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.utils.animation import spring_pull
 from tgs import Point, Color
@@ -31,4 +31,4 @@ for color, x, falloff in settings:
     group.transform.position.add_keyframe(85, Point(x, -100))
 
 
-exporters.multiexport(an, "/tmp/spring")
+script.script_main(an)

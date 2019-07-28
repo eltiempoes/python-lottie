@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs import Point, Color
 
@@ -22,4 +22,4 @@ an.assets.append(image)
 
 an.add_layer(objects.ImageLayer(image.id))
 
-exporters.multiexport(an, "/tmp/load_image")
+script.script_main(an)

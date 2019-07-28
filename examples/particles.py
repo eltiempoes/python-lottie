@@ -7,7 +7,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.objects import easing
 from tgs import Point, Color, Size, PolarVector
@@ -71,5 +71,5 @@ def particle():
 for i in range(100):
     particle()
 
-exporters.multiexport(an, "/tmp/particles")
+script.script_main(an)
 

@@ -5,7 +5,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.objects import easing
 from tgs import Point, Color, Size
@@ -46,4 +46,4 @@ for i in range(len(easings)):
     rect.position.add_keyframe(180, Point(width / 2, y), easings[i][0])
     layer.add_shape(objects.Fill(easings[i][1]))
 
-exporters.multiexport(an, "/tmp/easing")
+script.script_main(an)

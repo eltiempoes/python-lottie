@@ -146,22 +146,6 @@ def prettyprint_summary(tgs_object, out=sys.stdout, indent="   ", _i=""):
             out.write(']\n')
 
 
-def multiexport(animation, basename, lottie_json=True, lottie_html=True, tgs=True, embedded_html=True):
-    if lottie_json:
-        with open(basename+".json", "w") as lottieout:
-            export_lottie(animation, lottieout, sort_keys=True, indent=4)
-
-    if lottie_html:
-        if embedded_html:
-            export_embedded_html(animation, basename+".html")
-        else:
-            export_linked_html(basename+".html", basename+".json")
-
-    if tgs:
-        with open(basename+".tgs", "wb") as tgsout:
-            export_tgs(animation, tgsout)
-
-
 def _print_ugly_xml(dom, fp):
     return dom.write(fp, "utf-8", True)
 

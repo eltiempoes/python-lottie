@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.utils import animation as anutils
 from tgs import Point, Color
@@ -51,6 +51,6 @@ bez.shape.value.close()
 displacer.animate_bezier(bez.shape)
 
 
-exporters.multiexport(an, "/tmp/flag")
+script.script_main(an)
 
 

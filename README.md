@@ -170,6 +170,7 @@ The following things are actually unsupported:
 * Images
 * Skew transforms (this isn't listed in the unsupported features)
 * Texts
+* Animated layer transforms (not listed as unsupported)
 
 
 Things marked as unsupported that I haven't tested:

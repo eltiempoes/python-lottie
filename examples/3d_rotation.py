@@ -5,7 +5,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.utils import animation as anutils
 from tgs import Point, Color, Point3D, Size
@@ -38,4 +38,4 @@ dr = anutils.DepthRotationDisplacer(Point3D(256, 256, 0), 0, 120, 10, Point3D(0,
 for b in balls:
     dr.animate_point(b.position)
 
-exporters.multiexport(an, "/tmp/3d_rotation")
+script.script_main(an)

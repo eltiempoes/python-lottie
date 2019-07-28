@@ -5,7 +5,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.utils import animation as anutils
 from tgs import Color, Point
@@ -81,4 +81,4 @@ side2.position.add_keyframe(rot_time*3, Point(256+width, 256), easing.EaseIn())
 side2.position.add_keyframe(rot_time*4, Point(256-width, 256))
 
 
-exporters.multiexport(an, "/tmp/coin")
+script.script_main(an)

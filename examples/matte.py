@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs.parsers.svg import parse_svg_file
 from tgs import Point, Color
@@ -26,5 +26,5 @@ gf.end_point.value = Point(256, 64)
 an.layers[-1].matte_mode = objects.MatteMode.Luma
 
 
-exporters.multiexport(an, "/tmp/matte")
+script.script_main(an)
 

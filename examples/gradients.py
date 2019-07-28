@@ -4,7 +4,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+from tgs.utils import script
 from tgs import objects
 from tgs import Color, Point
 
@@ -58,4 +58,4 @@ fill.colors.set_colors([Color(1, 0, 0), Color(1, 1, 0)])
 fill.highlight_length.value = 90
 
 
-exporters.multiexport(an, "/tmp/gradients")
+script.script_main(an)
