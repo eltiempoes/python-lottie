@@ -26,7 +26,7 @@ class Keyframe(TgsObject):
         ## Bezier curve easing out value.
         self.out_value = None
         ## Jump to the end value
-        self.jump = False
+        self.jump = None
 
         if easing_function:
             easing_function(self)

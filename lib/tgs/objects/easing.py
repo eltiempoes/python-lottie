@@ -78,14 +78,6 @@ class Jump:
     """
     def __call__(self, keyframe):
         keyframe.jump = True
-        #keyframe.out_value = KeyframeBezierHandle(
-            #60,
-            #0
-        #)
-        #keyframe.in_value = KeyframeBezierHandle(
-            #0,
-            #0
-        #)
 
 
 class Sigmoid:
