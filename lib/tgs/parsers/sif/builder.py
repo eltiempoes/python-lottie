@@ -335,7 +335,12 @@ class SifBuilder(restructure.AbstractBuilder):
                 return
 
             inp = getattr(bezier, which_point)[point_index]
-            theta = math.atan2(inp[1], inp[0]) * 180 / math.pi
+            if inp[0] == 0:
+                theta = 0
+            else:
+                theta = math.atan(inp[1] / inp[0]) * 180 / math.pi
+                if inp[0] < 0:
+                    theta += 180
             elem.setAttribute("value", str(theta))
 
         mult = -1
