@@ -63,7 +63,8 @@ def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, revers
         fact += 1 / (n_keyframes-1)
         if fact > 1:
             fact -= 1
-            easing.Jump()(position_prop.keyframes[-1])
+            if time != start_time:
+                easing.Jump()(position_prop.keyframes[-1])
 
         f = 1 - fact if reverse else fact
         position_prop.add_keyframe(time, bezier.point_at(f)+offset)
