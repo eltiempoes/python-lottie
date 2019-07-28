@@ -161,11 +161,29 @@ class SifBuilder(restructure.AbstractBuilder):
         if kframes is not None:
             animated = self._subelement(wrap, "animated")
             animated.setAttribute("type", type)
-            for keyframe in kframes:
+            for i in range(len(kframes)):
+                keyframe = kframes[i]
                 waypoint = self._subelement(animated, "waypoint")
                 waypoint.setAttribute("time", self._format_time(keyframe.time))
-                waypoint.setAttribute("before", "clamped")
-                waypoint.setAttribute("after", "clamped")
+
+                if i > 0:
+                    prev = kframes[i-1]
+                    if prev.jump:
+                        waypoint.setAttribute("before", "constant")
+                    elif prev.in_value.x < 1:
+                        waypoint.setAttribute("before", "halt")
+                    else:
+                        waypoint.setAttribute("before", "linear")
+                else:
+                    waypoint.setAttribute("before", "linear")
+
+                if keyframe.jump:
+                    waypoint.setAttribute("after", "constant")
+                elif keyframe.out_value.x > 0:
+                    waypoint.setAttribute("after", "halt")
+                else:
+                    waypoint.setAttribute("after", "linear")
+
                 vector = self._subelement(waypoint, type)
                 getter(keyframe, vector)
         else:
