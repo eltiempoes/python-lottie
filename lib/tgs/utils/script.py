@@ -14,7 +14,7 @@ exporter_map = {
 }
 
 
-def script_main(animation, basename=None, path="/tmp", formats=["html"], print_name=True):
+def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1):
     """
     Sets up a script to output an animation into various formats
     """
@@ -42,6 +42,11 @@ def script_main(animation, basename=None, path="/tmp", formats=["html"], print_n
         help="Formates to render",
         metavar="format"
     )
+    parser.add_argument(
+        "--verbosity", "-v",
+        type=int,
+        default=int(verbosity)
+    )
 
     if caller.__name__ == "__main__":
         ns = parser.parse_args()
@@ -51,6 +56,6 @@ def script_main(animation, basename=None, path="/tmp", formats=["html"], print_n
         else:
             for fmt in ns.formats:
                 absname = os.path.abspath(os.path.join(ns.path, ns.name + "." + fmt))
-                if print_name:
+                if ns.verbosity:
                     print("file://" + absname)
                 exporter_map[fmt](animation, absname)

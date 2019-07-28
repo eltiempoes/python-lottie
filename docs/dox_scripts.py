@@ -161,7 +161,6 @@ class DoxyHelpFormatter(argparse.HelpFormatter):
             return super().add_text(text)
 
 
-
 with open(doxfile, "w") as outf:
     outf.write(r"""
 /**

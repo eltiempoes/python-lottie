@@ -1,12 +1,19 @@
 import os
 import sys
 import shutil
-import subprocess
+import inspect
 import importlib
+import subprocess
 sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "examples"
 ))
+sys.path.append(os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "lib"
+))
+from tgs.objects.animation import Animation
+from tgs.exporters import HtmlOutput
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 example_path = os.path.join(root, "examples")
@@ -27,26 +34,25 @@ else:
 os.makedirs(doxpath, exist_ok=True)
 
 for example in examples:
-    subprocess.run(["python3", os.path.join(example_path, example + ".py")])
-    with open("/tmp/%s.html" % example, "r") as f:
-        html = f.read()
-
-    headstart = html.find("#bodymovin")
-    headend = html.find("</head>")
-    bodystart = html.find("<div")
-    bodyend = html.find("</body>")
-    html_include = html[headstart:headend] + html[bodystart:bodyend]
+    example_fn = os.path.join(example_path, example + ".py")
+    module = importlib.import_module(example)
 
     with open(os.path.join(doxpath, example + ".dox"), "w") as f:
-        f.write("""
-/*!
+        f.write("""/*!
     \example {example}.py
 
     \htmlonly[block]
-    <style>{html_include}
-    \endhtmlonly
+""".format(example=example))
 
-    {extra}
-*/
+        for obj in vars(module).values():
+            if isinstance(obj, Animation):
+                out = HtmlOutput(obj, f)
+                out.style()
+                out.body_pre()
+                out.body_embedded()
+                out.body_post()
+                break
 
-""".format(example=example, html_include=html_include, extra=importlib.import_module(example).__doc__))
+        f.write("\\endhtmlonly\n\n")
+        f.write(inspect.getdoc(module) or "")
+        f.write("\n\n*/\n\n")
