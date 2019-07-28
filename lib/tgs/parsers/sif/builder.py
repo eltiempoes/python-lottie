@@ -33,11 +33,15 @@ blend_modes = {
 
 
 class SifBuilder(restructure.AbstractBuilder):
-    def __init__(self):
+    def __init__(self, gamma=2.2):
+        """
+        @todo Add gamma option to tgsconvert
+        """
         super().__init__()
         self.dom = minidom.Document()
         self.canvas = self.dom.appendChild(self.dom.createElement("canvas"))
         self.canvas.setAttribute("version", "1.0")
+        self.gamma = gamma
 
     def _format_time_f(self, time):
         return "%sf" % time
@@ -246,9 +250,9 @@ class SifBuilder(restructure.AbstractBuilder):
                 v = fill.color.value
             else:
                 v = keyframe.start
-            self._settext(self._subelement(elem, "r"), str(v[0]))
-            self._settext(self._subelement(elem, "g"), str(v[1]))
-            self._settext(self._subelement(elem, "b"), str(v[2]))
+            self._settext(self._subelement(elem, "r"), str(v[0] ** self.gamma))
+            self._settext(self._subelement(elem, "g"), str(v[1] ** self.gamma))
+            self._settext(self._subelement(elem, "b"), str(v[2] ** self.gamma))
             self._settext(self._subelement(elem, "a"), "1")
 
         self.process_vector_ext("param", fill.color.keyframes, sif_shape, "color", getter).setAttribute("name", "color")
