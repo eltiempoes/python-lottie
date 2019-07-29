@@ -271,7 +271,7 @@ class AnimatableMixin:
                     val = k.start
 
                 kp = self.keyframes[i-1] if i > 0 else None
-                if kp.end is not None:
+                if kp and kp.end is not None:
                     val = kp.interpolated_value((time - kp.time) / (k.time - kp.time))
                 break
             if k.end is not None:

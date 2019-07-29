@@ -210,5 +210,47 @@ try:
     def export_ps(animation, fp, frame=0, dpi=96):
         _export_cairo(cairosvg.svg2ps, animation, fp, frame, dpi)
 
+    try:
+        from PIL import Image
+        has_gif = True
+
+        def _png_gif_prepare(image):
+            alpha = image.split()[3]
+            image = image.convert('P', palette=Image.ADAPTIVE, colors=255)
+            mask = Image.eval(alpha, lambda a: 255 if a <= 128 else 0)
+            image.paste(255, mask)
+            return image
+
+        def export_gif(animation, fp, dpi=96):
+            """
+            Gif export
+
+            Note that it's a bit slow.
+            """
+            start = animation.in_point
+            end = animation.out_point
+            frames = []
+            for i in range(start, end+1):
+                file = io.BytesIO()
+                export_png(animation, file, i, dpi)
+                file.seek(0)
+                frames.append(_png_gif_prepare(Image.open(file)))
+
+            duration = 1000 / animation.frame_rate
+            frames[0].save(
+                fp,
+                format='GIF',
+                append_images=frames[1:],
+                save_all=True,
+                duration=duration,
+                loop=1,
+                transparency=255,
+                disposal=2,
+            )
+
+    except ImportError:
+        has_gif = False
+
 except ImportError:
     has_cairo = False
+    has_gif = False

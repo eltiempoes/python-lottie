@@ -94,6 +94,7 @@ Python 3.
 * `pillow`, `pypotrace>=0.2`, `numpy`, `scipy` To convert raster images into vectors
 * `pillow` to load image assets
 * `cairosvg` to export PNG / PDF / PS
+* `cairosvg`, `pillow` to export GIF
 
 
 Features

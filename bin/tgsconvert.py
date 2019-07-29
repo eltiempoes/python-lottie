@@ -93,6 +93,13 @@ if tgs.exporters.has_cairo:
             ExtraOption("frame", type=int, default=0, help="Frame to extract"),
         ]),
     ]
+if tgs.exporters.has_gif:
+    exporters += [
+        Exporter("GIF", ["gif"], tgs.exporters.export_png, [
+            ExtraOption("dpi", type=int, default=96, help="Dots per inch"),
+        ]),
+    ]
+
 
 importers = [
     Importer("SVG", ["svg"], parsers.svg.parse_svg_file, [

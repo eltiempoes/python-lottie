@@ -20,6 +20,11 @@ if exporters.has_cairo:
         "ps": exporters.export_ps,
     })
 
+if exporters.has_gif:
+    exporter_map.update({
+        "gif": exporters.export_gif
+    })
+
 
 def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1):
     """
