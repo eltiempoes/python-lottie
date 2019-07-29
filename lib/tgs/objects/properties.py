@@ -5,6 +5,111 @@ from . import easing
 from ..utils.nvector import NVector
 
 
+class KeyframeBezier:
+    NEWTON_ITERATIONS = 4
+    NEWTON_MIN_SLOPE = 0.001
+    SUBDIVISION_PRECISION = 0.0000001
+    SUBDIVISION_MAX_ITERATIONS = 10
+    SPLINE_TABLE_SIZE = 11
+    SAMPLE_STEP_SIZE = 1.0 / (SPLINE_TABLE_SIZE - 1.0)
+
+    def __init__(self, h1, h2):
+        self.h1 = h1
+        self.h2 = h2
+        self._sample_values = None
+
+    @classmethod
+    def from_keyframe(cls, keyframe):
+        return cls(keyframe.out_value, keyframe.in_value)
+
+    def bezier(self):
+        bez = Bezier()
+        bez.add_point(NVector(0, 0), outp=NVector(self.h1.x, self.h1.y))
+        bez.add_point(NVector(1, 1), inp=NVector(self.h2.x-1, self.h2.y-1))
+
+    def _a(self, c1, c2):
+        return 1 - 3 * c2 + 3 * c1
+
+    def _b(self, c1, c2):
+        return 3 * c2 - 6 * c1
+
+    def _c(self, c1):
+        return 3 * c1
+
+    def _bezier_component(self, t, c1, c2):
+        return ((self._a(c1, c2) * t + self._b(c1, c2)) * t + self._c(c1)) * t
+
+    def point_at(self, t):
+        return NVector(
+            self._bezier_component(t, self.h1.x, self.h2.x),
+            self._bezier_component(t, self.h1.y, self.h2.y)
+        )
+
+    def _slope_component(self, t, c1, c2):
+        return 3 * self._a(c1, c2) * t * t + 2 * self._b(c1, c2) * t + self._c(c1)
+
+    def slope_at(self, t):
+        return NVector(
+            self._slope_component(t, self.h1.x, self.h2.x),
+            self._slope_component(t, self.h1.y, self.h2.y)
+        )
+
+    def _binary_subdivide(self, x, interval_start, interval_end):
+        current_x = None
+        t = None
+        i = 0
+        for i in range(self.SUBDIVISION_MAX_ITERATIONS):
+            if current_x is not None and abs(current_x) < self.SUBDIVISION_PRECISION:
+                break
+            t = interval_start + (interval_end - interval_start) / 2.0
+            current_x = self._bezier_component(t, self.h1.x, self.h2.x) - x
+            if current_x > 0.0:
+                interval_end = t
+            else:
+                interval_start = t
+        return t
+
+    def _newton_raphson(self, x, t_guess):
+        for i in range(self.NEWTON_ITERATIONS):
+            slope = self._slope_component(t_guess, self.h1.x, self.h2.x)
+            if slope == 0:
+                return t_guess
+            current_x = self._bezier_component(t_guess, self.h1.x, self.h2.x) - x
+            t_guess -= current_x / slope
+        return t_guess
+
+    def _get_sample_values(self):
+        if self._sample_values is None:
+            self._sample_values = [
+                self._bezier_component(i * self.SAMPLE_STEP_SIZE, self.h1.x, self.h2.x)
+                for i in range(self.SPLINE_TABLE_SIZE)
+            ]
+        return self._sample_values
+
+    def t_for_x(self, x):
+        sample_values = self._get_sample_values()
+        interval_start = 0
+        current_sample = 1
+        last_sample = self.SPLINE_TABLE_SIZE - 1
+        while current_sample != last_sample and sample_values[current_sample] <= x:
+            interval_start += self.SAMPLE_STEP_SIZE
+            current_sample += 1
+        current_sample -= 1
+
+        dist = (x - sample_values[current_sample]) / (sample_values[current_sample+1] - sample_values[current_sample])
+        t_guess = interval_start + dist * self.SAMPLE_STEP_SIZE
+        initial_slope = self._slope_component(t_guess, self.h1.x, self.h2.x)
+        if initial_slope >= self.NEWTON_MIN_SLOPE:
+            return self._newton_raphson(x, t_guess)
+        if initial_slope == 0:
+            return t_guess
+        return self._binary_subdivide(x, interval_start, interval_start + self.SAMPLE_STEP_SIZE)
+
+    def y_at_x(self, x):
+        t = self.t_for_x(x)
+        return self._bezier_component(t, self.h1.y, self.h2.y)
+
+
 ## \ingroup Lottie
 class Keyframe(TgsObject):
     _props = [
@@ -32,15 +137,14 @@ class Keyframe(TgsObject):
             easing_function(self)
 
     def bezier(self):
-        bez = Bezier()
         if self.jump:
+            bez = Bezier()
             bez.add_point(NVector(0, 0))
             bez.add_point(NVector(1, 0))
             bez.add_point(NVector(1, 1))
+            return bez
         else:
-            bez.add_point(NVector(0, 0), outp=NVector(self.out_value.x, self.out_value.y))
-            bez.add_point(NVector(1, 1), inp=NVector(self.in_value.x-1, self.in_value.y-1))
-        return bez
+            return KeyframeBezier.from_keyframe(self).bezier()
 
     def to_dict(self):
         return {
@@ -93,7 +197,7 @@ class OffsetKeyframe(Keyframe):
             return self.end
         if ratio == 0:
             return self.start
-        lerpv = self.bezier().point_at(ratio)
+        lerpv = KeyframeBezier.from_keyframe(self).y_at_x(ratio)
         return self.start.lerp(self.end, lerpv)
 
 
