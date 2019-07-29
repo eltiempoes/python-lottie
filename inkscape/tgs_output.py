@@ -45,9 +45,6 @@ if __name__ == "__main__":
     import tgs
     animation = tgs.parsers.svg.importer.parse_svg_file(ns.infile, ns.frames, ns.fps)
     if ns.format == "lottie":
-        kw = {}
-        if ns.pretty:
-            kw.update(sort_keys=True, indent=4)
-        tgs.exporters.export_lottie(animation, sys.stdout, **kw)
+        tgs.exporters.export_lottie(animation, sys.stdout, ns.pretty)
     else:
         tgs.exporters.export_tgs(animation, sys.stdout.buffer)

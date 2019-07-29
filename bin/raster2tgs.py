@@ -92,6 +92,6 @@ if __name__ == "__main__":
         outfile = open(ns.output, "w" + ("b" if binary else ""))
 
     if ns.format == "lottie":
-        export_lottie(animation, outfile, indent=4, sort_keys=True)
+        export_lottie(animation, outfile, True)
     else:
         export_tgs(animation, outfile)

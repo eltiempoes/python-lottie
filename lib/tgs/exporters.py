@@ -12,9 +12,12 @@ from .parsers.svg.builder import to_svg
 from .parsers.sif.builder import to_sif
 
 
-def export_lottie(animation, fp, **kw):
+def export_lottie(animation, fp, pretty=False):
     if isinstance(fp, str):
         fp = open(fp, "w")
+    kw = {}
+    if pretty:
+        kw = dict(sort_keys=True, indent=4)
     json.dump(animation.to_dict(), fp, **kw)
 
 

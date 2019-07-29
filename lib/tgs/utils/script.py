@@ -7,7 +7,7 @@ from .. import exporters
 
 exporter_map = {
     "tgs": exporters.export_tgs,
-    "json": lambda a, f: exporters.export_lottie(a, f, sort_keys=True, indent=4),
+    "json": lambda a, f: exporters.export_lottie(a, f, True),
     "html": exporters.export_embedded_html,
     "svg": exporters.export_svg,
     "sif": exporters.export_sif,

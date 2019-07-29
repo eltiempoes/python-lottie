@@ -19,19 +19,16 @@ except ImportError:
 
 
 class Exporter:
-    def __init__(self, name, extensions, callback, extra_options=[], pretty_options={}, slug=None):
+    def __init__(self, name, extensions, callback, extra_options=[], generic_options=set(), slug=None):
         self.name = name
         self.extensions = extensions
         self.callback = callback
         self.extra_options = extra_options
-        self.pretty_options = pretty_options
+        self.generic_options = generic_options
         self.slug = slug if slug is not None else extensions[0]
 
-    def export(self, animation, filename, options, pretty):
-        kw = options
-        if pretty:
-            kw.update(self.pretty_options)
-        self.callback(animation, filename, **kw)
+    def export(self, animation, filename, options):
+        self.callback(animation, filename, **options)
 
 
 class ExtraOption:
@@ -71,32 +68,20 @@ def add_options(parser, ie, object):
 
 exporters = [
     Exporter("Telegram Animated Sticker", ["tgs"], tgs.exporters.export_tgs),
-    Exporter("Lottie JSON", ["json"], tgs.exporters.export_lottie, [], dict(sort_keys=True, indent=4), "lottie"),
+    Exporter("Lottie JSON", ["json"], tgs.exporters.export_lottie, [], {"pretty"}, "lottie"),
     Exporter("Lottie HTML", ["html", "htm"], tgs.exporters.export_embedded_html),
-    Exporter("SVG", ["svg"], tgs.exporters.export_svg, [
-        ExtraOption("frame", type=int, default=0, help="Frame to extract")
-    ], {"pretty": True}),
-    Exporter("Synfig", ["sif"], tgs.exporters.export_sif, [], {"pretty": True}),
+    Exporter("SVG", ["svg"], tgs.exporters.export_svg, [], {"pretty", "frame"}),
+    Exporter("Synfig", ["sif"], tgs.exporters.export_sif, [], {"pretty"}),
 ]
 if tgs.exporters.has_cairo:
     exporters += [
-        Exporter("PNG", ["png"], tgs.exporters.export_png, [
-            ExtraOption("dpi", type=int, default=96, help="Dots per inch"),
-            ExtraOption("frame", type=int, default=0, help="Frame to extract"),
-        ]),
-        Exporter("PDF", ["pdf"], tgs.exporters.export_pdf, [
-            ExtraOption("dpi", type=int, default=96, help="Dots per inch"),
-            ExtraOption("frame", type=int, default=0, help="Frame to extract"),
-        ]),
-        Exporter("PostScript", ["ps"], tgs.exporters.export_ps, [
-            ExtraOption("dpi", type=int, default=96, help="Dots per inch"),
-            ExtraOption("frame", type=int, default=0, help="Frame to extract"),
-        ]),
+        Exporter("PNG", ["png"], tgs.exporters.export_png, [], {"frame"}),
+        Exporter("PDF", ["pdf"], tgs.exporters.export_pdf, [], {"frame"}),
+        Exporter("PostScript", ["ps"], tgs.exporters.export_ps, [], {"frame"}),
     ]
 if tgs.exporters.has_gif:
     exporters += [
         Exporter("GIF", ["gif"], tgs.exporters.export_png, [
-            ExtraOption("dpi", type=int, default=96, help="Dots per inch"),
             ExtraOption("skip_frames", type=int, default=5, help="Only renderer 1 out of these many frames"),
         ]),
     ]
@@ -167,6 +152,12 @@ group.add_argument(
     help="Pretty print (for formats that support it)",
 )
 group.add_argument(
+    "--frame",
+    type=int,
+    default=0,
+    help="Frame to extract (for single-image formats)",
+)
+group.add_argument(
     "--output-format", "-of",
     default=None,
     choices=[exporter.slug for exporter in exporters],
@@ -229,6 +220,8 @@ if __name__ == "__main__":
     o_options = {}
     for opt in exporter.extra_options:
         o_options[opt.name] = getattr(ns, opt.nsvar(exporter.slug))
+    for opt in exporter.generic_options:
+        o_options[opt] = getattr(ns, opt)
 
     an = importer.load(infile, i_options)
-    exporter.export(an, outfile, o_options, ns.pretty)
+    exporter.export(an, outfile, o_options)
