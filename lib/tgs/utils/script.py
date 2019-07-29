@@ -28,7 +28,7 @@ def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosi
     parser.add_argument(
         "--formats", "-f",
         nargs="+",
-        choices=list(exporters.keys()),
+        choices=list(sum((e.extensions for e in exporters), [])),
         default=formats,
         help="Formates to render",
         metavar="format"
@@ -45,12 +45,12 @@ def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosi
         ns = parser.parse_args()
         if ns.name == "-" and len(ns.formats) == 1:
             file = sys.stdout.buffer if ns.formats[0] == "tgs" else sys.stdout
-            exporter = exporters[ns.formats[0]]
+            exporter = exporters.get_from_extension(ns.formats[0])
             exporter.export(animation, absname, exporter.argparse_options(ns))
         else:
             for fmt in ns.formats:
                 absname = os.path.abspath(os.path.join(ns.path, ns.name + "." + fmt))
                 if ns.verbosity:
                     print("file://" + absname)
-                exporter = exporters[fmt]
+                exporter = exporters.get_from_extension(fmt)
                 exporter.export(animation, absname, exporter.argparse_options(ns))

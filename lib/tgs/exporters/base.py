@@ -66,14 +66,14 @@ class _ExporterLoader:
         self._exporters = None
 
     def load_modules(self):
-        for _, modname, _ in pkgutil.iter_modules(os.path.dirname(__file__)):
+        for _, modname, _ in pkgutil.iter_modules([os.path.dirname(__file__)]):
             if modname == "base":
                 continue
 
             #full_modname = "tgs.exporters." + modname
             full_modname = "." + modname
             try:
-                importlib.import_module(full_modname)
+                importlib.import_module(full_modname, "tgs.exporters")
             except ImportError:
                 pass
 
@@ -94,9 +94,11 @@ class _ExporterLoader:
         return self.get(key)
 
     def get_from_filename(self, filename):
-        suf = os.path.splitext(filename)[1][1:]
+        return self.get_from_extension(os.path.splitext(filename)[1][1:])
+
+    def get_from_extension(self, ext):
         for p in self.exporters.values():
-            if suf in p.extensions:
+            if ext in p.extensions:
                 return p
         return None
 

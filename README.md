@@ -95,6 +95,7 @@ Python 3.
 * `pillow` to load image assets
 * `cairosvg` to export PNG / PDF / PS
 * `cairosvg`, `pillow` to export GIF
+* `cairosvg`, `numpy`, Python OpenCV 2 to export video
 
 
 Features
@@ -108,6 +109,9 @@ Here is a list of features of the tgs python framework:
 * Export lottie JSON or TGS
 * Export (non-animated) SVG
 * Export Synfig files
+* Export PNG/PDF/PostScript
+* Export GIF
+* Export Video (MP4, AVI, WebM)
 * Manipulation of lottie objects
 * Simple animation presets (eg: shake, linear bounce)
 * Bezier path animations (eg: follow path, making paths appear and disappear)
