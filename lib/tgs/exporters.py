@@ -221,7 +221,7 @@ try:
             image.paste(255, mask)
             return image
 
-        def export_gif(animation, fp, dpi=96):
+        def export_gif(animation, fp, dpi=96, skip_frames=5):
             """
             Gif export
 
@@ -230,7 +230,7 @@ try:
             start = animation.in_point
             end = animation.out_point
             frames = []
-            for i in range(start, end+1):
+            for i in range(start, end+1, skip_frames):
                 file = io.BytesIO()
                 export_png(animation, file, i, dpi)
                 file.seek(0)
@@ -243,7 +243,7 @@ try:
                 append_images=frames[1:],
                 save_all=True,
                 duration=duration,
-                loop=1,
+                loop=0,
                 transparency=255,
                 disposal=2,
             )

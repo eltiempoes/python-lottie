@@ -97,6 +97,7 @@ if tgs.exporters.has_gif:
     exporters += [
         Exporter("GIF", ["gif"], tgs.exporters.export_png, [
             ExtraOption("dpi", type=int, default=96, help="Dots per inch"),
+            ExtraOption("skip_frames", type=int, default=5, help="Only renderer 1 out of these many frames"),
         ]),
     ]
 
