@@ -2,28 +2,7 @@ import os
 import sys
 import argparse
 import inspect
-from .. import exporters
-
-
-exporter_map = {
-    "tgs": exporters.export_tgs,
-    "json": lambda a, f: exporters.export_lottie(a, f, True),
-    "html": exporters.export_embedded_html,
-    "svg": exporters.export_svg,
-    "sif": exporters.export_sif,
-}
-
-if exporters.has_cairo:
-    exporter_map.update({
-        "png": exporters.export_png,
-        "pdf": exporters.export_pdf,
-        "ps": exporters.export_ps,
-    })
-
-if exporters.has_gif:
-    exporter_map.update({
-        "gif": exporters.export_gif
-    })
+from ..exporters import exporters
 
 
 def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1):
@@ -49,7 +28,7 @@ def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosi
     parser.add_argument(
         "--formats", "-f",
         nargs="+",
-        choices=list(exporter_map.keys()),
+        choices=list(exporters.keys()),
         default=formats,
         help="Formates to render",
         metavar="format"
@@ -60,14 +39,18 @@ def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosi
         default=int(verbosity)
     )
 
+    exporters.set_options(parser)
+
     if caller.__name__ == "__main__":
         ns = parser.parse_args()
         if ns.name == "-" and len(ns.formats) == 1:
             file = sys.stdout.buffer if ns.formats[0] == "tgs" else sys.stdout
-            exporter_map[ns.formats[0]](animation, file)
+            exporter = exporters[ns.formats[0]]
+            exporter.export(animation, absname, exporter.argparse_options(ns))
         else:
             for fmt in ns.formats:
                 absname = os.path.abspath(os.path.join(ns.path, ns.name + "." + fmt))
                 if ns.verbosity:
                     print("file://" + absname)
-                exporter_map[fmt](animation, absname)
+                exporter = exporters[fmt]
+                exporter.export(animation, absname, exporter.argparse_options(ns))

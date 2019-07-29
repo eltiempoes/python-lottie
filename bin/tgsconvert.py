@@ -8,7 +8,8 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-import tgs.exporters
+from tgs.exporters import exporters
+from tgs.exporters.base import ExtraOption, _add_options
 from tgs import parsers
 from tgs.parsers.svg.importer import parse_color
 try:
@@ -16,32 +17,6 @@ try:
     raster = True
 except ImportError:
     raster = False
-
-
-class Exporter:
-    def __init__(self, name, extensions, callback, extra_options=[], generic_options=set(), slug=None):
-        self.name = name
-        self.extensions = extensions
-        self.callback = callback
-        self.extra_options = extra_options
-        self.generic_options = generic_options
-        self.slug = slug if slug is not None else extensions[0]
-
-    def export(self, animation, filename, options):
-        self.callback(animation, filename, **options)
-
-
-class ExtraOption:
-    def __init__(self, name, **kwargs):
-        self.name = name
-        self.kwargs = kwargs
-
-    def add_argument(self, slug, parser):
-        opt = "--%s-%s" % (slug, self.name.replace("_", "-"))
-        parser.add_argument(opt, metavar=self.name, **self.kwargs)
-
-    def nsvar(self, slug):
-        return "%s_%s" % (slug, self.name)
 
 
 class Importer:
@@ -54,37 +29,6 @@ class Importer:
 
     def load(self, stream, extra_options):
         return self.callback(stream, **extra_options)
-
-
-def add_options(parser, ie, object):
-    if not object.extra_options:
-        return
-
-    suf = " %sing options" % ie
-    group = parser.add_argument_group(object.name + suf)
-    for op in object.extra_options:
-        op.add_argument(object.slug, group)
-
-
-exporters = [
-    Exporter("Telegram Animated Sticker", ["tgs"], tgs.exporters.export_tgs),
-    Exporter("Lottie JSON", ["json"], tgs.exporters.export_lottie, [], {"pretty"}, "lottie"),
-    Exporter("Lottie HTML", ["html", "htm"], tgs.exporters.export_embedded_html),
-    Exporter("SVG", ["svg"], tgs.exporters.export_svg, [], {"pretty", "frame"}),
-    Exporter("Synfig", ["sif"], tgs.exporters.export_sif, [], {"pretty"}),
-]
-if tgs.exporters.has_cairo:
-    exporters += [
-        Exporter("PNG", ["png"], tgs.exporters.export_png, [], {"frame"}),
-        Exporter("PDF", ["pdf"], tgs.exporters.export_pdf, [], {"frame"}),
-        Exporter("PostScript", ["ps"], tgs.exporters.export_ps, [], {"frame"}),
-    ]
-if tgs.exporters.has_gif:
-    exporters += [
-        Exporter("GIF", ["gif"], tgs.exporters.export_png, [
-            ExtraOption("skip_frames", type=int, default=5, help="Only renderer 1 out of these many frames"),
-        ]),
-    ]
 
 
 importers = [
@@ -114,8 +58,8 @@ Supported formats:
 - Output:
 %s
 """ % (
+    "\n".join("%s- %s" % (" "*2, e.name) for e in importers),
     "\n".join("%s- %s" % (" "*2, e.name) for e in exporters),
-    "\n".join("%s- %s" % (" "*2, e.name) for e in importers)
 )
 
 parser = argparse.ArgumentParser(
@@ -138,7 +82,7 @@ group.add_argument(
 )
 
 
-group = parser.add_argument_group("Generic output options")
+group = exporters.set_options(parser)
 
 group.add_argument(
     "outfile",
@@ -147,28 +91,15 @@ group.add_argument(
     help="Output file"
 )
 group.add_argument(
-    "--pretty", "-p",
-    action="store_true",
-    help="Pretty print (for formats that support it)",
-)
-group.add_argument(
-    "--frame",
-    type=int,
-    default=0,
-    help="Frame to extract (for single-image formats)",
-)
-group.add_argument(
     "--output-format", "-of",
     default=None,
     choices=[exporter.slug for exporter in exporters],
     help="Explicit output format (if missing implied by the output filename)",
 )
 
-for exporter in exporters:
-    add_options(parser, "export", exporter)
 
 for importer in importers:
-    add_options(parser, "import", importer)
+    _add_options(parser, "import", importer)
 
 if __name__ == "__main__":
     ns = parser.parse_args()
@@ -198,17 +129,10 @@ if __name__ == "__main__":
     if outfile == "-":
         outfile = sys.stdout
     else:
-        suf = os.path.splitext(outfile)[1][1:]
-        for p in exporters:
-            if suf in p.extensions:
-                exporter = p
-                break
+        exporter = exporters.get_from_filename(outfile)
     if ns.output_format:
-        exporter = None
-        for p in exporters:
-            if p.slug == ns.output_format:
-                exporter = p
-                break
+        exporter = exporters.get(ns.output_format)
+
     if not exporter:
         sys.stderr.write("Unknown exporter\n")
         sys.exit(1)
@@ -217,11 +141,7 @@ if __name__ == "__main__":
     for opt in importer.extra_options:
         i_options[opt.name] = getattr(ns, opt.nsvar(importer.slug))
 
-    o_options = {}
-    for opt in exporter.extra_options:
-        o_options[opt.name] = getattr(ns, opt.nsvar(exporter.slug))
-    for opt in exporter.generic_options:
-        o_options[opt] = getattr(ns, opt)
+    o_options = exporter.argparse_options(ns)
 
     an = importer.load(infile, i_options)
     exporter.export(an, outfile, o_options)

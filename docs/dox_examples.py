@@ -13,7 +13,7 @@ sys.path.append(os.path.join(
     "lib"
 ))
 from tgs.objects.animation import Animation
-from tgs.exporters import HtmlOutput
+from tgs.exporters.core import HtmlOutput
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 example_path = os.path.join(root, "examples")
