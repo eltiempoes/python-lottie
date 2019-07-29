@@ -1,5 +1,7 @@
+import io
 from PIL import Image
 
+from .cairo import export_png
 from .base import exporter, ExtraOption
 
 
