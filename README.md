@@ -91,8 +91,9 @@ Python 3.
 ### Optional Requirements
 
 * `coverage` To show unit test coverage, used optionally by `test.sh`
-* pillow, pypotrace>=0.2, numpy, scipy To convert raster images into vectors
-* pillow to load image assets
+* `pillow`, `pypotrace>=0.2`, `numpy`, `scipy` To convert raster images into vectors
+* `pillow` to load image assets
+* `cairosvg` to export PNG / PDF / PS
 
 
 Features

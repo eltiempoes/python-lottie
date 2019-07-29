@@ -13,6 +13,13 @@ exporter_map = {
     "sif": exporters.export_sif,
 }
 
+if exporters.has_cairo:
+    exporter_map.update({
+        "png": exporters.export_png,
+        "pdf": exporters.export_pdf,
+        "ps": exporters.export_ps,
+    })
+
 
 def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1):
     """

@@ -26,6 +26,7 @@ class KeyframeBezier:
         bez = Bezier()
         bez.add_point(NVector(0, 0), outp=NVector(self.h1.x, self.h1.y))
         bez.add_point(NVector(1, 1), inp=NVector(self.h2.x-1, self.h2.y-1))
+        return bez
 
     def _a(self, c1, c2):
         return 1 - 3 * c2 + 3 * c1
@@ -154,6 +155,9 @@ class Keyframe(TgsObject):
             (getattr(self, "end", None) is not None or prop.name not in {"in_value", "out_value"})
         }
 
+    def lerp_factor(self, ratio):
+        return KeyframeBezier.from_keyframe(self).y_at_x(ratio)
+
 
 ## \ingroup Lottie
 class OffsetKeyframe(Keyframe):
@@ -197,7 +201,7 @@ class OffsetKeyframe(Keyframe):
             return self.end
         if ratio == 0:
             return self.start
-        lerpv = KeyframeBezier.from_keyframe(self).y_at_x(ratio)
+        lerpv = self.lerp_factor(ratio)
         return self.start.lerp(self.end, lerpv)
 
 
@@ -267,10 +271,8 @@ class AnimatableMixin:
                     val = k.start
 
                 kp = self.keyframes[i-1] if i > 0 else None
-                if kp and isinstance(val, NVector):
-                    prev = kp.start
-                    # TODO honour easing
-                    val = prev.lerp(val, (time - kp.time) / (k.time - kp.time))
+                if kp.end is not None:
+                    val = kp.interpolated_value((time - kp.time) / (k.time - kp.time))
                 break
             if k.end is not None:
                 val = k.end
@@ -662,7 +664,7 @@ class ShapePropKeyframe(Keyframe):
         if ratio == 0 or len(self.start.vertices) != len(self.end.vertices):
             return self.start
 
-        lerpv = self.bezier().point_at(ratio)
+        lerpv = self.lerp_factor(ratio)
         bez = Bezier()
         bez.closed = self.start.closed
         for i in range(len(self.start.vertices)):

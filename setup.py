@@ -55,6 +55,7 @@ setuptools.setup(
     extras_require={
         "Vectorization": ["pillow", "pypotrace>=0.2", "numpy", "scipy"],
         "Load image": ["pillow"],
+        "Export PNG": ["cairosvg"],
     },
     test_suite="test",
     project_urls={

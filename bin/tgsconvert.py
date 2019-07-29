@@ -8,7 +8,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import exporters
+import tgs.exporters
 from tgs import parsers
 from tgs.parsers.svg.importer import parse_color
 try:
@@ -70,14 +70,29 @@ def add_options(parser, ie, object):
 
 
 exporters = [
-    Exporter("Telegram Animated Sticker", ["tgs"], exporters.export_tgs),
-    Exporter("Lottie JSON", ["json"], exporters.export_lottie, [], dict(sort_keys=True, indent=4), "lottie"),
-    Exporter("Lottie HTML", ["html", "htm"], exporters.export_embedded_html),
-    Exporter("SVG", ["svg"], exporters.export_svg, [
-        ExtraOption("time", type=int, default=0, help="Frame to extract")
+    Exporter("Telegram Animated Sticker", ["tgs"], tgs.exporters.export_tgs),
+    Exporter("Lottie JSON", ["json"], tgs.exporters.export_lottie, [], dict(sort_keys=True, indent=4), "lottie"),
+    Exporter("Lottie HTML", ["html", "htm"], tgs.exporters.export_embedded_html),
+    Exporter("SVG", ["svg"], tgs.exporters.export_svg, [
+        ExtraOption("frame", type=int, default=0, help="Frame to extract")
     ], {"pretty": True}),
-    Exporter("Synfig", ["sif"], exporters.export_sif, [], {"pretty": True}),
+    Exporter("Synfig", ["sif"], tgs.exporters.export_sif, [], {"pretty": True}),
 ]
+if tgs.exporters.has_cairo:
+    exporters += [
+        Exporter("PNG", ["png"], tgs.exporters.export_png, [
+            ExtraOption("dpi", type=int, default=96, help="Dots per inch"),
+            ExtraOption("frame", type=int, default=0, help="Frame to extract"),
+        ]),
+        Exporter("PDF", ["pdf"], tgs.exporters.export_pdf, [
+            ExtraOption("dpi", type=int, default=96, help="Dots per inch"),
+            ExtraOption("frame", type=int, default=0, help="Frame to extract"),
+        ]),
+        Exporter("PostScript", ["ps"], tgs.exporters.export_ps, [
+            ExtraOption("dpi", type=int, default=96, help="Dots per inch"),
+            ExtraOption("frame", type=int, default=0, help="Frame to extract"),
+        ]),
+    ]
 
 importers = [
     Importer("SVG", ["svg"], parsers.svg.parse_svg_file, [
@@ -198,7 +213,6 @@ if __name__ == "__main__":
     if not exporter:
         sys.stderr.write("Unknown exporter\n")
         sys.exit(1)
-
 
     i_options = {}
     for opt in importer.extra_options:

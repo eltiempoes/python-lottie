@@ -1,7 +1,8 @@
+import io
+import sys
 import json
 import gzip
 import codecs
-import sys
 from xml.dom import minidom
 from xml.etree import ElementTree
 
@@ -178,9 +179,9 @@ def _print_pretty_xml(dom, fp):
     fp.write(xmlstr)
 
 
-def export_svg(animation, fp, time=0, pretty=True):
+def export_svg(animation, fp, frame=0, pretty=True):
     _print_xml = _print_pretty_xml if pretty else _print_ugly_xml
-    _print_xml(to_svg(animation, time), fp)
+    _print_xml(to_svg(animation, frame), fp)
 
 
 def export_sif(animation, fp, pretty=True):
@@ -188,3 +189,26 @@ def export_sif(animation, fp, pretty=True):
     if isinstance(fp, str):
         fp = open(fp, "w")
     dom.writexml(fp, "", "  " if pretty else "", "\n" if pretty else "")
+
+
+try:
+    import cairosvg
+    has_cairo = True
+
+    def _export_cairo(func, animation, fp, frame, dpi):
+        intermediate = io.StringIO()
+        export_svg(animation, intermediate, frame)
+        intermediate.seek(0)
+        func(file_obj=intermediate, write_to=fp, dpi=dpi)
+
+    def export_png(animation, fp, frame=0, dpi=96):
+        _export_cairo(cairosvg.svg2png, animation, fp, frame, dpi)
+
+    def export_pdf(animation, fp, frame=0, dpi=96):
+        _export_cairo(cairosvg.svg2pdf, animation, fp, frame, dpi)
+
+    def export_ps(animation, fp, frame=0, dpi=96):
+        _export_cairo(cairosvg.svg2ps, animation, fp, frame, dpi)
+
+except ImportError:
+    has_cairo = False
