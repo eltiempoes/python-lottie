@@ -6,8 +6,8 @@ pages:
     stage: pages
     before_script:
         - apt-get update -qq
-        - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make
-        - pip3 install Pillow
+        - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make python3-opencv
+        - pip3 install Pillow numpy scipy cairosvg git+https://github.com/flupke/pypotrace.git@py3k
     script:
         - make -B docs -j 4
         - mv docs/html public
@@ -25,8 +25,8 @@ test:
     stage: test
     before_script:
         - apt-get update -qq
-        - apt-get install -y -qq python3-pip
-        - pip3 install coverage
+        - apt-get install -y -qq python3-pip python3-opencv
+        - pip3 install coverage Pillow numpy scipy cairosvg git+https://github.com/flupke/pypotrace.git@py3k
     script:
         - ./test.sh
     artifacts:
