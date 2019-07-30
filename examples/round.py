@@ -27,7 +27,7 @@ star.inner_radius.value = 20
 star.outer_radius.value = 50
 star.position.value = Point(256, 256)
 
-round = layer.add_shape(objects.Round())
+round = layer.add_shape(objects.RoundedCorners())
 round.radius.add_keyframe(0, 0)
 round.radius.add_keyframe(last_frame/2, 30)
 round.radius.add_keyframe(last_frame, 0)

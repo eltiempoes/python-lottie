@@ -252,7 +252,7 @@ class SifBuilder(restructure.AbstractBuilder):
         return list(sorted(keyframes.values(), key=lambda kf: kf.time)) or None
 
     def apply_group_fill(self, sif_shape, fill):
-        # TODO gradients?
+        ## @todo gradients?
         if hasattr(fill, "colors"):
             return
 

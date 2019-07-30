@@ -651,7 +651,6 @@ class Modifier(ShapeElement):
 
 
 ## \ingroup Lottie
-## \todo Implement SIF Export
 class Repeater(Modifier):
     """
     Duplicates previous shapes in a group
@@ -680,7 +679,7 @@ class Repeater(Modifier):
 ## \ingroup Lottie
 ## \todo Implement SVG/SIF Export
 ## \todo rename to RoundedCorners
-class Round(Modifier):
+class RoundedCorners(Modifier):
     """
     Rounds corners of other shapes
     """
