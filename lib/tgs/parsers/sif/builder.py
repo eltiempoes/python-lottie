@@ -114,16 +114,8 @@ class SifBuilder(restructure.AbstractBuilder):
             self.set_transform(g, lottie.transform)
         return g
 
-    def set_transform(self, group, transform):
-        param = self._subelement(group, "param")
-        param.setAttribute("name", "transformation")
-        composite = self._subelement(param, "composite")
-        composite.setAttribute("type", "transformation")
-        self.process_vector("offset", transform.position, composite)
-
-        keyframes = self._merge_keyframes([transform.scale, transform.skew])
-
-        def get_scale(keyframe, elem):
+    def _get_scale(self, transform):
+        def func(keyframe, elem):
             t = keyframe.time if keyframe else 0
             scale_x, scale_y = transform.scale.get_value(t)[:2]
             scale_x /= 100
@@ -134,8 +126,18 @@ class SifBuilder(restructure.AbstractBuilder):
                 scale_y *= 1 / c
             self._settext(self._subelement(elem, "x"), str(scale_x))
             self._settext(self._subelement(elem, "y"), str(scale_y))
+        return func
 
-        self.process_vector_ext("scale", keyframes, composite, "vector", get_scale)
+    def set_transform(self, group, transform):
+        param = self._subelement(group, "param")
+        param.setAttribute("name", "transformation")
+        composite = self._subelement(param, "composite")
+        composite.setAttribute("type", "transformation")
+        self.process_vector("offset", transform.position, composite)
+
+        keyframes = self._merge_keyframes([transform.scale, transform.skew])
+
+        self.process_vector_ext("scale", keyframes, composite, "vector", self._get_scale(transform))
         #self.process_vector_ext("scale", transform.scale.keyframes, composite, "vector", get_scale)
         self.process_scalar("angle", "skew_angle", transform.skew or objects.Value(0), composite)
         self.process_scalar("angle", "angle", transform.rotation, composite)
@@ -381,41 +383,113 @@ class SifBuilder(restructure.AbstractBuilder):
         canvas = self._subelement(pcanv, "canvas")
         self.shapegroup_process_children(shape_group, canvas)
 
-    def _on_shape_modifier(self, shape, shapegroup, dom_parent):
+    def _modifier_inner_group(self, modifier, shapegroup, dom_parent):
         layer = self.basic_layer("group", dom_parent)
-        if shape.lottie.name:
-            layer.setAttribute("desc", shape.lottie.name)
+        pcanv = self._subelement(layer, "param")
+        pcanv.setAttribute("name", "canvas")
+        canvas = self._subelement(pcanv, "canvas")
+        self.shapegroup_process_child(modifier.child, shapegroup, canvas)
+        return layer
+
+    def _on_shape_modifier(self, modifier, shapegroup, dom_parent):
+        layer = self.basic_layer("group", dom_parent)
+        if modifier.lottie.name:
+            layer.setAttribute("desc", modifier.lottie.name)
 
         pcanv = self._subelement(layer, "param")
         pcanv.setAttribute("name", "canvas")
         canvas = self._subelement(pcanv, "canvas")
-        self.shapegroup_process_child(shape.child, shapegroup, canvas)
-        if isinstance(shape.lottie, objects.Repeater):
-            self.build_repeater(shape.lottie, canvas)
+        inner = self._modifier_inner_group(modifier, shapegroup, canvas)
+        if isinstance(modifier.lottie, objects.Repeater):
+            self.build_repeater(modifier.lottie, inner, canvas)
 
-    def build_repeater(self, shape, dom_parent):
-        name_id = "duplicate_%s" % next(self.autoid)
+    def _build_repeater_defs(self, shape, name_id):
         dup = self._subelement(self.defs, "duplicate")
         dup.setAttribute("type", "real")
         dup.setAttribute("id", name_id)
-        ## @todo should be copies - 1
-        self.process_scalar("real", "from", shape.copies, dup)
+
+        def getter(keyframe, elem):
+            if keyframe is None:
+                v = shape.copies.value
+            else:
+                v = keyframe.start[0]
+            elem.setAttribute("value", str(v-1))
+        self.process_vector_ext("from", shape.copies.keyframes, dup, "real", getter)
         self._subelement(self._subelement(dup, "to"), "real").setAttribute("value", "0")
         self._subelement(self._subelement(dup, "step"), "real").setAttribute("value", "-1")
 
-        translate = self.basic_layer("translate", dom_parent)
-        param = self._subelement(translate, "param")
-        param.setAttribute("name", "origin")
-        scale = self._subelement(param, "scale")
+    def _build_repeater_transform(self, shape, inner, name_id):
+        param = self._subelement(inner, "param")
+        param.setAttribute("name", "transformation")
+        composite = self._subelement(param, "composite")
+        composite.setAttribute("type", "transformation")
+
+        offset = self._subelement(composite, "offset")
+        scale = self._subelement(offset, "scale")
         scale.setAttribute("type", "vector")
         scale.setAttribute("scalar", ":" + name_id)
         self.process_vector("link", shape.transform.position, scale)
 
+        angle = self._subelement(composite, "angle")
+        scale = self._subelement(angle, "scale")
+        scale.setAttribute("type", "angle")
+        scale.setAttribute("scalar", ":" + name_id)
+        self.process_scalar("angle", "link", shape.transform.rotation, scale)
+
+        #scale = self._subelement(composite, "scale")
+        #scale = self._subelement(scale, "scale")
+        #scale.setAttribute("type", "vector")
+        #scale.setAttribute("scalar", ":" + name_id)
+        #self.process_vector_ext(
+            #"link", shape.transform.scale.keyframes, scale,
+            #"vector", self._get_scale(shape.transform)
+        #)
+        ## @todo scale from the repeater
+        self.process_vector_ext(
+            "scale", shape.transform.scale.keyframes, composite,
+            "vector", self._get_scale(shape.transform)
+        )
+
+        self.process_scalar("angle", "skew_angle", objects.Value(0), composite)
+
+    def _build_repeater_amount(self, shape, inner, name_id):
+        param = self._subelement(inner, "param")
+        param.setAttribute("name", "amount")
+        subtract = self._subelement(param, "subtract")
+        subtract.setAttribute("type", "real")
+        self.process_scalar("real", "scalar", objects.Value(1), subtract)
+
+        self.process_scalar("real", "lhs", shape.transform.start_opacity, subtract, 0.01)
+
+        rhs = self._subelement(subtract, "rhs")
+        scale = self._subelement(rhs, "scale")
+        scale.setAttribute("type", "real")
+        scale.setAttribute("scalar", ":" + name_id)
+
+        def getter(keyframe, elem):
+            if keyframe is None:
+                t = 0
+                end = shape.transform.end_opacity.value
+            else:
+                t = keyframe.time
+                end = keyframe.start[0]
+            start = shape.transform.start_opacity.get_value(t)
+            n = shape.copies.get_value(t)
+            v = (start - end) / (n - 1) / 100 if n > 0 else 0
+            elem.setAttribute("value", str(v))
+        self.process_vector_ext("link", shape.transform.end_opacity.keyframes, scale, "real", getter)
+
+    def build_repeater(self, shape, inner, dom_parent):
+        name_id = "duplicate_%s" % next(self.autoid)
+        self._build_repeater_defs(shape, name_id)
+        self._build_repeater_transform(shape, inner, name_id)
+        self._build_repeater_amount(shape, inner, name_id)
+
+        # duplicate layer
         duplicate = self.basic_layer("duplicate", dom_parent)
         duparam = self._subelement(duplicate, "param")
         duparam.setAttribute("name", "index")
         duparam.setAttribute("use", ":" + name_id)
-        ## @todo rotate / scale
 
 
 def to_sif(animation):
