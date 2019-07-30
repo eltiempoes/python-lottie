@@ -372,6 +372,9 @@ class SifBuilder(restructure.AbstractBuilder):
         canvas = self._subelement(pcanv, "canvas")
         self.shapegroup_process_children(shape_group, canvas)
 
+    def _on_shape_modifier(self, shape, shapegroup, out_parent):
+        pass
+
 
 def to_sif(animation):
     builder = SifBuilder()

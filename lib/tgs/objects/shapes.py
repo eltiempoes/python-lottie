@@ -274,7 +274,7 @@ class Star(ShapeElement):
         pos = self.position.get_value(time)
         r1 = self.inner_radius.get_value(time)
         r2 = self.outer_radius.get_value(time)
-        rot = (self.rotation.get_value(time)) * math.pi / 180
+        rot = (self.rotation.get_value(time)) * math.pi / 180 + math.pi
         p = self.points.get_value(time)
         halfd = math.pi / p
 
@@ -646,8 +646,13 @@ class RepeaterTransform(Transform):
 
 
 ## \ingroup Lottie
-## \todo Implement SVG/SIF Export
-class Repeater(ShapeElement):
+class Modifier(ShapeElement):
+    pass
+
+
+## \ingroup Lottie
+## \todo Implement SIF Export
+class Repeater(Modifier):
     """
     Duplicates previous shapes in a group
     """
@@ -661,7 +666,7 @@ class Repeater(ShapeElement):
     type = "rp"
 
     def __init__(self, copies=1):
-        ShapeElement.__init__(self)
+        Modifier.__init__(self)
         ## Number of Copies
         self.copies = Value(copies)
         ## Offset of Copies
@@ -675,7 +680,7 @@ class Repeater(ShapeElement):
 ## \ingroup Lottie
 ## \todo Implement SVG/SIF Export
 ## \todo rename to RoundedCorners
-class Round(ShapeElement):
+class Round(Modifier):
     """
     Rounds corners of other shapes
     """
@@ -686,7 +691,7 @@ class Round(ShapeElement):
     type = "rd"
 
     def __init__(self):
-        ShapeElement.__init__(self)
+        Modifier.__init__(self)
         ## Rounded Corner Radius
         self.radius = Value()
 

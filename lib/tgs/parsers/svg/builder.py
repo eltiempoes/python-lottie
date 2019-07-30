@@ -211,11 +211,13 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
         g = self.group_from_lottie(group.lottie, dom_parent, group.layer)
         self.shapegroup_process_children(group, g)
+        return g
 
     def _on_merged_path(self, shape, shapegroup, out_parent):
         path = self.build_path(shape.paths, out_parent)
         self.set_id(path, shape.paths[0])
         path.attrib["style"] = self.group_to_style(shapegroup)
+        return path
 
     def _on_shape(self, shape, shapegroup, out_parent):
         if isinstance(shape, objects.Rect):
@@ -228,6 +230,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             return
         self.set_id(svgshape, shape, force=True)
         svgshape.attrib["style"] = self.group_to_style(shapegroup)
+        return svgshape
 
     def build_rect(self, shape, parent):
         rect = ElementTree.SubElement(parent, "rect")
@@ -279,6 +282,52 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
         path.attrib["d"] = d
         return path
+
+    def _on_shape_modifier(self, shape, shapegroup, out_parent):
+        if isinstance(shape.lottie, objects.Repeater):
+            svgshape = self.build_repeater(shape.lottie, shape.child, shapegroup, out_parent)
+        else:
+            return
+        if svgshape:
+            self.set_id(svgshape, shape, force=True)
+            svgshape.attrib["style"] = self.group_to_style(shapegroup)
+        return svgshape
+
+    def build_repeater(self, shape, child, shapegroup, out_parent):
+        original = self.shapegroup_process_child(child, shapegroup, out_parent)
+        if not original:
+            return
+
+        ncopies = int(round(shape.copies.get_value(self.time)))
+        if ncopies == 1:
+            return
+
+        out_parent.remove(original)
+
+        g = ElementTree.SubElement(out_parent, "g")
+
+        for copy in range(ncopies-1):
+            use = ElementTree.SubElement(g, "use")
+            use.attrib[self.qualified("xlink", "href")] = "#" + original.attrib["id"]
+
+        orig_wrapper = ElementTree.SubElement(g, "g")
+        orig_wrapper.append(original)
+
+        transform = objects.Transform()
+        so = shape.transform.start_opacity.get_value(self.time)
+        eo = shape.transform.end_opacity.get_value(self.time)
+        position = shape.transform.position.get_value(self.time)
+        rotation = shape.transform.rotation.get_value(self.time)
+        anchor_point = shape.transform.anchor_point.get_value(self.time)
+        for i in range(ncopies-1, -1, -1):
+            of = i / (ncopies-1)
+            transform.opacity.value = so * of + eo * (1 - of)
+            self.set_transform(g[i], transform)
+            transform.position.value += position
+            transform.rotation.value += rotation
+            transform.anchor_point.value += anchor_point
+
+        return g
 
 
 def color_to_css(color):
