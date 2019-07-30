@@ -42,6 +42,7 @@ class SifBuilder(restructure.AbstractBuilder):
         self.canvas = self.dom.appendChild(self.dom.createElement("canvas"))
         self.canvas.setAttribute("version", "1.0")
         self.gamma = gamma
+        self.autoid = objects.base.Index()
 
     def _format_time_f(self, time):
         return "%sf" % time
@@ -71,6 +72,7 @@ class SifBuilder(restructure.AbstractBuilder):
         self.end_frame = animation.out_point
         self.width = animation.width
         self.height = animation.height
+        self.defs = self._subelement(self.canvas, "defs")
         return self.canvas
 
     def _on_layer(self, layer_builder, dom_parent):
@@ -94,12 +96,16 @@ class SifBuilder(restructure.AbstractBuilder):
         canvas.setAttribute("end-time", self._format_time(out_point))
         return canvas
 
-    def layer_from_lottie(self, type, lottie, dom_parent):
+    def basic_layer(self, type, dom_parent):
         g = self._subelement(dom_parent, "layer")
         g.setAttribute("type", type)
         g.setAttribute("active", "true")
         g.setAttribute("exclude_from_rendering", "false")
         #g.setAttribute("version", "0.2")
+        return g
+
+    def layer_from_lottie(self, type, lottie, dom_parent):
+        g = self.basic_layer(type, dom_parent)
         if lottie.name:
             g.setAttribute("desc", lottie.name)
 
@@ -221,6 +227,9 @@ class SifBuilder(restructure.AbstractBuilder):
 
     def _on_shape(self, shape, group, dom_parent):
         layers = []
+        if not hasattr(shape, "to_bezier"):
+            return []
+
         if group.fill:
             sif_shape = self.build_path("region", shape.to_bezier(), dom_parent)
             layers.append(sif_shape)
@@ -372,8 +381,41 @@ class SifBuilder(restructure.AbstractBuilder):
         canvas = self._subelement(pcanv, "canvas")
         self.shapegroup_process_children(shape_group, canvas)
 
-    def _on_shape_modifier(self, shape, shapegroup, out_parent):
-        pass
+    def _on_shape_modifier(self, shape, shapegroup, dom_parent):
+        layer = self.basic_layer("group", dom_parent)
+        if shape.lottie.name:
+            layer.setAttribute("desc", shape.lottie.name)
+
+        pcanv = self._subelement(layer, "param")
+        pcanv.setAttribute("name", "canvas")
+        canvas = self._subelement(pcanv, "canvas")
+        self.shapegroup_process_child(shape.child, shapegroup, canvas)
+        if isinstance(shape.lottie, objects.Repeater):
+            self.build_repeater(shape.lottie, canvas)
+
+    def build_repeater(self, shape, dom_parent):
+        name_id = "duplicate_%s" % next(self.autoid)
+        dup = self._subelement(self.defs, "duplicate")
+        dup.setAttribute("type", "real")
+        dup.setAttribute("id", name_id)
+        ## @todo should be copies - 1
+        self.process_scalar("real", "from", shape.copies, dup)
+        self._subelement(self._subelement(dup, "to"), "real").setAttribute("value", "0")
+        self._subelement(self._subelement(dup, "step"), "real").setAttribute("value", "-1")
+
+        translate = self.basic_layer("translate", dom_parent)
+        param = self._subelement(translate, "param")
+        param.setAttribute("name", "origin")
+        scale = self._subelement(param, "scale")
+        scale.setAttribute("type", "vector")
+        scale.setAttribute("scalar", ":" + name_id)
+        self.process_vector("link", shape.transform.position, scale)
+
+        duplicate = self.basic_layer("duplicate", dom_parent)
+        duparam = self._subelement(duplicate, "param")
+        duparam.setAttribute("name", "index")
+        duparam.setAttribute("use", ":" + name_id)
+        ## @todo rotate / scale
 
 
 def to_sif(animation):

@@ -287,7 +287,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if isinstance(shape.lottie, objects.Repeater):
             svgshape = self.build_repeater(shape.lottie, shape.child, shapegroup, out_parent)
         else:
-            return
+            return self.shapegroup_process_child(shape.child, shapegroup, out_parent)
         if svgshape:
             self.set_id(svgshape, shape, force=True)
             svgshape.attrib["style"] = self.group_to_style(shapegroup)
@@ -340,4 +340,3 @@ def to_svg(animation, time):
     builder = SvgBuilder(time)
     builder.process(animation)
     return builder.dom
-
