@@ -418,6 +418,32 @@ class SifBuilder(restructure.AbstractBuilder):
         self._subelement(self._subelement(dup, "to"), "real").setAttribute("value", "0")
         self._subelement(self._subelement(dup, "step"), "real").setAttribute("value", "-1")
 
+    def _build_repeater_transform_scale_component(self, shape, name_id, comp, scalecomposite):
+        x = self._subelement(scalecomposite, "xy"[comp])
+        power = self._subelement(x, "power")
+        power.setAttribute("type", "real")
+        #power.setAttribute("power", ":" + name_id)
+
+        def getter(keyframe, elem):
+            if keyframe is None:
+                v = shape.transform.scale.value
+            else:
+                v = keyframe.start
+            v = v[comp] / 100
+            elem.setAttribute("value", str(v))
+
+        self.process_vector_ext("base", shape.transform.scale.keyframes, power, "real", getter)
+        self.process_scalar("real", "epsilon", objects.Value(0.000001), power)
+        self.process_scalar("real", "infinite", objects.Value(999999), power)
+
+        # HACK work around an issue in Synfig
+        exponent = self._subelement(power, "power")
+        add = self._subelement(exponent, "add")
+        add.setAttribute("type", "real")
+        add.setAttribute("lhs", ":" + name_id)
+        self.process_scalar("real", "rhs", objects.Value(0.000001), add)
+        self.process_scalar("real", "scalar", objects.Value(1), add)
+
     def _build_repeater_transform(self, shape, inner, name_id):
         param = self._subelement(inner, "param")
         param.setAttribute("name", "transformation")
@@ -436,19 +462,15 @@ class SifBuilder(restructure.AbstractBuilder):
         scale.setAttribute("scalar", ":" + name_id)
         self.process_scalar("angle", "link", shape.transform.rotation, scale)
 
-        #scale = self._subelement(composite, "scale")
-        #scale = self._subelement(scale, "scale")
-        #scale.setAttribute("type", "vector")
-        #scale.setAttribute("scalar", ":" + name_id)
+        scale = self._subelement(composite, "scale")
+        scalecomposite = self._subelement(scale, "composite")
+        scalecomposite.setAttribute("type", "vector")
+        self._build_repeater_transform_scale_component(shape, name_id, 0, scalecomposite)
+        self._build_repeater_transform_scale_component(shape, name_id, 1, scalecomposite)
         #self.process_vector_ext(
-            #"link", shape.transform.scale.keyframes, scale,
+            #"scale", shape.transform.scale.keyframes, composite,
             #"vector", self._get_scale(shape.transform)
         #)
-        ## @todo scale from the repeater
-        self.process_vector_ext(
-            "scale", shape.transform.scale.keyframes, composite,
-            "vector", self._get_scale(shape.transform)
-        )
 
         self.process_scalar("angle", "skew_angle", objects.Value(0), composite)
 
