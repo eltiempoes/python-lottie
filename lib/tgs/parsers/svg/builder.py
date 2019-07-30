@@ -28,10 +28,10 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         self.name_mode = NameMode.Inkscape
         self.time = time
 
-    def gen_id(self):
+    def gen_id(self, prefix="id"):
         #TODO should check if id_n already exists
         self.idc += 1
-        id = "id_%s" % self.idc
+        id = "%s_%s" % (prefix, self.idc)
         self.ids.add(id)
         return id
 
@@ -39,7 +39,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         n = getattr(lottieobj, "name", None)
         if n is None or self.name_mode == NameMode.NoName:
             if force:
-                id = self.gen_id()
+                id = self.gen_id(dom.tag)
                 dom.attrib["id"] = id
                 return id
             return None
@@ -48,7 +48,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if self.id_re.match(idn) and idn not in self.ids:
             self.ids.add(idn)
         else:
-            idn = self.gen_id()
+            idn = self.gen_id(dom.tag)
 
         dom.attrib["id"] = idn
         if inkscape_qual:
@@ -111,7 +111,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
                 trans.append("skewX(%s)" % skx)
                 trans.append("skewY(%s)" % sky)
 
-        dom.attrib["transform"] = " ".join(trans)
+        if trans:
+            dom.attrib["transform"] = " ".join(trans)
 
     def group_to_style(self, group):
         style = {}
@@ -193,7 +194,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         g = ElementTree.SubElement(dom_parent, "g")
         if layer and self.name_mode == NameMode.Inkscape:
             g.attrib[self.qualified("inkscape", "groupmode")] = "layer"
-        self.set_id(g, lottie, self.qualified("inkscape", "label"))
+        self.set_id(g, lottie, self.qualified("inkscape", "label"), force=True)
         self.set_transform(g, lottie.transform)
         return g
 
@@ -203,7 +204,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
         if len(group.children) == 1 and isinstance(group.children[0], restructure.RestructuredPathMerger):
             path = self.build_path(group.paths.paths, dom_parent)
-            self.set_id(path, group.paths.paths[0])
+            self.set_id(path, group.paths.paths[0], force=True)
             path.attrib["style"] = self.group_to_style(group)
             self.set_transform(path, group.lottie.transform)
             return
@@ -225,7 +226,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             svgshape = self.build_path([shape.to_bezier()], out_parent)
         else:
             return
-        self.set_id(svgshape, shape)
+        self.set_id(svgshape, shape, force=True)
         svgshape.attrib["style"] = self.group_to_style(shapegroup)
 
     def build_rect(self, shape, parent):
