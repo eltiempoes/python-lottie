@@ -19,7 +19,7 @@ formats4cc = {
 
 
 @exporter("Video", list(formats4cc.keys()), [
-    ExtraOption("format", default=None, help="Specific video format"),
+    ExtraOption("format", default=None, help="Specific video format", choices=list(formats4cc.keys())),
 ], [], "video")
 def export_video(animation, fp, format=None):
     start = animation.in_point
