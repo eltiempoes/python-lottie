@@ -1,5 +1,5 @@
 from ..objects.base import TgsObject
-from ..objects.properties import Bezier
+from ..objects.bezier import Bezier
 from .nvector import NVector
 
 
