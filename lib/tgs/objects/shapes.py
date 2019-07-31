@@ -351,7 +351,7 @@ class Ellipse(ShapeElement):
         el = EllipseConverter(position, radii, 0)
         points = el.to_bezier(0, math.pi*2)
         for point in points[1:]:
-            bezier.add_point(point.point, point.in_t, point.out_t)
+            bezier.add_point(point.vertex, point.in_t, point.out_t)
 
         bezier.close()
         return bezier
@@ -425,7 +425,12 @@ class Group(ShapeElement):
         bb = BoundingBox()
         for v in self.shapes:
             bb.expand(v.bounding_box(time))
-
+        s = self.transform.scale.get_value(time) / 100
+        p = self.transform.position.get_value(time)
+        bb.x1 *= s.x + p.x
+        bb.y1 *= s.y + p.y
+        bb.x2 *= s.x + p.x
+        bb.y2 *= s.y + p.y
         return bb
 
     def find_all(self, type=ShapeElement, predicate=None, recursive=True):
