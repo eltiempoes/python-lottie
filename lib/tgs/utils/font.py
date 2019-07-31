@@ -7,8 +7,8 @@ from ..objects.shapes import Path, Group
 
 
 class BezierPen(fontTools.pens.basePen.BasePen):
-    def __init__(self, offset=NVector(0, 0)):
-        super().__init__()
+    def __init__(self, glyphSet, offset=NVector(0, 0)):
+        super().__init__(glyphSet)
         self.beziers = []
         self.current = Bezier()
         self.offset = offset
@@ -131,6 +131,7 @@ class _SystemFontList:
         return self.fonts.keys()
 
 
+## Dictionary of system fonts
 fonts = _SystemFontList()
 
 
@@ -138,11 +139,11 @@ class FontRenderer:
     def __init__(self, filename):
         self.filename = filename
         self.font = fontTools.ttLib.TTFont(filename)
-        self.gyphset = self.font.getGlyphSet()
+        self.glyphset = self.font.getGlyphSet()
 
     def glyph_beziers(self, name, offset=NVector(0, 0)):
-        pen = BezierPen(offset)
-        self.gyphset[name].draw(pen)
+        pen = BezierPen(self.glyphset, offset)
+        self.glyphset[name].draw(pen)
         return pen.beziers
 
     def glyph_shapes(self, name, offset=NVector(0, 0)):
@@ -158,8 +159,25 @@ class FontRenderer:
         group.shapes = self.glyph_shapes(name) + group.shapes
         return group
 
-    def render(self, size, text):
+    def render(self, size, text, on_missing=None):
+        """!
+        Renders some text
+
+        @param size         Font size (in pizels)
+        @param text         String to render
+        @param on_missing   Callable on missing glyphs, called with:
+        - Character as string
+        - Font size
+        - [in, out] Character position
+        - Group shape
+
+        @returns a Group shape, augmented with some extra attributes:
+        - next_pos      Offset for the next glyph
+        - line_height   Line height
+
+        """
         scale = size / self.font.tables["head"].unitsPerEm
+        line_height = self.font.tables["head"].yMax
         group = Group()
         group.name = text
         group.transform.scale.value = NVector(100, 100) * scale
@@ -167,11 +185,19 @@ class FontRenderer:
         for ch in text:
             if ch == "\n":
                 pos.x = 0
-                pos.y += self.font.tables["head"].yMax
-            elif ch in self.gyphset:
-                for sh in self.glyph_shapes(ch, pos):
+                pos.y += line_height
+                continue
+
+            chname = self.font._makeGlyphName(ord(ch))
+            if chname in self.glyphset:
+                for sh in self.glyph_shapes(chname, pos):
                     group.add_shape(sh)
-                pos.x += self.gyphset[ch].width
+                pos.x += self.glyphset[chname].width
+            elif on_missing:
+                on_missing(ch, size, pos, group)
+
+        group.next_pos = pos * scale
+        group.line_height = line_height * scale
         return group
 
     def __repr__(self):

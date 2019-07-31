@@ -15,7 +15,7 @@ layer = objects.ShapeLayer()
 an.add_layer(layer)
 
 g = layer.add_shape(fonts["Ubuntu"]["Regular"].render(128, "Hello\nWorld"))
-g.transform.position.value.y = 128
+g.transform.position.value.y = g.line_height
 layer.add_shape(objects.Fill(Color(0, 0, 0)))
 layer.add_shape(objects.Stroke(Color(1, 1, 1), 8))
 
