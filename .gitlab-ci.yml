@@ -9,7 +9,7 @@ pages:
     stage: pages
     before_script:
         - apt-get update -qq
-        - DEBIAN_FRONTEND=noninteractive apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make python3-opencv libagg-dev libpotrace-dev fonts-ubuntu git
+        - DEBIAN_FRONTEND=noninteractive apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make python3-opencv libagg-dev libpotrace-dev fonts-ubuntu git pkg-config
         - pip3 install Pillow numpy scipy cairosvg git+https://github.com/flupke/pypotrace.git@py3k fonttools
     script:
         - make -B docs -j 4
@@ -28,7 +28,7 @@ test:
     stage: test
     before_script:
         - apt-get update -qq
-        - DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3-pip python3-opencv libagg-dev libpotrace-dev fonts-ubuntu git
+        - DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3-pip python3-opencv libagg-dev libpotrace-dev fonts-ubuntu git pkg-config
         - pip3 install coverage Pillow numpy scipy cairosvg git+https://github.com/flupke/pypotrace.git@py3k fonttools
     script:
         - ./test.sh
