@@ -5,7 +5,7 @@ import inspect
 from ..exporters import exporters
 
 
-def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1):
+def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1, parser=None):
     """
     Sets up a script to output an animation into various formats
     """
@@ -13,7 +13,9 @@ def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosi
     if basename is None:
         basename = os.path.splitext(os.path.basename(caller.__file__))[0]
 
-    parser = argparse.ArgumentParser()
+    if parser is None:
+        parser = argparse.ArgumentParser()
+
     parser.add_argument(
         "--name",
         "-n",
