@@ -5,16 +5,15 @@ import inspect
 from ..exporters import exporters
 
 
-def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1, parser=None):
-    """
-    Sets up a script to output an animation into various formats
-    """
-    caller = inspect.getmodule(inspect.currentframe().f_back)
+def _get_caller():
+    return inspect.getmodule(inspect.currentframe().f_back.f_back)
+
+
+def _get_parser(caller, basename, path, formats, verbosity):
     if basename is None:
         basename = os.path.splitext(os.path.basename(caller.__file__))[0]
 
-    if parser is None:
-        parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
 
     parser.add_argument(
         "--name",
@@ -43,16 +42,33 @@ def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosi
 
     exporters.set_options(parser)
 
-    if caller.__name__ == "__main__":
-        ns = parser.parse_args()
-        if ns.name == "-" and len(ns.formats) == 1:
-            file = sys.stdout.buffer if ns.formats[0] == "tgs" else sys.stdout
-            exporter = exporters.get_from_extension(ns.formats[0])
+    return parser
+
+
+def get_parser(basename=None, path="/tmp", formats=["html"], verbosity=1):
+    caller = _get_caller()
+    return _get_parser(caller, basename, path, formats, verbosity)
+
+
+def run(animation, ns):
+    if ns.name == "-" and len(ns.formats) == 1:
+        file = sys.stdout.buffer if ns.formats[0] == "tgs" else sys.stdout
+        exporter = exporters.get_from_extension(ns.formats[0])
+        exporter.export(animation, absname, exporter.argparse_options(ns))
+    else:
+        for fmt in ns.formats:
+            absname = os.path.abspath(os.path.join(ns.path, ns.name + "." + fmt))
+            if ns.verbosity:
+                print("file://" + absname)
+            exporter = exporters.get_from_extension(fmt)
             exporter.export(animation, absname, exporter.argparse_options(ns))
-        else:
-            for fmt in ns.formats:
-                absname = os.path.abspath(os.path.join(ns.path, ns.name + "." + fmt))
-                if ns.verbosity:
-                    print("file://" + absname)
-                exporter = exporters.get_from_extension(fmt)
-                exporter.export(animation, absname, exporter.argparse_options(ns))
+
+
+def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1):
+    """
+    Sets up a script to output an animation into various formats
+    """
+    caller = _get_caller()
+    if caller.__name__ == "__main__":
+        parser = _get_parser(caller, basename, path, formats, verbosity)
+        run(parser.parse_args())

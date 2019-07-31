@@ -130,6 +130,10 @@ class _SystemFontList:
         self._lazy_load()
         return self.fonts.keys()
 
+    def __contains__(self, item):
+        self._lazy_load()
+        return item in self.fonts
+
 
 ## Dictionary of system fonts
 fonts = _SystemFontList()
