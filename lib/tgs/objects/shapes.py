@@ -369,12 +369,12 @@ class Path(ShapeElement):
     ## %Shape type.
     type = "sh"
 
-    def __init__(self):
+    def __init__(self, bezier=None):
         ShapeElement.__init__(self)
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
         self.direction = 0
         ## Shape's vertices
-        self.shape = ShapeProperty()
+        self.shape = ShapeProperty(bezier or Bezier())
 
     def bounding_box(self, time=0):
         pos = self.shape.get_value(time)

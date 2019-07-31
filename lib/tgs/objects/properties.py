@@ -430,5 +430,5 @@ class ShapeProperty(TgsObject, AnimatableMixin):
         TgsProp("keyframes", "k", keyframe_type, True, lambda l: l["a"]),
     ]
 
-    def __init__(self):
-        super().__init__(Bezier())
+    def __init__(self, bezier):
+        super().__init__(bezier)

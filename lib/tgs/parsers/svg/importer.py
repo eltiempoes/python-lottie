@@ -848,7 +848,7 @@ class PathDParser:
         self.path.out_point[-1] = points[0].out_t
         for point in points[1:-1]:
             self.path.add_point(
-                point.point,
+                point.vertex,
                 point.in_t,
                 point.out_t,
             )

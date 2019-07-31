@@ -2,6 +2,28 @@ from .base import TgsObject, TgsProp
 from ..utils.nvector import NVector
 
 
+class BezierPoint:
+    def __init__(self, vertex, in_t=None, out_t=None):
+        self.vertex = vertex
+        self.in_t = in_t or NVector(0, 0)
+        self.out_t = out_t or NVector(0, 0)
+
+    def relative(self):
+        return self
+
+    @classmethod
+    def smooth(cls, point, in_t):
+        return cls(point, in_t, -in_t)
+
+    @classmethod
+    def from_absolute(cls, point, in_t=None, out_t=None):
+        if not in_t:
+            in_t = point.clone()
+        if not out_t:
+            out_t = point.clone()
+        return BezierPoint(point, in_t, out_t)
+
+
 class BezierPointView:
     """
     View for bezier point
@@ -19,38 +41,44 @@ class BezierPointView:
         self.bezier.vertices[self.index] = point
 
     @property
-    def in_point(self):
-        return self.in_point.vertices[self.index]
+    def in_t(self):
+        return self.bezier.in_point[self.index]
 
-    @in_point.setter
-    def in_point(self, point):
-        self.in_point.vertices[self.index] = point
+    @in_t.setter
+    def in_t(self, point):
+        self.bezier.in_point[self.index] = point
 
     @property
-    def out_point(self):
-        return self.out_point.vertices[self.index]
+    def out_t(self):
+        return self.bezier.out_point[self.index]
 
-    @out_point.setter
-    def out_point(self, point):
-        self.out_point.vertices[self.index] = point
+    @out_t.setter
+    def out_t(self, point):
+        self.bezier.out_point[self.index] = point
+
+    def relative(self):
+        return self
 
 
 class AbsoluteBezierPointView(BezierPointView):
     @property
-    def in_point(self):
-        return self.in_point.vertices[self.index] + self.vertex
+    def in_t(self):
+        return self.bezier.in_point[self.index] + self.vertex
 
-    @in_point.setter
-    def in_point(self, point):
-        self.in_point.vertices[self.index] = point - self.vertex
+    @in_t.setter
+    def in_t(self, point):
+        self.bezier.in_point[self.index] = point - self.vertex
 
     @property
-    def out_point(self):
-        return self.out_point.vertices[self.index] + self.vertex
+    def out_t(self):
+        return self.bezier.out_point[self.index] + self.vertex
 
-    @out_point.setter
-    def out_point(self, point):
-        self.out_point.vertices[self.index] = point - self.vertex
+    @out_t.setter
+    def out_t(self, point):
+        self.bezier.out_point[self.index] = point - self.vertex
+
+    def relative(self):
+        return BezierPointView(self.bezier, self.index)
 
 
 class BezierView:
@@ -77,6 +105,13 @@ class BezierView:
     def __iter__(self):
         for i in range(len(self)):
             yield self.point(i)
+
+    def append(self, point):
+        if isinstance(point, NVector):
+            self.bezier.add_point(point)
+        else:
+            bpt = point.relative()
+            self.bezier.add_point(bpt.vertex, bpt.in_t, bpt.out_t)
 
     @property
     def absolute(self):

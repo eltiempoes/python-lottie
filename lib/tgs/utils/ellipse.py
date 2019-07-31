@@ -1,15 +1,9 @@
 import math
 
 from .nvector import NVector
+from ..objects.bezier import BezierPoint
 
-
-class BezierPoint:
-    def __init__(self, point, in_t, out_t):
-        self.point = point
-        self.in_t = in_t
-        self.out_t = out_t
-
-
+## \todo Just output a Bezier object
 class Ellipse:
     def __init__(self, center, radii, xrot):
         """

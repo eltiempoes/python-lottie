@@ -90,12 +90,13 @@ Python 3.
 
 ### Optional Requirements
 
-* `coverage` To show unit test coverage, used optionally by `test.sh`
+* `coverage`                            To show unit test coverage, used optionally by `test.sh`
 * `pillow`, `pypotrace>=0.2`, `numpy`, `scipy` To convert raster images into vectors
-* `pillow` to load image assets
-* `cairosvg` to export PNG / PDF / PS
-* `cairosvg`, `pillow` to export GIF
-* `cairosvg`, `numpy`, Python OpenCV 2 to export video
+* `pillow`                              To load image assets
+* `cairosvg`                            To export PNG / PDF / PS
+* `cairosvg`, `pillow`                  To export GIF
+* `cairosvg`, `numpy`, Python OpenCV 2  To export video
+* `fonttools`                           To render text as shapes
 
 
 Features
