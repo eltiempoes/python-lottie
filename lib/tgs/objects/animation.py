@@ -1,6 +1,6 @@
 from .base import TgsObject, TgsProp, PseudoBool, Index
 from .layers import Layer
-from .assets import Image, Chars
+from .assets import Asset, Chars
 from .text import FontList
 
 ##\defgroup Lottie Lottie
@@ -27,7 +27,7 @@ class Animation(TgsObject):
         TgsProp("version", "v", str, False),
         TgsProp("name", "nm", str, False),
         TgsProp("layers", "layers", Layer, True),
-        TgsProp("assets", "assets", Image, True),
+        TgsProp("assets", "assets", Asset, True),
         TgsProp("chars", "chars", Chars, True),
         TgsProp("fonts", "fonts", FontList),
         TgsProp("tgs", "tgs", PseudoBool, False),

@@ -4,7 +4,17 @@ from .shapes import ShapeElement
 
 
 ## \ingroup Lottie
-class Image(TgsObject):
+class Asset(TgsObject):
+    @classmethod
+    def _load_get_class(cls, lottiedict):
+        if "p" in lottiedict or "u" in lottiedict:
+            return Image
+        if "layers" in lottiedict:
+            return Precomp
+
+
+## \ingroup Lottie
+class Image(Asset):
     _props = [
         TgsProp("height", "h", float, False),
         TgsProp("width", "w", float, False),
@@ -104,7 +114,7 @@ class Chars(TgsObject):
 
 ## \ingroup Lottie
 ## \ingroup LottieCheck
-class Precomp(TgsObject):
+class Precomp(Asset):
     _props = [
         TgsProp("id", "id", str, False),
         TgsProp("layers", "layers", Layer, True),

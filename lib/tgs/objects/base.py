@@ -138,15 +138,23 @@ class TgsProp:
         return self._load_scalar(lottieval)
 
     def _load_scalar(self, lottieval):
-        if inspect.isclass(self.type) and issubclass(self.type, Tgs):
-            return self.type.load(lottieval)
-        elif isinstance(self.type, type) and isinstance(lottieval, self.type):
-            return lottieval
-        elif isinstance(self.type, TgsConverter):
-            return self.type.lottie_to_py(lottieval)
-        elif self.type is NVector:
-            return NVector(*lottieval)
-        return self.type(lottieval)
+        try:
+            if inspect.isclass(self.type) and issubclass(self.type, Tgs):
+                return self.type.load(lottieval)
+            elif isinstance(self.type, type) and isinstance(lottieval, self.type):
+                return lottieval
+            elif isinstance(self.type, TgsConverter):
+                return self.type.lottie_to_py(lottieval)
+            elif self.type is NVector:
+                return NVector(*lottieval)
+            return self.type(lottieval)
+        except Exception as e:
+            raise TypeError("Could not load `%s` as %s:\n%s: %s" % (
+                self.lottie,
+                self.type.__name__,
+                e.__class__.__name__,
+                e
+            ))
 
     def to_dict(self, obj):
         """!

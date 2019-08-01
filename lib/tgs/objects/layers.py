@@ -3,6 +3,7 @@ from .effects import Effect
 from .helpers import Transform, Mask
 from .shapes import ShapeElement
 from .text import TextAnimatorData
+from .properties import Value
 
 
 ## \ingroup Lottie

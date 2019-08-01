@@ -73,9 +73,9 @@ class Mask(TgsObject):
         TgsProp("inverted", "inv", bool, False),
         TgsProp("name", "nm", str, False),
         TgsProp("shape", "pt", ShapeProperty, False),
-        TgsProp("opacity", "o", float, False),
+        TgsProp("opacity", "o", Value, False),
         TgsProp("mode", "mode", MaskMode, False),
-        TgsProp("dilate", "x", float, False),
+        TgsProp("dilate", "x", Value, False),
     ]
 
     def __init__(self):

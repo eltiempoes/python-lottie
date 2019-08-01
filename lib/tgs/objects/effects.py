@@ -79,7 +79,12 @@ class Effect(TgsObject):
                 sc.type: sc
                 for sc in Effect.__subclasses__()
             }
-        return Effect._classses[lottiedict["ty"]]
+        type = lottiedict["ty"]
+
+        if type in Effect._classses:
+            return Effect._classses[type]
+        else:
+            return Effect
 
     def _load_values(self, *args, **kwargs):
         values = []
@@ -367,6 +372,27 @@ class GaussianBlurEffect(Effect):
         ("sigma", EffectValueSlider),
         ("dimensions", EffectValueSlider),
         ("wrap", EffectValueCheckbox),
+    ]
+    ## %Effect type.
+    type = 29
+
+
+## \ingroup Lottie
+## \todo check
+class ChangeColorEffect(Effect):
+    """!
+    Gaussian blur
+    """
+    _effects = [
+        ("view", EffectValueDropDown),
+        ("hue", EffectValueSlider),
+        ("lightness", EffectValueSlider),
+        ("saturation", EffectValueSlider),
+        ("color_to_change", EffectValueColor),
+        ("tolerance", EffectValueSlider),
+        ("softness", EffectValueSlider),
+        ("match", EffectValueDropDown),
+        ("invert_mask", EffectValueDropDown),
     ]
     ## %Effect type.
     type = 29
