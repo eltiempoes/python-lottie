@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 @note Text layers are not supported by telegram
 """

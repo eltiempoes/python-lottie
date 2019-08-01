@@ -71,4 +71,4 @@ def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosi
     caller = _get_caller()
     if caller.__name__ == "__main__":
         parser = _get_parser(caller, basename, path, formats, verbosity)
-        run(parser.parse_args())
+        run(animation, parser.parse_args())

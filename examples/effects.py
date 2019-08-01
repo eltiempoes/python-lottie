@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 @note Effects are not supported by telegram
 """
