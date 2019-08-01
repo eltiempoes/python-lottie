@@ -33,7 +33,7 @@ class EnumMeta(enum.EnumMeta):
     Hack to counter-hack the hack in enum meta
     """
     def __new__(cls, name, bases, classdict):
-        classdict["__reduce_ex__"] = lambda *a, **kw: None
+        classdict["__reduce_ex__"] = lambda *a, **kw: None  # pragma: no cover
         return super().__new__(cls, name, bases, classdict)
 
 
@@ -274,7 +274,7 @@ class TgsObject(Tgs, metaclass=TgsObjectMeta):
         obj = self.__class__()
         for prop in self._props:
             v = prop.get(self)
-            prop.set(obj, prop.clone(v))
+            prop.set(obj, prop.clone_value(v))
         return obj
 
 

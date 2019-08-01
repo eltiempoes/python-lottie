@@ -102,11 +102,11 @@ class Animation(TgsObject):
         """
         if self.width != 512 or self.height != 512:
             scale = min(512/self.width, 512/self.height)
-            self.width = self.height  = 512
+            self.width = self.height = 512
 
             for layer in self.layers:
                 if layer.transform.scale.animated:
-                    for kf in layer.transform.scale.keyframe:
+                    for kf in layer.transform.scale.keyframes:
                         if kf.start is not None:
                             kf.start *= scale
                         if kf.end is not None:

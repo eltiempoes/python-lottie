@@ -244,7 +244,7 @@ class AnimatableMixin:
                     self.keyframes[-1].start = value
                 return
             else:
-                self.keyframes[-1].end = value
+                self.keyframes[-1].end = value.clone()
 
         self.keyframes.append(self.keyframe_type(
             time,
