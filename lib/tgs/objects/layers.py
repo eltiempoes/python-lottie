@@ -59,6 +59,7 @@ class Layer(TgsObject):
         TgsProp("parent", "parent", int, False),
     ]
     ## %Layer type.
+    ## @see https://github.com/bodymovin/bodymovin-extension/blob/master/bundle/jsx/enums/layerTypes.jsx
     type = None
     _classses = {}
 
