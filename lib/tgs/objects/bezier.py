@@ -108,10 +108,10 @@ class BezierView:
 
     def append(self, point):
         if isinstance(point, NVector):
-            self.bezier.add_point(point)
+            self.bezier.add_point(point.clone())
         else:
             bpt = point.relative()
-            self.bezier.add_point(bpt.vertex, bpt.in_tangent, bpt.out_tangent)
+            self.bezier.add_point(bpt.vertex.clone(), bpt.in_tangent.clone(), bpt.out_tangent.clone())
 
     @property
     def absolute(self):
@@ -376,3 +376,27 @@ class Bezier(TgsObject):
                 self.in_tangents[i] += p
                 self.out_tangents[i] += p
         return self"""
+
+    def rounded(self, round_distance):
+        cloned = Bezier()
+        cloned.closed = self.closed
+        round_corner = 0.5519
+
+        def _get_vt(closest_index):
+            closer_v = self.vertices[closest_index]
+            distance = (current - closer_v).length
+            new_pos_perc = min(distance/2, round_distance) / distance if distance else 0
+            vert = current + (closer_v - current) * new_pos_perc
+            tan = - (vert - current) * round_corner
+            return vert, tan
+
+        for i, current in enumerate(self.vertices):
+            if not self.closed and (i == 0 or i == len(self.points) - 1):
+                cloned.points.append(self.points[i])
+            else:
+                vert1, out_t = _get_vt(i - 1)
+                cloned.add_point(vert1, NVector(0, 0), out_t)
+                vert2, in_t = _get_vt((i+1) % len(self.points))
+                cloned.add_point(vert2, in_t, NVector(0, 0))
+
+        return cloned

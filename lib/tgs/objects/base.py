@@ -21,6 +21,12 @@ class Tgs:
         """
         raise NotImplementedError
 
+    def clone(self):
+        """!
+        Returns a copy of the object
+        """
+        raise NotImplementedError
+
 
 class EnumMeta(enum.EnumMeta):
     """!
@@ -41,6 +47,9 @@ class TgsEnum(Tgs, enum.Enum, metaclass=EnumMeta):
     @classmethod
     def load(cls, lottieint):
         return cls(lottieint)
+
+    def clone(self):
+        return self
 
 
 class PseudoList:
@@ -149,8 +158,9 @@ class TgsProp:
                 return NVector(*lottieval)
             return self.type(lottieval)
         except Exception as e:
-            raise TypeError("Could not load `%s` as %s:\n%s: %s" % (
+            raise TypeError("Could not load `%s` (%s) as %s:\n%s: %s" % (
                 self.lottie,
+                self.name,
                 self.type.__name__,
                 e.__class__.__name__,
                 e
@@ -169,23 +179,41 @@ class TgsProp:
         return val
 
     def _basic_to_dict(self, v):
-        if isinstance(v, Tgs):
-            return v.to_dict()
-        elif isinstance(v, NVector):
-            return list(map(self._basic_to_dict, v.components))
-        elif isinstance(v, list):
-            return list(map(self._basic_to_dict, v))
-        elif isinstance(v, (int, str, bool)):
-            return v
-        elif isinstance(v, float):
-            if v % 1 == 0:
-                return int(v)
-            return round(v, 3)
-        else:
-            raise Exception("Unknown value %r" % v)
+        try:
+            if isinstance(v, Tgs):
+                return v.to_dict()
+            elif isinstance(v, NVector):
+                return list(map(self._basic_to_dict, v.components))
+            elif isinstance(v, list):
+                return list(map(self._basic_to_dict, v))
+            elif isinstance(v, (int, str, bool)):
+                return v
+            elif isinstance(v, float):
+                if v % 1 == 0:
+                    return int(v)
+                return round(v, 3)
+            else:
+                raise Exception("Unknown value %r" % v)
+        except Exception as e:
+            raise TypeError("Could not save `%s` (%s) as %s:\n%s: %s" % (
+                self.lottie,
+                self.name,
+                self.type.__name__,
+                e.__class__.__name__,
+                e
+            ))
 
     def __repr__(self):
         return "<TgsProp %s:%s>" % (self.name, self.lottie)
+
+    def clone_value(self, value):
+        if isinstance(value, list):
+            return [self.clone_value(v) for v in value]
+        if isinstance(value, (Tgs, NVector)):
+            return value.clone()
+        if isinstance(value, (int, float, bool, str)) or value is None:
+            return value
+        raise Exception("Could not convert %r" % value)
 
 
 class TgsObjectMeta(type):
@@ -241,6 +269,13 @@ class TgsObject(Tgs, metaclass=TgsObjectMeta):
                     if found:
                         return found
         return None
+
+    def clone(self):
+        obj = self.__class__()
+        for prop in self._props:
+            v = prop.get(self)
+            prop.set(obj, prop.clone(v))
+        return obj
 
 
 class Index:

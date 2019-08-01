@@ -12,7 +12,6 @@ from .text import FontList
 # Lottie objects that have not been tested
 
 
-
 ## \ingroup Lottie
 class Animation(TgsObject):
     """!
@@ -91,3 +90,8 @@ class Animation(TgsObject):
         if layer.out_point is None:
             layer.out_point = self.out_point
         return layer
+
+    def clone(self):
+        c = super().clone()
+        c._index_gen._i = self._index_gen._i
+        return c

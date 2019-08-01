@@ -226,6 +226,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             svgshape = self.build_ellipse(shape, out_parent)
         elif isinstance(shape, objects.Star):
             svgshape = self.build_path([shape.to_bezier()], out_parent)
+        elif isinstance(shape, objects.Path):
+            svgshape = self.build_path([shape], out_parent)
         else:
             return
         self.set_id(svgshape, shape, force=True)
@@ -286,6 +288,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
     def _on_shape_modifier(self, shape, shapegroup, out_parent):
         if isinstance(shape.lottie, objects.Repeater):
             svgshape = self.build_repeater(shape.lottie, shape.child, shapegroup, out_parent)
+        elif isinstance(shape.lottie, objects.RoundedCorners):
+            svgshape = self.build_rouded_corners(shape.lottie, shape.child, shapegroup, out_parent)
         else:
             return self.shapegroup_process_child(shape.child, shapegroup, out_parent)
         if svgshape:
@@ -328,6 +332,35 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             transform.anchor_point.value += anchor_point
 
         return g
+
+    def build_rouded_corners(self, shape, child, shapegroup, out_parent):
+        round_amount = shape.radius.get_value(self.time)
+        if isinstance(child, objects.Shape):
+            path = child.to_bezier()
+            bezier = path.shape.get_value(self.time).rounded(round_amount)
+            path.shape.clear_animation(bezier)
+            return self._on_shape(path, shapegroup, out_parent)
+
+        if isinstance(child, restructure.RestructuredShapeGroup):
+            self._build_rouded_corners_group(child, round_amount)
+            return self._on_shapegroup(child, out_parent)
+
+        return child
+
+    def _build_rouded_corners_group(self, shapegroup, round_amount):
+        children = []
+        for sh in shapegroup.children:
+            if isinstance(sh, objects.Shape):
+                path = sh.to_bezier()
+                bezier = path.shape.get_value(self.time).rounded(round_amount)
+                path.shape.clear_animation(bezier)
+                sh = path
+            elif isinstance(sh, restructure.RestructuredShapeGroup):
+                self._build_rouded_corners_group(sh, round_amount)
+            children.append(sh)
+        shapegroup.children = children
+
+
 
 
 def color_to_css(color):

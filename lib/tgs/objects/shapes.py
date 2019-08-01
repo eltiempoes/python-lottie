@@ -102,12 +102,32 @@ class ShapeElement(TgsObject):
 
 
 ## \ingroup Lottie
-class Rect(ShapeElement):
+class Shape(ShapeElement):
+    """!
+    Drawable shape
+    """
+    _props = [
+        TgsProp("direction", "d", float, False),
+    ]
+
+    def __init__(self):
+        ShapeElement.__init__(self)
+        ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
+        self.direction = 0
+
+    def to_bezier(self):
+        """!
+        Returns a Path corresponding to this Shape
+        """
+        raise NotImplementedError()
+
+
+## \ingroup Lottie
+class Rect(Shape):
     """!
     A simple rectangle shape
     """
     _props = [
-        TgsProp("direction", "d", float, False),
         TgsProp("position", "p", MultiDimensional, False),
         TgsProp("size", "s", MultiDimensional, False),
         TgsProp("rounded", "r", Value, False),
@@ -116,9 +136,7 @@ class Rect(ShapeElement):
     type = "rc"
 
     def __init__(self):
-        ShapeElement.__init__(self)
-        ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
-        self.direction = 0
+        Shape.__init__(self)
         ## Rect's position
         self.position = MultiDimensional(NVector(0, 0))
         ## Rect's size
@@ -195,12 +213,11 @@ class StarType(TgsEnum):
 
 
 ## \ingroup Lottie
-class Star(ShapeElement):
+class Star(Shape):
     """!
     Star shape
     """
     _props = [
-        TgsProp("direction", "d", float, False),
         TgsProp("position", "p", MultiDimensional, False),
         TgsProp("inner_radius", "ir", Value, False),
         TgsProp("inner_roundness", "is", Value, False),
@@ -214,9 +231,7 @@ class Star(ShapeElement):
     type = "sr"
 
     def __init__(self):
-        ShapeElement.__init__(self)
-        ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
-        self.direction = 0
+        Shape.__init__(self)
         ## Star's position
         self.position = MultiDimensional(NVector(0, 0))
         ## Star's inner radius. (Star only)
@@ -294,12 +309,11 @@ class Star(ShapeElement):
 
 
 ## \ingroup Lottie
-class Ellipse(ShapeElement):
+class Ellipse(Shape):
     """!
     Ellipse shape
     """
     _props = [
-        TgsProp("direction", "d", float, False),
         TgsProp("position", "p", MultiDimensional, False),
         TgsProp("size", "s", MultiDimensional, False),
     ]
@@ -307,9 +321,7 @@ class Ellipse(ShapeElement):
     type = "el"
 
     def __init__(self):
-        ShapeElement.__init__(self)
-        ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
-        self.direction = 0
+        Shape.__init__(self)
         ## Ellipse's position
         self.position = MultiDimensional(NVector(0, 0))
         ## Ellipse's size
@@ -358,21 +370,18 @@ class Ellipse(ShapeElement):
 
 
 ## \ingroup Lottie
-class Path(ShapeElement):
+class Path(Shape):
     """!
     Animatable Bezier curve
     """
     _props = [
-        TgsProp("direction", "d", float, False),
         TgsProp("shape", "ks", ShapeProperty, False),
     ]
     ## %Shape type.
     type = "sh"
 
     def __init__(self, bezier=None):
-        ShapeElement.__init__(self)
-        ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
-        self.direction = 0
+        Shape.__init__(self)
         ## Shape's vertices
         self.shape = ShapeProperty(bezier or Bezier())
 
@@ -682,8 +691,7 @@ class Repeater(Modifier):
 
 
 ## \ingroup Lottie
-## \todo Implement SVG/SIF Export
-## \todo rename to RoundedCorners
+## \todo Implement SIF Export
 class RoundedCorners(Modifier):
     """
     Rounds corners of other shapes
