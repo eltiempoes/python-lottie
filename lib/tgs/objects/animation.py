@@ -95,3 +95,26 @@ class Animation(TgsObject):
         c = super().clone()
         c._index_gen._i = self._index_gen._i
         return c
+
+    def tgs_sanitize(self):
+        """!
+        Cleans up some things to ensure it works as a telegram sticker
+        """
+        if self.width != 512 or self.height != 512:
+            scale = min(512/self.width, 512/self.height)
+            self.width = self.height  = 512
+
+            for layer in self.layers:
+                if layer.transform.scale.animated:
+                    for kf in layer.transform.scale.keyframe:
+                        if kf.start is not None:
+                            kf.start *= scale
+                        if kf.end is not None:
+                            kf.end *= scale
+                else:
+                    layer.transform.scale.value *= scale
+
+        if self.frame_rate < 45:
+            self.frame_rate = 30
+        else:
+            self.frame_rate = 60

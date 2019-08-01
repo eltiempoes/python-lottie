@@ -96,6 +96,12 @@ group.add_argument(
     choices=[exporter.slug for exporter in exporters],
     help="Explicit output format (if missing implied by the output filename)",
 )
+group.add_argument(
+    "--sanitize",
+    default=False,
+    action="store_true",
+    help="Ensure the animation is 512x512 and 30 or 60 fps",
+)
 
 
 for importer in importers:
@@ -144,4 +150,6 @@ if __name__ == "__main__":
     o_options = exporter.argparse_options(ns)
 
     an = importer.load(infile, i_options)
+    if ns.sanitize:
+        an.tgs_sanitize()
     exporter.export(an, outfile, o_options)
