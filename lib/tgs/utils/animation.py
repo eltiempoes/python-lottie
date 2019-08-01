@@ -23,7 +23,7 @@ def shake(position_prop, x_radius, y_radius, start_time, end_time, n_frames):
         for pp, start in zip(position_prop, startpoints):
             px = start[0] + x
             py = start[1] + y
-            pp.add_keyframe(start_time + i * frame_time, [px, py])
+            pp.add_keyframe(start_time + i * frame_time, NVector(px, py))
 
     for pp, start in zip(position_prop, startpoints):
         pp.add_keyframe(end_time, start)

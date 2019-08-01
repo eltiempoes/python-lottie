@@ -32,10 +32,10 @@ g.add_shape(objects.Fill(Color(0, 1, 0)))
 for i in range(an.out_point):
     t = i / (an.out_point-1)
     p1 = Point(math.cos(t*math.pi*2)/2+1, math.sin(t*math.pi*2)/2+1) * 256
-    b1.position.add_keyframe(i, p1.to_list())
+    b1.position.add_keyframe(i, p1)
 
     p2 = Point(math.sin(2*t*math.pi*2)/2+1, -math.cos(t*math.pi*2)/2+1) * 256
-    b2.position.add_keyframe(i, p2.to_list())
+    b2.position.add_keyframe(i, p2)
 
 
 def chain_bezier(chain):
