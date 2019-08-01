@@ -18,8 +18,8 @@ an.fonts = objects.text.FontList()
 an.fonts.append(objects.text.Font("sans", name="sans"))
 layer = objects.TextLayer()
 an.add_layer(layer)
-layer.data.add_keyframe(0, objects.text.TextItem("Text", 200, Color(1, 0, 0), "sans"))
-layer.data.add_keyframe(60, objects.text.TextItem("Here", 200, Color(0, 1, 0), "sans"))
+layer.data.add_keyframe(0, objects.text.TextDocument("Text", 200, Color(1, 0, 0), "sans"))
+layer.data.add_keyframe(60, objects.text.TextDocument("Here", 200, Color(0, 1, 0), "sans"))
 layer.transform.position.value = Point(30, 200)
 
 

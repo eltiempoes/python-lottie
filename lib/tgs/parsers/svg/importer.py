@@ -625,7 +625,7 @@ class PathDParser:
             self.add_p = False
         elif outp:
             rp = self.path.vertices[-1]
-            self.path.out_point[-1] = self._rpoint(outp, rp)
+            self.path.out_tangents[-1] = self._rpoint(outp, rp)
 
     def _parse_L(self):
         if self.la_type != 1:
@@ -725,8 +725,8 @@ class PathDParser:
             return
         pin = self.cur_vec()
         self._do_add_p()
-        handle = self.path.in_point[-1]
-        self.path.out_point[-1] = (-handle)
+        handle = self.path.in_tangents[-1]
+        self.path.out_tangents[-1] = (-handle)
         self.p = self.next_vec()
         self.path.add_point(
             self.p.clone(),
@@ -742,8 +742,8 @@ class PathDParser:
             return
         pin = self.cur_vec() + self.p
         self._do_add_p()
-        handle = self.path.in_point[-1]
-        self.path.out_point[-1] = (-handle)
+        handle = self.path.in_tangents[-1]
+        self.path.out_tangents[-1] = (-handle)
         self.p += self.next_vec()
         self.path.add_point(
             self.p.clone(),
@@ -788,7 +788,7 @@ class PathDParser:
             self.next_token()
             return
         self._do_add_p()
-        handle = self.p - self.path.in_point[-1]
+        handle = self.p - self.path.in_tangents[-1]
         self.p = self.cur_vec()
         self.path.add_point(
             self.p.clone(),
@@ -803,7 +803,7 @@ class PathDParser:
             self.next_token()
             return
         self._do_add_p()
-        handle = -self.path.in_point[-1] + self.p
+        handle = -self.path.in_tangents[-1] + self.p
         self.p += self.cur_vec()
         self.path.add_point(
             self.p.clone(),
@@ -845,16 +845,16 @@ class PathDParser:
         points = ellipse.to_bezier(theta1, deltatheta)
 
         self._do_add_p()
-        self.path.out_point[-1] = points[0].out_t
+        self.path.out_tangents[-1] = points[0].out_tangent
         for point in points[1:-1]:
             self.path.add_point(
                 point.vertex,
-                point.in_t,
-                point.out_t,
+                point.in_tangent,
+                point.out_tangent,
             )
         self.path.add_point(
             dest.clone(),
-            points[-1].in_t,
+            points[-1].in_tangent,
             NVector(0, 0),
         )
         self.p = dest

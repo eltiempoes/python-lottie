@@ -359,14 +359,14 @@ class SifBuilder(restructure.AbstractBuilder):
             elem.setAttribute("value", str(theta))
 
         mult = -1
-        which_point = "in_point"
+        which_point = "in_tangents"
         radial_composite = self._subelement(self._subelement(composite, "t1"), "radial_composite")
         radial_composite.setAttribute("type", "vector")
         self.process_vector_ext("radius", lottie_path.shape.keyframes, radial_composite, "real", get_tangent_r)
         self.process_vector_ext("theta", lottie_path.shape.keyframes, radial_composite, "angle", get_tangent_th)
 
         mult = 1
-        which_point = "out_point"
+        which_point = "out_tangents"
         radial_composite = self._subelement(self._subelement(composite, "t2"), "radial_composite")
         radial_composite.setAttribute("type", "vector")
         self.process_vector_ext("radius", lottie_path.shape.keyframes, radial_composite, "real", get_tangent_r)

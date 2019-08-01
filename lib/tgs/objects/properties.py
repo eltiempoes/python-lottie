@@ -411,8 +411,8 @@ class ShapePropKeyframe(Keyframe):
         bez.closed = self.start.closed
         for i in range(len(self.start.vertices)):
             bez.vertices.append(self.start.vertices[i].lerp(self.end.vertices[i], lerpv))
-            bez.in_point.append(self.start.in_point[i].lerp(self.end.in_point[i], lerpv))
-            bez.out_point.append(self.start.out_point[i].lerp(self.end.out_point[i], lerpv))
+            bez.in_tangents.append(self.start.in_tangents[i].lerp(self.end.in_tangents[i], lerpv))
+            bez.out_tangents.append(self.start.out_tangents[i].lerp(self.end.out_tangents[i], lerpv))
         return bez
 
 

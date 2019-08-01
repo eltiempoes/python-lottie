@@ -3,25 +3,25 @@ from ..utils.nvector import NVector
 
 
 class BezierPoint:
-    def __init__(self, vertex, in_t=None, out_t=None):
+    def __init__(self, vertex, in_tangent=None, out_tangent=None):
         self.vertex = vertex
-        self.in_t = in_t or NVector(0, 0)
-        self.out_t = out_t or NVector(0, 0)
+        self.in_tangent = in_tangent or NVector(0, 0)
+        self.out_tangent = out_tangent or NVector(0, 0)
 
     def relative(self):
         return self
 
     @classmethod
-    def smooth(cls, point, in_t):
-        return cls(point, in_t, -in_t)
+    def smooth(cls, point, in_tangent):
+        return cls(point, in_tangent, -in_tangent)
 
     @classmethod
-    def from_absolute(cls, point, in_t=None, out_t=None):
-        if not in_t:
-            in_t = point.clone()
-        if not out_t:
-            out_t = point.clone()
-        return BezierPoint(point, in_t, out_t)
+    def from_absolute(cls, point, in_tangent=None, out_tangent=None):
+        if not in_tangent:
+            in_tangent = point.clone()
+        if not out_tangent:
+            out_tangent = point.clone()
+        return BezierPoint(point, in_tangent, out_tangent)
 
 
 class BezierPointView:
@@ -41,20 +41,20 @@ class BezierPointView:
         self.bezier.vertices[self.index] = point
 
     @property
-    def in_t(self):
-        return self.bezier.in_point[self.index]
+    def in_tangent(self):
+        return self.bezier.in_tangents[self.index]
 
-    @in_t.setter
-    def in_t(self, point):
-        self.bezier.in_point[self.index] = point
+    @in_tangent.setter
+    def in_tangent(self, point):
+        self.bezier.in_tangents[self.index] = point
 
     @property
-    def out_t(self):
-        return self.bezier.out_point[self.index]
+    def out_tangent(self):
+        return self.bezier.out_tangents[self.index]
 
-    @out_t.setter
-    def out_t(self, point):
-        self.bezier.out_point[self.index] = point
+    @out_tangent.setter
+    def out_tangent(self, point):
+        self.bezier.out_tangents[self.index] = point
 
     def relative(self):
         return self
@@ -62,20 +62,20 @@ class BezierPointView:
 
 class AbsoluteBezierPointView(BezierPointView):
     @property
-    def in_t(self):
-        return self.bezier.in_point[self.index] + self.vertex
+    def in_tangent(self):
+        return self.bezier.in_tangents[self.index] + self.vertex
 
-    @in_t.setter
-    def in_t(self, point):
-        self.bezier.in_point[self.index] = point - self.vertex
+    @in_tangent.setter
+    def in_tangent(self, point):
+        self.bezier.in_tangents[self.index] = point - self.vertex
 
     @property
-    def out_t(self):
-        return self.bezier.out_point[self.index] + self.vertex
+    def out_tangent(self):
+        return self.bezier.out_tangents[self.index] + self.vertex
 
-    @out_t.setter
-    def out_t(self, point):
-        self.bezier.out_point[self.index] = point - self.vertex
+    @out_tangent.setter
+    def out_tangent(self, point):
+        self.bezier.out_tangents[self.index] = point - self.vertex
 
     def relative(self):
         return BezierPointView(self.bezier, self.index)
@@ -111,7 +111,7 @@ class BezierView:
             self.bezier.add_point(point)
         else:
             bpt = point.relative()
-            self.bezier.add_point(bpt.vertex, bpt.in_t, bpt.out_t)
+            self.bezier.add_point(bpt.vertex, bpt.in_tangent, bpt.out_tangent)
 
     @property
     def absolute(self):
@@ -125,19 +125,19 @@ class Bezier(TgsObject):
     """
     _props = [
         TgsProp("closed", "c", bool, False),
-        TgsProp("in_point", "i", NVector, True),
-        TgsProp("out_point", "o", NVector, True),
+        TgsProp("in_tangents", "i", NVector, True),
+        TgsProp("out_tangents", "o", NVector, True),
         TgsProp("vertices", "v", NVector, True),
     ]
 
     def __init__(self):
         ## Closed property of shape
         self.closed = False
-        ## Bezier curve In points. Array of 2 dimensional arrays.
-        self.in_point = []
-        ## Bezier curve Out points. Array of 2 dimensional arrays.
-        self.out_point = []
-        ## Bezier curve Vertices. Array of 2 dimensional arrays.
+        ## Cubic bezier handles for the segments before each vertex
+        self.in_tangents = []
+        ## Cubic bezier handles for the segments after each vertex
+        self.out_tangents = []
+        ## Bezier curve vertices.
         self.vertices = []
         #self.rel_tangents = rel_tangents
         ## More convent way to  access points
@@ -146,8 +146,8 @@ class Bezier(TgsObject):
     def clone(self):
         clone = Bezier()
         clone.closed = self.closed
-        clone.in_point = [p.clone() for p in self.in_point]
-        clone.out_point = [p.clone() for p in self.out_point]
+        clone.in_tangents = [p.clone() for p in self.in_tangents]
+        clone.out_tangents = [p.clone() for p in self.out_tangents]
         clone.vertices = [p.clone() for p in self.vertices]
         #clone.rel_tangents = self.rel_tangents
         return clone
@@ -162,11 +162,11 @@ class Bezier(TgsObject):
         \returns \c self, for easy chaining
         """
         self.vertices.insert(index, pos)
-        self.in_point.insert(index, inp.clone())
-        self.out_point.insert(index, outp.clone())
+        self.in_tangents.insert(index, inp.clone())
+        self.out_tangents.insert(index, outp.clone())
         #if not self.rel_tangents:
-            #self.in_point[-1] += pos
-            #self.out_point[-1] += pos
+            #self.in_tangents[-1] += pos
+            #self.out_tangents[-1] += pos
         return self
 
     def add_point(self, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
@@ -227,15 +227,15 @@ class Bezier(TgsObject):
         seg1 = Bezier()
         seg2 = Bezier()
         for j in range(i):
-            seg1.add_point(self.vertices[j].clone(), self.in_point[j].clone(), self.out_point[j].clone())
+            seg1.add_point(self.vertices[j].clone(), self.in_tangents[j].clone(), self.out_tangents[j].clone())
         for j in range(i+2, len(self.vertices)):
-            seg2.add_point(self.vertices[j].clone(), self.in_point[j].clone(), self.out_point[j].clone())
+            seg2.add_point(self.vertices[j].clone(), self.in_tangents[j].clone(), self.out_tangents[j].clone())
 
-        seg1.add_point(split1[0], self.in_point[i].clone(), split1[1])
+        seg1.add_point(split1[0], self.in_tangents[i].clone(), split1[1])
         seg1.add_point(split1[3], split1[2], split2[1])
 
         seg2.insert_point(0, split2[0], split1[2], split2[1])
-        seg2.insert_point(1, split2[3], split2[2], self.out_point[i+1].clone())
+        seg2.insert_point(1, split2[3], split2[2], self.out_tangents[i+1].clone())
 
         return seg1, seg2
 
@@ -270,44 +270,44 @@ class Bezier(TgsObject):
         t1 = positions[0]
         seg1, seg2 = self.split_at(t1)
         self.vertices = []
-        self.in_point = []
-        self.out_point = []
+        self.in_tangents = []
+        self.out_tangents = []
 
         self.vertices = seg1.vertices[:-1]
-        self.in_point = seg1.in_point[:-1]
-        self.out_point = seg1.out_point[:-1]
+        self.in_tangents = seg1.in_tangents[:-1]
+        self.out_tangents = seg1.out_tangents[:-1]
 
         for t2 in positions[1:]:
             t = (t2-t1) / (1-t1)
             seg1, seg2 = seg2.split_at(t)
             t1 = t
             self.vertices += seg1.vertices[:-1]
-            self.in_point += seg1.in_point[:-1]
-            self.out_point += seg1.out_point[:-1]
+            self.in_tangents += seg1.in_tangents[:-1]
+            self.out_tangents += seg1.out_tangents[:-1]
 
         self.vertices += seg2.vertices
-        self.in_point += seg2.in_point
-        self.out_point += seg2.out_point
+        self.in_tangents += seg2.in_tangents
+        self.out_tangents += seg2.out_tangents
 
     def split_each_segment(self):
         """!
         Adds a point in the middle of the segment between every pair of points in the Bezier
         """
         vertices = self.vertices
-        in_point = self.in_point
-        out_point = self.out_point
+        in_tangents = self.in_tangents
+        out_tangents = self.out_tangents
 
         self.vertices = []
-        self.in_point = []
-        self.out_point = []
+        self.in_tangents = []
+        self.out_tangents = []
 
         for i in range(len(vertices)-1):
-            tocut = [vertices[i], out_point[i]+vertices[i], in_point[i+1]+vertices[i+1], vertices[i+1]]
+            tocut = [vertices[i], out_tangents[i]+vertices[i], in_tangents[i+1]+vertices[i+1], vertices[i+1]]
             split1, split2 = self._split_segment(0.5, tocut)
             if i:
-                self.out_point[-1] = split1[1]
+                self.out_tangents[-1] = split1[1]
             else:
-                self.add_point(vertices[0], in_point[0], split1[1])
+                self.add_point(vertices[0], in_tangents[0], split1[1])
             self.add_point(split1[3], split1[2], split2[1])
             self.add_point(vertices[i+1], split2[2], NVector(0, 0))
 
@@ -322,10 +322,10 @@ class Bezier(TgsObject):
         v1 = self.vertices[i].clone()
         v2 = self.vertices[i+1].clone()
         points = [v1]
-        t1 = self.out_point[i].clone()
+        t1 = self.out_tangents[i].clone()
         if optimize or t1.length != 0:
             points.append(t1+v1)
-        t2 = self.in_point[i+1].clone()
+        t2 = self.in_tangents[i+1].clone()
         if optimize or t1.length != 0:
             points.append(t2+v2)
         points.append(v2)
@@ -363,16 +363,16 @@ class Bezier(TgsObject):
         Reverses the Bezier curve
         """
         self.vertices = list(reversed(self.vertices))
-        out_point = list(reversed(self.in_point))
-        in_point = list(reversed(self.out_point))
-        self.in_point = in_point
-        self.out_point = out_point
+        out_tangents = list(reversed(self.in_tangents))
+        in_tangents = list(reversed(self.out_tangents))
+        self.in_tangents = in_tangents
+        self.out_tangents = out_tangents
 
     """def to_absolute(self):
         if self.rel_tangents:
             self.rel_tangents = False
             for i in range(len(self.vertices)):
                 p = self.vertices[i]
-                self.in_point[i] += p
-                self.out_point[i] += p
+                self.in_tangents[i] += p
+                self.out_tangents[i] += p
         return self"""

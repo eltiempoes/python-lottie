@@ -24,15 +24,15 @@ class PathTester(unittest.TestCase):
     def parse_svg_path(self, d):
         return self.parse_svg_paths({"path": d})
 
-    def assert_path(self, path, vertices, in_point, out_point):
+    def assert_path(self, path, vertices, in_tangents, out_tangents):
         anim = self.parse_svg_path(path)
         path = anim.find("path")
         self.assertIsInstance(path.shapes[0], objects.Path)
         self.assertIsInstance(path.shapes[1], objects.Stroke)
         bezier = path.shapes[0].shape.value
         self.assertListEqual(bezier.vertices, vertices)
-        self.assertListEqual(bezier.in_point, in_point)
-        self.assertListEqual(bezier.out_point, out_point)
+        self.assertListEqual(bezier.in_tangents, in_tangents)
+        self.assertListEqual(bezier.out_tangents, out_tangents)
 
     def assert_list_almost_equal(self, a, b):
         self.assertEqual(len(a), len(b))
@@ -204,10 +204,10 @@ class TestArc(PathTester):
         self.assert_list_almost_equal(bezier.vertices, [
             NVector(6, 10), NVector(6.8626965, 15.758131), NVector(15.2322608, 15.9819042), NVector(14, 10),
         ])
-        self.assert_list_almost_equal(bezier.in_point, [
+        self.assert_list_almost_equal(bezier.in_tangents, [
             NVector(0, 0), NVector(-2.5323342, -1.6407878), NVector(-2.0590729, 1.5180295), NVector(2.5323342, 1.6407878),
         ])
-        self.assert_list_almost_equal(bezier.out_point, [
+        self.assert_list_almost_equal(bezier.out_tangents, [
             NVector(-2.0590729, 1.5180295), NVector(2.5323342, 1.6407878), NVector(2.0590729, -1.5180295), NVector(0, 0)
         ])
 
@@ -223,10 +223,10 @@ class TestArc(PathTester):
         self.assert_list_almost_equal(bezier.vertices, [
             NVector(6, 10), NVector(4.4903685, 4.24186895), NVector(12.7677392, 4.0180958), NVector(14, 10),
         ])
-        self.assert_list_almost_equal(bezier.in_point, [
+        self.assert_list_almost_equal(bezier.in_tangents, [
             NVector(0, 0), NVector(-1.8563359, 1.6407878), NVector(-2.6844953, -1.51802947), NVector(1.8563359, -1.6407878),
         ])
-        self.assert_list_almost_equal(bezier.out_point, [
+        self.assert_list_almost_equal(bezier.out_tangents, [
             NVector(-2.6844953, -1.5180295), NVector(1.8563359, -1.6407878), NVector(2.6844953, 1.5180295), NVector(0, 0)
         ])
 
@@ -242,10 +242,10 @@ class TestArc(PathTester):
         self.assert_list_almost_equal(bezier.vertices, [
             NVector(6, 10), NVector(14, 10),
         ])
-        self.assert_list_almost_equal(bezier.in_point, [
+        self.assert_list_almost_equal(bezier.in_tangents, [
             NVector(0, 0), NVector(-1.9493793, 1.43715898),
         ])
-        self.assert_list_almost_equal(bezier.out_point, [
+        self.assert_list_almost_equal(bezier.out_tangents, [
             NVector(2.54148326, 1.43715898), NVector(0, 0)
         ])
 
@@ -261,10 +261,10 @@ class TestArc(PathTester):
         self.assert_list_almost_equal(bezier.vertices, [
             NVector(6, 10), NVector(14, 10),
         ])
-        self.assert_list_almost_equal(bezier.in_point, [
+        self.assert_list_almost_equal(bezier.in_tangents, [
             NVector(0, 0), NVector(-2.54148326, -1.43715898),
         ])
-        self.assert_list_almost_equal(bezier.out_point, [
+        self.assert_list_almost_equal(bezier.out_tangents, [
             NVector(1.9493793, -1.43715898), NVector(0, 0)
         ])
 

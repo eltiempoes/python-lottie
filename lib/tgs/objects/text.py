@@ -94,7 +94,10 @@ class TextJustify(TgsEnum):
 
 
 ## \ingroup Lottie
-class TextItem(TgsObject):
+class TextDocument(TgsObject):
+    """!
+    @see http://docs.aenhancers.com/other/textdocument/
+    """
     _props = [
         TgsProp("font_family", "f", str),
         TgsProp("color", "fc", NVector),
@@ -125,7 +128,7 @@ class TextItem(TgsObject):
 ## \ingroup Lottie
 class TextDataKeyframe(TgsObject):
     _props = [
-        TgsProp("start", "s", TextItem),
+        TgsProp("start", "s", TextDocument),
         TgsProp("time", "t", float),
     ]
 

@@ -12,36 +12,44 @@ from .text import FontList
 # Lottie objects that have not been tested
 
 
+
 ## \ingroup Lottie
 class Animation(TgsObject):
     """!
     Top level object, describing the animation
+
+    @see http://docs.aenhancers.com/items/compitem/
+    @todo rename to Composition?
     """
     _props = [
+        TgsProp("version", "v", str, False),
+        TgsProp("frame_rate", "fr", float, False),
         TgsProp("in_point", "ip", float, False),
         TgsProp("out_point", "op", float, False),
-        TgsProp("frame_rate", "fr", float, False),
         TgsProp("width", "w", int, False),
-        TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("height", "h", int, False),
-        TgsProp("version", "v", str, False),
         TgsProp("name", "nm", str, False),
-        TgsProp("layers", "layers", Layer, True),
+        TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("assets", "assets", Asset, True),
-        TgsProp("chars", "chars", Chars, True),
+        #TgsProp("comps", "comps", Animation, True),
         TgsProp("fonts", "fonts", FontList),
+        TgsProp("layers", "layers", Layer, True),
+        TgsProp("chars", "chars", Chars, True),
+        #TgsProp("markers", "markers", Marker, True),
         TgsProp("tgs", "tgs", PseudoBool, False),
+        #TgsProp("motion_blur", "mb", MotionBlur, False),
     ]
     _version = "5.5.2"
 
     def __init__(self, n_frames=60, framerate=60):
         ## Marks as telegram sticker
         self.tgs = 1
-        ## In Point of the Time Ruler. Sets the initial Frame of the animation.
+        ## The time when the composition work area begins, in frames.
         self.in_point = 0
-        ## Out Point of the Time Ruler. Sets the final Frame of the animation
+        ## The time when the composition work area ends.
+        ## Sets the final Frame of the animation
         self.out_point = n_frames
-        ## Frame Rate
+        ## Frames per second
         self.frame_rate = framerate
         ## Composition Width
         self.width = 512

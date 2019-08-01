@@ -46,7 +46,7 @@ class BezierPen(fontTools.pens.basePen.BasePen):
 
             )
         else:
-            self.current.points[-1].out_t = self._point(pt1) - self.current.points[-1].vertex
+            self.current.points[-1].out_tangent = self._point(pt1) - self.current.points[-1].vertex
 
         dest = self._point(pt3)
         self.current.points.append(

@@ -351,7 +351,7 @@ class Ellipse(ShapeElement):
         el = EllipseConverter(position, radii, 0)
         points = el.to_bezier(0, math.pi*2)
         for point in points[1:]:
-            bezier.add_point(point.vertex, point.in_t, point.out_t)
+            bezier.add_point(point.vertex, point.in_tangent, point.out_tangent)
 
         bezier.close()
         return bezier

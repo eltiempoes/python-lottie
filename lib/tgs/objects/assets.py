@@ -15,6 +15,11 @@ class Asset(TgsObject):
 
 ## \ingroup Lottie
 class Image(Asset):
+    """!
+        External image
+
+        \see http://docs.aenhancers.com/sources/filesource/
+    """
     _props = [
         TgsProp("height", "h", float, False),
         TgsProp("width", "w", float, False),

@@ -6,8 +6,8 @@ from .nvector import NVector
 def strip(tgs_object):
     if isinstance(tgs_object, Bezier):
         tgs_object.shape = [NVector(x.x, x.y) for x in tgs_object.shape]
-        tgs_object.in_point = [NVector(x.x, x.y) for x in tgs_object.in_point]
-        tgs_object.out_point = [NVector(x.x, x.y) for x in tgs_object.out_point]
+        tgs_object.in_tangents = [NVector(x.x, x.y) for x in tgs_object.in_tangents]
+        tgs_object.out_tangents = [NVector(x.x, x.y) for x in tgs_object.out_tangents]
 
     for p in tgs_object._props:
         pval = p.get(tgs_object)

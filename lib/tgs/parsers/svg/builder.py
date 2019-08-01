@@ -261,9 +261,9 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             d += "M %s,%s " % tuple(bez.vertices[0].components[:2])
             for i in range(1, len(bez.vertices)):
                 qfrom = bez.vertices[i-1]
-                h1 = bez.out_point[i-1] + qfrom
+                h1 = bez.out_tangents[i-1] + qfrom
                 qto = bez.vertices[i]
-                h2 = bez.in_point[i] + qto
+                h2 = bez.in_tangents[i] + qto
                 d += "C %s,%s %s,%s %s,%s " % (
                     h1[0], h1[1],
                     h2[0], h2[1],
@@ -271,9 +271,9 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
                 )
             if bez.closed:
                 qfrom = bez.vertices[-1]
-                h1 = bez.out_point[-1] + qfrom
+                h1 = bez.out_tangents[-1] + qfrom
                 qto = bez.vertices[0]
-                h2 = bez.in_point[0] + qto
+                h2 = bez.in_tangents[0] + qto
                 d += "C %s,%s %s,%s %s,%s Z" % (
                     h1[0], h1[1],
                     h2[0], h2[1],

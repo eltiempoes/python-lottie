@@ -99,8 +99,8 @@ def generate_path_appear(bezier, appear_start, appear_end, n_keyframes, reverse=
         deltap = maxp - len(segment.vertices)
         if deltap > 0:
             segment.vertices += [segment.vertices[-1]] * deltap
-            segment.in_point += [NVector(0,0)] * deltap
-            segment.out_point += [NVector(0,0)] * deltap
+            segment.in_tangents += [NVector(0,0)] * deltap
+            segment.out_tangents += [NVector(0,0)] * deltap
 
     return obj
 
@@ -131,8 +131,8 @@ def generate_path_disappear(bezier, disappear_start, disappear_end, n_keyframes,
         deltap = maxp - len(segment.vertices)
         if deltap > 0:
             segment.vertices += [segment.vertices[-1]] * deltap
-            segment.in_point += [NVector(0,0)] * deltap
-            segment.out_point += [NVector(0,0)] * deltap
+            segment.in_tangents += [NVector(0,0)] * deltap
+            segment.out_tangents += [NVector(0,0)] * deltap
 
     return obj
 
@@ -217,10 +217,10 @@ class PointDisplacer:
             for pi in range(len(initial.vertices)):
                 startpos = initial.vertices[pi]
                 dp = self._on_displace(startpos, f)
-                t1sp = initial.in_point[pi] + startpos
-                t1fin = initial.in_point[pi] + self._on_displace(t1sp, f) - dp
-                t2sp = initial.out_point[pi] + startpos
-                t2fin = initial.out_point[pi] + self._on_displace(t2sp, f) - dp
+                t1sp = initial.in_tangents[pi] + startpos
+                t1fin = initial.in_tangents[pi] + self._on_displace(t1sp, f) - dp
+                t2sp = initial.out_tangents[pi] + startpos
+                t2fin = initial.out_tangents[pi] + self._on_displace(t2sp, f) - dp
 
                 bezier.add_point(dp + startpos, t1fin, t2fin)
 

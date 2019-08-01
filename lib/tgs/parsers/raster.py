@@ -147,7 +147,7 @@ class Vectorizer:
                     ep = NVector(*segment.end_point)
                     c1 = NVector(*segment.c1) - sp
                     c2 = NVector(*segment.c2) - ep
-                    bezier.out_point[-1] = c1
+                    bezier.out_tangents[-1] = c1
                     bezier.add_point(ep, c2)
         return shapes
 
@@ -179,8 +179,8 @@ class Vectorizer:
                 bezier = kf.start
                 count = nverts - len(bezier.vertices)
                 bezier.vertices += [bezier.vertices[-1]] * count
-                bezier.in_point += [NVector(0, 0)] * count
-                bezier.out_point += [NVector(0, 0)] * count
+                bezier.in_tangents += [NVector(0, 0)] * count
+                bezier.out_tangents += [NVector(0, 0)] * count
 
     def duplicate_start_frame(self, layer_name, time):
         layer = self.layers[layer_name]
