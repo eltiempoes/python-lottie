@@ -8,14 +8,14 @@ sys.path.append(os.path.join(
 from tgs.utils import script
 from tgs import objects
 from tgs import Color, Point
-from tgs.utils.font import fonts
+from tgs.utils.font import FallbackFontRenderer
 
 
 an = objects.Animation(120)
 layer = objects.ShapeLayer()
 an.add_layer(layer)
 
-g = layer.add_shape(fonts["Ubuntu"]["Regular"].render(128, "Hello\nWorld"))
+g = layer.add_shape(FallbackFontRenderer("Ubuntu").render("Hello\nWorld\n\U0001F600", 128))
 g.transform.position.value.y = g.line_height
 layer.add_shape(objects.Fill(Color(0, 0, 0)))
 layer.add_shape(objects.Stroke(Color(1, 1, 1), 8))
