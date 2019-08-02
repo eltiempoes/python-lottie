@@ -80,6 +80,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             dom_parent.attrib["opacity"] = "1"
         if not layer_builder.lottie.name:
             g.attrib[self.qualified("inkscape", "label")] = layer_builder.lottie.__class__.__name__
+        if layer_builder.shapegroup:
+            g.attrib["style"] = self.group_to_style(layer_builder.shapegroup)
         return g
 
     def set_transform(self, dom, transform):
@@ -123,8 +125,6 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
                 style["fill"] = "url(#%s)" % self.process_gradient(group.fill)
             else:
                 style["fill"] = color_to_css(group.fill.color.get_value(self.time))
-        #else:
-            #style["fill"] = "none"
 
         if group.stroke:
             if isinstance(group.stroke, objects.GradientStroke):
@@ -150,8 +150,6 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
                 style["stroke-linejoin"] = "bevel"
             elif group.stroke.line_join == objects.LineJoin.Miter:
                 style["stroke-linejoin"] = "miter"
-        #else:
-            #style["stroke"] = "none"
 
         return ";".join(map(
             lambda x: ":".join(map(str, x)),

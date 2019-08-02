@@ -276,11 +276,10 @@ class FontRenderer:
 
         """
         scale = size / self.font.tables["head"].unitsPerEm
-        line_height = self.font.tables["head"].yMax
+        line_height = self.font.tables["head"].yMax * scale
         group = Group()
         group.name = text
-        group.transform.scale.value = NVector(100, 100) * scale
-        pos /= scale
+        #group.transform.scale.value = NVector(100, 100) * scale
         for ch in text:
             if ch == "\n":
                 pos.x = 0
@@ -289,14 +288,14 @@ class FontRenderer:
 
             chname = self.font._makeGlyphName(ord(ch))
             if chname in self.glyphset:
-                for sh in self.glyph_shapes(chname, pos):
+                for sh in self.glyph_shapes(chname, pos / scale):
+                    sh.shape.value.scale(scale)
                     group.add_shape(sh)
-                pos.x += self.glyphset[chname].width
+                pos.x += self.glyphset[chname].width * scale
             elif on_missing:
-                on_missing(ch, self.font.tables["head"].unitsPerEm, pos, group)
+                on_missing(ch, size, pos, group)
 
-        pos *= scale
-        group.line_height = line_height * scale
+        group.line_height = line_height
         return group
 
     def __repr__(self):

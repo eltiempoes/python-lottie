@@ -5,6 +5,7 @@ class RestructuredLayer:
     def __init__(self, lottie):
         self.lottie = lottie
         self.children = []
+        self.shapegroup = None
 
     def add(self, child):
         self.children.insert(0, child)
@@ -84,7 +85,7 @@ def restructure_animation(animation, merge_paths):
 def restructure_shapegroup(shape, shape_group, merge_paths):
     if isinstance(shape, (objects.Fill, objects.GradientFill)):
         shape_group.fill = shape
-    elif isinstance(shape, (objects.Stroke, objects.GradientStroke)):
+    elif isinstance(shape, objects.BaseStroke):
         shape_group.stroke = shape
     elif isinstance(shape, (objects.Path)):
         if merge_paths:

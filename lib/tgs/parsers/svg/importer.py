@@ -613,7 +613,6 @@ class SvgParser(SvgHandler):
 
     def _parseshape_text(self, element, shape_parent, pfq=None):
         group = objects.Group()
-        shape_parent.shapes.insert(0, group)
         style = self.parse_style(element)
         self.apply_common_style(style, group.transform)
         group.name = self._get_id(element)
@@ -621,17 +620,26 @@ class SvgParser(SvgHandler):
             self._parse_text_elem(element, style, group, pfq)
 
         self._add_style_shapes(style, group)
-        self.parse_transform(element, group, group.transform)
 
         if element.tag == self.qualified("svg", "text"):
-            group.transform.position.value.x += float(element.attrib.get("x", 0))
-            group.transform.position.value.y += float(element.attrib.get("y", 0))
+            dx = float(element.attrib.get("x", 0))
+            dy = float(element.attrib.get("y", 0))
 
             ta = style.get("text-anchor", "")
             if ta == "middle":
-                group.transform.position.value.x -= group.bounding_box().width / 2
+                dx -= group.bounding_box().width / 2
             elif ta == "right":
-                group.transform.position.value.x -= group.bounding_box().width
+                dx -= group.bounding_box().width
+
+            if dx or dy:
+                ng = objects.Group()
+                ng.add_shape(group)
+                group.transform.position.value.x += dx
+                group.transform.position.value.y += dy
+                group = ng
+
+        shape_parent.shapes.insert(0, group)
+        self.parse_transform(element, group, group.transform)
 
 
 class PathDParser:

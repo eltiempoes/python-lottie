@@ -400,3 +400,8 @@ class Bezier(TgsObject):
                 cloned.add_point(vert2, in_t, NVector(0, 0))
 
         return cloned
+
+    def scale(self, amount):
+        for vl in (self.vertices, self.in_tangents, self.out_tangents):
+            for v in vl:
+                v *= amount
