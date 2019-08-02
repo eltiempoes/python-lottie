@@ -70,6 +70,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             namedview.attrib["borderlayer"] = "true"
             namedview.attrib["bordercolor"] = "#666666"
             namedview.attrib["pagecolor"] = "#ffffff"
+        self.svg.attrib["style"] = "fill: none; stroke: none"
 
         return self.svg
 
@@ -122,8 +123,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
                 style["fill"] = "url(#%s)" % self.process_gradient(group.fill)
             else:
                 style["fill"] = color_to_css(group.fill.color.get_value(self.time))
-        else:
-            style["fill"] = "none"
+        #else:
+            #style["fill"] = "none"
 
         if group.stroke:
             if isinstance(group.stroke, objects.GradientStroke):
@@ -149,8 +150,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
                 style["stroke-linejoin"] = "bevel"
             elif group.stroke.line_join == objects.LineJoin.Miter:
                 style["stroke-linejoin"] = "miter"
-        else:
-            style["stroke"] = "none"
+        #else:
+            #style["stroke"] = "none"
 
         return ";".join(map(
             lambda x: ":".join(map(str, x)),
@@ -210,6 +211,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             return
 
         g = self.group_from_lottie(group.lottie, dom_parent, group.layer)
+        g.attrib["style"] = self.group_to_style(group)
         self.shapegroup_process_children(group, g)
         return g
 

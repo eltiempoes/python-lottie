@@ -93,7 +93,8 @@ class SystemFont:
 
 class FontQuery:
     """!
-    \see https://www.freedesktop.org/software/fontconfig/fontconfig-user.html#AEN21 https://manpages.ubuntu.com/manpages/cosmic/man1/fc-pattern.1.html
+    \see https://www.freedesktop.org/software/fontconfig/fontconfig-user.html#AEN21
+         https://manpages.ubuntu.com/manpages/cosmic/man1/fc-pattern.1.html
     """
     def __init__(self, str=""):
         self._query = {}
@@ -115,6 +116,25 @@ class FontQuery:
     def weight(self, weight):
         self._query["weight"] = weight
         return self
+
+    def css_weight(self, weight):
+        """!
+            Weight from CSS weight value.
+
+            Weight is different between CSS and fontconfig
+            This creates some interpolations to ensure known values are translated properly
+            \see https://www.freedesktop.org/software/fontconfig/fontconfig-user.html#AEN178
+                 https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight#Common_weight_name_mapping
+        """
+        if weight < 200:
+            v = max(0, weight - 100) / 100 * 40
+        elif weight < 500:
+            v = -weight**3 / 200000 + weight**2 * 11/2000 - weight * 17/10 + 200
+        elif weight < 700:
+            v = -weight**2 * 3/1000 + weight * 41/10 - 1200
+        else:
+            v = (weight - 700) / 200 * 10 + 200
+        return self.weight(int(round(v)))
 
     def style(self, *styles):
         self._query["style"] = " ".join(styles)
@@ -292,8 +312,8 @@ class FallbackFontRenderer:
         font = fonts.best(self.query.clone().char(char))
         group.add_shape(font.render(char, size, pos))
 
-    def render(self, size, text):
-        return self.best.render(size, text, NVector(0, 0), self._on_missing)
+    def render(self, text, size, pos=None):
+        return self.best.render(text, size, pos or NVector(0, 0), self._on_missing)
 
     def __repr__(self):
         return "<FallbackFontRenderer %s>" % self.query

@@ -6,6 +6,11 @@ from ...utils.nvector import NVector
 from .svgdata import color_table, css_atrrs
 from .handler import SvgHandler, NameMode
 from ...utils.ellipse import Ellipse
+try:
+    from ...utils import font
+    has_font = True
+except ImportError:
+    has_font = False
 
 nocolor = {"none"}
 
@@ -338,6 +343,13 @@ class SvgParser(SvgHandler):
         for shape in shapes:
             group.add_shape(shape)
 
+        self._add_style_shapes(style, group)
+
+        self.parse_transform(element, group, group.transform)
+
+        return group
+
+    def _add_style_shapes(self, style, group):
         stroke_color = style.get("stroke", "none")
         if stroke_color not in nocolor:
             if stroke_color.startswith("url"):
@@ -379,10 +391,6 @@ class SvgParser(SvgHandler):
             opacity *= float(style.get("fill-opacity", 1))
             fill.opacity.value = opacity * 100
             group.add_shape(fill)
-
-        self.parse_transform(element, group, group.transform)
-
-        return group
 
     def _parseshape_g(self, element, shape_parent):
         group = objects.Group()
@@ -541,6 +549,89 @@ class SvgParser(SvgHandler):
         if self.name_mode != NameMode.NoName:
             grad.name = id
         return outgrad
+
+    ## \todo Parse single font property, fallback family etc
+    def _text_style_to_query(self, style, query=None):
+        if query:
+            fq = query.clone()
+            fq.size = query.size
+        else:
+            fq = font.FontQuery()
+            fq.size = 64
+
+        if "font-family" in style:
+            fq.family(style["font-family"])
+
+        if "font-style" in style:
+            if style["font-style"] == "oblique":
+                fq.custom("slant", 110)
+            elif style["font-style"] == "italic":
+                fq.custom("slant", 100)
+
+        if "font-weight" in style:
+            if style["font-weight"] in {"bold", "bolder"}:
+                fq.weight(200)
+            elif style["font-weight"] == "lighter":
+                fq.weight(50)
+            elif style["font-weight"].isdigit():
+                fq.css_weight(int(style["font-weight"]))
+
+        if "font-size" in style:
+            fz = style["font-size"]
+            fz_names = {
+                "xx-small": 8,
+                "x-small": 16,
+                "small": 32,
+                "medium": 64,
+                "large": 128,
+                "x-large": 256,
+                "xx-large": 512,
+            }
+            if fz in fz_names:
+                fq.size = fz_names[fz]
+            elif fz == "smaller":
+                fq.size /= 2
+            elif fz == "larger":
+                fq.size *= 2
+            elif fz.endswith("px"):
+                fq.size = float(fz[:-2])
+
+        return fq
+
+    def _parse_text_elem(self, element, style, group, pfq):
+        font_query = self._text_style_to_query(style, pfq)
+        fontr = font.FallbackFontRenderer(font_query)
+        pos = NVector(0, 0)
+
+        if element.text:
+            group.add_shape(fontr.render(element.text, font_query.size, pos))
+        for child in element:
+            if child.tag == self.qualified("svg", "tspan"):
+                self._parseshape_text(child, group, font_query)
+            if child.tail:
+                group.add_shape(fontr.render(child.text, font_query.size, pos))
+
+    def _parseshape_text(self, element, shape_parent, pfq=None):
+        group = objects.Group()
+        shape_parent.shapes.insert(0, group)
+        style = self.parse_style(element)
+        self.apply_common_style(style, group.transform)
+        group.name = self._get_id(element)
+        if has_font:
+            self._parse_text_elem(element, style, group, pfq)
+
+        self._add_style_shapes(style, group)
+        self.parse_transform(element, group, group.transform)
+
+        if element.tag == self.qualified("svg", "text"):
+            group.transform.position.value.x += float(element.attrib.get("x", 0))
+            group.transform.position.value.y += float(element.attrib.get("y", 0))
+
+            ta = style.get("text-anchor", "")
+            if ta == "middle":
+                group.transform.position.value.x -= group.bounding_box().width / 2
+            elif ta == "right":
+                group.transform.position.value.x -= group.bounding_box().width
 
 
 class PathDParser:

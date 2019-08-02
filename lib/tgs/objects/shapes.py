@@ -436,10 +436,11 @@ class Group(ShapeElement):
             bb.expand(v.bounding_box(time))
         s = self.transform.scale.get_value(time) / 100
         p = self.transform.position.get_value(time)
-        bb.x1 *= s.x + p.x
-        bb.y1 *= s.y + p.y
-        bb.x2 *= s.x + p.x
-        bb.y2 *= s.y + p.y
+        if not bb.isnull():
+            bb.x1 = bb.x1 * s.x + p.x
+            bb.y1 = bb.y1 * s.y + p.y
+            bb.x2 = bb.x2 * s.x + p.x
+            bb.y2 = bb.y2 * s.y + p.y
         return bb
 
     def find_all(self, type=ShapeElement, predicate=None, recursive=True):
