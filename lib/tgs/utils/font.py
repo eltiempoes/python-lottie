@@ -2,10 +2,14 @@ import os
 import subprocess
 import fontTools.pens.basePen
 import fontTools.ttLib
+import enum
+import math
 from xml.etree import ElementTree
-from..nvector import NVector
+from ..nvector import NVector
 from ..objects.bezier import Bezier, BezierPoint
-from ..objects.shapes import Path, Group
+from ..objects.shapes import Path, Group, Fill, Stroke
+from ..objects.text import TextJustify
+from ..objects.base import TgsProp, CustomObject
 
 
 class BezierPen(fontTools.pens.basePen.BasePen):
@@ -154,6 +158,15 @@ class FontQuery:
     def clone(self):
         return FontQuery(self)
 
+    def __getitem__(self, key):
+        return self._query.get(key, "")
+
+    def __contains__(self, item):
+        return item in self._query
+
+    def get(self, key, default=None):
+        return self._query.get(key, default)
+
     def __str__(self):
         return self._query.get("family", "") + ":" + ":".join(
             "%s=%s" % (p, v)
@@ -163,6 +176,18 @@ class FontQuery:
 
     def __repr__(self):
         return "<FontQuery %r>" % str(self)
+
+    def weight_to_css(self):
+        x = int(self["weight"])
+        if x < 40:
+            v = x / 40 * 100 + 100
+        elif x < 100:
+            v = x**3/300 - x**2 * 11/15 + x*167/3 - 3200/3
+        elif x < 200:
+            v = (2050 - 10 * math.sqrt(5) * math.sqrt(1205 - 6 * x)) / 3
+        else:
+            v = (x - 200) * 200 / 10 + 700
+        return int(round(v))
 
 
 class _SystemFontList:
@@ -279,6 +304,8 @@ class FontRenderer:
         line_height = self.font.tables["head"].yMax * scale
         group = Group()
         group.name = text
+        if pos is None:
+            pos = NVector(0, 0)
         #group.transform.scale.value = NVector(100, 100) * scale
         for ch in text:
             if ch == "\n":
@@ -305,14 +332,93 @@ class FontRenderer:
 class FallbackFontRenderer:
     def __init__(self, query):
         self.query = FontQuery(query)
-        self.best = fonts.best(self.query)
+        self._best = None
+        self._bq = None
+
+    @property
+    def best(self):
+        cq = str(self.query)
+        if self._best is None or self._bq != cq:
+            self._best = fonts.best(self.query)
+            self._bq = cq
+        return self._best
 
     def _on_missing(self, char, size, pos, group):
         font = fonts.best(self.query.clone().char(char))
         group.add_shape(font.render(char, size, pos))
 
     def render(self, text, size, pos=None):
-        return self.best.render(text, size, pos or NVector(0, 0), self._on_missing)
+        return self.best.render(text, size, pos, self._on_missing)
 
     def __repr__(self):
         return "<FallbackFontRenderer %s>" % self.query
+
+
+class FontStyle:
+    def __init__(self, query, size, justify=TextJustify.Left):
+        self._renderer = FallbackFontRenderer(query)
+        self.size = size
+        self.justify = justify
+
+    @property
+    def query(self):
+        return self._renderer.query
+
+    @query.setter
+    def query(self, value):
+        if str(value) != str(self.query):
+            self._renderer = FallbackFontRenderer(value)
+
+    @property
+    def renderer(self):
+        return self.renderer
+
+    def render(self, text, pos=None):
+        group = self._renderer.render(text, self.size, pos)
+        if self.justify == TextJustify.Center:
+            group.transform.position.value.x += group.bounding_box().width / 2
+        elif self.justify == TextJustify.Right:
+            group.transform.position.value.x += group.bounding_box().width
+        return group
+
+
+def _propfac(a):
+    return property(lambda s: s._get(a), lambda s, v: s._set(a, v))
+
+
+class FontShape(CustomObject):
+    _props = [
+        TgsProp("query_string", "_query", str),
+        TgsProp("size", "_size", float),
+        TgsProp("justify", "_justify", TextJustify),
+        TgsProp("text", "_text", str),
+    ]
+    wrapped_tgs = Group
+
+    def __init__(self, text="", query="", size=64, justify=TextJustify.Left):
+        CustomObject.__init__(self)
+        self.style = FontStyle(query, size, justify)
+        self.text = text
+
+    def _get(self, a):
+        return getattr(self.style, a)
+
+    def _set(self, a, v):
+        return setattr(self.style, a, v)
+
+    query = _propfac("query")
+    size = _propfac("size")
+    justify = _propfac("justify")
+
+    @property
+    def query_string(self):
+        return str(self.query)
+
+    @query_string.setter
+    def query_string(self, v):
+        self.query = v
+
+    def _build_wrapped(self):
+        g = self.style.render(self.text)
+        self.line_height = g.line_height
+        return g

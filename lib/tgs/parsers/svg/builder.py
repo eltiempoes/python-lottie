@@ -6,6 +6,11 @@ from .handler import SvgHandler, NameMode
 from ... import objects
 from ...nvector import NVector
 from ...utils import restructure
+try:
+    from ...utils import font
+    has_font = True
+except ImportError:
+    has_font = False
 
 
 class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
@@ -228,10 +233,14 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             svgshape = self.build_path([shape.to_bezier()], out_parent)
         elif isinstance(shape, objects.Path):
             svgshape = self.build_path([shape], out_parent)
+        elif has_font and isinstance(shape, font.FontShape):
+            svgshape = self.build_text(shape, out_parent)
         else:
             return
         self.set_id(svgshape, shape, force=True)
-        svgshape.attrib["style"] = self.group_to_style(shapegroup)
+        if "style" not in svgshape.attrib:
+            svgshape.attrib["style"] = ""
+        svgshape.attrib["style"] += self.group_to_style(shapegroup)
         return svgshape
 
     def build_rect(self, shape, parent):
@@ -260,6 +269,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         d = ""
         for shape in shapes:
             bez = shape.shape.get_value(self.time)
+            if d:
+                d += "\n"
             d += "M %s,%s " % tuple(bez.vertices[0].components[:2])
             for i in range(1, len(bez.vertices)):
                 qfrom = bez.vertices[i-1]
@@ -360,7 +371,33 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             children.append(sh)
         shapegroup.children = children
 
+    def _custom_object_supported(self, shape):
+        if has_font and isinstance(shape, font.FontShape):
+            return True
+        return False
 
+    def build_text(self, shape, parent):
+        text = ElementTree.SubElement(parent, "text")
+        if "family" in shape.query:
+            text.attrib["font-family"] = shape.query["family"]
+        if "weight" in shape.query:
+            text.attrib["font-weight"] = str(shape.weight_to_css())
+        slant = int(shape.query.get("slant", 0))
+        if slant > 0 and slant < 110:
+            text.attrib["font-style"] = "italic"
+        elif slant >= 110:
+            text.attrib["font-style"] = "oblique"
+
+        text.attrib["font-size"] = str(shape.size)
+
+        text.attrib["white-space"] = "pre"
+
+        pos = shape.wrapped.transform.position.get_value(self.time)
+        text.attrib["x"] = str(pos.x)
+        text.attrib["y"] = str(pos.y)
+        text.text = shape.text
+
+        return text
 
 
 def color_to_css(color):

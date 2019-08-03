@@ -58,57 +58,6 @@ class RestructuredPathMerger:
         self.paths.append(path)
 
 
-def restructure_animation(animation, merge_paths):
-    layers = {}
-    flat_layers = []
-    for layer in animation.layers:
-        laybuilder = RestructuredLayer(layer)
-        flat_layers.append(laybuilder)
-        if layer.index is not None:
-            layers[layer.index] = laybuilder
-        if isinstance(layer, objects.ShapeLayer):
-            laybuilder.shapegroup = RestructuredShapeGroup(layer)
-            laybuilder.layer = True
-            for shape in layer.shapes:
-                restructure_shapegroup(shape, laybuilder.shapegroup, merge_paths)
-            laybuilder.shapegroup.finalize()
-
-    top_layers = []
-    for layer in flat_layers:
-        if layer.lottie.parent is not None:
-            layers[layer.lottie.parent].add(layer)
-        else:
-            top_layers.insert(0, layer)
-    return reversed(top_layers)
-
-
-def restructure_shapegroup(shape, shape_group, merge_paths):
-    if isinstance(shape, (objects.Fill, objects.GradientFill)):
-        shape_group.fill = shape
-    elif isinstance(shape, objects.BaseStroke):
-        shape_group.stroke = shape
-    elif isinstance(shape, (objects.Path)):
-        if merge_paths:
-            if not shape_group.paths:
-                shape_group.paths = RestructuredPathMerger()
-                shape_group.add(shape_group.paths)
-            shape_group.paths.append(shape)
-        else:
-            shape_group.add(shape)
-    elif isinstance(shape, (objects.Group)):
-        subgroup = RestructuredShapeGroup(shape)
-        shape_group.add(subgroup)
-        for subshape in shape.shapes:
-            restructure_shapegroup(subshape, subgroup, merge_paths)
-        subgroup.finalize()
-    elif isinstance(shape, (objects.Modifier)):
-        if shape_group.children:
-            ch = shape_group.children.pop(0)
-            shape_group.add(RestructuredModifier(shape, ch))
-    elif isinstance(shape, (objects.ShapeElement)):
-        shape_group.add(shape)
-
-
 class AbstractBuilder:
     merge_paths = False
 
@@ -129,7 +78,7 @@ class AbstractBuilder:
 
     def process(self, animation: objects.Animation):
         out_parent = self._on_animation(animation)
-        for layer_builder in restructure_animation(animation, self.merge_paths):
+        for layer_builder in self.restructure_animation(animation, self.merge_paths):
             self.process_layer(layer_builder, out_parent)
 
     def _on_layer(self, layer_builder, out_parent):
@@ -158,3 +107,60 @@ class AbstractBuilder:
     def shapegroup_process_children(self, shapegroup, out_parent):
         for shape in shapegroup.children:
             self.shapegroup_process_child(shape, shapegroup, out_parent)
+
+    def restructure_animation(self, animation, merge_paths):
+        layers = {}
+        flat_layers = []
+        for layer in animation.layers:
+            laybuilder = RestructuredLayer(layer)
+            flat_layers.append(laybuilder)
+            if layer.index is not None:
+                layers[layer.index] = laybuilder
+            if isinstance(layer, objects.ShapeLayer):
+                laybuilder.shapegroup = RestructuredShapeGroup(layer)
+                laybuilder.layer = True
+                for shape in layer.shapes:
+                    self.restructure_shapegroup(shape, laybuilder.shapegroup, merge_paths)
+                laybuilder.shapegroup.finalize()
+
+        top_layers = []
+        for layer in flat_layers:
+            if layer.lottie.parent is not None:
+                layers[layer.lottie.parent].add(layer)
+            else:
+                top_layers.insert(0, layer)
+        return reversed(top_layers)
+
+    def restructure_shapegroup(self, shape, shape_group, merge_paths):
+        if isinstance(shape, (objects.Fill, objects.GradientFill)):
+            shape_group.fill = shape
+        elif isinstance(shape, objects.BaseStroke):
+            shape_group.stroke = shape
+        elif isinstance(shape, (objects.Path)):
+            if merge_paths:
+                if not shape_group.paths:
+                    shape_group.paths = RestructuredPathMerger()
+                    shape_group.add(shape_group.paths)
+                shape_group.paths.append(shape)
+            else:
+                shape_group.add(shape)
+        elif isinstance(shape, (objects.Group)):
+            subgroup = RestructuredShapeGroup(shape)
+            shape_group.add(subgroup)
+            for subshape in shape.shapes:
+                self.restructure_shapegroup(subshape, subgroup, merge_paths)
+            subgroup.finalize()
+        elif isinstance(shape, (objects.Modifier)):
+            if shape_group.children:
+                ch = shape_group.children.pop(0)
+                shape_group.add(RestructuredModifier(shape, ch))
+        elif isinstance(shape, (objects.ShapeElement)):
+            shape_group.add(shape)
+        elif isinstance(shape, (objects.base.CustomObject)):
+            if self._custom_object_supported(shape):
+                shape_group.add(shape)
+            else:
+                self.restructure_shapegroup(shape.wrapped, shape_group, merge_paths)
+
+    def _custom_object_supported(self, shape):
+        return False
