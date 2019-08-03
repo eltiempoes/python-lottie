@@ -1,6 +1,6 @@
 import math
 
-from .nvector import NVector
+from..nvector import NVector
 from ..objects.bezier import BezierPoint
 
 ## \todo Just output a Bezier object

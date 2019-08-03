@@ -1,6 +1,6 @@
 from .base import TgsObject, TgsProp, PseudoBool
 from .properties import Value, MultiDimensional
-from ..utils.nvector import NVector
+from ..nvector import NVector
 
 
 #5: EffectsManager,

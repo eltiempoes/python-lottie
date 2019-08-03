@@ -1,4 +1,4 @@
-from .nvector import NVector
+from..nvector import NVector
 
 
 # FABRIK

@@ -5,7 +5,7 @@ import numpy
 import enum
 from scipy.cluster.vq import kmeans
 from .. import objects
-from ..utils.nvector import NVector
+from ..nvector import NVector
 
 
 class QuanzationMode(enum.Enum):

@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 
 from .handler import SvgHandler, NameMode
 from ... import objects
-from ...utils.nvector import NVector
+from ...nvector import NVector
 from ...utils import restructure
 
 

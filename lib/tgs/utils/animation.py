@@ -1,6 +1,6 @@
 import random
 import math
-from .nvector import NVector
+from ..nvector import NVector
 from ..objects.shapes import Path
 from .. import objects
 from ..objects import easing

@@ -3,7 +3,7 @@ import subprocess
 import fontTools.pens.basePen
 import fontTools.ttLib
 from xml.etree import ElementTree
-from .nvector import NVector
+from..nvector import NVector
 from ..objects.bezier import Bezier, BezierPoint
 from ..objects.shapes import Path, Group
 

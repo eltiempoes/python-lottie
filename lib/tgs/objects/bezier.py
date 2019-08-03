@@ -1,5 +1,5 @@
 from .base import TgsObject, TgsProp
-from ..utils.nvector import NVector
+from ..nvector import NVector
 
 
 class BezierPoint:

@@ -2,7 +2,7 @@ import math
 from functools import reduce
 from .base import TgsObject, TgsProp, PseudoList, PseudoBool
 from . import easing
-from ..utils.nvector import NVector
+from ..nvector import NVector
 from .bezier import Bezier
 
 

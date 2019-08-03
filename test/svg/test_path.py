@@ -3,7 +3,7 @@ from xml.etree import ElementTree
 from .. import base
 from tgs import objects
 from tgs.parsers.svg import parse_svg_etree
-from tgs.utils.nvector import NVector
+from tgs.nvector import NVector
 
 
 class PathTester(unittest.TestCase):

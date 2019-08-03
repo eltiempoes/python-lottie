@@ -7,7 +7,7 @@ OBJECTS=$(shell find lib/tgs/objects -type f -name '*.py')
 
 .SUFFIXES:
 
-.PHONY: upload docs
+.PHONY: upload docs clean_pyc
 
 dist/$(PACKAGE_NAME)-$(VERSION).tar.gz: $(SETUP)
 	$(PYTHON) $(SETUP) sdist
@@ -40,3 +40,7 @@ dist/tgs-inkscape.zip: $(wildcard inkscape/*)
 docs/dox/scripts.dox: docs/dox_scripts.py
 docs/dox/scripts.dox: $(wildcard bin/*.py)
 	$(PYTHON) docs/dox_scripts.py
+
+clean_pyc:
+	find lib -name '*.pyc' -delete
+	find lib -name '__pycache__' -exec rm -rf {} \;

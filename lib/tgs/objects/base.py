@@ -1,6 +1,6 @@
 import enum
 import inspect
-from ..utils.nvector import NVector
+from ..nvector import NVector
 
 
 class Tgs:

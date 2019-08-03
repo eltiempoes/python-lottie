@@ -1,6 +1,6 @@
 from ..objects.base import TgsObject
 from ..objects.bezier import Bezier
-from .nvector import NVector
+from..nvector import NVector
 
 
 def strip(tgs_object):

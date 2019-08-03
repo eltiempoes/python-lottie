@@ -1,6 +1,6 @@
 from .base import TgsObject, TgsProp, TgsEnum
 from .properties import Value, MultiDimensional
-from ..utils.nvector import NVector
+from ..nvector import NVector
 
 
 ## \ingroup Lottie

@@ -2,7 +2,6 @@ import math
 from .base import TgsObject, TgsProp, TgsEnum, NVector
 from .properties import Value, MultiDimensional, GradientColors, ShapeProperty, Bezier
 from .helpers import Transform
-from ..utils.ellipse import Ellipse as EllipseConverter
 
 
 class BoundingBox:
@@ -356,6 +355,8 @@ class Ellipse(Shape):
         return shape
 
     def _bezier_t(self, time):
+        from ..utils.ellipse import Ellipse as EllipseConverter
+
         bezier = Bezier()
         position = self.position.get_value(time)
         radii = self.size.get_value(time) / 2
