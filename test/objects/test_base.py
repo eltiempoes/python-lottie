@@ -2,6 +2,7 @@ from unittest import mock
 from ..base import TestCase
 from tgs.objects import base
 from tgs import NVector
+from tgs.objects.shapes import Rect
 
 
 class TestEnum(base.TgsEnum):
@@ -206,3 +207,73 @@ class TestTgsObject(TestCase):
         obj = Derived([], 123)
         obj.awoo = 621
         self.assertDictEqual(obj.to_dict(), {"f": [], "b": 123, "ft": 621})
+
+
+class MyTgs(base.CustomObject):
+    wrapped_tgs = Rect
+    _props = [
+        base.TgsProp("p1", "p1", NVector),
+        base.TgsProp("p2", "p2", NVector),
+    ]
+    fullname = "%s.%s" % (__name__, "MyTgs")
+
+    def __init__(self, p1=None, p2=None):
+        super().__init__()
+        self.p1 = p1 or NVector(0, 0)
+        self.p2 = p2 or NVector(0, 0)
+
+    def _build_wrapped(self):
+        rect = Rect()
+        rect.position.value = (self.p1 + self.p2) / 2
+        rect.size.value = self.p2 - self.p1
+        return rect
+
+
+class TestCustomObject(TestCase):
+    def test_to_dict(self):
+        obj = MyTgs(NVector(10, 20), NVector(20, 30))
+        obj.refresh()
+
+        self.assertDictEqual(
+            obj.to_dict(),
+            {
+                "ty": "rc",
+                "d": 0,
+                "p": {"a": 0, "k": [15, 25]},
+                "s": {"a": 0, "k": [10, 10]},
+                "r": {"a": 0, "k": 0},
+                "__pyclass": MyTgs.fullname,
+                "p1": [10, 20],
+                "p2": [20, 30],
+            }
+        )
+
+    def test_load(self):
+        obj = Rect.load({
+            "ty": "rc",
+            "d": 0,
+            "p": {"a": 0, "k": [15, 25]},
+            "s": {"a": 0, "k": [10, 10]},
+            "r": {"a": 0, "k": 0},
+            "__pyclass": MyTgs.fullname,
+            "p1": [10, 20],
+            "p2": [20, 30],
+        })
+        self.assertIsInstance(obj, MyTgs)
+        self.assertEqual(obj.p1, NVector(10, 20))
+        self.assertEqual(obj.p2, NVector(20, 30))
+        self.assertEqual(obj.wrapped.position.value, NVector(15, 25))
+
+    def test_load_norefresh(self):
+        dic = {
+            "ty": "rc",
+            "d": 0,
+            "p": {"a": 0, "k": [115, 125]},
+            "s": {"a": 0, "k": [110, 110]},
+            "r": {"a": 0, "k": 0},
+            "__pyclass": MyTgs.fullname,
+            "p1": [10, 20],
+            "p2": [20, 30],
+        }
+        obj = Rect.load(dic)
+        self.assertDictEqual(obj.to_dict(), dic)

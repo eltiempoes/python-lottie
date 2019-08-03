@@ -93,11 +93,16 @@ class ShapeElement(TgsObject):
     @classmethod
     def _load_get_class(cls, lottiedict):
         if not ShapeElement._shape_classses:
-            ShapeElement._shape_classses = {
-                sc.type: sc
-                for sc in ShapeElement.__subclasses__()
-            }
+            ShapeElement._shape_classses = {}
+            ShapeElement._load_sub(ShapeElement._shape_classses)
         return ShapeElement._shape_classses[lottiedict["ty"]]
+
+    @classmethod
+    def _load_sub(cls, dict):
+        for sc in cls.__subclasses__():
+            if sc.type:
+                dict[sc.type] = sc
+            sc._load_sub(dict)
 
 
 ## \ingroup Lottie

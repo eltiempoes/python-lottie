@@ -1,5 +1,6 @@
 import enum
 import inspect
+import importlib
 from ..nvector import NVector
 
 
@@ -239,6 +240,8 @@ class TgsObject(Tgs, metaclass=TgsObjectMeta):
 
     @classmethod
     def load(cls, lottiedict):
+        if "__pyclass" in lottiedict:
+            return CustomObject.load(lottiedict)
         cls = cls._load_get_class(lottiedict)
         obj = cls()
         for prop in cls._props:
@@ -288,3 +291,42 @@ class Index:
     def __next__(self):
         self._i += 1
         return self._i
+
+
+class CustomObject(TgsObject):
+    """!
+    Allows extending the Lottie shapes with custom Python classes
+    """
+    wrapped_tgs = TgsObject
+
+    def __init__(self):
+        self.wrapped = self.wrapped_tgs()
+
+    @classmethod
+    def load(cls, lottiedict):
+        ld = lottiedict.copy()
+        classname = ld.pop("__pyclass")
+        modn, clsn = classname.rsplit(".", 1)
+        subcls = getattr(importlib.import_module(modn), clsn)
+        obj = subcls()
+        for prop in subcls._props:
+            prop.load_into(lottiedict, obj)
+        obj.wrapped = subcls.wrapped_tgs.load(ld)
+        return obj
+
+    def clone(self):
+        obj = self.__class__(**self.to_pyctor())
+        obj.wrapped = self.wrapped.clone()
+        return obj
+
+    def to_dict(self):
+        dict = self.wrapped.to_dict()
+        dict["__pyclass"] = "{0.__module__}.{0.__name__}".format(self.__class__)
+        dict.update(TgsObject.to_dict(self))
+        return dict
+
+    def _build_wrapped(self):
+        return self.wrapped_tgs()
+
+    def refresh(self):
+        self.wrapped = self._build_wrapped()
