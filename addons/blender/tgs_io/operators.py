@@ -21,7 +21,7 @@ class TgsExporterTgs(TgsExporterBase, ExportHelper):
     Export Telegram animated sticker
     """
     format = "tgs"
-    bl_label = "Export TGS"
+    bl_label = "Telegram Sticker (*.tgs)"
     bl_idname = "tgs.export_" + format
 
     filename_ext = "." + format
@@ -47,7 +47,7 @@ class TgsExporterLottie(TgsExporterBase, ExportHelper):
     Export Lottie JSON
     """
     format = "json"
-    bl_label = "Export Lottie"
+    bl_label = "Lottie (.json)"
     bl_idname = "tgs.export_" + format
 
     filename_ext = "." + format
@@ -79,7 +79,7 @@ class TgsExporterHtml(TgsExporterBase, ExportHelper):
     Export HTML with an embedded Lottie viewer
     """
     format = "html"
-    bl_label = "Export Lottie HTML"
+    bl_label = "Lottie HTML (.html)"
     bl_idname = "tgs.export_" + format
 
     filename_ext = "." + format
