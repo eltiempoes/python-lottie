@@ -551,30 +551,23 @@ class SvgParser(SvgHandler):
         return outgrad
 
     ## \todo Parse single font property, fallback family etc
-    def _text_style_to_query(self, style, query=None):
-        if query:
-            fq = query.clone()
-            fq.size = query.size
-        else:
-            fq = font.FontQuery()
-            fq.size = 64
-
+    def _parse_text_style(self, style, font_style=None):
         if "font-family" in style:
-            fq.family(style["font-family"])
+            font_style.query.family(style["font-family"])
 
         if "font-style" in style:
             if style["font-style"] == "oblique":
-                fq.custom("slant", 110)
+                font_style.query.custom("slant", 110)
             elif style["font-style"] == "italic":
-                fq.custom("slant", 100)
+                font_style.query.custom("slant", 100)
 
         if "font-weight" in style:
             if style["font-weight"] in {"bold", "bolder"}:
-                fq.weight(200)
+                font_style.query.weight(200)
             elif style["font-weight"] == "lighter":
-                fq.weight(50)
+                font_style.query.weight(50)
             elif style["font-weight"].isdigit():
-                fq.css_weight(int(style["font-weight"]))
+                font_style.query.css_weight(int(style["font-weight"]))
 
         if "font-size" in style:
             fz = style["font-size"]
@@ -588,47 +581,52 @@ class SvgParser(SvgHandler):
                 "xx-large": 512,
             }
             if fz in fz_names:
-                fq.size = fz_names[fz]
+                font_style.size = fz_names[fz]
             elif fz == "smaller":
-                fq.size /= 2
+                font_style.size /= 2
             elif fz == "larger":
-                fq.size *= 2
+                font_style.size *= 2
             elif fz.endswith("px"):
-                fq.size = float(fz[:-2])
+                font_style.size = float(fz[:-2])
 
-        return fq
+    def _parse_text_elem(self, element, style, group, font_style):
+        self._parse_text_style(style, font_style)
 
-    def _parse_text_elem(self, element, style, group, pfq):
-        font_query = self._text_style_to_query(style, pfq)
-        fontr = font.FallbackFontRenderer(font_query)
-        pos = NVector(0, 0)
+        if "x" in element.attrib or "y" in element.attrib:
+            font_style.position = NVector(
+                float(element.attrib["x"]),
+                float(element.attrib["y"]),
+            )
 
         if element.text:
-            group.add_shape(fontr.render(element.text, font_query.size, pos))
+            group.add_shape(font.FontShape(element.text, font_style)).refresh()
         for child in element:
             if child.tag == self.qualified("svg", "tspan"):
-                self._parseshape_text(child, group, font_query)
+                self._parseshape_text(child, group, font_style.clone())
             if child.tail:
-                group.add_shape(fontr.render(child.text, font_query.size, pos))
+                group.add_shape(font.FontShape(child.text, font_style)).refresh()
 
-    def _parseshape_text(self, element, shape_parent, pfq=None):
+    def _parseshape_text(self, element, shape_parent, font_style=None):
         group = objects.Group()
         style = self.parse_style(element)
         self.apply_common_style(style, group.transform)
         group.name = self._get_id(element)
         if has_font:
-            self._parse_text_elem(element, style, group, pfq)
+            if font_style is None:
+                font_style = font.FontStyle("", 64)
+            self._parse_text_elem(element, style, group, font_style)
 
+        style.setdefault("fill", "none")
         self._add_style_shapes(style, group)
 
         if element.tag == self.qualified("svg", "text"):
-            dx = float(element.attrib.get("x", 0))
-            dy = float(element.attrib.get("y", 0))
+            dx = 0
+            dy = 0
 
-            ta = style.get("text-anchor", "")
+            ta = style.get("text-anchor", style.get("text-align", ""))
             if ta == "middle":
                 dx -= group.bounding_box().width / 2
-            elif ta == "right":
+            elif ta == "end":
                 dx -= group.bounding_box().width
 
             if dx or dy:

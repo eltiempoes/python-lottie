@@ -110,6 +110,7 @@ class FontQuery:
             self._query = dict(
                 chunk.split("=")
                 for chunk in chunks
+                if chunk
             )
             self.family(family)
 
@@ -355,10 +356,11 @@ class FallbackFontRenderer:
 
 
 class FontStyle:
-    def __init__(self, query, size, justify=TextJustify.Left):
+    def __init__(self, query, size, justify=TextJustify.Left, position=None):
         self._renderer = FallbackFontRenderer(query)
         self.size = size
         self.justify = justify
+        self.position = position.clone() if position else NVector(0, 0)
 
     @property
     def query(self):
@@ -373,13 +375,16 @@ class FontStyle:
     def renderer(self):
         return self.renderer
 
-    def render(self, text, pos=None):
-        group = self._renderer.render(text, self.size, pos)
+    def render(self, text, pos=NVector(0, 0)):
+        group = self._renderer.render(text, self.size, self.position+pos)
         if self.justify == TextJustify.Center:
             group.transform.position.value.x += group.bounding_box().width / 2
         elif self.justify == TextJustify.Right:
             group.transform.position.value.x += group.bounding_box().width
         return group
+
+    def clone(self):
+        return FontStyle(str(self._renderer.query), self.size, self.justify)
 
 
 def _propfac(a):
@@ -397,7 +402,10 @@ class FontShape(CustomObject):
 
     def __init__(self, text="", query="", size=64, justify=TextJustify.Left):
         CustomObject.__init__(self)
-        self.style = FontStyle(query, size, justify)
+        if isinstance(query, FontStyle):
+            self.style = query
+        else:
+            self.style = FontStyle(query, size, justify)
         self.text = text
 
     def _get(self, a):
@@ -422,3 +430,6 @@ class FontShape(CustomObject):
         g = self.style.render(self.text)
         self.line_height = g.line_height
         return g
+
+    def bounding_box(self, time):
+        return self.wrapped.bounding_box(time)
