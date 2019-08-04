@@ -121,6 +121,7 @@ Here is a list of features of the tgs python framework:
 * Animation easing functions
 * Inverse Kinematic solver
 * Pretty printing and comparison of lottie files
+* Rendering text as shapes
 
 
 Reverse Engineering
@@ -138,12 +139,15 @@ https://mattia.basaglia.gitlab.io/tgs/group__Lottie.html#lottie_json
 
 If you can get the source image into lottie format, that's 90% of the work done.
 
-I've ripped the format schema into Python classes in lib/tgs/objects/ which *should*
+I've created Python classes based the format schema and after effects documentation, which
 output the correct json. Eg:
 
     foo = tgs.Animation()
     # ...
     json.dump(foo.to_dict(), output_file)
+
+I'm also creating a proper documentation for the format, see:
+https://mattia.basaglia.gitlab.io/tgs/group__Lottie.html#details
 
 #### TGS changes
 
