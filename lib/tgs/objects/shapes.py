@@ -53,10 +53,14 @@ class BoundingBox:
 
     @property
     def width(self):
+        if self.isnull():
+            return 0
         return self.x2 - self.x1
 
     @property
     def height(self):
+        if self.isnull():
+            return 0
         return self.y2 - self.y1
 
 
