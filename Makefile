@@ -49,3 +49,7 @@ docs/dox/scripts.dox: $(SCRIPTS)
 clean_pyc:
 	find lib -name '*.pyc' -delete
 	find lib -name '__pycache__' -exec rm -rf {} \;
+
+
+dist/$(PACKAGE_NAME)-blender-$(VERSION).zip: $(wildcard blender/tgs_io/*.py) $(SRC)
+	cd blender && find -L -name '*.py' | xargs zip --filesync ../$@
