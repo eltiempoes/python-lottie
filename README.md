@@ -59,7 +59,7 @@ Installation
 ### Synfig
 
 There's a Synfig studio plugin to export telegram stickers.
-To install, just copy (or symlink) ./synfig/tgs-exporter
+To install, just copy (or symlink) ./addons/synfig/tgs-exporter
 into the synfig plugin directory.
 
 (Note: the bulk of this code has nothing to do with this package)
@@ -68,7 +68,7 @@ into the synfig plugin directory.
 
 There are some import/export extensions for inkscape.
 
-Just copy (or symlink) the files under ./inkscape to the inkscape extension
+Just copy (or symlink) the files under ./addons/inkscape to the inkscape extension
 directory.
 On my system that's ~/.config/inkscape/extensions/ but you can double check from
 Inkscape: Edit > Preferences... > System > User extensions
@@ -80,6 +80,21 @@ They also need the tgs framework to be in the python path, otherwise you can man
 set the path on the import/export dialogues.
 
 See also https://inkscape.org/~mattia.basaglia/%E2%98%85tgslottie-importexport
+
+
+### Blender
+
+There are some export addons for blender.
+
+Copy (or symlink) the files under ./addons/blender to the Blender extension
+directory.
+
+On my system that's ~/.config/blender/2.80/scripts/addons/ you can check available
+paths through the Blender Python console:
+
+    import addon_utils; print(addon_utils.paths())
+
+You can also install the addon from Blender using the zipfile created by `make`.
 
 
 Requirements

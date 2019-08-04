@@ -12,6 +12,7 @@ SCRIPTS=$(wildcard bin/*.py)
 
 all: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
 all: dist/$(PACKAGE_NAME)-inkscape-$(VERSION).zip
+all: dist/$(PACKAGE_NAME)-blender-$(VERSION).zip
 
 dist/$(PACKAGE_NAME)-$(VERSION).tar.gz: $(SETUP) $(SRC) $(SCRIPTS)
 	$(PYTHON) $(SETUP) sdist
