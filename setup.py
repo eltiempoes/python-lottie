@@ -23,7 +23,7 @@ def find_packages(root="tgs"):
 
 setuptools.setup(
     name="tgs",
-    version="0.3.0",
+    version="0.3.1",
     author="Mattia Basaglia",
     author_email="mattia.basaglia@gmail.com",
     description="A framework to work with lottie / tgs files",
@@ -55,8 +55,8 @@ setuptools.setup(
     extras_require={
         "Vectorization": ["pillow", "pypotrace>=0.2", "numpy", "scipy"],
         "Load image": ["pillow"],
-        "Export PNG": ["cairosvg"],
-        "Text to shapes": ["fonttools"],
+        "PNG": ["cairosvg"],
+        "Text": ["fonttools"],
     },
     test_suite="test",
     project_urls={

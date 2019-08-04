@@ -4,12 +4,16 @@ PACKAGE_NAME=$(shell $(PYTHON) $(SETUP) --name)
 VERSION=$(shell $(PYTHON) $(SETUP) --version)
 SRC=$(shell find lib -type f -name '*.py')
 OBJECTS=$(shell find lib/tgs/objects -type f -name '*.py')
+SCRIPTS=$(wildcard bin/*.py)
 
 .SUFFIXES:
 
-.PHONY: upload docs clean_pyc
+.PHONY: all upload docs clean_pyc
 
-dist/$(PACKAGE_NAME)-$(VERSION).tar.gz: $(SETUP)
+all: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
+all: dist/$(PACKAGE_NAME)-inkscape-$(VERSION).zip
+
+dist/$(PACKAGE_NAME)-$(VERSION).tar.gz: $(SETUP) $(SRC) $(SCRIPTS)
 	$(PYTHON) $(SETUP) sdist
 
 upload: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
@@ -34,11 +38,12 @@ docs/html/index.html: docs/dox/scripts.dox
 docs/html/index.html: $(SRC)
 	doxygen docs/Doxyfile
 
-dist/tgs-inkscape.zip: $(wildcard inkscape/*)
+dist/$(PACKAGE_NAME)-inkscape-$(VERSION).zip: $(wildcard inkscape/*)
 	zip --junk-paths $@ $^
+	echo "Upload at https://inkscape.org/~mattia.basaglia/%E2%98%85tgslottie-importexport"
 
 docs/dox/scripts.dox: docs/dox_scripts.py
-docs/dox/scripts.dox: $(wildcard bin/*.py)
+docs/dox/scripts.dox: $(SCRIPTS)
 	$(PYTHON) docs/dox_scripts.py
 
 clean_pyc:
