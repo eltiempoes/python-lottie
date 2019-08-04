@@ -11,8 +11,7 @@ from bpy.types import Operator
 
 
 class ExportOptions:
-    def __init__(self, format="html", scale=64, offx=0, offy=0):
-        self.format = format
+    def __init__(self, scale=64, offx=0, offy=0):
         self.scale = scale
         self.offx = offx
         self.offy = offy
@@ -73,6 +72,7 @@ def scene_to_tgs(scene, eo=ExportOptions()):
     animation.framerate = scene.render.fps
     animation.width = scene.render.resolution_x
     animation.height = scene.render.resolution_y
+    animation.name = scene.name
     layer = animation.add_layer(tgs.objects.ShapeLayer())
 
     if scene.render.use_freestyle:
@@ -88,32 +88,25 @@ def scene_to_tgs(scene, eo=ExportOptions()):
     return animation
 
 
-def export(context, filename, eo=ExportOptions()):
-    animation = scene_to_tgs(context.scene, eo)
-    if eo.format == "html":
-        tgs.exporters.export_embedded_html(animation, filename)
-    elif eo.format == "json":
-        tgs.exporters.export_lottie(animation, filename, pretty=True)
-    elif eo.format == "tgs":
-        tgs.exporters.export_tgs(animation, filename, pretty=True)
+class TgsExporterBase(Operator):
+    def execute(self, context):
+        animation = scene_to_tgs(context.scene, ExportOptions(self.scale))
+        self._export_animation(animation)
+        return {'FINISHED'}
 
-    return {'FINISHED'}
+    def _export_animation(self, animation):
+        raise NotImplementedError()
 
 
-class TgsExporter(Operator, ExportHelper):
+class TgsExporterTgs(TgsExporterBase, ExportHelper):
     """
-    Export Lottie / Telegram Sticker
+    Export Telegram animated sticker
     """
-    bl_idname = "best.dragon.tgs.blender"
-    bl_label = "Export Lottie / TGS"
+    format = "tgs"
+    bl_label = "Export TGS"
+    bl_idname = "tgs.export_" + format
 
-    filename_ext = ".html"
-
-    filter_glob: StringProperty(
-        default="*.html",
-        options={'HIDDEN'},
-        maxlen=255,
-    )
+    filename_ext = "." + format
 
     scale: FloatProperty(
         name="Scale",
@@ -121,34 +114,102 @@ class TgsExporter(Operator, ExportHelper):
         default=64,
     )
 
-    format: EnumProperty(
-        name="Format",
-        description="Output format",
-        items=(
-            ("html", "HTML", "HTML with embedded lottie viewer"),
-            ("json", "Lottie", "Lottie JSON"),
-            ("tgs", "TGS", "Telegram animated sticker"),
-        ),
-        default="tgs",
+    filter_glob: StringProperty(
+        default="*." + format,
+        options={'HIDDEN'},
+        maxlen=255,
     )
 
-    def execute(self, context):
-        return export(context, self.filepath, ExportOptions(self.format, self.scale))
+    def _export_animation(self, animation):
+        tgs.exporters.export_tgs(animation, self.filepath)
+
+
+class TgsExporterLottie(TgsExporterBase, ExportHelper):
+    """
+    Export Lottie JSON
+    """
+    format = "json"
+    bl_label = "Export Lottie"
+    bl_idname = "tgs.export_" + format
+
+    filename_ext = "." + format
+
+    scale: FloatProperty(
+        name="Scale",
+        description="Factor to scale the scene by",
+        default=64,
+    )
+
+    filter_glob: StringProperty(
+        default="*." + format,
+        options={'HIDDEN'},
+        maxlen=255,
+    )
+
+    pretty: BoolProperty(
+        name="Pretty",
+        description="Pretty print the resulting JSON",
+        default=False,
+    )
+
+    def _export_animation(self, animation):
+        tgs.exporters.export_lottie(animation, self.filepath, self.pretty)
+
+
+class TgsExporterHtml(TgsExporterBase, ExportHelper):
+    """
+    Export HTML with an embedded Lottie viewer
+    """
+    format = "html"
+    bl_label = "Export Lottie HTML"
+    bl_idname = "tgs.export_" + format
+
+    filename_ext = "." + format
+
+    scale: FloatProperty(
+        name="Scale",
+        description="Factor to scale the scene by",
+        default=64,
+    )
+
+    filter_glob: StringProperty(
+        default="*." + format,
+        options={'HIDDEN'},
+        maxlen=255,
+    )
+
+    def _export_animation(self, animation):
+        tgs.exporters.export_embedded_html(animation, self.filepath)
+
+
+classes = [TgsExporterTgs, TgsExporterLottie, TgsExporterHtml]
 
 
 def menu_func_export(self, context):
-    self.layout.operator(TgsExporter.bl_idname, text="Export TGS / Lottie")
+    for cls in classes:
+        self.layout.operator(cls.bl_idname, text=cls.bl_label)
 
 
 def register():
-    bpy.utils.register_class(TgsExporter)
+    for cls in classes:
+        bpy.utils.register_class(cls)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
 
 def unregister():
-    bpy.utils.unregister_class(TgsExporter)
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
 
 
-if __name__ == "__main__":
-    register()
+bl_info = {
+    "name": "Lottie/TGS export",
+    "description": "Exports Lottie or Telegram animated stickers from blender",
+    "author": "Mattia Basaglia",
+    "version": (0, 3, 0),
+    "blender": (2, 80, 0),
+    "location": "File > Export",
+    "wiki_url": "https://mattia.basaglia.gitlab.io/tgs/index.html",
+    "tracker_url": "https://gitlab.com/mattia.basaglia/tgs/issues",
+    "category": "Import-Export",
+}
