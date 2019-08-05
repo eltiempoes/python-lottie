@@ -108,7 +108,7 @@ def curve_to_shape(obj, parent, ro: RenderOptions):
                         ))
 
             sh.shape.add_keyframe(ro.scene.frame_start, beziers[0])
-            for time, value, bezid in sorted(keyframes, key=lambda x: x[0]):
+            for time, value, bezid in sorted(keyframes, key=lambda x: (x[0], -x[1])):
                 if time != sh.shape.keyframes[0].time:
                     # TODO interpolate when not 1/0 values
                     if value == 1:
@@ -215,6 +215,7 @@ def object_to_shape(obj, parent, ro):
             lambda v: -ro.get_xyz(v).z/math.pi*180,
             tgs.objects.Value
         )
+        g._z = ro.get_xyz(obj.location).z
 
 
 def collection_to_group(collection, parent, ro: RenderOptions):
@@ -222,12 +223,17 @@ def collection_to_group(collection, parent, ro: RenderOptions):
     parent.add_shape(g)
     g.name = collection.name
 
-    # TODO sort by z
+    transf = g.shapes.pop()
+
     for obj in collection.children:
         collection_to_group(obj, g, ro)
 
     for obj in collection.objects:
         object_to_shape(obj, g, ro)
+
+    g.shapes = list(sorted(g.shapes, key=lambda x: x._z))
+    g._z = sum(x._z for x in g.shapes) / len(g.shapes)
+    g.shapes.append(transf)
 
     return g
 
