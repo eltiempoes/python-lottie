@@ -59,28 +59,62 @@ class RenderOptions:
         return NVector(*self.get_xyz(vector).components[:2])
 
 
-def curve_to_shape(obj, parent, ro):
+def _add_bez_point(bez, point):
+    vert = point.co
+    in_t = point.handle_left - vert
+    out_t = point.handle_right - vert
+    #vert = ro.v_relative(obj, point.co)
+    #in_t = ro.v_relative(obj, point.handle_left) - vert
+    #out_t = ro.v_relative(obj, point.handle_right) - vert
+    bez.add_point(NVector(*vert[:]), NVector(*in_t[:]), NVector(*out_t[:]))
+
+
+def curve_to_shape(obj, parent, ro: RenderOptions):
     g = parent.add_shape(tgs.objects.Group())
     g.name = obj.name
 
     for spline in obj.data.splines:
         sh = tgs.objects.Path()
         g.add_shape(sh)
-        bez = sh.shape.value = tgs.objects.Bezier()
-        bez.closed = spline.use_cyclic_u
-        if spline.type == "BEZIER":
-            for point in spline.bezier_points:
-                vert = point.co
-                in_t = point.handle_left - vert
-                out_t = point.handle_right - vert
-                #vert = ro.v_relative(obj, point.co)
-                #in_t = ro.v_relative(obj, point.handle_left) - vert
-                #out_t = ro.v_relative(obj, point.handle_right) - vert
-                bez.add_point(NVector(*vert[:]), NVector(*in_t[:]), NVector(*out_t[:]))
+        if not obj.data.shape_keys:
+            bez = sh.shape.value = tgs.objects.Bezier()
+            bez.closed = spline.use_cyclic_u
+            if spline.type == "BEZIER":
+                for point in spline.bezier_points:
+                    _add_bez_point(bez, point)
+            else:
+                for point in spline.points:
+                    bez.add_point(NVector(*point.co[:]))
         else:
-            for point in spline.points:
-                #bez.add_point(ro.v_relative(obj, point.co[:]))
-                bez.add_point(NVector(*point.co[:]))
+            beziers = []
+            keyframes = []
+            animation = AnimationWrapper(obj.data.shape_keys)
+            # ShapeKey
+            for kb in obj.data.shape_keys.key_blocks:
+                bez = tgs.objects.Bezier()
+                bez.closed = spline.use_cyclic_u
+                # ShapeKeyBezierPoint
+                for point in kb.data:
+                    _add_bez_point(bez, point)
+                beziers.append(bez)
+                propname = repr(kb)[len(repr(kb.id_data))+1:] + ".value"
+                prop = animation.property(propname)
+                if prop.is_animated:
+                    for keyframe in prop.keyframes:
+                        keyframes.append((
+                            keyframe.time,
+                            keyframe.value[0],
+                            len(beziers)-1
+                        ))
+
+            sh.shape.add_keyframe(ro.scene.frame_start, beziers[0])
+            for time, value, bezid in sorted(keyframes, key=lambda x: x[0]):
+                if time != sh.shape.keyframes[0].time:
+                    # TODO interpolate when not 1/0 values
+                    if value == 1:
+                        sh.shape.add_keyframe(time, beziers[bezid])
+                    elif value == 0:
+                        sh.shape.add_keyframe(time, beziers[0])
 
     if obj.data.fill_mode != "NONE":
         fillc = obj.active_material.diffuse_color
@@ -107,7 +141,7 @@ class AnimatedProperty:
 
     @property
     def value(self):
-        return getattr(self.wrapper.object, self.name)
+        return self.wrapper.object.path_resolve(self.name)
 
     @property
     def keyframes(self):
@@ -161,6 +195,9 @@ class AnimationWrapper:
                         internal[fc.array_index] = kf.co.y
 
     def __getattr__(self, name):
+        return self.property(name)
+
+    def property(self, name):
         return AnimatedProperty(self, name)
 
 
