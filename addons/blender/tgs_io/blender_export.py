@@ -96,6 +96,74 @@ def curve_to_shape(obj, parent, ro):
     return g
 
 
+class AnimatedProperty:
+    def __init__(self, wrapper, name):
+        self.wrapper = wrapper
+        self.name = name
+
+    @property
+    def is_animated(self):
+        return self.name in self.wrapper.animation
+
+    @property
+    def value(self):
+        return getattr(self.wrapper.object, self.name)
+
+    @property
+    def keyframes(self):
+        return self.wrapper.animation[self.name]
+
+    def to_lottie_prop(self, value_transform, animatable=tgs.objects.MultiDimensional):
+        md = animatable()
+        if self.is_animated:
+            for keyframe in self.keyframes:
+                md.add_keyframe(
+                    keyframe.time,
+                    value_transform(keyframe.to_vector()),
+                    keyframe.easing()
+                )
+        else:
+            md.value = value_transform(self.value)
+        return md
+
+
+class AnimationKeyframe:
+    def __init__(self, fc, kf):
+        self.time = kf.co.x
+        self.value = {
+            fc.array_index: kf.co.y
+        }
+
+    def __setitem__(self, key, value):
+        self.value[key] = value
+
+    def to_vector(self):
+        return mathutils.Vector([v for k, v in sorted(self.value.items())])
+
+    # TODO pull easing
+    def easing(self):
+        return tgs.objects.easing.Linear()
+
+
+class AnimationWrapper:
+    def __init__(self, object):
+        self.object = object
+        self.animation = {}
+        if object.animation_data:
+            for fc in object.animation_data.action.fcurves:
+                if fc.data_path not in self.animation:
+                    self.animation[fc.data_path] = [
+                        AnimationKeyframe(fc, kf)
+                        for kf in fc.keyframe_points
+                    ]
+                else:
+                    for internal, kf in zip(self.animation[fc.data_path], fc.keyframe_points):
+                        internal[fc.array_index] = kf.co.y
+
+    def __getattr__(self, name):
+        return AnimatedProperty(self, name)
+
+
 def object_to_shape(obj, parent, ro):
     g = None
 
@@ -103,10 +171,13 @@ def object_to_shape(obj, parent, ro):
         g = curve_to_shape(obj, parent, ro)
 
     if g:
-        g.transform.position.value = ro.get_xy(obj.location)
-        #g.transform.position.value = ro.vpix(obj.location)
-        g.transform.scale.value = ro.get_xy(obj.scale) * 100
-        g.transform.rotation.value = -ro.get_xyz(obj.rotation_euler).z/math.pi*180
+        animated = AnimationWrapper(obj)
+        g.transform.position = animated.location.to_lottie_prop(ro.get_xy)
+        g.transform.scale = animated.scale.to_lottie_prop(lambda v: ro.get_xy(v) * 100)
+        g.transform.rotation = animated.rotation_euler.to_lottie_prop(
+            lambda v: -ro.get_xyz(v).z/math.pi*180,
+            tgs.objects.Value
+        )
 
 
 def collection_to_group(collection, parent, ro: RenderOptions):
