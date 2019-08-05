@@ -7,8 +7,7 @@ from . import blender_export
 
 class TgsExporterBase(Operator):
     def execute(self, context):
-        options = blender_export.ExportOptions(self.scale)
-        animation = blender_export.scene_to_tgs(context.scene, options)
+        animation = blender_export.scene_to_tgs(context.scene)
         self._export_animation(animation)
         return {'FINISHED'}
 
@@ -25,12 +24,6 @@ class TgsExporterTgs(TgsExporterBase, ExportHelper):
     bl_idname = "tgs.export_" + format
 
     filename_ext = "." + format
-
-    scale: FloatProperty(
-        name="Scale",
-        description="Factor to scale the scene by",
-        default=64,
-    )
 
     filter_glob: StringProperty(
         default="*." + format,
@@ -51,12 +44,6 @@ class TgsExporterLottie(TgsExporterBase, ExportHelper):
     bl_idname = "tgs.export_" + format
 
     filename_ext = "." + format
-
-    scale: FloatProperty(
-        name="Scale",
-        description="Factor to scale the scene by",
-        default=64,
-    )
 
     filter_glob: StringProperty(
         default="*." + format,
@@ -83,12 +70,6 @@ class TgsExporterHtml(TgsExporterBase, ExportHelper):
     bl_idname = "tgs.export_" + format
 
     filename_ext = "." + format
-
-    scale: FloatProperty(
-        name="Scale",
-        description="Factor to scale the scene by",
-        default=64,
-    )
 
     filter_glob: StringProperty(
         default="*." + format,

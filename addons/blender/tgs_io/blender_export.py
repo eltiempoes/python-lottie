@@ -8,19 +8,43 @@ import tgs
 from tgs import NVector
 
 import bpy
-
-
-@dataclass
-class ExportOptions:
-    scale: float = 1
-    offx: float = 0
-    offy: float = 0
+import bpy_extras
+import mathutils
 
 
 @dataclass
 class RenderOptions:
+    scene: bpy.types.Scene
     line_width: float = 0
     camera_angles: NVector = NVector(0, 0, 0)
+
+    @property
+    def camera(self):
+        return scene.camera
+
+    def vector_to_camera_norm(self, vector):
+        return NVector(*bpy_extras.object_utils.world_to_camera_view(
+            self.scene,
+            self.scene.camera,
+            vector
+        ))
+
+    def vpix3d(self, vector):
+        v3d = self.vector_to_camera_norm(vector)
+        v3d.x *= self.scene.render.resolution_x
+        v3d.y *= -self.scene.render.resolution_y
+        return v3d
+
+    def vpix(self, vector):
+        v2d = self.vpix3d(vector)
+        v2d.components.pop()
+        return v2d
+
+    def v_relative(self, obj, vector):
+        return (
+            self.vpix3d(obj.matrix_world @ vector) -
+            self.vpix3d(obj.matrix_world @ mathutils.Vector([0, 0, 0]))
+        )
 
     def get_xyz(self, vector):
         x = 0
@@ -49,9 +73,13 @@ def curve_to_shape(obj, parent, ro):
                 vert = point.co
                 in_t = point.handle_left - vert
                 out_t = point.handle_right - vert
+                #vert = ro.v_relative(obj, point.co)
+                #in_t = ro.v_relative(obj, point.handle_left) - vert
+                #out_t = ro.v_relative(obj, point.handle_right) - vert
                 bez.add_point(NVector(*vert[:]), NVector(*in_t[:]), NVector(*out_t[:]))
         else:
             for point in spline.points:
+                #bez.add_point(ro.v_relative(obj, point.co[:]))
                 bez.add_point(NVector(*point.co[:]))
 
     if obj.data.fill_mode != "NONE":
@@ -76,6 +104,7 @@ def object_to_shape(obj, parent, ro):
 
     if g:
         g.transform.position.value = ro.get_xy(obj.location)
+        #g.transform.position.value = ro.vpix(obj.location)
         g.transform.scale.value = ro.get_xy(obj.scale) * 100
         g.transform.rotation.value = -ro.get_xyz(obj.rotation_euler).z/math.pi*180
 
@@ -95,7 +124,7 @@ def collection_to_group(collection, parent, ro: RenderOptions):
     return g
 
 
-def scene_to_tgs(scene, eo=ExportOptions()):
+def scene_to_tgs(scene):
     animation = tgs.objects.Animation()
     animation.in_point = scene.frame_start
     animation.out_point = scene.frame_end
@@ -105,7 +134,7 @@ def scene_to_tgs(scene, eo=ExportOptions()):
     animation.name = scene.name
     layer = animation.add_layer(tgs.objects.ShapeLayer())
 
-    ro = RenderOptions()
+    ro = RenderOptions(scene)
     if scene.render.use_freestyle:
         ro.line_width = scene.render.line_thickness
     else:
@@ -117,17 +146,10 @@ def scene_to_tgs(scene, eo=ExportOptions()):
     camera_size = camera_p1 - NVector(*view_frame[2][:-1])
 
     g = collection_to_group(scene.collection, layer, ro)
-    #g.transform.scale.value *= eo.scale
-    #g.transform.scale.value.y *= -1
-    #g.transform.position.value.x += eo.offx
-    #g.transform.position.value.y += eo.offy + animation.height
 
     layer.transform.scale.value.x *= scene.render.resolution_x / (camera_size.x or 1)
     layer.transform.scale.value.y *= -scene.render.resolution_y / (camera_size.y or 1)
     layer.transform.position.value.y += animation.height
-    g.transform.position.value += ro.get_xy(scene.camera.location)
-    print(g.transform.position.value)
+    layer.transform.position.value += ro.vpix(mathutils.Vector([0, 0, 0]))
 
     return animation
-
-print("\x1b[31mreloaded\x1b[m")
