@@ -173,7 +173,7 @@ def object_to_shape(obj, parent, ro):
     if g:
         animated = AnimationWrapper(obj)
         g.transform.position = animated.location.to_lottie_prop(ro.get_xy)
-        g.transform.scale = animated.scale.to_lottie_prop(lambda v: ro.get_xy(v) * 100)
+        g.transform.scale = animated.scale.to_lottie_prop(lambda v: NVector(v[0], v[1]) * 100)
         g.transform.rotation = animated.rotation_euler.to_lottie_prop(
             lambda v: -ro.get_xyz(v).z/math.pi*180,
             tgs.objects.Value
