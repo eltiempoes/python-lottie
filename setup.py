@@ -10,7 +10,7 @@ with open(os.path.join(here, "README.md"), "r") as fh:
 
 def find_packages(root="tgs"):
     absroot = os.path.join(here, "lib", root)
-    paks = []
+    paks = [root]
     for sub in os.listdir(absroot):
         if sub == "__pycache__":
             continue
@@ -23,7 +23,7 @@ def find_packages(root="tgs"):
 
 setuptools.setup(
     name="tgs",
-    version="0.3.1",
+    version="0.3.2",
     author="Mattia Basaglia",
     author_email="mattia.basaglia@gmail.com",
     description="A framework to work with lottie / tgs files",

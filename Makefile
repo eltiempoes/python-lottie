@@ -8,7 +8,7 @@ SCRIPTS=$(wildcard bin/*.py)
 
 .SUFFIXES:
 
-.PHONY: all upload docs clean_pyc
+.PHONY: all upload docs clean_pyc pypi blender inkscape
 
 all: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
 all: dist/$(PACKAGE_NAME)-inkscape-$(VERSION).zip
@@ -38,8 +38,8 @@ docs/html/index.html: docs/dox/lottie.dox
 docs/html/index.html: docs/dox/scripts.dox
 docs/html/index.html: $(SRC)
 	doxygen docs/Doxyfile
-
-dist/$(PACKAGE_NAME)-inkscape-$(VERSION).zip: $(wildcard inkscape/*)
+#
+dist/$(PACKAGE_NAME)-inkscape-$(VERSION).zip: $(wildcard addons/inkscape/*)
 	zip --junk-paths $@ $^
 	echo "Upload at https://inkscape.org/~mattia.basaglia/%E2%98%85tgslottie-importexport"
 
@@ -52,5 +52,11 @@ clean_pyc:
 	find lib -name '__pycache__' -exec rm -rf {} \;
 
 
-dist/$(PACKAGE_NAME)-blender-$(VERSION).zip: $(wildcard blender/tgs_io/*.py) $(SRC)
-	cd blender && find -L -name '*.py' | xargs zip --filesync ../$@
+dist/$(PACKAGE_NAME)-blender-$(VERSION).zip: $(wildcard addons/blender/tgs_io/*.py) $(SRC)
+	cd addons/blender && find -L -name '*.py' | xargs zip --filesync ../../$@
+
+pypi: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
+
+inkscape: dist/$(PACKAGE_NAME)-inkscape-$(VERSION).zip
+
+blender: dist/$(PACKAGE_NAME)-blender-$(VERSION).zip
