@@ -142,15 +142,19 @@ class BlenderTgsExporter:
         g = None
 
         if obj.type == "CURVE":
-            g = curve_to_shape(obj, parent, ro)
+            g = self.curve_to_shape(obj, parent, ro)
 
         if g:
             self.adjust_shape(obj, g, ro)
 
-    def collection_to_group(self, collection, parent, ro: RenderOptions):
+    def collection_make_group(self, collection, parent, ro):
         g = tgs.objects.Group()
         parent.add_shape(g)
         g.name = collection.name
+        return g
+
+    def collection_to_group(self, collection, parent, ro: RenderOptions):
+        g = self.collection_make_group(collection, parent, ro)
 
         for obj in collection.children:
             self.collection_to_group(obj, g, ro)
