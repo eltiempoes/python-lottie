@@ -40,11 +40,15 @@ class RenderOptions:
         v2d.components.pop()
         return v2d
 
-    def v_relative(self, obj, vector):
+    def vpix3d_r(self, obj, vector):
         return (
-            self.vpix3d(obj.matrix_world @ vector) -
-            self.vpix3d(obj.matrix_world @ mathutils.Vector([0, 0, 0]))
+            self.vpix3d(obj.matrix_world @ vector)
         )
+
+    def vpix_r(self, obj, vector):
+        v2d = self.vpix3d_r(obj, vector)
+        v2d.components.pop()
+        return v2d
 
     def get_xyz(self, vector):
         x = 0
@@ -63,17 +67,46 @@ class BlenderTgsExporter:
     def adjust_animation(self, scene, animation, ro):
         pass
 
-    def adjust_collection(self, scene, animation, ro):
-        pass
+    def adjust_collection(self, g, ro):
+        transf = g.shapes.pop()
+        g.shapes = list(sorted(g.shapes, key=lambda x: x._z))
+        g._z = sum(x._z for x in g.shapes) / len(g.shapes)
+        g.shapes.append(transf)
 
     def adjust_shape(self, obj, g, ro):
         pass
 
-    def add_point_to_bezier(self, bez, point, ro):
+    def add_point_to_bezier(self, bez, point, ro, obj):
         pass
 
-    def add_point_to_poly(self, bez, point, ro):
+    def add_point_to_poly(self, bez, point, ro, obj):
         pass
+
+    def curve_get_bezier(self, spline, obj, ro):
+        bez = tgs.objects.Bezier()
+        bez.closed = spline.use_cyclic_u
+        if spline.type == "BEZIER":
+            for point in spline.bezier_points:
+                self.add_point_to_bezier(bez, point, ro, obj)
+        else:
+            for point in spline.points:
+                self.add_point_to_poly(bez, point, ro, obj)
+        return bez
+
+    def curve_apply_material(self, obj, g, ro):
+        if obj.data.fill_mode != "NONE":
+            # TODO animation
+            fillc = obj.active_material.diffuse_color
+            fill = tgs.objects.Fill(NVector(*fillc[:-1]))
+            fill.opacity.value = fillc[-1] * 100
+            g.add_shape(fill)
+
+        if ro.line_width > 0:
+            # TODO animation
+            strokec = obj.active_material.line_color
+            stroke = tgs.objects.Stroke(NVector(*strokec[:-1]), ro.line_width)
+            stroke.opacity.value = fillc[-1] * 100
+            g.add_shape(stroke)
 
     def curve_to_shape(self, obj, parent, ro: RenderOptions):
         g = parent.add_shape(tgs.objects.Group())
@@ -83,14 +116,7 @@ class BlenderTgsExporter:
             sh = tgs.objects.Path()
             g.add_shape(sh)
             if not obj.data.shape_keys:
-                bez = sh.shape.value = tgs.objects.Bezier()
-                bez.closed = spline.use_cyclic_u
-                if spline.type == "BEZIER":
-                    for point in spline.bezier_points:
-                        self.add_point_to_bezier(bez, point, ro)
-                else:
-                    for point in spline.points:
-                        self.add_point_to_poly(bez, point, ro)
+                sh.shape.value = self.curve_get_bezier(spline, obj, ro)
             else:
                 beziers = []
                 keyframes = []
@@ -101,7 +127,7 @@ class BlenderTgsExporter:
                     bez.closed = spline.use_cyclic_u
                     # ShapeKeyBezierPoint
                     for point in kb.data:
-                        self.add_point_to_bezier(bez, point, ro)
+                        self.add_point_to_bezier(bez, point, ro, obj)
                     beziers.append(bez)
                     propname = repr(kb)[len(repr(kb.id_data))+1:] + ".value"
                     prop = animation.property(propname)
@@ -122,19 +148,7 @@ class BlenderTgsExporter:
                         elif value == 0:
                             sh.shape.add_keyframe(time, beziers[0])
 
-        if obj.data.fill_mode != "NONE":
-            # TODO animation
-            fillc = obj.active_material.diffuse_color
-            fill = tgs.objects.Fill(NVector(*fillc[:-1]))
-            fill.opacity.value = fillc[-1] * 100
-            g.add_shape(fill)
-
-        if ro.line_width > 0:
-            # TODO animation
-            strokec = obj.active_material.line_color
-            stroke = tgs.objects.Stroke(NVector(*strokec[:-1]), ro.line_width)
-            stroke.opacity.value = fillc[-1] * 100
-            g.add_shape(stroke)
+        self.curve_apply_material(obj, g, ro)
 
         return g
 
@@ -162,7 +176,7 @@ class BlenderTgsExporter:
         for obj in collection.objects:
             self.object_to_shape(obj, g, ro)
 
-        self.adjust_collection(collection, g, ro)
+        self.adjust_collection(g, ro)
 
         return g
 
@@ -190,7 +204,7 @@ class BlenderTgsExporter:
 
 
 class BlenderTgsExporterKeepStructure(BlenderTgsExporter):
-    def add_point_to_bezier(self, bez, point, ro):
+    def add_point_to_bezier(self, bez, point, ro, obj):
         vert = point.co
         in_t = point.handle_left - vert
         out_t = point.handle_right - vert
@@ -198,12 +212,6 @@ class BlenderTgsExporterKeepStructure(BlenderTgsExporter):
 
     def add_point_to_poly(self, bez, point, ro):
         bez.add_point(NVector(*point.co[:]))
-
-    def adjust_collection(self, collection, g, ro):
-        transf = g.shapes.pop()
-        g.shapes = list(sorted(g.shapes, key=lambda x: x._z))
-        g._z = sum(x._z for x in g.shapes) / len(g.shapes)
-        g.shapes.append(transf)
 
     def adjust_animation(self, scene, animation, ro):
         view_frame = scene.camera.data.view_frame(scene=scene)
@@ -224,6 +232,61 @@ class BlenderTgsExporterKeepStructure(BlenderTgsExporter):
             tgs.objects.Value
         )
         g._z = ro.get_xyz(obj.location).z
+
+
+class BlenderTgsExporterCameraView(BlenderTgsExporter):
+    def add_point_to_bezier(self, bez, point, ro: RenderOptions, obj):
+        vert = ro.vpix_r(obj, point.co)
+        in_t = ro.vpix_r(obj, point.handle_left) - vert
+        out_t = ro.vpix_r(obj, point.handle_right) - vert
+        bez.add_point(vert, in_t, out_t)
+
+    def add_point_to_poly(self, bez, point, ro, obj):
+        bez.add_point(ro.vpix_r(obj, point.co))
+
+    def adjust_animation(self, scene, animation, ro):
+        layer = animation.layers[0]
+        self.adjust_collection(layer, ro)
+        layer.transform.position.value.y += animation.height
+
+    def adjust_shape(self, obj, g, ro):
+        animated = AnimationWrapper(obj)
+        g._z = ro.vpix3d_r(obj, obj.location).z
+
+    def _obj_keyframes(self, obj):
+        kf_times = set()
+
+        return list(sorted(kf_times))
+
+    def curve_to_shape(self, obj, parent, ro: RenderOptions):
+        g = parent.add_shape(tgs.objects.Group())
+        g.name = obj.name
+
+        animated = AnimationWrapper(obj)
+        times = list(sorted(animated.keyframe_times()))
+        for spline in obj.data.splines:
+            sh = tgs.objects.Path()
+            g.add_shape(sh)
+            if times:
+                for time in times:
+                    ro.scene.frame_set(time)
+                    sh.shape.add_keyframe(time, self.curve_get_bezier(spline, obj, ro))
+            else:
+                sh.shape.value = self.curve_get_bezier(spline, obj, ro)
+
+        self.curve_apply_material(obj, g, ro)
+        return g
+
+    def collection_to_group(self, collection, parent, ro: RenderOptions):
+        g = parent
+
+        for obj in collection.children:
+            self.collection_to_group(obj, g, ro)
+
+        for obj in collection.objects:
+            self.object_to_shape(obj, g, ro)
+
+        return g
 
 
 class AnimatedProperty:
@@ -296,6 +359,9 @@ class AnimationWrapper:
     def property(self, name):
         return AnimatedProperty(self, name)
 
+    def keyframe_times(self):
+        kft = set()
+        for kfl in self.animation.values():
+            kft |= set(kf.time for kf in kfl)
+        return kft
 
-def scene_to_tgs(scene):
-    return BlenderTgsExporterKeepStructure().scene_to_tgs(scene)

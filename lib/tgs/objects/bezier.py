@@ -405,3 +405,21 @@ class Bezier(TgsObject):
         for vl in (self.vertices, self.in_tangents, self.out_tangents):
             for v in vl:
                 v *= amount
+
+    def lerp(self, other, t):
+        if len(other.vertices) != len(self.vertices):
+            if t < 1:
+                return self.clone()
+            return other.clone()
+
+        bez = Bezier()
+        bez.closed = self.closed
+
+        for vlist_name in ["vertices", "in_tangents", "out_tangents"]:
+            vlist = getattr(self, vlist_name)
+            olist = getattr(other, vlist_name)
+            out = getattr(bez, vlist_name)
+            for v, o in zip(vlist, olist):
+                out.append(v.lerp(o, t))
+
+        return bez
