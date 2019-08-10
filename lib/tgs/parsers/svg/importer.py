@@ -205,6 +205,7 @@ class SvgParser(SvgHandler):
         self.name_mode = name_mode
         self.current_color = NVector(0, 0, 0, 1)
         self.gradients = {}
+        self.max_time = 0
 
     def _get_name(self, element, inkscapequal):
         if self.name_mode == NameMode.Inkscape:
@@ -400,6 +401,7 @@ class SvgParser(SvgHandler):
         group.name = self._get_name(element, self.qualified("inkscape", "label"))
         self.parse_children(element, group)
         self.parse_transform(element, group, group.transform)
+        return group
 
     def _parseshape_ellipse(self, element, shape_parent):
         ellipse = objects.Ellipse()
@@ -412,6 +414,13 @@ class SvgParser(SvgHandler):
             self._parse_unit(element.attrib["ry"]) * 2
         )
         self.add_shapes(element, [ellipse], shape_parent)
+        return ellipse
+
+    def _parseshape_anim_ellipse(self, ellipse, element, animations):
+        self._merge_animations(element, animations, "cx", "cy", "position")
+        self._merge_animations(element, animations, "rx", "ry", "size", lambda x, y: NVector(x, y) * 2)
+        self._apply_animations(ellipse.position, "position", animations)
+        self._apply_animations(ellipse.size, "size", animations)
 
     def _parseshape_circle(self, element, shape_parent):
         ellipse = objects.Ellipse()
@@ -422,6 +431,12 @@ class SvgParser(SvgHandler):
         r = self._parse_unit(element.attrib["r"]) * 2
         ellipse.size.value = NVector(r, r)
         self.add_shapes(element, [ellipse], shape_parent)
+        return ellipse
+
+    def _parseshape_anim_circle(self, ellipse, element, animations):
+        self._merge_animations(element, animations, "cx", "cy", "position")
+        self._apply_animations(ellipse.position, "position", animations)
+        self._apply_animations(ellipse.size, "r", animations, lambda r: NVector(r, r) * 2)
 
     def _parseshape_rect(self, element, shape_parent):
         rect = objects.Rect()
@@ -436,6 +451,16 @@ class SvgParser(SvgHandler):
         ry = self._parse_unit(element.attrib.get("ry", 0))
         rect.rounded.value = (rx + ry) / 2
         self.add_shapes(element, [rect], shape_parent)
+        return rect
+
+    def _parseshape_anim_rect(self, rect, element, animations):
+        self._merge_animations(element, animations, "width", "height", "size", lambda x, y: NVector(x, y))
+        self._apply_animations(rect.size, "size", animations)
+        self._merge_animations(element, animations, "x", "y", "position")
+        self._merge_animations(element, animations, "position", "size", "position", lambda p, s: p + s / 2)
+        self._apply_animations(rect.position, "position", animations)
+        self._merge_animations(element, animations, "rx", "ry", "rounded", lambda x, y: (x + y) / 2)
+        self._apply_animations(rect.rounded, "rounded", animations)
 
     def _parseshape_line(self, element, shape_parent):
         line = objects.Path()
@@ -447,7 +472,14 @@ class SvgParser(SvgHandler):
             self._parse_unit(element.attrib["x2"]),
             self._parse_unit(element.attrib["y2"])
         ))
-        self.add_shapes(element, [line], shape_parent)
+        return self.add_shapes(element, [line], shape_parent)
+
+    def _parseshape_anim_line(self, group, element, animations):
+        line = group.shapes[0]
+        self._merge_animations(element, animations, "x1", "y1", "p1")
+        self._merge_animations(element, animations, "x2", "y2", "p2")
+        self._apply_animations(line.vertices[0], "p1", animations)
+        self._apply_animations(line.vertices[1], "p2", animations)
 
     def _handle_poly(self, element):
         line = objects.Path()
@@ -458,12 +490,12 @@ class SvgParser(SvgHandler):
 
     def _parseshape_polyline(self, element, shape_parent):
         line = self._handle_poly(element)
-        self.add_shapes(element, [line], shape_parent)
+        return self.add_shapes(element, [line], shape_parent)
 
     def _parseshape_polygon(self, element, shape_parent):
         line = self._handle_poly(element)
         line.shape.value.close()
-        self.add_shapes(element, [line], shape_parent)
+        return self.add_shapes(element, [line], shape_parent)
 
     def _parseshape_path(self, element, shape_parent):
         d_parser = PathDParser(element.attrib.get("d", ""))
@@ -475,7 +507,7 @@ class SvgParser(SvgHandler):
             paths.append(p)
         #if len(d_parser.paths) > 1:
             #paths.append(objects.shapes.Merge())
-        self.add_shapes(element, paths, shape_parent)
+        return self.add_shapes(element, paths, shape_parent)
 
     def parse_children(self, element, shape_parent, limit=None):
         for child in element:
@@ -484,7 +516,8 @@ class SvgParser(SvgHandler):
                 continue
             handler = getattr(self, "_parseshape_" + tag, None)
             if handler:
-                handler(child, shape_parent)
+                out = handler(child, shape_parent)
+                self.parse_animations(out, child)
             else:
                 handler = getattr(self, "_parse_" + tag, None)
                 if handler:
@@ -492,6 +525,8 @@ class SvgParser(SvgHandler):
 
     def parse_etree(self, etree, *args, **kwargs):
         animation = objects.Animation(*args, **kwargs)
+        self.animation = animation
+        self.max_time = 0
         svg = etree.getroot()
         if "width" in svg.attrib and "height" in svg.attrib:
             animation.width = int(round(float(svg.attrib["width"])))
@@ -502,6 +537,10 @@ class SvgParser(SvgHandler):
         layer = objects.ShapeLayer()
         animation.add_layer(layer)
         self.parse_children(svg, layer)
+        if self.max_time:
+            animation.out_point = self.max_time
+            for layer in animation.layers:
+                layer.out_point = self.max_time
         return animation
 
     def _parse_defs(self, element):
@@ -638,6 +677,97 @@ class SvgParser(SvgHandler):
 
         shape_parent.shapes.insert(0, group)
         self.parse_transform(element, group, group.transform)
+
+    def parse_animations(self, lottie, element):
+        animations = {}
+        for child in element:
+            if self.unqualified(child.tag) == "animation":
+                att = element.attrib["attributeName"]
+
+                from_val = element.attrib["from"]
+                if att == "d":
+                    ## @todo
+                    continue
+                else:
+                    from_val = float(from_val)
+                    if "to" in child.attrib:
+                        to_val = float(child.attrib["to"])
+                    elif "by" in child.attrib:
+                        to_val = float(child.attrib["by"]) + from_val
+
+                begin = self.parse_animation_time(child.attrib.get("begin", 0)) or 0
+                if "dur" in child.attrib:
+                    end = (self.parse_animation_time(child.attrib["dur"]) or 0) + begin
+                elif "end" in child.attrib:
+                    end = self.parse_animation_time(child.attrib["dur"]) or 0
+                else:
+                    continue
+
+                if att not in animations:
+                    animations[att] = {}
+                animations[att][begin] = from_val
+                animations[att][end] = to_val
+
+        tag = self.unqualified(element.tag)
+        handler = getattr(self, "_parseshape_anim_" + tag, None)
+        if handler:
+            handler(lottie, element, animations)
+
+    def parse_animation_time(self, value):
+        """!
+        @see https://developer.mozilla.org/en-US/docs/Web/SVG/Content_type#Clock-value
+        """
+        if not value:
+            return None
+        try:
+            seconds = 0
+            if ":" in value:
+                mult = 1
+                for elem in reversed(value.split(":")):
+                    seconds += float(elem) * mult
+                    mult *= 60
+            elif value.endswith("s"):
+                seconds = float(value[:-1])
+            elif value.endswith("ms"):
+                seconds = float(value[:-2]) / 1000
+            elif value.endswith("min"):
+                seconds = float(value[:-3]) * 60
+            elif value.endswith("h"):
+                seconds = float(value[:-1]) * 60 * 60
+            else:
+                seconds = float(value)
+            return seconds * self.animation.frame_rate
+        except ValueError:
+            pass
+        return None
+
+    def _merge_animations(self, element, animations, val1, val2, dest, merge=Nvector):
+        if val1 not in animations and val2 not in animations:
+            return
+
+        dict1 = list(sorted(animations.pop(val1, {}).items()))
+        dict2 = list(sorted(animations.pop(val2, {}).items()))
+
+        x = float(element.attrib[val1])
+        y = float(element.attrib[val2])
+        values = {}
+        while dict1 or dict2:
+            if not dict1 or (dict2 and dict1[0][0] > dict2[0][0]):
+                t, y = dict2.pop(0)
+            elif not dict2 or dict1[0][0] < dict2[0][0]:
+                t, x = dict1.pop(0)
+            else:
+                t, x = dict1.pop(0)
+                t, y = dict2.pop(0)
+
+            values[t] = merge(x, y)
+
+        animations[dest] = values
+
+    def _apply_animations(self, animatable, name, animations, transform=lambda v: v):
+        if name in animations:
+            for t, v in animations[name].items():
+                animatable.add_keyframe(t, transform(v))
 
 
 class PathDParser:
