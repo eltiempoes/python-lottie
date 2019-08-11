@@ -681,10 +681,10 @@ class SvgParser(SvgHandler):
     def parse_animations(self, lottie, element):
         animations = {}
         for child in element:
-            if self.unqualified(child.tag) == "animation":
-                att = element.attrib["attributeName"]
+            if self.unqualified(child.tag) == "animate":
+                att = child.attrib["attributeName"]
 
-                from_val = element.attrib["from"]
+                from_val = child.attrib["from"]
                 if att == "d":
                     ## @todo
                     continue
@@ -707,6 +707,8 @@ class SvgParser(SvgHandler):
                     animations[att] = {}
                 animations[att][begin] = from_val
                 animations[att][end] = to_val
+                if self.max_time < end:
+                    self.max_time = end
 
         tag = self.unqualified(element.tag)
         handler = getattr(self, "_parseshape_anim_" + tag, None)
