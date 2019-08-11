@@ -741,7 +741,7 @@ class SvgParser(SvgHandler):
             pass
         return None
 
-    def _merge_animations(self, element, animations, val1, val2, dest, merge=Nvector):
+    def _merge_animations(self, element, animations, val1, val2, dest, merge=NVector):
         if val1 not in animations and val2 not in animations:
             return
 
