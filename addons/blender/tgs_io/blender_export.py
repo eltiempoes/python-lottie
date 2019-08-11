@@ -257,8 +257,7 @@ class BlenderTgsExporterCameraView(BlenderTgsExporter):
 
     def adjust_shape(self, obj, g, ro):
         animated = AnimationWrapper(obj)
-        g._z = -ro.vpix3d_r(obj, obj.location).z
-        print("%s %s" % (obj, g._z))
+        g._z = ro.vpix3d(obj.location).z
 
     def _obj_keyframes(self, obj):
         kf_times = set()
