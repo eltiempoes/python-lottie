@@ -68,10 +68,12 @@ class BlenderTgsExporter:
         pass
 
     def adjust_collection(self, g, ro):
-        transf = g.shapes.pop()
+        if isinstance(g, tgs.objects.Group):
+            transf = g.shapes.pop()
         g.shapes = list(sorted(g.shapes, key=lambda x: x._z))
         g._z = sum(x._z for x in g.shapes) / len(g.shapes)
-        g.shapes.append(transf)
+        if isinstance(g, tgs.objects.Group):
+            g.shapes.append(transf)
 
     def adjust_shape(self, obj, g, ro):
         pass
@@ -181,26 +183,30 @@ class BlenderTgsExporter:
         return g
 
     def scene_to_tgs(self, scene):
-        animation = tgs.objects.Animation()
-        animation.in_point = scene.frame_start
-        animation.out_point = scene.frame_end
-        animation.framerate = scene.render.fps
-        animation.width = scene.render.resolution_x
-        animation.height = scene.render.resolution_y
-        animation.name = scene.name
-        layer = animation.add_layer(tgs.objects.ShapeLayer())
+        initial_frame = scene.frame_current
+        try:
+            animation = tgs.objects.Animation()
+            animation.in_point = scene.frame_start
+            animation.out_point = scene.frame_end
+            animation.framerate = scene.render.fps
+            animation.width = scene.render.resolution_x
+            animation.height = scene.render.resolution_y
+            animation.name = scene.name
+            layer = animation.add_layer(tgs.objects.ShapeLayer())
 
-        ro = RenderOptions(scene)
-        if scene.render.use_freestyle:
-            ro.line_width = scene.render.line_thickness
-        else:
-            ro.line_width = 0
-        ro.camera_angles = NVector(*scene.camera.rotation_euler) * 180 / math.pi
+            ro = RenderOptions(scene)
+            if scene.render.use_freestyle:
+                ro.line_width = scene.render.line_thickness
+            else:
+                ro.line_width = 0
+            ro.camera_angles = NVector(*scene.camera.rotation_euler) * 180 / math.pi
 
-        self.collection_to_group(scene.collection, layer, ro)
-        self.adjust_animation(scene, animation, ro)
+            self.collection_to_group(scene.collection, layer, ro)
+            self.adjust_animation(scene, animation, ro)
 
-        return animation
+            return animation
+        finally:
+            scene.frame_set(initial_frame)
 
 
 class BlenderTgsExporterKeepStructure(BlenderTgsExporter):
@@ -251,7 +257,8 @@ class BlenderTgsExporterCameraView(BlenderTgsExporter):
 
     def adjust_shape(self, obj, g, ro):
         animated = AnimationWrapper(obj)
-        g._z = ro.vpix3d_r(obj, obj.location).z
+        g._z = -ro.vpix3d_r(obj, obj.location).z
+        print("%s %s" % (obj, g._z))
 
     def _obj_keyframes(self, obj):
         kf_times = set()
@@ -261,18 +268,40 @@ class BlenderTgsExporterCameraView(BlenderTgsExporter):
     def curve_to_shape(self, obj, parent, ro: RenderOptions):
         g = parent.add_shape(tgs.objects.Group())
         g.name = obj.name
+        beziers = []
 
         animated = AnimationWrapper(obj)
-        times = list(sorted(animated.keyframe_times()))
         for spline in obj.data.splines:
             sh = tgs.objects.Path()
             g.add_shape(sh)
-            if times:
-                for time in times:
-                    ro.scene.frame_set(time)
+            sh.shape.value = self.curve_get_bezier(spline, obj, ro)
+            beziers.append(sh.shape.value)
+
+        times = animated.keyframe_times()
+        shapekeys = None
+        if obj.data.shape_keys:
+            shapekeys = AnimationWrapper(obj.data.shape_keys)
+            times |= shapekeys.keyframe_times()
+
+        times = list(sorted(times))
+        for time in times:
+            ro.scene.frame_set(time)
+            if not shapekeys:
+                for spline, sh in zip(obj.data.splines, g.shapes):
                     sh.shape.add_keyframe(time, self.curve_get_bezier(spline, obj, ro))
             else:
-                sh.shape.value = self.curve_get_bezier(spline, obj, ro)
+                obj.shape_key_add(from_mix=True)
+                shape_key = obj.data.shape_keys.key_blocks[-1]
+                start = 0
+                for spline, sh, bezier in zip(obj.data.splines, g.shapes, beziers):
+                    end = start + len(bezier.vertices)
+                    bez = tgs.objects.Bezier()
+                    bez.closed = bezier.closed
+                    for i in range(start, end):
+                        self.add_point_to_bezier(bez, shape_key.data[i], ro, obj)
+                    sh.shape.add_keyframe(time, bez)
+                    start = end
+                obj.shape_key_remove(shape_key)
 
         self.curve_apply_material(obj, g, ro)
         return g
