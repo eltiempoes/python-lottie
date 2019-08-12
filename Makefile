@@ -10,15 +10,20 @@ SCRIPTS:=$(wildcard bin/*.py)
 
 .SUFFIXES:
 
-.PHONY: all upload docs clean_pyc pypi blender inkscape release
+.PHONY: all upload docs clean_pyc pypi blender inkscape release dist distclean
 
 
 all: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
 all: dist/$(PACKAGE_NAME)-inkscape-$(VERSION).zip
 all: dist/$(PACKAGE_NAME)-blender-$(VERSION).zip
 
+dist: all
+
+distclean:
+	rm dist/*
+
 release:
-	make all VERSION_SUF=
+	make all upload VERSION_SUF=
 
 dist/$(PACKAGE_NAME)-$(VERSION).tar.gz: $(SETUP) $(SRC) $(SCRIPTS)
 	VERSION_OVERRIDE="$(VERSION)" $(PYTHON) $(SETUP) sdist
