@@ -7,7 +7,7 @@ from . import blender_export
 
 class TgsExporterBase(Operator):
     def execute(self, context):
-        animation = blender_export.scene_to_tgs(context.scene)
+        animation = blender_export.context_to_tgs(context)
         self._export_animation(animation)
         return {'FINISHED'}
 

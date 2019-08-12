@@ -68,17 +68,28 @@ class AnimatedProperty:
     def keyframes(self):
         return self.wrapper.animation[self.name]
 
-    def to_lottie_prop(self, value_transform, animatable=tgs.objects.MultiDimensional):
+    def to_lottie_prop(self, value_transform=lambda x: x, animatable=None):
+        v = self.value
+        if isinstance(v, mathutils.Vector):
+            def_animatable = tgs.objects.MultiDimensional
+            kf_getter = AnimationKeyframe.to_vector
+        else:
+            def_animatable = tgs.objects.Value
+            kf_getter = AnimationKeyframe.to_scalar
+
+        if animatable is None:
+            animatable = def_animatable
+
         md = animatable()
         if self.is_animated:
             for keyframe in self.keyframes:
                 md.add_keyframe(
                     keyframe.time,
-                    value_transform(keyframe.to_vector()),
+                    value_transform(kf_getter(keyframe)),
                     keyframe.easing()
                 )
         else:
-            md.value = value_transform(self.value)
+            md.value = value_transform(v)
         return md
 
 
@@ -93,7 +104,10 @@ class AnimationKeyframe:
         self.value[key] = value
 
     def to_vector(self):
-        return mathutils.Vector([v for k, v in sorted(self.value.items())])
+        return NVector(*(v for k, v in sorted(self.value.items())))
+
+    def to_scalar(self):
+        return next(iter(self.value.values()))
 
     # TODO pull easing
     def easing(self):
@@ -174,22 +188,6 @@ def collection_to_group(collection, parent, ro: RenderOptions):
         object_to_shape(obj, parent, ro)
 
 
-def object_to_shape(obj, parent, ro: RenderOptions):
-    if obj.hide_render:
-        return
-
-    g = None
-
-    if obj.type == "CURVE":
-        g = curve_to_shape(obj, parent, ro)
-    elif obj.type == "MESH":
-        g = mesh_to_shape(obj, parent, ro)
-
-    if g:
-        ro.scene.frame_set(0)
-        g._z = ro.vpix3d(obj.location).z
-
-
 def curve_to_shape(obj, parent, ro: RenderOptions):
     g = parent.add_shape(tgs.objects.Group())
     g.name = obj.name
@@ -236,6 +234,7 @@ def get_fill(obj, ro):
     # TODO animation
     fillc = obj.active_material.diffuse_color
     fill = tgs.objects.Fill(NVector(*fillc[:-1]))
+    fill.name = obj.active_material.name
     fill.opacity.value = fillc[-1] * 100
     return fill
 
@@ -307,3 +306,96 @@ def mesh_to_shape(obj, parent, ro):
                 sh.shape.add_keyframe(time, f_bez(f))
 
     return g
+
+
+def gpencil_to_shape(obj, parent, ro):
+    # Object / GreasePencil
+    gpen = parent.add_shape(tgs.objects.Group())
+    gpen.name = obj.name
+
+    animated = AnimationWrapper(obj.data)
+    # GPencilLayer
+    for layer in reversed(obj.data.layers):
+        if layer.hide:
+            continue
+        glay = gpen.add_shape(tgs.objects.Group())
+        glay.name = layer.info
+        opacity = animated.property('layers["%s"].opacity' % layer.info)
+        glay.transform.opacity = opacity.to_lottie_prop(lambda x: x*100)
+
+        gframe = None
+        # GPencilFrame
+        for frame in layer.frames:
+            if gframe:
+                if not gframe.transform.opacity.animated:
+                    gframe.transform.opacity.add_keyframe(0, 100, tgs.objects.easing.Jump())
+                gframe.transform.opacity.add_keyframe(frame.frame_number, 0)
+
+            gframe = glay.add_shape(tgs.objects.Group())
+            gframe.name = "frame %s" % frame.frame_number
+            if frame.frame_number != 0:
+                gframe.transform.opacity.add_keyframe(0, 0, tgs.objects.easing.Jump())
+                gframe.transform.opacity.add_keyframe(frame.frame_number, 100)
+
+            # GPencilStroke
+            for stroke in reversed(frame.strokes):
+                gstroke = gframe.add_shape(tgs.objects.Group())
+
+                path = gstroke.add_shape(tgs.objects.Path())
+                path.shape.value.closed = stroke.draw_cyclic
+                pressure = 0
+                for p in stroke.points:
+                    add_point_to_poly(path.shape.value, p, ro, obj)
+                    pressure += p.pressure
+                pressure /= len(stroke.points)
+
+                # Material
+                matp = obj.data.materials[stroke.material_index]
+                # TODO Gradients / animations
+                # MaterialGPencilStyle
+                material = matp.grease_pencil
+
+                if material.show_fill:
+                    fill_sh = gstroke.add_shape(tgs.objects.Fill())
+                    fill_sh.name = matp.name
+                    fill_sh.color.value = NVector(*material.fill_color[:-1])
+                    fill_sh.opacity.value = material.fill_color[-1] * 100
+
+                if material.show_stroke:
+                    stroke_sh = tgs.objects.Stroke()
+                    gstroke.add_shape(stroke_sh)
+                    stroke_sh.name = matp.name
+                    if stroke.end_cap_mode == "ROUND":
+                        stroke_sh.line_cap = tgs.objects.LineCap.Round
+                    elif stroke.end_cap_mode == "FLAT":
+                        stroke_sh.line_cap = tgs.objects.LineCap.Butt
+                    stroke_w = stroke.line_width * pressure * obj.data.pixel_factor
+                    if obj.data.stroke_thickness_space == "WORLDSPACE":
+                        # TODO do this properly
+                        stroke_w /= 9
+                    stroke_sh.width.value = stroke_w
+                    stroke_sh.color.value = NVector(*material.color[:-1])
+                    stroke_sh.opacity.value = material.color[-1] * 100
+
+
+
+    return gpen
+
+
+def object_to_shape(obj, parent, ro: RenderOptions):
+    if obj.hide_render:
+        return
+
+    g = None
+    ro.scene.frame_set(0)
+
+    if obj.type == "CURVE":
+        g = curve_to_shape(obj, parent, ro)
+    elif obj.type == "MESH":
+        g = mesh_to_shape(obj, parent, ro)
+    elif obj.type == "GPENCIL":
+        g = gpencil_to_shape(obj, parent, ro)
+
+    if g:
+        ro.scene.frame_set(0)
+        g._z = ro.vpix3d(obj.location).z
