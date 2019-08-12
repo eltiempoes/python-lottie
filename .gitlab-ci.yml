@@ -42,8 +42,6 @@ build:
     artifacts:
         paths:
             - dist/*
-    only:
-        - master
     dependencies:
         - test
 

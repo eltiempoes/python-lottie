@@ -22,8 +22,8 @@ formats4cc = {
     ExtraOption("format", default=None, help="Specific video format", choices=list(formats4cc.keys())),
 ], [], "video")
 def export_video(animation, fp, format=None):
-    start = animation.in_point
-    end = animation.out_point
+    start = int(animation.in_point)
+    end = int(animation.out_point)
     if format is None:
         fn = fp if isinstance(fp, str) else fp.name
         format = os.path.splitext(fn)[1][1:]

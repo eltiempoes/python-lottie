@@ -22,8 +22,8 @@ def export_gif(animation, fp, dpi=96, skip_frames=5):
 
     Note that it's a bit slow.
     """
-    start = animation.in_point
-    end = animation.out_point
+    start = int(animation.in_point)
+    end = int(animation.out_point)
     frames = []
     for i in range(start, end+1, skip_frames):
         file = io.BytesIO()
