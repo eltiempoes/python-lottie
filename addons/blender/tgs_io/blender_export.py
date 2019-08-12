@@ -159,7 +159,6 @@ def adjust_animation(scene, animation, ro):
     layer = animation.layers[0]
     layer.transform.position.value.y += animation.height
     layer.shapes = list(sorted(layer.shapes, key=lambda x: x._z))
-    layer._z = sum(x._z for x in layer.shapes) / len(layer.shapes)
 
 
 def collection_to_group(collection, parent, ro: RenderOptions):
@@ -174,11 +173,13 @@ def collection_to_group(collection, parent, ro: RenderOptions):
     return g
 
 
-def object_to_shape(obj, parent, ro):
+def object_to_shape(obj, parent, ro: RenderOptions):
     g = None
 
     if obj.type == "CURVE":
         g = curve_to_shape(obj, parent, ro)
+    elif obj.type == "MESH":
+        g = mesh_to_shape(obj, parent, ro)
 
     if g:
         ro.scene.frame_set(0)
@@ -227,13 +228,17 @@ def curve_to_shape(obj, parent, ro: RenderOptions):
     return g
 
 
+def get_fill(obj, ro):
+    # TODO animation
+    fillc = obj.active_material.diffuse_color
+    fill = tgs.objects.Fill(NVector(*fillc[:-1]))
+    fill.opacity.value = fillc[-1] * 100
+    return fill
+
+
 def curve_apply_material(obj, g, ro):
     if obj.data.fill_mode != "NONE":
-        # TODO animation
-        fillc = obj.active_material.diffuse_color
-        fill = tgs.objects.Fill(NVector(*fillc[:-1]))
-        fill.opacity.value = fillc[-1] * 100
-        g.add_shape(fill)
+        g.add_shape(get_fill(obj, ro))
 
     if ro.line_width > 0:
         # TODO animation
@@ -264,3 +269,37 @@ def add_point_to_bezier(bez, point, ro: RenderOptions, obj):
 
 def add_point_to_poly(bez, point, ro, obj):
     bez.add_point(ro.vpix_r(obj, point.co))
+
+
+def mesh_to_shape(obj, parent, ro):
+    # TODO concave hull to optimize
+    g = parent.add_shape(tgs.objects.Group())
+    g.name = obj.name
+    verts = list(ro.vpix_r(obj, v.co) for v in obj.data.vertices)
+    fill = get_fill(obj, ro)
+    animated = AnimationWrapper(obj)
+    times = list(sorted(animated.keyframe_times()))
+
+    def f_bez(f):
+        bez = tgs.objects.Bezier()
+        bez.close()
+        for v in f.vertices:
+            bez.add_point(verts[v])
+        return bez
+
+    for f in obj.data.polygons:
+        shp = g.add_shape(tgs.objects.Group())
+        sh = shp.add_shape(tgs.objects.Path())
+        shp.add_shape(fill)
+        sh.shape.value = f_bez(f)
+
+    if times:
+        for time in times:
+            ro.scene.frame_set(time)
+            verts = list(ro.vpix_r(obj, v.co) for v in obj.data.vertices)
+
+            for f, shp in zip(obj.data.polygons, g.shapes):
+                sh = shp.shapes[0]
+                sh.shape.add_keyframe(time, f_bez(f))
+
+    return g
