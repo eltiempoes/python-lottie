@@ -235,3 +235,10 @@ https://gitlab.com/mattia.basaglia/tgs/
 ### Chat
 
 https://t.me/tgs_stuff
+
+### Download
+
+https://gitlab.com/mattia.basaglia/tgs/-/jobs/artifacts/master/download?job=build
+
+Here you can download packages for pip, blender, and inkscape before they are released.
+These packages always have the latest features but they might be unstable.
