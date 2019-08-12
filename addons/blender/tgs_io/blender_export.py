@@ -128,7 +128,9 @@ class AnimationWrapper:
         return kft
 
 
-def scene_to_tgs(scene):
+def context_to_tgs(context):
+    scene = context.scene
+    root = context.view_layer.layer_collection
     initial_frame = scene.frame_current
     try:
         animation = tgs.objects.Animation()
@@ -147,7 +149,7 @@ def scene_to_tgs(scene):
             ro.line_width = 0
         ro.camera_angles = NVector(*scene.camera.rotation_euler) * 180 / math.pi
 
-        collection_to_group(scene.collection, layer, ro)
+        collection_to_group(root, layer, ro)
         adjust_animation(scene, animation, ro)
 
         return animation
@@ -162,18 +164,20 @@ def adjust_animation(scene, animation, ro):
 
 
 def collection_to_group(collection, parent, ro: RenderOptions):
-    g = parent
+    if collection.exclude or collection.collection.hide_render:
+        return
 
     for obj in collection.children:
-        collection_to_group(obj, g, ro)
+        collection_to_group(obj, parent, ro)
 
-    for obj in collection.objects:
-        object_to_shape(obj, g, ro)
-
-    return g
+    for obj in collection.collection.objects:
+        object_to_shape(obj, parent, ro)
 
 
 def object_to_shape(obj, parent, ro: RenderOptions):
+    if obj.hide_render:
+        return
+
     g = None
 
     if obj.type == "CURVE":
