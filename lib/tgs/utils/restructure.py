@@ -4,11 +4,14 @@ from .. import objects
 class RestructuredLayer:
     def __init__(self, lottie):
         self.lottie = lottie
-        self.children = []
+        self.children_pre = []
+        self.children_post = []
+        self.structured = False
         self.shapegroup = None
 
     def add(self, child):
-        self.children.insert(0, child)
+        c = self.children_pre if self.structured else self.children_post
+        c.insert(0, child)
 
 
 class RestructuredShapeGroup:
@@ -87,11 +90,15 @@ class AbstractBuilder:
     def process_layer(self, layer_builder, out_parent):
         out_layer = self._on_layer(layer_builder, out_parent)
 
+        for c in layer_builder.children_pre:
+            self.process_layer(c, out_layer)
+
         shapegroup = getattr(layer_builder, "shapegroup", None)
         if shapegroup:
             self.shapegroup_process_children(shapegroup, out_layer)
 
-        for c in layer_builder.children:
+
+        for c in layer_builder.children_post:
             self.process_layer(c, out_layer)
 
     def shapegroup_process_child(self, shape, shapegroup, out_parent):
@@ -125,6 +132,7 @@ class AbstractBuilder:
 
         top_layers = []
         for layer in flat_layers:
+            layer.structured = True
             if layer.lottie.parent is not None:
                 layers[layer.lottie.parent].add(layer)
             else:

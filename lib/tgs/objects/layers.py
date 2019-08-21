@@ -116,6 +116,9 @@ class Layer(TgsObject):
             }
         return Layer._classses[lottiedict["ty"]]
 
+    def __repr__(self):
+        return "<%s %s %s>" % (type(self).__name__, self.index, self.name)
+
 
 ## \ingroup Lottie
 class NullLayer(Layer):

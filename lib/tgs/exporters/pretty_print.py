@@ -2,6 +2,7 @@ import sys
 
 from ..objects.base import TgsObject, Tgs
 from ..objects.properties import MultiDimensional, Value, ShapeProperty
+from ..objects.layers import Layer
 
 
 def _prettyprint_scalar(tgs_object, out=sys.stdout):
@@ -50,6 +51,8 @@ def prettyprint_summary(tgs_object, out=sys.stdout, indent="   ", _i=""):
         name = getattr(tgs_object, "name", None)
         if name:
             out.write(" %r" % name)
+        if isinstance(tgs_object, Layer):
+            out.write(" %s -> %s" % (tgs_object.index, tgs_object.parent))
         out.write('\n')
         _i += indent
         for k in tgs_object._props:
