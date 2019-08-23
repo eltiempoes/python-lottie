@@ -114,6 +114,13 @@ class NVector():
             a[0] * b[1] - a[1] * b[0],
         )
 
+    @property
+    def polar_angle(self):
+        """
+        \pre len(self) == 2
+        """
+        return math.atan2(self.y, self.x)
+
 
 def Point(x, y):
     return NVector(x, y)

@@ -63,6 +63,9 @@ class BoundingBox:
             return 0
         return self.y2 - self.y1
 
+    def size(self):
+        return NVector(self.width, self.height)
+
 
 ## \ingroup Lottie
 class ShapeElement(TgsObject):
@@ -143,14 +146,14 @@ class Rect(Shape):
     ## %Shape type.
     type = "rc"
 
-    def __init__(self):
+    def __init__(self, pos=None, size=None, rounded=0):
         Shape.__init__(self)
         ## Rect's position
-        self.position = MultiDimensional(NVector(0, 0))
+        self.position = MultiDimensional(pos or NVector(0, 0))
         ## Rect's size
-        self.size = MultiDimensional(NVector(0, 0))
+        self.size = MultiDimensional(size or NVector(0, 0))
         ## Rect's rounded corners
-        self.rounded = Value()
+        self.rounded = Value(rounded)
 
     def bounding_box(self, time=0):
         pos = self.position.get_value(time)
@@ -445,12 +448,21 @@ class Group(ShapeElement):
         for v in self.shapes:
             bb.expand(v.bounding_box(time))
         s = self.transform.scale.get_value(time) / 100
-        p = self.transform.position.get_value(time)
+        a = self.transform.anchor_point.get_value(time)
+        p = self.transform.position.get_value(time) - a
+        r = self.transform.rotation.get_value(time) * math.pi / 180
         if not bb.isnull():
             bb.x1 = bb.x1 * s.x + p.x
             bb.y1 = bb.y1 * s.y + p.y
             bb.x2 = bb.x2 * s.x + p.x
             bb.y2 = bb.y2 * s.y + p.y
+            if r:
+                bbc = bb.center()
+                bbs = bb.size() / 2
+                relc = bbc - a
+                r += relc.polar_angle
+                bbc = a + NVector(math.cos(r), math.sin(r)) * relc.length
+                bb = BoundingBox(bbc.x - bbs.x, bbc.y - bbs.y, bbc.x + bbs.x, bbc.y + bbs.y)
         return bb
 
     def find_all(self, type=ShapeElement, predicate=None, recursive=True):

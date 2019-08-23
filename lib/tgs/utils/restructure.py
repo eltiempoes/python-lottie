@@ -97,7 +97,6 @@ class AbstractBuilder:
         if shapegroup:
             self.shapegroup_process_children(shapegroup, out_layer)
 
-
         for c in layer_builder.children_post:
             self.process_layer(c, out_layer)
 
