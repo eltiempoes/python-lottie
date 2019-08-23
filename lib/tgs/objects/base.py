@@ -192,7 +192,7 @@ class TgsProp:
             elif isinstance(v, float):
                 if v % 1 == 0:
                     return int(v)
-                return round(v, 3)
+                return v #round(v, 3)
             else:
                 raise Exception("Unknown value %r" % v)
         except Exception as e:
@@ -330,3 +330,22 @@ class CustomObject(TgsObject):
 
     def refresh(self):
         self.wrapped = self._build_wrapped()
+
+
+class ObjectVisitor:
+    def __call__(self, tgs_object):
+        self.visit(tgs_object)
+        for p in tgs_object._props:
+            pval = p.get(tgs_object)
+            self.visit_property(tgs_object, p, pval)
+            if isinstance(pval, TgsObject):
+                self(pval)
+            elif isinstance(pval, list) and pval and isinstance(pval[0], TgsObject):
+                for c in pval:
+                    self(c)
+
+    def visit(self, object):
+        pass
+
+    def visit_property(self, object, property, value):
+        pass

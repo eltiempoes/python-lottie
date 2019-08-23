@@ -3,6 +3,7 @@ import sys
 import argparse
 import inspect
 from ..exporters import exporters
+from .stripper import float_strip
 
 
 def _get_caller():
@@ -64,11 +65,12 @@ def run(animation, ns):
             exporter.export(animation, absname, exporter.argparse_options(ns))
 
 
-def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1):
+def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1, strip=float_strip):
     """
     Sets up a script to output an animation into various formats
     """
     caller = _get_caller()
     if caller.__name__ == "__main__":
         parser = _get_parser(caller, basename, path, formats, verbosity)
+        strip(animation)
         run(animation, parser.parse_args())

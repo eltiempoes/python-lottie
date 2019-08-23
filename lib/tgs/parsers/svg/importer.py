@@ -387,7 +387,7 @@ class SvgParser(SvgHandler):
                 opacity = 1
             else:
                 color = self.parse_color(fill_color)
-                fill = objects.Fill(color[:3])
+                fill = objects.Fill(NVector(*color[:3]))
                 opacity = color[3]
             opacity *= float(style.get("fill-opacity", 1))
             fill.opacity.value = opacity * 100
