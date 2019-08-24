@@ -333,16 +333,21 @@ class CustomObject(TgsObject):
 
 
 class ObjectVisitor:
+    DONT_RECURSE = object()
+
     def __call__(self, tgs_object):
+        self._process(tgs_object)
+
+    def _process(self, tgs_object):
         self.visit(tgs_object)
         for p in tgs_object._props:
             pval = p.get(tgs_object)
-            self.visit_property(tgs_object, p, pval)
-            if isinstance(pval, TgsObject):
-                self(pval)
-            elif isinstance(pval, list) and pval and isinstance(pval[0], TgsObject):
-                for c in pval:
-                    self(c)
+            if self.visit_property(tgs_object, p, pval) is not self.DONT_RECURSE:
+                if isinstance(pval, TgsObject):
+                    self._process(pval)
+                elif isinstance(pval, list) and pval and isinstance(pval[0], TgsObject):
+                    for c in pval:
+                        self._process(c)
 
     def visit(self, object):
         pass
