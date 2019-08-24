@@ -407,9 +407,10 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+uidir = @uidir@
 PLUGIN_NAME = lottie-exporter
-EXTRA_FILES = canvas.py \
-			  misc.py \
+EXTRA_FILES = bodymovin.js \
+			  canvas.py \
 			  settings.py
 
 plugin_DATA = \
@@ -425,12 +426,14 @@ EXTRA_DIST = \
 MAINTAINERCLEANFILES = Makefile.in
 DISTCLEANFILES = plugin.xml
 SUBDIRS = \
+		  common \
 		  effects \
           helpers \
           layers \
           properties \
           shapes \
-		  sources
+		  sources \
+		  synfig
 
 all: all-recursive
 

@@ -347,9 +347,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+uidir = @uidir@
 PLUGIN_NAME = sources
 EXTRA_FILES = \
-			  image.py
+			  image.py \
+			  precomp.py
 
 plugin_DATA = \
                 $(EXTRA_FILES)

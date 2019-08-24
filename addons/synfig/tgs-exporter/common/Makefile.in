@@ -90,7 +90,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = plugins/lottie-exporter/effects
+subdir = plugins/lottie-exporter/common
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx.m4 \
 	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/gnome.m4 \
@@ -348,24 +348,24 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 uidir = @uidir@
-PLUGIN_NAME = effects
+PLUGIN_NAME = common
 EXTRA_FILES = \
-			  allmask.py \
-			  color.py \
-			  controller.py \
-			  feather.py \
-			  fillmask.py \
-			  fill.py \
-			  invert.py \
-			  opacity.py \
-			  point.py \
-			  slider.py
+			  Bline.py \
+			  Canvas.py \
+			  Color.py \
+			  Count.py \
+			  Hermite.py \
+			  Layer.py \
+			  Matrix2.py \
+			  misc.py \
+			  Param.py \
+			  Vector.py
 
 plugin_DATA = \
-				$(EXTRA_FILES)
+                $(EXTRA_FILES)
 
 EXTRA_DIST = \
-			 $(EXTRA_FILES)
+             $(EXTRA_FILES)
 
 MAINTAINERCLEANFILES = Makefile.in
 all: all-am
@@ -380,9 +380,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu plugins/lottie-exporter/effects/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu plugins/lottie-exporter/common/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu plugins/lottie-exporter/effects/Makefile
+	  $(AUTOMAKE) --gnu plugins/lottie-exporter/common/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \

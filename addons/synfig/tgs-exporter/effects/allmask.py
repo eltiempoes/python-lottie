@@ -4,18 +4,17 @@ This module will store all the functions required for all mask property of lotti
 
 import sys
 import settings
-from misc import Count
+from common.Count import Count
 from properties.value import gen_properties_value
 sys.path.append("../")
 
 
-def gen_effects_allmask(lottie, layer, idx):
+def gen_effects_allmask(lottie, idx):
     """
     Generates the dictionary corresponding to effects/allmask.json
 
     Args:
         lottie (dict)                : Lottie format effects stored in this
-        layer  (lxml.etree._Element) : Synfig format layer
         idx    (int)                 : Index/Count of effect
 
     Returns:
