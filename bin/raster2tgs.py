@@ -77,27 +77,21 @@ parser.add_argument(
 if __name__ == "__main__":
     ns = parser.parse_args()
     if ns.mode == "bezier":
-        from tgs.parsers.raster import raster_frames_to_animation, QuanzationMode, raster_to_animation
+        from tgs.parsers.raster import QuanzationMode, raster_to_animation
 
         cm = QuanzationMode.Nearest if ns.color_mode == "nearest" else QuanzationMode.Exact
 
-        if len(ns.infile) == 1:
-            animation = raster_to_animation(ns.infile[0], ns.colors, ns.palette, cm)
-        else:
-            animation = raster_frames_to_animation(
-                ns.infile, ns.colors, ns.delay,
-                framerate=ns.framerate,
-                palette=ns.palette,
-                mode=cm
-            )
+        animation = raster_to_animation(
+            ns.infile, ns.colors, ns.delay,
+            framerate=ns.framerate,
+            palette=ns.palette,
+            mode=cm
+        )
     else:
-        from tgs.parsers.pixel import pixel_to_animation, pixel_frames_to_animation
-        if len(ns.infile) == 1:
-            animation = pixel_to_animation(ns.infile[0])
-        else:
-            animation = pixel_frames_to_animation(
-                ns.infile, ns.delay, ns.framerate
-            )
+        from tgs.parsers.pixel import pixel_to_animation
+        animation = pixel_to_animation(
+            ns.infile, ns.delay, ns.framerate
+        )
 
     binary = ns.format == "tgs"
     if ns.output == "-":

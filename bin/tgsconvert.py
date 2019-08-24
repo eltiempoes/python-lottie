@@ -13,10 +13,10 @@ from tgs.exporters.base import ExtraOption, _add_options
 from tgs import parsers
 from tgs.parsers.svg.importer import parse_color
 try:
-    import tgs.parsers.raster
-    raster = True
+    import tgs.parsers.pixel
+    pixel = True
 except ImportError:
-    raster = False
+    pixel = False
 
 
 class Importer:
@@ -38,12 +38,37 @@ importers = [
     ]),
     Importer("Lottie JSON / Telegram Sticker", ["json", "tgs"], parsers.tgs.parse_tgs, [], "lottie"),
 ]
-if raster:
+if pixel:
+    try:
+        import tgs.parsers.raster
+        raster = True
+    except ImportError:
+        raster = False
+
+    def bitmap_to_animation(filenames, n_colors, palette, mode, frame_delay=1, framerate=60):
+        if raster and mode == "bezier":
+            return tgs.parsers.raster.raster_to_animation(
+                filenames, n_colors, frame_delay,
+                framerate=framerate,
+                palette=palette
+            )
+        else:
+            return tgs.parsers.pixel.pixel_to_animation(filenames, frame_delay, framerate)
+
+    mode_option = ExtraOption(
+        "mode",
+        default="bezier" if raster else "pixel",
+        choices=["bezier", "pixel"],
+        help="Vectorization mode"
+    )
+
     importers.append(
-        Importer("Raster image", ["bmp", "png", "gif"], tgs.parsers.raster.raster_to_animation, [
+        Importer("Raster image", ["bmp", "png", "gif"], bitmap_to_animation, [
             ExtraOption("n_colors", type=int, default=1, help="Number of colors to quantize"),
             ExtraOption("palette", type=parse_color, default=[], nargs="+", help="Custom palette"),
-            # TODO color mode
+            mode_option,
+            ExtraOption("framerate", type=int, default=60),
+            # TODO QuanzationMode for raster
         ])
     )
 

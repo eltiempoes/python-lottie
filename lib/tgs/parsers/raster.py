@@ -6,6 +6,7 @@ import enum
 from scipy.cluster.vq import kmeans
 from .. import objects
 from ..nvector import NVector
+from .pixel import _vectorizing_func
 
 
 class QuanzationMode(enum.Enum):
@@ -91,20 +92,19 @@ class RasterImage:
 
 
 class Vectorizer:
-    def __init__(self, *a, **kw):
-        self.animation = objects.Animation(*a, **kw)
+    def __init__(self):
         self.palette = None
         self.layers = {}
 
-    def _create_layer(self, layer_name):
-        layer = self.animation.add_layer(objects.ShapeLayer())
+    def _create_layer(self, animation, layer_name):
+        layer = animation.add_layer(objects.ShapeLayer())
         if layer_name:
             self.layers[layer_name] = layer
             layer.name = layer_name
         return layer
 
-    def prepare_layer(self, layer_name=None):
-        layer = self._create_layer(layer_name)
+    def prepare_layer(self, animation, layer_name=None):
+        layer = self._create_layer(animation, layer_name)
         layer._max_verts = {}
         if self.palette is None:
             group = layer.add_shape(objects.Group())
@@ -123,8 +123,8 @@ class Vectorizer:
                     fill.opacity.value = fcol[3] * 100
         return layer
 
-    def raster_to_layer(self, raster, layer_name=None, mode=QuanzationMode.Nearest):
-        layer = self.prepare_layer()
+    def raster_to_layer(self, animation, raster, layer_name=None, mode=QuanzationMode.Nearest):
+        layer = self.prepare_layer(animation)
         mono_data = raster.quantize(self.palette, mode)
         for (color, bitmap), group in zip(mono_data, layer.shapes):
             self.raster_to_bezier(group, bitmap)
@@ -151,9 +151,9 @@ class Vectorizer:
                     bezier.add_point(ep, c2)
         return shapes
 
-    def raster_to_frame(self, raster, layer_name, time, mode=QuanzationMode.Nearest):
+    def raster_to_frame(self, animation, raster, layer_name, time, mode=QuanzationMode.Nearest):
         if layer_name not in self.layers:
-            layer = self.prepare_layer(layer_name)
+            layer = self.prepare_layer(animation, layer_name)
         else:
             layer = self.layers[layer_name]
 
@@ -175,12 +175,13 @@ class Vectorizer:
             # TODO handle multiple shapes
             shape = group.shapes[0]
             nverts = layer._max_verts[group.name]
-            for kf in shape.shape.keyframes:
-                bezier = kf.start
-                count = nverts - len(bezier.vertices)
-                bezier.vertices += [bezier.vertices[-1]] * count
-                bezier.in_tangents += [NVector(0, 0)] * count
-                bezier.out_tangents += [NVector(0, 0)] * count
+            if shape.shape.animated:
+                for kf in shape.shape.keyframes:
+                    bezier = kf.start
+                    count = nverts - len(bezier.vertices)
+                    bezier.vertices += [bezier.vertices[-1]] * count
+                    bezier.in_tangents += [NVector(0, 0)] * count
+                    bezier.out_tangents += [NVector(0, 0)] * count
 
     def duplicate_start_frame(self, layer_name, time):
         layer = self.layers[layer_name]
@@ -190,18 +191,6 @@ class Vectorizer:
             group.shapes[0].shape.add_keyframe(time, bezier)
 
 
-def raster_to_animation(filename, n_colors=1, palette=[], mode=QuanzationMode.Nearest):
-    vc = Vectorizer(60)
-    raster = RasterImage.open(filename)
-    if palette:
-        vc.palette = palette
-    elif n_colors > 1:
-        vc.palette = raster.k_means(n_colors)
-
-    vc.raster_to_layer(raster, None, mode)
-    return vc.animation
-
-
 def color2numpy(vcolor):
     l = (vcolor * 255).components
     if len(l) == 3:
@@ -209,29 +198,32 @@ def color2numpy(vcolor):
     return numpy.array(l, numpy.uint8)
 
 
-def raster_frames_to_animation(files, n_colors=1, frame_delay=1, start_time=0,
-                               looping=True, framerate=60, palette=[], mode=QuanzationMode.Nearest):
-    nframes = len(files)
-    if not looping:
-        nframes -= 1
-    vc = Vectorizer(start_time + frame_delay * nframes, framerate=framerate)
+def raster_to_animation(filenames, n_colors=1, frame_delay=1,
+                        looping=True, framerate=60, palette=[],
+                        mode=QuanzationMode.Nearest):
 
-    raster = RasterImage.open(files.pop(0))
-    if palette:
-        vc.palette = [color2numpy(c) for c in palette]
-    elif n_colors > 1:
-        vc.palette = raster.k_means(n_colors)
+    vc = Vectorizer()
 
-    time = start_time
-    vc.raster_to_frame(raster, "anim", time, mode)
+    def callback(animation, raster, frame):
+        raster = RasterImage.from_pil(raster)
+        if not vc.palette:
+            if palette:
+                vc.palette = [color2numpy(c) for c in palette]
+            elif n_colors > 1:
+                vc.palette = raster.k_means(n_colors)
+        vc.raster_to_frame(animation, raster, "anim", frame * frame_delay, mode)
 
-    for filename in files:
-        raster = RasterImage.open(filename)
-        time += frame_delay
-        vc.raster_to_frame(raster, "anim", time, mode)
+    animation = _vectorizing_func(filenames, frame_delay, framerate, callback)
 
     vc.adjust_missing_vertices("anim")
-    if looping:
-        vc.duplicate_start_frame("anim", time + frame_delay)
+    if looping and animation._nframes > 1:
+        animation.out_point += frame_delay
+        vc.duplicate_start_frame("anim", animation.out_point)
+    elif animation._nframes == 1:
+        for g in animation.find("anim").shapes:
+            for shape in g.find_all(objects.Path):
+                shape.shape.clear_animation(shape.shape.get_value(0))
 
-    return vc.animation
+    animation.find("anim").out_point = animation.out_point
+
+    return animation

@@ -269,6 +269,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         d = ""
         for shape in shapes:
             bez = shape.shape.get_value(self.time)
+            if not bez.vertices:
+                continue
             if d:
                 d += "\n"
             d += "M %s,%s " % tuple(bez.vertices[0].components[:2])
