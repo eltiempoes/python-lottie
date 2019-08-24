@@ -20,7 +20,7 @@ class RasterImage:
 
     @classmethod
     def from_pil(cls, image):
-        return cls(numpy.array(image))
+        return cls(numpy.array(image.convert("RGBA")))
 
     @classmethod
     def open(cls, filename):
