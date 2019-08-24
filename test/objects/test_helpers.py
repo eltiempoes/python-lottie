@@ -4,7 +4,7 @@ from tgs import objects
 
 class TestTransform(base.TestCase):
     _plain_out = {
-        "a": {"a": 0, "k": [0, 0, 0]},
+        "a": {"a": 0, "k": [0, 0]},
         "p": {"a": 0, "k": [0, 0]},
         "s": {"a": 0, "k": [100, 100]},
         "r": {"a": 0, "k": 0},
