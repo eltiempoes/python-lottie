@@ -12,6 +12,7 @@ from tgs.exporters import exporters
 from tgs.exporters.base import ExtraOption, _add_options
 from tgs import parsers
 from tgs.parsers.svg.importer import parse_color
+from tgs.utils.stripper import float_strip, heavy_strip
 try:
     import tgs.parsers.pixel
     pixel = True
@@ -127,6 +128,14 @@ group.add_argument(
     action="store_true",
     help="Ensure the animation is 512x512 and 30 or 60 fps",
 )
+group.add_argument(
+    "--optimize",
+    "-O",
+    default=1,
+    type=int,
+    choices=[0, 1, 2],
+    help="Optimize the animation parameter: 0 no optimization, 1 truncate floats, 2 truncate floats and names",
+)
 
 
 for importer in importers:
@@ -175,6 +184,10 @@ if __name__ == "__main__":
     o_options = exporter.argparse_options(ns)
 
     an = importer.load(infile, i_options)
+    if ns.optimize == 1:
+        float_strip(an)
+    elif ns.optimize >= 2:
+        heavy_strip(an)
     if ns.sanitize:
         an.tgs_sanitize()
     exporter.export(an, outfile, o_options)
