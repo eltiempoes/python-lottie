@@ -206,7 +206,7 @@ def raster_to_animation(filenames, n_colors=1, frame_delay=1,
 
     def callback(animation, raster, frame):
         raster = RasterImage.from_pil(raster)
-        if not vc.palette:
+        if vc.palette is None:
             if palette:
                 vc.palette = [color2numpy(c) for c in palette]
             elif n_colors > 1:
