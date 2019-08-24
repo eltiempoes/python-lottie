@@ -34,4 +34,3 @@ parser.add_argument(
 if __name__ == "__main__":
     ns = parser.parse_args()
     print(_parse_color(ns.color).components)
-

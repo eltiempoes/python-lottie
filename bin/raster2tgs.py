@@ -66,22 +66,38 @@ parser.add_argument(
          "nearest will map each color to the most similar in the palette." +
          " exact will only match exact colors"
 )
+parser.add_argument(
+    "--mode",
+    "-m",
+    default="bezier",
+    choices=["bezier", "pixel"],
+    help="Vectorization mode"
+)
 
 if __name__ == "__main__":
-    from tgs.parsers.raster import raster_frames_to_animation, QuanzationMode, raster_to_animation
     ns = parser.parse_args()
+    if ns.mode == "bezier":
+        from tgs.parsers.raster import raster_frames_to_animation, QuanzationMode, raster_to_animation
 
-    cm = QuanzationMode.Nearest if ns.color_mode == "nearest" else QuanzationMode.Exact
+        cm = QuanzationMode.Nearest if ns.color_mode == "nearest" else QuanzationMode.Exact
 
-    if len(ns.infile) == 1:
-        animation = raster_to_animation(ns.infile[0], ns.colors, ns.palette, cm)
+        if len(ns.infile) == 1:
+            animation = raster_to_animation(ns.infile[0], ns.colors, ns.palette, cm)
+        else:
+            animation = raster_frames_to_animation(
+                ns.infile, ns.colors, ns.delay,
+                framerate=ns.framerate,
+                palette=ns.palette,
+                mode=cm
+            )
     else:
-        animation = raster_frames_to_animation(
-            ns.infile, ns.colors, ns.delay,
-            framerate=ns.framerate,
-            palette=ns.palette,
-            mode=cm
-        )
+        from tgs.parsers.pixel import pixel_to_animation, pixel_frames_to_animation
+        if len(ns.infile) == 1:
+            animation = pixel_to_animation(ns.infile[0])
+        else:
+            animation = pixel_frames_to_animation(
+                ns.infile, ns.delay, ns.framerate
+            )
 
     binary = ns.format == "tgs"
     if ns.output == "-":
