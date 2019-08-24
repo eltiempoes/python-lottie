@@ -80,6 +80,9 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         return self.svg
 
     def _on_layer(self, layer_builder, dom_parent):
+        if layer_builder.lottie.in_point > self.time or layer_builder.lottie.out_point < self.time:
+            return None
+
         g = self.group_from_lottie(layer_builder.lottie, dom_parent, True)
         if isinstance(layer_builder.lottie, objects.NullLayer):
             g.attrib["opacity"] = "1"

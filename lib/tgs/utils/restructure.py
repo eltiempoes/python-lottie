@@ -90,6 +90,9 @@ class AbstractBuilder:
     def process_layer(self, layer_builder, out_parent):
         out_layer = self._on_layer(layer_builder, out_parent)
 
+        if out_layer is None:
+            return
+
         for c in layer_builder.children_pre:
             self.process_layer(c, out_layer)
 

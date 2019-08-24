@@ -68,7 +68,8 @@ if pixel:
             ExtraOption("n_colors", type=int, default=1, help="Number of colors to quantize"),
             ExtraOption("palette", type=parse_color, default=[], nargs="+", help="Custom palette"),
             mode_option,
-            ExtraOption("framerate", type=int, default=60),
+            ExtraOption("frame_delay", type=int, default=2, help="Number of frames to skip between images"),
+            ExtraOption("framerate", type=int, default=60, help="Frames per second"),
             # TODO QuanzationMode for raster
         ])
     )
