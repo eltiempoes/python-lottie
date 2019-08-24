@@ -6,6 +6,8 @@ from .base import exporter, ExtraOption
 
 
 def _png_gif_prepare(image):
+    if image.mode not in ["RGBA", "RGBa"]:
+        image = image.convert("RGBA")
     alpha = image.split()[3]
     image = image.convert('P', palette=Image.ADAPTIVE, colors=255)
     mask = Image.eval(alpha, lambda a: 255 if a <= 128 else 0)
