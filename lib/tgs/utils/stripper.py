@@ -1,6 +1,7 @@
 from ..objects.base import TgsObject, ObjectVisitor
 from ..objects.bezier import Bezier
-from..nvector import NVector
+from ..objects.helpers import Transform
+from ..nvector import NVector
 
 
 class Strip(ObjectVisitor):
@@ -27,5 +28,22 @@ class Strip(ObjectVisitor):
             self.nvector(value)
 
 
-heavy_strip = Strip(3, {"ind", "ix", "nm", "mn"})
+class TransformStip(Strip):
+    def visit(self, object):
+        if isinstance(object, Transform):
+            self.transform_unset(object, "anchor_point", NVector(0, 0))
+            self.transform_unset(object, "position", NVector(0, 0))
+            #self.transform_unset(object, "scale", NVector(100, 100))
+            self.transform_unset(object, "rotation", 0)
+            #self.transform_unset(object, "opacity", 100)
+            self.transform_unset(object, "skew", 0)
+            self.transform_unset(object, "skew_axis", 0)
+
+    def transform_unset(self, object, prop_name, value):
+        prop = getattr(object, prop_name)
+        if not prop.animated and prop.value == value:
+            setattr(object, prop_name, None)
+
+
+heavy_strip = TransformStip(3, {"ind", "ix", "nm", "mn"})
 float_strip = Strip(3)

@@ -22,7 +22,7 @@ class Transform(TgsObject):
 
     def __init__(self):
         ## Transform Anchor Point
-        self.anchor_point = MultiDimensional(NVector(0, 0, 0))
+        self.anchor_point = MultiDimensional(NVector(0, 0))
         ## Transform Position
         self.position = MultiDimensional(NVector(0, 0))
         ## Transform Scale
