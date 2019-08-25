@@ -37,9 +37,10 @@ setuptools.setup(
         os.path.join("bin", "raster_palette.py"),
         os.path.join("bin", "tgs2svg.py"),
         os.path.join("bin", "tgscat.py"),
-        os.path.join("bin", "tgscolor.py"),
         os.path.join("bin", "tgsconvert.py"),
         os.path.join("bin", "tgsdiff.py"),
+        os.path.join("bin", "tgsfonts.py"),
+        os.path.join("bin", "tgsprintcolor.py"),
     ],
     keywords="telegram stickers tgs lottie svg animation",
     # https://pypi.org/classifiers/
