@@ -55,10 +55,15 @@ def spring_pull(position_prop, point, start_time, end_time, falloff=15, oscillat
     position_prop.add_keyframe(end_time, point)
 
 
-def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, reverse=False, offset=NVector(0, 0), start_t=0):
+def follow_path(position_prop, bezier, start_time, end_time, n_keyframes,
+                reverse=False, offset=NVector(0, 0), start_t=0, rotation_prop=None, rotation_offset=0):
     delta = (end_time - start_time) / (n_keyframes-1)
     fact = start_t
     factd = 1 / (n_keyframes-1)
+
+    if rotation_prop:
+        start_rot = rotation_prop.get_value(start_time) if rotation_offset is None else rotation_offset
+
     for i in range(n_keyframes):
         time = start_time + i * delta
 
@@ -66,9 +71,15 @@ def follow_path(position_prop, bezier, start_time, end_time, n_keyframes, revers
             fact -= 1
             if time != start_time:
                 easing.Jump()(position_prop.keyframes[-1])
+                if rotation_prop:
+                    easing.Jump()(rotation_prop.keyframes[-1])
 
         f = 1 - fact if reverse else fact
         position_prop.add_keyframe(time, bezier.point_at(f)+offset)
+
+        if rotation_prop:
+            rotation_prop.add_keyframe(time, bezier.tangent_angle_at(f) / math.pi * 180 + start_rot)
+
         fact += factd
 
 

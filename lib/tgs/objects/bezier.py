@@ -1,3 +1,4 @@
+import math
 from .base import TgsObject, TgsProp
 from ..nvector import NVector
 
@@ -202,6 +203,20 @@ class Bezier(TgsObject):
         points = self._bezier_points(i, True)
         return self._solve_bezier(t, points)
 
+    def tangent_angle_at(self, t):
+        i, t = self._index_t(t)
+        points = self._bezier_points(i, True)
+
+        n = len(points) - 1
+        if n > 0:
+            delta = sum((
+                (points[i+1] - points[i]) * n * self._solve_bezier_coeff(i, n - 1, t)
+                for i in range(n)
+            ), NVector(0, 0))
+            return math.atan2(delta.y, delta.x)
+
+        return 0
+
     def _split(self, t):
         i, t = self._index_t(t)
         cub = self._bezier_points(i, True)
@@ -339,9 +354,22 @@ class Bezier(TgsObject):
             p1 = p2
         return next
 
+    def _solve_bezier_coeff(self, i, n, t):
+        return (
+            math.factorial(n) / (math.factorial(i) * math.factorial(n - i)) # (n choose i)
+            * (t ** i) * ((1 - t) ** (n-i))
+        )
+
     def _solve_bezier(self, t, points):
-        while len(points) > 1:
-            points = self._solve_bezier_step(t, points)
+        n = len(points) - 1
+        if n > 0:
+            return sum((
+                points[i] * self._solve_bezier_coeff(i, n, t)
+                for i in range(n+1)
+            ), NVector(0, 0))
+
+        #while len(points) > 1:
+            #points = self._solve_bezier_step(t, points)
         return points[0]
 
     def _index_t(self, t):
