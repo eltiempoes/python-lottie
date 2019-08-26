@@ -20,11 +20,11 @@ class RasterImage:
 
     @classmethod
     def from_pil(cls, image):
-        return cls(numpy.array(image.convert("RGBA")))
+        return cls(numpy.array(image))
 
-    @classmethod
-    def open(cls, filename):
-        return cls.from_pil(Image.open(filename))
+    #@classmethod
+    #def open(cls, filename):
+        #return cls.from_pil(Image.open(filename))
 
     def k_means(self, n_colors):
         """!

@@ -4,7 +4,6 @@ from .. import NVector, Color
 
 
 def pixel_add_layer(animation, raster):
-    raster = raster.convert("RGBA")
     layer = animation.add_layer(objects.ShapeLayer())
     last_rects = {}
     groups = {}
@@ -76,12 +75,12 @@ def _vectorizing_func(filenames, frame_delay, framerate, callback):
         if nframes == 0:
             animation.width = raster.width
             animation.height = raster.height
-        if not getattr(raster, "is_animated", False):
+        if not hasattr(raster, "is_animated"):
             raster.n_frames = 1
             raster.seek = lambda x: None
         for frame in range(raster.n_frames):
             raster.seek(frame)
-            callback(animation, raster, nframes + frame)
+            callback(animation, raster.convert("RGBA"), nframes + frame)
         nframes += raster.n_frames
 
     animation.out_point = frame_delay * nframes
