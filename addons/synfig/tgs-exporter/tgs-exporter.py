@@ -12,8 +12,6 @@ import os
 import json
 import sys
 import logging
-import gzip
-import codecs
 from lxml import etree
 from canvas import gen_canvas
 from layers.driver import gen_layers
@@ -53,8 +51,8 @@ def parse(file_name):
         (str) : File name in json format
     """
     tree = etree.parse(file_name)
-    canvas = Canvas(root)
-    gen_layers(settings.lottie_format["layers"], canvas, canvas.get_num_layers() - 1)
+    root = tree.getroot()  # canvas
+    gen_canvas(settings.lottie_format, root)
 
     # Storing the file name
     settings.file_name["fn"] = file_name
@@ -66,7 +64,8 @@ def parse(file_name):
     init_logs()
 
     settings.lottie_format["layers"] = []
-    gen_layers(settings.lottie_format["layers"], root, len(root) - 1)
+    canvas = Canvas(root)
+    gen_layers(settings.lottie_format["layers"], canvas, canvas.get_num_layers() - 1)
 
     return modify_final_dump(settings.lottie_format)
 
