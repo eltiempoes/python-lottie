@@ -12,6 +12,8 @@ import os
 import json
 import sys
 import logging
+import gzip
+import codecs
 from lxml import etree
 from canvas import gen_canvas
 from layers.driver import gen_layers
