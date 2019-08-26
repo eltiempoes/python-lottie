@@ -92,10 +92,20 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             g.attrib["style"] = self.group_to_style(layer_builder.shapegroup)
         return g
 
+    def _get_value(self, prop, default=NVector(0, 0)):
+        if prop:
+            v = prop.get_value(self.time)
+        else:
+            v = default
+
+        if isinstance(v, NVector):
+            return v.clone()
+        return v
+
     def set_transform(self, dom, transform):
         trans = []
-        pos = transform.position.get_value(self.time).clone()
-        anchor = transform.anchor_point.get_value(self.time).clone()
+        pos = self._get_value(transform.position)
+        anchor = self._get_value(transform.anchor_point)
         pos -= anchor
         if pos[0] != 0 or pos[1] != 0:
             trans.append("translate(%s, %s)" % (pos.components[0], pos.components[1]))
@@ -105,7 +115,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             scale /= 100
             trans.append("scale(%s, %s)" % (scale.components[0], scale.components[1]))
 
-        rot = transform.rotation.get_value(self.time)
+        rot = self._get_value(transform.rotation, 0)
         if rot != 0:
             trans.append("rotate(%s, %s, %s)" % (rot, anchor[0], anchor[1]))
 
