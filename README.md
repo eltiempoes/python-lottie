@@ -97,6 +97,21 @@ paths through the Blender Python console:
 You can also install the addon from Blender using the zipfile created by `make`.
 
 
+### Pip
+
+You can install from pypi:
+
+    pip install tgs
+
+from git:
+
+    pip install git+https://gitlab.com/mattia.basaglia/tgs.git@master
+
+for the source directory
+
+    pip install /path/to/the/sources # this is the path where setup.py is located
+
+
 Requirements
 ------------
 
