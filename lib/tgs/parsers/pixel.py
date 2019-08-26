@@ -3,6 +3,70 @@ from .. import objects
 from .. import NVector, Color
 
 
+"""
+# produces nicer looking rectangles than pixel_add_layer
+# but they end up overlapping and often yields more rectangles than the ugly ones
+def pixel_add_layer_new(animation, raster):
+    layer = animation.add_layer(objects.ShapeLayer())
+    groups = {}
+    processed = set()
+
+    def expand_comp(i):
+        if expand[i]:
+            j = (i + 1) % 2
+            ids = set()
+            for o in range(0, size[j]):
+                pid1 = (pid[i]+size[i], pid[j]+o)
+                if i == 1:
+                    pid1 = (pid1[1], pid1[0])
+                color1 = raster.getpixel(pid1)
+                if color1 != colort: # or pid1 in processed:
+                    expand[i] = False
+                    break
+                ids.add(pid1)
+            else:
+                size[i] += 1
+                expand[i] = pid[i]+size[i] < imsize[i]
+                processed.update(ids)
+
+    imsize = raster.size
+    expand = [0, 0]
+
+    for y in range(raster.height):
+        for x in range(raster.width):
+            pid = (x, y)
+            colort = raster.getpixel(pid)
+            if colort[-1] == 0 or pid in processed:
+                continue
+
+            processed.add(pid)
+            rect = objects.Rect()
+            g = groups.setdefault(colort, set())
+            g.add(rect)
+            size = NVector(1, 1)
+            expand = [x < raster.width - 1, y < raster.height - 1]
+
+            while expand[0] or expand[1]:
+                expand_comp(0)
+                expand_comp(1)
+
+            rect.size.value = size
+            rect.position.value = NVector(x, y) + size / 2
+
+    # print(sum(map(len, groups.values())))
+    for colort, rects in groups.items():
+        g = layer.add_shape(objects.Group())
+        g.shapes = list(rects) + g.shapes
+        g.name = "".join("%02x" % c for c in colort)
+        fill = g.add_shape(objects.Fill())
+        fill.color.value = Color.from_uint8(*colort[:3])
+        fill.opacity.value = colort[-1] / 255 * 100
+        stroke = g.add_shape(objects.Stroke(fill.color.value, 0.1))
+        stroke.opacity.value = fill.opacity.value
+    return layer
+"""
+
+
 def pixel_add_layer(animation, raster):
     layer = animation.add_layer(objects.ShapeLayer())
     last_rects = {}
