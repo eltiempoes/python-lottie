@@ -124,19 +124,29 @@ class Vectorizer:
         return layer
 
     def raster_to_layer(self, animation, raster, layer_name=None, mode=QuanzationMode.Nearest):
-        layer = self.prepare_layer(animation)
+        layer = self.prepare_layer(animation, layer_name)
         mono_data = raster.quantize(self.palette, mode)
         for (color, bitmap), group in zip(mono_data, layer.shapes):
-            self.raster_to_bezier(group, bitmap)
+            self.raster_to_shapes(group, bitmap)
+        return layer
 
-    def raster_to_bezier(self, group, mono_data):
+    def raster_to_shapes(self, group, mono_data):
+        bmp = potrace.Bitmap(mono_data)
+        path = bmp.trace()
+        shapes = []
+        for bezier in self.raster_to_bezier(mono_data):
+            shape = group.insert_shape(0, objects.Path())
+            shapes.append(shape)
+            shape.shape.value = bezier
+        return shapes
+
+    def raster_to_bezier(self, mono_data):
         bmp = potrace.Bitmap(mono_data)
         path = bmp.trace()
         shapes = []
         for curve in path:
-            shape = group.insert_shape(0, objects.Path())
-            shapes.append(shape)
-            bezier = shape.shape.value
+            bezier = objects.Bezier()
+            shapes.append(bezier)
             bezier.add_point(NVector(*curve.start_point))
             for segment in curve:
                 if segment.is_corner:
@@ -151,23 +161,31 @@ class Vectorizer:
                     bezier.add_point(ep, c2)
         return shapes
 
+    def _frame_keyframe(self, layer, group, time, shapes, beziers):
+        if shapes:
+            # TODO handle multiple shapes
+            nverts = len(beziers[0].vertices)
+            if nverts > layer._max_verts[group.name]:
+                layer._max_verts[group.name] = nverts
+            for shape, bezier in zip(shapes, beziers):
+                shape.shape.add_keyframe(time, bezier)
+
     def raster_to_frame(self, animation, raster, layer_name, time, mode=QuanzationMode.Nearest):
+        mono_data = raster.quantize(self.palette, mode)
+
         if layer_name not in self.layers:
             layer = self.prepare_layer(animation, layer_name)
+            for (color, bitmap), group in zip(mono_data, layer.shapes):
+                shapes = self.raster_to_shapes(group, bitmap)
+                beziers = [s.shape.value for s in shapes]
+                self._frame_keyframe(layer, group, time, shapes, beziers)
         else:
             layer = self.layers[layer_name]
 
-        mono_data = raster.quantize(self.palette, mode)
-        for (color, bitmap), group in zip(mono_data, layer.shapes):
-            shapes = self.raster_to_bezier(group, bitmap)
-            if shapes:
-                # TODO handle multiple shapes
-                nverts = len(shapes[0].shape.value.vertices)
-                if nverts > layer._max_verts[group.name]:
-                    layer._max_verts[group.name] = nverts
-                for shape in shapes:
-                    bezier = shape.shape.value
-                    shape.shape.add_keyframe(time, bezier)
+            for (color, bitmap), group in zip(mono_data, layer.shapes):
+                shapes = [s for s in group.shapes if isinstance(s, objects.Path)]
+                beziers = self.raster_to_bezier(bitmap)
+                self._frame_keyframe(layer, group, time, shapes, beziers)
 
     def adjust_missing_vertices(self, layer_name):
         layer = self.layers[layer_name]
@@ -211,19 +229,22 @@ def raster_to_animation(filenames, n_colors=1, frame_delay=1,
                 vc.palette = [color2numpy(c) for c in palette]
             elif n_colors > 1:
                 vc.palette = raster.k_means(n_colors)
-        vc.raster_to_frame(animation, raster, "anim", frame * frame_delay, mode)
+        #vc.raster_to_frame(animation, raster, "anim", frame * frame_delay, mode)
+        layer = vc.raster_to_layer(animation, raster, "frame_%s" % frame, mode)
+        layer.in_point = frame * frame_delay
+        layer.out_point = (frame + 1) * frame_delay
 
     animation = _vectorizing_func(filenames, frame_delay, framerate, callback)
 
-    vc.adjust_missing_vertices("anim")
-    if looping and animation._nframes > 1:
-        animation.out_point += frame_delay
-        vc.duplicate_start_frame("anim", animation.out_point)
-    elif animation._nframes == 1:
-        for g in animation.find("anim").shapes:
-            for shape in g.find_all(objects.Path):
-                shape.shape.clear_animation(shape.shape.get_value(0))
+    #vc.adjust_missing_vertices("anim")
+    #if looping and animation._nframes > 1:
+        #animation.out_point += frame_delay
+        #vc.duplicate_start_frame("anim", animation.out_point)
+    #elif animation._nframes == 1:
+        #for g in animation.find("anim").shapes:
+            #for shape in g.find_all(objects.Path):
+                #shape.shape.clear_animation(shape.shape.get_value(0))
 
-    animation.find("anim").out_point = animation.out_point
+    #animation.find("anim").out_point = animation.out_point
 
     return animation
