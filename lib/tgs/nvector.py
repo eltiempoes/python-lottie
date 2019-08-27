@@ -138,8 +138,5 @@ def Color(r, g, b):
     return NVector(r, g, b)
 
 
-Color.from_uint8 = lambda r, g, b: NVector(r, g, b) / 255
-
-
 def PolarVector(length, theta):
     return NVector(length * math.cos(theta), length * math.sin(theta))
