@@ -1,36 +1,99 @@
 from PIL import Image
 from .. import objects
 from .. import NVector, Color
+from ..utils import color
 
 
-"""
-# produces nicer looking rectangles than pixel_add_layer
-# but they end up overlapping and often yields more rectangles than the ugly ones
-def pixel_add_layer_new(animation, raster):
+class Polygen:
+    def __init__(self, x, y):
+        self.vertices = [
+            NVector(x, y),
+            NVector(x+1, y),
+            NVector(x+1, y+1),
+            NVector(x, y+1),
+        ]
+        self._has_x = False
+        self._has_y = False
+
+    def add_pixel_x(self, x, y):
+        i = self.vertices.index(NVector(x, y))
+        if len(self.vertices) > i and self.vertices[i+1] == NVector(x, y+1):
+            self._has_x = True
+            self.vertices.insert(i+1, NVector(x+1, y))
+            self.vertices.insert(i+2, NVector(x+1, y+1))
+        else:
+            raise ValueError()
+
+    def add_pixel_x_neg(self, x, y):
+        i = self.vertices.index(NVector(x+1, y))
+        if i > 0 and self.vertices[i-1] == NVector(x+1, y+1):
+            self._has_x = True
+            self.vertices.insert(i, NVector(x, y))
+            self.vertices.insert(i, NVector(x, y+1))
+        else:
+            raise ValueError()
+
+    def add_pixel_y(self, x, y):
+        i = self.vertices.index(NVector(x, y))
+        if i > 0 and self.vertices[i-1] == NVector(x+1, y):
+            self._has_y = True
+            if i > 1 and self.vertices[i-2] == NVector(x+1, y+1):
+                self.vertices[i-1] = NVector(x, y+1)
+            else:
+                self.vertices.insert(i, NVector(x, y+1))
+                self.vertices.insert(i, NVector(x+1, y+1))
+        else:
+            raise ValueError()
+
+    def _to_rect(self, id1, id2):
+        p1 = self.vertices[id1]
+        p2 = self.vertices[id2]
+        return objects.Rect((p1+p2)/2, p2-p1)
+
+    def to_shape(self):
+        if not self._has_x or not self._has_y:
+            return self._to_rect(0, int(len(self.vertices)/2))
+        bez = objects.Bezier()
+        bez.closed = True
+        for point in self.vertices:
+            if len(bez.vertices) > 1 and (
+                bez.vertices[-1].x == bez.vertices[-2].x == point.x or
+                bez.vertices[-1].y == bez.vertices[-2].y == point.y
+            ):
+                bez.vertices[-1] = point
+            else:
+                bez.add_point(point)
+
+        if len(bez.vertices) > 2 and bez.vertices[0].x == bez.vertices[-1].x == bez.vertices[-2].x:
+            bez.vertices.pop()
+            bez.out_tangents.pop()
+            bez.in_tangents.pop()
+        return objects.Path(bez)
+
+
+def pixel_add_layer_paths(animation, raster):
     layer = animation.add_layer(objects.ShapeLayer())
     groups = {}
     processed = set()
+    xneg_candidates = set()
 
-    def expand_comp(i):
-        if expand[i]:
-            j = (i + 1) % 2
-            ids = set()
-            for o in range(0, size[j]):
-                pid1 = (pid[i]+size[i], pid[j]+o)
-                if i == 1:
-                    pid1 = (pid1[1], pid1[0])
-                color1 = raster.getpixel(pid1)
-                if color1 != colort: # or pid1 in processed:
-                    expand[i] = False
-                    break
-                ids.add(pid1)
-            else:
-                size[i] += 1
-                expand[i] = pid[i]+size[i] < imsize[i]
-                processed.update(ids)
+    def avail(x, y):
+        rid = (x, y)
+        return not (
+            x < 0 or x >= raster.width or y >= raster.height or
+            rid in processed or raster.getpixel(rid) != colort
+        )
 
-    imsize = raster.size
-    expand = [0, 0]
+    def recurse(gen, x, y, xneg):
+        processed.add((x, y))
+        if avail(x+1, y):
+            gen.add_pixel_x(x+1, y)
+            recurse(gen, x+1, y, False)
+        if avail(x, y+1):
+            gen.add_pixel_y(x, y+1)
+            recurse(gen, x, y+1, True)
+        if xneg and avail(x-1, y):
+            xneg_candidates.add((x-1, y))
 
     for y in range(raster.height):
         for x in range(raster.width):
@@ -39,35 +102,33 @@ def pixel_add_layer_new(animation, raster):
             if colort[-1] == 0 or pid in processed:
                 continue
 
-            processed.add(pid)
-            rect = objects.Rect()
+            gen = Polygen(x, y)
+            xneg_candidates = set()
+            recurse(gen, x, y, False)
+            xneg_candidates -= processed
+            while xneg_candidates:
+                p = next(iter(sorted(xneg_candidates, key=lambda t: (t[1], t[0]))))
+                gen.add_pixel_x_neg(*p)
+                recurse(gen, p[0], p[1], True)
+                processed.add(p)
+                xneg_candidates -= processed
+
             g = groups.setdefault(colort, set())
-            g.add(rect)
-            size = NVector(1, 1)
-            expand = [x < raster.width - 1, y < raster.height - 1]
+            g.add(gen.to_shape())
 
-            while expand[0] or expand[1]:
-                expand_comp(0)
-                expand_comp(1)
-
-            rect.size.value = size
-            rect.position.value = NVector(x, y) + size / 2
-
-    # print(sum(map(len, groups.values())))
     for colort, rects in groups.items():
         g = layer.add_shape(objects.Group())
         g.shapes = list(rects) + g.shapes
         g.name = "".join("%02x" % c for c in colort)
         fill = g.add_shape(objects.Fill())
-        fill.color.value = Color.from_uint8(*colort[:3])
+        fill.color.value = color.from_uint8(*colort[:3])
         fill.opacity.value = colort[-1] / 255 * 100
         stroke = g.add_shape(objects.Stroke(fill.color.value, 0.1))
         stroke.opacity.value = fill.opacity.value
     return layer
-"""
 
 
-def pixel_add_layer(animation, raster):
+def pixel_add_layer_rects(animation, raster):
     layer = animation.add_layer(objects.ShapeLayer())
     last_rects = {}
     groups = {}
@@ -120,7 +181,7 @@ def pixel_add_layer(animation, raster):
         g.shapes = list(rects) + g.shapes
         g.name = "".join("%02x" % c for c in colort)
         fill = g.add_shape(objects.Fill())
-        fill.color.value = Color.from_uint8(*colort[:3])
+        fill.color.value = color.from_uint8(*colort[:3])
         fill.opacity.value = colort[-1] / 255 * 100
         stroke = g.add_shape(objects.Stroke(fill.color.value, 0.1))
         stroke.opacity.value = fill.opacity.value
@@ -154,8 +215,27 @@ def _vectorizing_func(filenames, frame_delay, framerate, callback):
 
 
 def pixel_to_animation(filenames, frame_delay=1, framerate=60):
+    """!
+    @brief Converts pixel art to vector
+    """
     def callback(animation, raster, frame):
-        layer = pixel_add_layer(animation, raster)
+        layer = pixel_add_layer_rects(animation, raster)
+        layer.in_point = frame * frame_delay
+        layer.out_point = layer.in_point + frame_delay
+
+    return _vectorizing_func(filenames, frame_delay, framerate, callback)
+
+
+def pixel_to_animation_paths(filenames, frame_delay=1, framerate=60):
+    """!
+    @brief Converts pixel art to vector paths
+
+    Slower and yields larger files compared to pixel_to_animation,
+    but it produces a single shape for each area with the same color.
+    Mostly useful when you want to add your own animations to the loaded image
+    """
+    def callback(animation, raster, frame):
+        layer = pixel_add_layer_paths(animation, raster)
         layer.in_point = frame * frame_delay
         layer.out_point = layer.in_point + frame_delay
 

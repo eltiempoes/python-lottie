@@ -53,13 +53,15 @@ if pixel:
                 framerate=framerate,
                 palette=palette
             )
+        elif mode == "polygon":
+            return tgs.parsers.pixel.pixel_to_animation_paths(filenames, frame_delay, framerate)
         else:
             return tgs.parsers.pixel.pixel_to_animation(filenames, frame_delay, framerate)
 
     mode_option = ExtraOption(
         "mode",
-        default="bezier" if raster else "pixel",
-        choices=["bezier", "pixel"],
+        default="pixel",
+        choices=["bezier", "pixel", "polygon"],
         help="Vectorization mode"
     )
 
@@ -68,7 +70,7 @@ if pixel:
             ExtraOption("n_colors", type=int, default=1, help="Number of colors to quantize"),
             ExtraOption("palette", type=parse_color, default=[], nargs="+", help="Custom palette"),
             mode_option,
-            ExtraOption("frame_delay", type=int, default=2, help="Number of frames to skip between images"),
+            ExtraOption("frame_delay", type=int, default=4, help="Number of frames to skip between images"),
             ExtraOption("framerate", type=int, default=60, help="Frames per second"),
             # TODO QuanzationMode for raster
         ])

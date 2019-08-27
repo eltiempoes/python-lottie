@@ -8,6 +8,7 @@ sys.path.append(os.path.join(
 from tgs.utils import script
 from tgs import objects
 from tgs import Point, Color
+from tgs.utils import color
 
 
 an = objects.Animation(59)
@@ -43,7 +44,7 @@ animated.shape.add_keyframe(30, antiheart)
 animated.shape.add_keyframe(59, heart)
 
 
-fill = layer.add_shape(objects.Fill(Color.from_uint8(255, 0, 0)))
+fill = layer.add_shape(objects.Fill(color.from_uint8(255, 0, 0)))
 stroke = layer.add_shape(objects.Stroke(Color(0, 0, 0), 5))
 
 
