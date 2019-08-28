@@ -12,7 +12,7 @@ class ColorMode(enum.Enum):
     RGB = enum.auto()
     HSV = enum.auto()
     HSL = enum.auto()
-    HCL = enum.auto()
+    LCH = enum.auto()
     XYZ = enum.auto()
     LUV = enum.auto()
 
@@ -26,42 +26,42 @@ class Conversion:
         (ColorMode.RGB, ColorMode.RGB): [],
         (ColorMode.RGB, ColorMode.HSV): [],
         (ColorMode.RGB, ColorMode.HSL): [],
-        (ColorMode.RGB, ColorMode.HCL): [],
+        (ColorMode.RGB, ColorMode.LCH): [],
         (ColorMode.RGB, ColorMode.XYZ): [],
         (ColorMode.RGB, ColorMode.LUV): [ColorMode.XYZ],
 
         (ColorMode.HSV, ColorMode.RGB): [],
         (ColorMode.HSV, ColorMode.HSV): [],
         (ColorMode.HSV, ColorMode.HSL): [],
-        (ColorMode.HSV, ColorMode.HCL): [ColorMode.RGB],
+        (ColorMode.HSV, ColorMode.LCH): [ColorMode.RGB],
         (ColorMode.HSV, ColorMode.XYZ): [ColorMode.RGB],
         (ColorMode.HSV, ColorMode.LUV): [ColorMode.RGB, ColorMode.XYZ],
 
         (ColorMode.HSL, ColorMode.RGB): [],
         (ColorMode.HSL, ColorMode.HSV): [],
         (ColorMode.HSL, ColorMode.HSL): [],
-        (ColorMode.HSL, ColorMode.HCL): [ColorMode.RGB],
+        (ColorMode.HSL, ColorMode.LCH): [ColorMode.RGB],
         (ColorMode.HSL, ColorMode.XYZ): [ColorMode.RGB],
         (ColorMode.HSL, ColorMode.LUV): [ColorMode.RGB, ColorMode.XYZ],
 
-        (ColorMode.HCL, ColorMode.RGB): [],
-        (ColorMode.HCL, ColorMode.HSV): [ColorMode.RGB],
-        (ColorMode.HCL, ColorMode.HSL): [ColorMode.RGB],
-        (ColorMode.HCL, ColorMode.HCL): [],
-        (ColorMode.HCL, ColorMode.XYZ): [ColorMode.RGB],
-        (ColorMode.HCL, ColorMode.LUV): [ColorMode.RGB, ColorMode.XYZ],
+        (ColorMode.LCH, ColorMode.RGB): [ColorMode.XYZ, ColorMode.LUV],
+        (ColorMode.LCH, ColorMode.HSV): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LUV],
+        (ColorMode.LCH, ColorMode.HSL): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LUV],
+        (ColorMode.LCH, ColorMode.LCH): [],
+        (ColorMode.LCH, ColorMode.XYZ): [ColorMode.LUV],
+        (ColorMode.LCH, ColorMode.LUV): [],
 
         (ColorMode.XYZ, ColorMode.RGB): [],
         (ColorMode.XYZ, ColorMode.HSV): [ColorMode.RGB],
         (ColorMode.XYZ, ColorMode.HSL): [ColorMode.RGB],
-        (ColorMode.XYZ, ColorMode.HCL): [ColorMode.RGB],
+        (ColorMode.XYZ, ColorMode.LCH): [ColorMode.RGB],
         (ColorMode.XYZ, ColorMode.XYZ): [],
         (ColorMode.XYZ, ColorMode.LUV): [],
 
         (ColorMode.LUV, ColorMode.RGB): [ColorMode.XYZ],
         (ColorMode.LUV, ColorMode.HSV): [ColorMode.XYZ, ColorMode.RGB],
         (ColorMode.LUV, ColorMode.HSL): [ColorMode.XYZ, ColorMode.RGB],
-        (ColorMode.LUV, ColorMode.HCL): [ColorMode.XYZ, ColorMode.RGB],
+        (ColorMode.LUV, ColorMode.LCH): [ColorMode.XYZ, ColorMode.RGB],
         (ColorMode.LUV, ColorMode.XYZ): [],
         (ColorMode.LUV, ColorMode.LUV): [],
     }
@@ -95,64 +95,64 @@ class Conversion:
     def hsl_to_rgb(h, s, l):
         return colorsys.hls_to_rgb(h, l, s)
 
-    # http://w3.uqo.ca/missaoui/Publications/TRColorSpace.zip
-    @staticmethod
-    def rgb_to_hcl(r, g, b, gamma=3, y0=100):
-        maxc = max(r, g, b)
-        minc = min(r, g, b)
-        if maxc > 0:
-            alpha = 1/y0 * minc / maxc
-        else:
-            alpha = 0
-        q = math.e ** (alpha * gamma)
-        h = math.atan2(g - b, r - g)
-        if h < 0:
-            h += 2*math.pi
-        h /= 2*math.pi
-        c = q / 3 * (abs(r-g) + abs(g-b) + abs(b-r))
-        l = (q * maxc + (q-1) * minc) / 2
-        return (h, c, l)
+    ## http://w3.uqo.ca/missaoui/Publications/TRColorSpace.zip
+    #@staticmethod
+    #def rgb_to_hcl(r, g, b, gamma=3, y0=100):
+        #maxc = max(r, g, b)
+        #minc = min(r, g, b)
+        #if maxc > 0:
+            #alpha = 1/y0 * minc / maxc
+        #else:
+            #alpha = 0
+        #q = math.e ** (alpha * gamma)
+        #h = math.atan2(g - b, r - g)
+        #if h < 0:
+            #h += 2*math.pi
+        #h /= 2*math.pi
+        #c = q / 3 * (abs(r-g) + abs(g-b) + abs(b-r))
+        #l = (q * maxc + (q-1) * minc) / 2
+        #return (h, c, l)
 
-    @staticmethod
-    def hcl_to_rgb(h, c, l, gamma=3, y0=100):
-        h *= 2*math.pi
+    #@staticmethod
+    #def hcl_to_rgb(h, c, l, gamma=3, y0=100):
+        #h *= 2*math.pi
 
-        q = math.e ** ((1 - 2*c / 4*l) * gamma / y0)
-        minc = (4*l - 3*c) / (4*q - 2)
-        maxc = minc + 3*c / 2*q
+        #q = math.e ** ((1 - 2*c / 4*l) * gamma / y0)
+        #minc = (4*l - 3*c) / (4*q - 2)
+        #maxc = minc + 3*c / 2*q
 
-        if h <= math.pi * 1 / 3:
-            tan = math.tan(3/2*h)
-            r = maxc
-            b = minc
-            g = (r * tan + b) / (1 + tan)
-        elif h <= math.pi * 2 / 3:
-            tan = math.tan(3/4*(h-math.pi))
-            g = maxc
-            b = minc
-            r = (g * (1+tan) - b) / tan
-        elif h <= math.pi * 3 / 3:
-            tan = math.tan(3/4*(h-math.pi))
-            g = maxc
-            r = minc
-            b = g * (1+tan) - r * tan
-        elif h <= math.pi * 4 / 3:
-            tan = math.tan(3/2*(h+math.pi))
-            b = maxc
-            r = minc
-            g = (r * tan + b) / (1 + tan)
-        elif h <= math.pi * 5 / 3:
-            tan = math.tan(3/4*h)
-            b = maxc
-            g = minc
-            r = (g * (1+tan) - b) / tan
-        else:
-            tan = math.tan(3/4*h)
-            r = maxc
-            g = minc
-            b = g * (1+tan) - r * tan
+        #if h <= math.pi * 1 / 3:
+            #tan = math.tan(3/2*h)
+            #r = maxc
+            #b = minc
+            #g = (r * tan + b) / (1 + tan)
+        #elif h <= math.pi * 2 / 3:
+            #tan = math.tan(3/4*(h-math.pi))
+            #g = maxc
+            #b = minc
+            #r = (g * (1+tan) - b) / tan
+        #elif h <= math.pi * 3 / 3:
+            #tan = math.tan(3/4*(h-math.pi))
+            #g = maxc
+            #r = minc
+            #b = g * (1+tan) - r * tan
+        #elif h <= math.pi * 4 / 3:
+            #tan = math.tan(3/2*(h+math.pi))
+            #b = maxc
+            #r = minc
+            #g = (r * tan + b) / (1 + tan)
+        #elif h <= math.pi * 5 / 3:
+            #tan = math.tan(3/4*h)
+            #b = maxc
+            #g = minc
+            #r = (g * (1+tan) - b) / tan
+        #else:
+            #tan = math.tan(3/4*h)
+            #r = maxc
+            #g = minc
+            #b = g * (1+tan) - r * tan
 
-        return _clamp(r), _clamp(g), _clamp(b)
+        #return _clamp(r), _clamp(g), _clamp(b)
 
     @staticmethod
     def rgb_to_xyz(r, g, b):
@@ -216,6 +216,18 @@ class Conversion:
         x = y * 9*u1 / (4*v1)
         z = y * (12 - 3*u1 - 20*v1) / (4*v1)
         return x, y, z
+
+    @staticmethod
+    def luv_to_lch(l, u, v):
+        c = math.hypot(u, v)
+        h = math.atan2(v, u)
+        return l, c, h
+
+    @staticmethod
+    def lch_to_luv(l, c, h):
+        u = math.cos(h) * c
+        v = math.sin(h) * c
+        return l, u, v
 
     @staticmethod
     def conv_func(mode_from, mode_to):
@@ -287,7 +299,7 @@ class ManagedColor:
             comps = ({"h", "hue"}, {"s", "saturation"}, {"v", "value"})
         elif self._mode == ColorMode.HSL:
             comps = ({"h", "hue"}, {"s", "saturation"}, {"l", "lightness"})
-        elif self._mode == ColorMode.HCL:
+        elif self._mode == ColorMode.LCH:
             comps = ({"h", "hue"}, {"c", "choma"}, {"l", "luma", "luminance"})
         elif self._mode == ColorMode.XYZ:
             comps = "xyz"
