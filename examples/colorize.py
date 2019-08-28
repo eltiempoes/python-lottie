@@ -5,6 +5,7 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
+import math
 from tgs.utils import script
 from tgs import objects
 from tgs.parsers.svg import parse_svg_file
@@ -21,11 +22,11 @@ layer = an.find("durg")
 n_frames = 24
 for fill in layer.find_all((objects.Fill, objects.Stroke)):
     color = ManagedColor.from_color(fill.color.value)
-    color.convert(ManagedColor.Mode.HSV)
+    color.convert(ManagedColor.Mode.LCH)
 
     for frame in range(n_frames):
         off = frame / (n_frames-1)
-        color.hue = (color.hue + 1 / (n_frames-1)) % 1
+        color.hue = (color.hue + math.tau / (n_frames-1)) % math.tau
         fill.color.add_keyframe(off * last_frame, color.converted(ManagedColor.Mode.RGB).vector)
 
 

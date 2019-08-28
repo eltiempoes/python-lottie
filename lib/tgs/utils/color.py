@@ -26,27 +26,27 @@ class Conversion:
         (ColorMode.RGB, ColorMode.RGB): [],
         (ColorMode.RGB, ColorMode.HSV): [],
         (ColorMode.RGB, ColorMode.HSL): [],
-        (ColorMode.RGB, ColorMode.LCH): [],
+        (ColorMode.RGB, ColorMode.LCH): [ColorMode.XYZ, ColorMode.LUV],
         (ColorMode.RGB, ColorMode.XYZ): [],
         (ColorMode.RGB, ColorMode.LUV): [ColorMode.XYZ],
 
         (ColorMode.HSV, ColorMode.RGB): [],
         (ColorMode.HSV, ColorMode.HSV): [],
         (ColorMode.HSV, ColorMode.HSL): [],
-        (ColorMode.HSV, ColorMode.LCH): [ColorMode.RGB],
+        (ColorMode.HSV, ColorMode.LCH): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LUV],
         (ColorMode.HSV, ColorMode.XYZ): [ColorMode.RGB],
         (ColorMode.HSV, ColorMode.LUV): [ColorMode.RGB, ColorMode.XYZ],
 
         (ColorMode.HSL, ColorMode.RGB): [],
         (ColorMode.HSL, ColorMode.HSV): [],
         (ColorMode.HSL, ColorMode.HSL): [],
-        (ColorMode.HSL, ColorMode.LCH): [ColorMode.RGB],
+        (ColorMode.HSL, ColorMode.LCH): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LUV],
         (ColorMode.HSL, ColorMode.XYZ): [ColorMode.RGB],
         (ColorMode.HSL, ColorMode.LUV): [ColorMode.RGB, ColorMode.XYZ],
 
-        (ColorMode.LCH, ColorMode.RGB): [ColorMode.XYZ, ColorMode.LUV],
-        (ColorMode.LCH, ColorMode.HSV): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LUV],
-        (ColorMode.LCH, ColorMode.HSL): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LUV],
+        (ColorMode.LCH, ColorMode.RGB): [ColorMode.LUV, ColorMode.XYZ],
+        (ColorMode.LCH, ColorMode.HSV): [ColorMode.LUV, ColorMode.XYZ, ColorMode.RGB],
+        (ColorMode.LCH, ColorMode.HSL): [ColorMode.LUV, ColorMode.XYZ, ColorMode.RGB],
         (ColorMode.LCH, ColorMode.LCH): [],
         (ColorMode.LCH, ColorMode.XYZ): [ColorMode.LUV],
         (ColorMode.LCH, ColorMode.LUV): [],
@@ -54,7 +54,7 @@ class Conversion:
         (ColorMode.XYZ, ColorMode.RGB): [],
         (ColorMode.XYZ, ColorMode.HSV): [ColorMode.RGB],
         (ColorMode.XYZ, ColorMode.HSL): [ColorMode.RGB],
-        (ColorMode.XYZ, ColorMode.LCH): [ColorMode.RGB],
+        (ColorMode.XYZ, ColorMode.LCH): [ColorMode.LUV],
         (ColorMode.XYZ, ColorMode.XYZ): [],
         (ColorMode.XYZ, ColorMode.LUV): [],
 
@@ -193,8 +193,11 @@ class Conversion:
         kap = (29/3)**3
         eps = (6/29)**3
 
-        u1 = 4*x / (x + 15*y + 3*z)
-        v1 = 9*y / (x + 15*y + 3*z)
+        try:
+            u1 = 4*x / (x + 15*y + 3*z)
+            v1 = 9*y / (x + 15*y + 3*z)
+        except ZeroDivisionError:
+            return 0, 0, 0
 
         y_r = y/yr
         l = 166 * y_r ** (1/3) - 16 if y_r > eps else kap * y_r
@@ -210,8 +213,13 @@ class Conversion:
 
         kap = (29/3)**3
 
-        u1 = u / (13 * l) + u1r
-        v1 = v / (13 * l) + v1r
+        if l == 0:
+            u1 = u1r
+            v1 = v1r
+        else:
+            u1 = u / (13 * l) + u1r
+            v1 = v / (13 * l) + v1r
+
         y = yr * l / kap if l <= 8 else yr * ((l + 16) / 116) ** 3
         x = y * 9*u1 / (4*v1)
         z = y * (12 - 3*u1 - 20*v1) / (4*v1)
@@ -221,6 +229,8 @@ class Conversion:
     def luv_to_lch(l, u, v):
         c = math.hypot(u, v)
         h = math.atan2(v, u)
+        if h < 0:
+            h += math.tau
         return l, c, h
 
     @staticmethod
@@ -245,7 +255,10 @@ class Conversion:
         if (mode_from, mode_to) in Conversion._conv_paths:
             steps = Conversion._conv_paths[(mode_from, mode_to)] + [mode_to]
             for step in steps:
-                tuple = Conversion.conv_func(mode_from, step)(*tuple)
+                func = Conversion.conv_func(mode_from, step)
+                if not func:
+                    raise ValueError("Missing definition for conversion from %s to %s" % (mode_from, step))
+                tuple = func(*tuple)
                 mode_from = step
             return tuple
 
@@ -300,7 +313,7 @@ class ManagedColor:
         elif self._mode == ColorMode.HSL:
             comps = ({"h", "hue"}, {"s", "saturation"}, {"l", "lightness"})
         elif self._mode == ColorMode.LCH:
-            comps = ({"h", "hue"}, {"c", "choma"}, {"l", "luma", "luminance"})
+            comps = ({"l", "luma", "luminance"}, {"c", "choma"}, {"h", "hue"})
         elif self._mode == ColorMode.XYZ:
             comps = "xyz"
         elif self._mode == ColorMode.LUV:
