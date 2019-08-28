@@ -15,7 +15,7 @@ class ColorMode(enum.Enum):
     HSV = enum.auto()
     ## HSL, components in [0, 1]
     HSL = enum.auto()
-    ## CIE XYZ with Illuminant D65
+    ## CIE XYZ with Illuminant D65. Components in [0, 1]
     XYZ = enum.auto()
     ## CIE L*u*v*
     LUV = enum.auto()
