@@ -9,12 +9,18 @@ def from_uint8(r, g, b):
 
 
 class ColorMode(enum.Enum):
+    ## sRGB, Components in [0, 1]
     RGB = enum.auto()
+    ## HSV, components in [0, 1]
     HSV = enum.auto()
+    ## HSL, components in [0, 1]
     HSL = enum.auto()
-    LCH = enum.auto()
+    ## CIE XYZ with Illuminant D65
     XYZ = enum.auto()
+    ## CIE L*u*v*
     LUV = enum.auto()
+    ## CIE Lch(uv), polar version of LUV where C is the radius and H an angle in radians
+    LCH = enum.auto()
 
 
 def _clamp(x):
@@ -172,7 +178,7 @@ class Conversion:
     @staticmethod
     def xyz_to_rgb(x, y, z):
         def _gamma1(v):
-            return v * 12.92 if v <= 0.0031308 else v ** (1/2.4) * 1.055 - 0.055
+            return _clamp(v * 12.92 if v <= 0.0031308 else v ** (1/2.4) * 1.055 - 0.055)
         matrix = [
             [+3.2404542, -1.5371385, -0.4985314],
             [-0.9692660, +1.8760108, +0.0415560],
