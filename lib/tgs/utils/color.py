@@ -14,6 +14,7 @@ class ColorMode(enum.Enum):
     HSL = enum.auto()
     HCL = enum.auto()
     XYZ = enum.auto()
+    LUV = enum.auto()
 
 
 def _clamp(x):
@@ -27,30 +28,42 @@ class Conversion:
         (ColorMode.RGB, ColorMode.HSL): [],
         (ColorMode.RGB, ColorMode.HCL): [],
         (ColorMode.RGB, ColorMode.XYZ): [],
+        (ColorMode.RGB, ColorMode.LUV): [ColorMode.XYZ],
 
         (ColorMode.HSV, ColorMode.RGB): [],
         (ColorMode.HSV, ColorMode.HSV): [],
         (ColorMode.HSV, ColorMode.HSL): [],
         (ColorMode.HSV, ColorMode.HCL): [ColorMode.RGB],
         (ColorMode.HSV, ColorMode.XYZ): [ColorMode.RGB],
+        (ColorMode.HSV, ColorMode.LUV): [ColorMode.RGB, ColorMode.XYZ],
 
         (ColorMode.HSL, ColorMode.RGB): [],
         (ColorMode.HSL, ColorMode.HSV): [],
         (ColorMode.HSL, ColorMode.HSL): [],
         (ColorMode.HSL, ColorMode.HCL): [ColorMode.RGB],
         (ColorMode.HSL, ColorMode.XYZ): [ColorMode.RGB],
+        (ColorMode.HSL, ColorMode.LUV): [ColorMode.RGB, ColorMode.XYZ],
 
         (ColorMode.HCL, ColorMode.RGB): [],
         (ColorMode.HCL, ColorMode.HSV): [ColorMode.RGB],
         (ColorMode.HCL, ColorMode.HSL): [ColorMode.RGB],
         (ColorMode.HCL, ColorMode.HCL): [],
         (ColorMode.HCL, ColorMode.XYZ): [ColorMode.RGB],
+        (ColorMode.HCL, ColorMode.LUV): [ColorMode.RGB, ColorMode.XYZ],
 
         (ColorMode.XYZ, ColorMode.RGB): [],
         (ColorMode.XYZ, ColorMode.HSV): [ColorMode.RGB],
         (ColorMode.XYZ, ColorMode.HSL): [ColorMode.RGB],
         (ColorMode.XYZ, ColorMode.HCL): [ColorMode.RGB],
         (ColorMode.XYZ, ColorMode.XYZ): [],
+        (ColorMode.XYZ, ColorMode.LUV): [],
+
+        (ColorMode.LUV, ColorMode.RGB): [ColorMode.XYZ],
+        (ColorMode.LUV, ColorMode.HSV): [ColorMode.XYZ, ColorMode.RGB],
+        (ColorMode.LUV, ColorMode.HSL): [ColorMode.XYZ, ColorMode.RGB],
+        (ColorMode.LUV, ColorMode.HCL): [ColorMode.XYZ, ColorMode.RGB],
+        (ColorMode.LUV, ColorMode.XYZ): [],
+        (ColorMode.LUV, ColorMode.LUV): [],
     }
 
     @staticmethod
@@ -172,6 +185,39 @@ class Conversion:
         )))
 
     @staticmethod
+    def xyz_to_luv(x, y, z):
+        u1r = 0.2009
+        v1r = 0.4610
+        yr = 100
+
+        kap = (29/3)**3
+        eps = (6/29)**3
+
+        u1 = 4*x / (x + 15*y + 3*z)
+        v1 = 9*y / (x + 15*y + 3*z)
+
+        y_r = y/yr
+        l = 166 * y_r ** (1/3) - 16 if y_r > eps else kap * y_r
+        u = 13 * l * (u1 - u1r)
+        v = 13 * l * (v1 - v1r)
+        return l, u, v
+
+    @staticmethod
+    def luv_to_xyz(l, u, v):
+        u1r = 0.2009
+        v1r = 0.4610
+        yr = 100
+
+        kap = (29/3)**3
+
+        u1 = u / (13 * l) + u1r
+        v1 = v / (13 * l) + v1r
+        y = yr * l / kap if l <= 8 else yr * ((l + 16) / 116) ** 3
+        x = y * 9*u1 / (4*v1)
+        z = y * (12 - 3*u1 - 20*v1) / (4*v1)
+        return x, y, z
+
+    @staticmethod
     def conv_func(mode_from, mode_to):
         return getattr(Conversion, "%s_to_%s" % (mode_from.name.lower(), mode_to.name.lower()), None)
 
@@ -245,6 +291,8 @@ class ManagedColor:
             comps = ({"h", "hue"}, {"c", "choma"}, {"l", "luma", "luminance"})
         elif self._mode == ColorMode.XYZ:
             comps = "xyz"
+        elif self._mode == ColorMode.LUV:
+            comps = "luv"
 
         if comps:
             for i, vals in enumerate(comps):
