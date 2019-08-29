@@ -20,7 +20,11 @@ class ColorMode(enum.Enum):
     ## CIE L*u*v*
     LUV = enum.auto()
     ## CIE Lch(uv), polar version of LUV where C is the radius and H an angle in radians
-    LCH = enum.auto()
+    LCH_uv = enum.auto()
+    ## CIE L*a*b*
+    LAB = enum.auto()
+    ## CIE LCh(ab), polar version of LAB where C is the radius and H an angle in radians
+    #LCH_ab = enum.auto()
 
 
 def _clamp(x):
@@ -32,44 +36,74 @@ class Conversion:
         (ColorMode.RGB, ColorMode.RGB): [],
         (ColorMode.RGB, ColorMode.HSV): [],
         (ColorMode.RGB, ColorMode.HSL): [],
-        (ColorMode.RGB, ColorMode.LCH): [ColorMode.XYZ, ColorMode.LUV],
         (ColorMode.RGB, ColorMode.XYZ): [],
         (ColorMode.RGB, ColorMode.LUV): [ColorMode.XYZ],
+        (ColorMode.RGB, ColorMode.LAB): [ColorMode.XYZ],
+        (ColorMode.RGB, ColorMode.LCH_uv): [ColorMode.XYZ, ColorMode.LUV],
+        #(ColorMode.RGB, ColorMode.LCH_ab): [ColorMode.XYZ, ColorMode.LAB],
 
         (ColorMode.HSV, ColorMode.RGB): [],
         (ColorMode.HSV, ColorMode.HSV): [],
         (ColorMode.HSV, ColorMode.HSL): [],
-        (ColorMode.HSV, ColorMode.LCH): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LUV],
         (ColorMode.HSV, ColorMode.XYZ): [ColorMode.RGB],
         (ColorMode.HSV, ColorMode.LUV): [ColorMode.RGB, ColorMode.XYZ],
+        (ColorMode.HSV, ColorMode.LAB): [ColorMode.RGB, ColorMode.XYZ],
+        (ColorMode.HSV, ColorMode.LCH_uv): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LUV],
+        #(ColorMode.HSV, ColorMode.LCH_ab): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LAB],
 
         (ColorMode.HSL, ColorMode.RGB): [],
         (ColorMode.HSL, ColorMode.HSV): [],
         (ColorMode.HSL, ColorMode.HSL): [],
-        (ColorMode.HSL, ColorMode.LCH): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LUV],
         (ColorMode.HSL, ColorMode.XYZ): [ColorMode.RGB],
         (ColorMode.HSL, ColorMode.LUV): [ColorMode.RGB, ColorMode.XYZ],
-
-        (ColorMode.LCH, ColorMode.RGB): [ColorMode.LUV, ColorMode.XYZ],
-        (ColorMode.LCH, ColorMode.HSV): [ColorMode.LUV, ColorMode.XYZ, ColorMode.RGB],
-        (ColorMode.LCH, ColorMode.HSL): [ColorMode.LUV, ColorMode.XYZ, ColorMode.RGB],
-        (ColorMode.LCH, ColorMode.LCH): [],
-        (ColorMode.LCH, ColorMode.XYZ): [ColorMode.LUV],
-        (ColorMode.LCH, ColorMode.LUV): [],
+        (ColorMode.HSL, ColorMode.LAB): [ColorMode.RGB, ColorMode.XYZ],
+        (ColorMode.HSL, ColorMode.LCH_uv): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LUV],
+        #(ColorMode.HSL, ColorMode.LCH_ab): [ColorMode.RGB, ColorMode.XYZ, ColorMode.LAB],
 
         (ColorMode.XYZ, ColorMode.RGB): [],
         (ColorMode.XYZ, ColorMode.HSV): [ColorMode.RGB],
         (ColorMode.XYZ, ColorMode.HSL): [ColorMode.RGB],
-        (ColorMode.XYZ, ColorMode.LCH): [ColorMode.LUV],
         (ColorMode.XYZ, ColorMode.XYZ): [],
         (ColorMode.XYZ, ColorMode.LUV): [],
+        (ColorMode.XYZ, ColorMode.LAB): [],
+        (ColorMode.XYZ, ColorMode.LCH_uv): [ColorMode.LUV],
+        #(ColorMode.XYZ, ColorMode.LCH_ab): [ColorMode.LAB],
+
+        (ColorMode.LCH_uv, ColorMode.RGB): [ColorMode.LUV, ColorMode.XYZ],
+        (ColorMode.LCH_uv, ColorMode.HSV): [ColorMode.LUV, ColorMode.XYZ, ColorMode.RGB],
+        (ColorMode.LCH_uv, ColorMode.HSL): [ColorMode.LUV, ColorMode.XYZ, ColorMode.RGB],
+        (ColorMode.LCH_uv, ColorMode.XYZ): [ColorMode.LUV],
+        (ColorMode.LCH_uv, ColorMode.LUV): [],
+        (ColorMode.LCH_uv, ColorMode.LAB): [ColorMode.LUV, ColorMode.XYZ],
+        (ColorMode.LCH_uv, ColorMode.LCH_uv): [],
+        #(ColorMode.LCH_uv, ColorMode.LCH_ab): [ColorMode.LUV, ColorMode.XYZ, ColorMode.LAB],
 
         (ColorMode.LUV, ColorMode.RGB): [ColorMode.XYZ],
         (ColorMode.LUV, ColorMode.HSV): [ColorMode.XYZ, ColorMode.RGB],
         (ColorMode.LUV, ColorMode.HSL): [ColorMode.XYZ, ColorMode.RGB],
-        (ColorMode.LUV, ColorMode.LCH): [ColorMode.XYZ, ColorMode.RGB],
         (ColorMode.LUV, ColorMode.XYZ): [],
         (ColorMode.LUV, ColorMode.LUV): [],
+        (ColorMode.LUV, ColorMode.LAB): [ColorMode.XYZ],
+        (ColorMode.LUV, ColorMode.LCH_uv): [],
+        #(ColorMode.LUV, ColorMode.LCH_ab): [ColorMode.XYZ, ColorMode.LAB],
+
+        (ColorMode.LAB, ColorMode.RGB): [ColorMode.XYZ],
+        (ColorMode.LAB, ColorMode.HSV): [ColorMode.XYZ, ColorMode.RGB],
+        (ColorMode.LAB, ColorMode.HSL): [ColorMode.XYZ, ColorMode.RGB],
+        (ColorMode.LAB, ColorMode.XYZ): [],
+        (ColorMode.LAB, ColorMode.LUV): [ColorMode.XYZ],
+        (ColorMode.LAB, ColorMode.LAB): [],
+        (ColorMode.LAB, ColorMode.LCH_uv): [ColorMode.XYZ, ColorMode.LUV],
+        #(ColorMode.LAB, ColorMode.LCH_ab): [],
+
+        #(ColorMode.LCH_ab, ColorMode.RGB): [ColorMode.LAB, ColorMode.XYZ],
+        #(ColorMode.LCH_ab, ColorMode.HSV): [ColorMode.LAB, ColorMode.XYZ, ColorMode.RGB],
+        #(ColorMode.LCH_ab, ColorMode.HSL): [ColorMode.LAB, ColorMode.XYZ, ColorMode.RGB],
+        #(ColorMode.LCH_ab, ColorMode.XYZ): [ColorMode.LAB],
+        #(ColorMode.LCH_ab, ColorMode.LUV): [ColorMode.LAB, ColorMode.XYZ],
+        #(ColorMode.LCH_ab, ColorMode.LAB): [],
+        #(ColorMode.LCH_ab, ColorMode.LCH_uv): [ColorMode.LAB, ColorMode.XYZ, ColorMode.LUV],
+        #(ColorMode.LCH_ab, ColorMode.LCH_ab): [],
     }
 
     @staticmethod
@@ -232,7 +266,7 @@ class Conversion:
         return x, y, z
 
     @staticmethod
-    def luv_to_lch(l, u, v):
+    def luv_to_lch_uv(l, u, v):
         c = math.hypot(u, v)
         h = math.atan2(v, u)
         if h < 0:
@@ -240,10 +274,62 @@ class Conversion:
         return l, c, h
 
     @staticmethod
-    def lch_to_luv(l, c, h):
+    def lch_uv_to_luv(l, c, h):
         u = math.cos(h) * c
         v = math.sin(h) * c
         return l, u, v
+
+    @staticmethod
+    def xyz_to_lab(x, y, z):
+        # D65 Illuminant aka sRGB(1,1,1)
+        xn = 0.950489
+        yn = 1
+        zn = 108.8840
+
+        delta = 6 / 29
+
+        def f(t):
+            return t ** (1/3) if t > delta ** 3 else t / (3*delta**2) + 4/29
+
+        fy = f(y/yn)
+        l = 116 * fy - 16
+        a = 500 * (f(x/xn) - fy)
+        b = 200 * (fy - f(z/zn))
+
+        return l, a, b
+
+    @staticmethod
+    def lab_to_xyz(l, a, b):
+        # D65 Illuminant aka sRGB(1,1,1)
+        xn = 0.950489
+        yn = 1
+        zn = 108.8840
+
+        delta = 6 / 29
+
+        def f1(t):
+            return t**3 if t > delta else 3*delta**2*(t-4/29)
+
+        l1 = (l+16) / 116
+        x = xn * f1(l1+a/500)
+        y = yn * f1(l1)
+        z = zn * f1(l1-b/200)
+
+        return x, y, z
+
+    #@staticmethod
+    #def lab_to_lch_ab(l, a, b):
+        #c = math.hypot(a, b)
+        #h = math.atan2(b, a)
+        #if h < 0:
+            #h += math.tau
+        #return l, c, h
+
+    #@staticmethod
+    #def lch_ab_to_lab(l, c, h):
+        #a = math.cos(h) * c
+        #b = math.sin(h) * c
+        #return l, a, b
 
     @staticmethod
     def conv_func(mode_from, mode_to):
@@ -318,12 +404,14 @@ class ManagedColor:
             comps = ({"h", "hue"}, {"s", "saturation"}, {"v", "value"})
         elif self._mode == ColorMode.HSL:
             comps = ({"h", "hue"}, {"s", "saturation"}, {"l", "lightness"})
-        elif self._mode == ColorMode.LCH:
+        elif self._mode == ColorMode.LCH_uv: #in (ColorMode.LCH_uv, ColorMode.LCH_ab):
             comps = ({"l", "luma", "luminance"}, {"c", "choma"}, {"h", "hue"})
         elif self._mode == ColorMode.XYZ:
             comps = "xyz"
         elif self._mode == ColorMode.LUV:
             comps = "luv"
+        elif self._mode == ColorMode.LAB:
+            comps = "lab"
 
         if comps:
             for i, vals in enumerate(comps):
