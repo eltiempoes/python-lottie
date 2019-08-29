@@ -31,7 +31,6 @@ colors = {
         ManagedColor(0, 0, 0, ColorMode.XYZ),
         ManagedColor(0.4124564, 0.2126729, 0.0193339, ColorMode.XYZ),
         ManagedColor(0.2687201, 0.1176957, 0.9544423, ColorMode.XYZ),
-        ManagedColor(0.25, 0.40, 0.10, ColorMode.XYZ),
     ],
 }
 

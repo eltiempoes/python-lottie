@@ -139,7 +139,7 @@ class AbstractBuilder:
                 layers[layer.lottie.parent].add(layer)
             else:
                 top_layers.insert(0, layer)
-        return reversed(top_layers)
+        return top_layers
 
     def restructure_shapegroup(self, shape, shape_group, merge_paths):
         if isinstance(shape, (objects.Fill, objects.GradientFill)):
