@@ -22,7 +22,7 @@ layer = an.find("durg")
 n_frames = 24
 for fill in layer.find_all((objects.Fill, objects.Stroke)):
     color = ManagedColor.from_color(fill.color.value)
-    color.convert(ManagedColor.Mode.LCH_ab)
+    color.convert(ManagedColor.Mode.LCH_uv)
 
     for frame in range(n_frames):
         off = frame / (n_frames-1)
