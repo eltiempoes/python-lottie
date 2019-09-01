@@ -29,6 +29,8 @@ class NVector():
         return NVector(*vop(operator.sub, self.components, other.components))
 
     def __mul__(self, scalar):
+        if isinstance(scalar, NVector):
+            return NVector(*vop(operator.mul, self.components, scalar.components))
         return NVector(*(c * scalar for c in self.components))
 
     def __truediv__(self, scalar):
@@ -43,7 +45,10 @@ class NVector():
         return self
 
     def __imul__(self, scalar):
-        self.components = [c * scalar for c in self.components]
+        if isinstance(scalar, NVector):
+            self.components = vop(operator.mul, self.components, scalar.components)
+        else:
+            self.components = [c * scalar for c in self.components]
         return self
 
     def __itruediv__(self, scalar):

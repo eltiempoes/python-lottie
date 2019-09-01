@@ -129,6 +129,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
                 axis = transform.skew_axis.get_value(self.time) * math.pi / 180
                 skx = skew * math.cos(axis)
                 sky = skew * math.sin(axis)
+                # TODO looks like skew moves things around in svg
                 trans.append("skewX(%s)" % skx)
                 trans.append("skewY(%s)" % sky)
 
@@ -396,7 +397,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if "family" in shape.query:
             text.attrib["font-family"] = shape.query["family"]
         if "weight" in shape.query:
-            text.attrib["font-weight"] = str(shape.weight_to_css())
+            text.attrib["font-weight"] = str(shape.query.weight_to_css())
         slant = int(shape.query.get("slant", 0))
         if slant > 0 and slant < 110:
             text.attrib["font-style"] = "italic"

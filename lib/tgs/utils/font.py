@@ -431,5 +431,5 @@ class FontShape(CustomObject):
         self.line_height = g.line_height
         return g
 
-    def bounding_box(self, time):
+    def bounding_box(self, time=0):
         return self.wrapped.bounding_box(time)
