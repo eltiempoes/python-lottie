@@ -408,7 +408,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
         text.attrib["white-space"] = "pre"
 
-        pos = shape.wrapped.transform.position.get_value(self.time)
+        pos = shape.style.position
         text.attrib["x"] = str(pos.x)
         text.attrib["y"] = str(pos.y)
         text.text = shape.text

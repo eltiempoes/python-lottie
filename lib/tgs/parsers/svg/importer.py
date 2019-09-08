@@ -627,6 +627,8 @@ class SvgParser(SvgHandler):
                 font_style.size *= 2
             elif fz.endswith("px"):
                 font_style.size = float(fz[:-2])
+            elif fz.isnumeric():
+                font_style.size = float(fz)
 
     def _parse_text_elem(self, element, style, group, font_style):
         self._parse_text_style(style, font_style)
