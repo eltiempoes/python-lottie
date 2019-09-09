@@ -10,12 +10,10 @@ SCRIPTS:=$(wildcard bin/*.py)
 
 .SUFFIXES:
 
-.PHONY: all upload docs clean_pyc pypi blender inkscape release dist distclean
+.PHONY: all upload docs clean_pyc pypi blender inkscape release dist distclean synfig
 
 
-all: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
-all: dist/$(PACKAGE_NAME)-inkscape-$(VERSION).zip
-all: dist/$(PACKAGE_NAME)-blender-$(VERSION).zip
+all: pypi blender inkscape synfig
 
 dist: all
 
@@ -66,8 +64,13 @@ clean_pyc:
 dist/$(PACKAGE_NAME)-blender-$(VERSION).zip: $(wildcard addons/blender/tgs_io/*.py) $(SRC)
 	cd addons/blender && find -L -name '*.py' | xargs zip --filesync ../../$@
 
+dist/$(PACKAGE_NAME)-synfig-$(VERSION).zip: $(wildcard addons/synfig/*)
+	cd addons/synfig && find -type f | xargs zip --filesync ../../$@
+
 pypi: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
 
 inkscape: dist/$(PACKAGE_NAME)-inkscape-$(VERSION).zip
 
 blender: dist/$(PACKAGE_NAME)-blender-$(VERSION).zip
+
+synfig: dist/$(PACKAGE_NAME)-synfig-$(VERSION).zip
