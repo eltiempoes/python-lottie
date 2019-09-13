@@ -119,9 +119,10 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if rot != 0:
             trans.append("rotate(%s, %s, %s)" % (rot, anchor[0], anchor[1]))
 
-        op = transform.opacity.get_value(self.time)
-        if op != 100:
-            dom.attrib["opacity"] = str(op/100)
+        if transform.opacity is not None:
+            op = transform.opacity.get_value(self.time)
+            if op != 100:
+                dom.attrib["opacity"] = str(op/100)
 
         if transform.skew:
             skew = transform.skew.get_value(self.time)
