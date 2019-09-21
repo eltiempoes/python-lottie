@@ -110,7 +110,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if pos[0] != 0 or pos[1] != 0:
             trans.append("translate(%s, %s)" % (pos.components[0], pos.components[1]))
 
-        scale = transform.scale.get_value(self.time).clone()
+        scale = self._get_value(transform.scale, NVector(100, 100))
         if scale[0] != 100 or scale[1] != 100:
             scale /= 100
             trans.append("scale(%s, %s)" % (scale.components[0], scale.components[1]))
@@ -124,15 +124,14 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             if op != 100:
                 dom.attrib["opacity"] = str(op/100)
 
-        if transform.skew:
-            skew = transform.skew.get_value(self.time)
-            if skew != 0:
-                axis = transform.skew_axis.get_value(self.time) * math.pi / 180
-                skx = skew * math.cos(axis)
-                sky = skew * math.sin(axis)
-                # TODO looks like skew moves things around in svg
-                trans.append("skewX(%s)" % skx)
-                trans.append("skewY(%s)" % sky)
+        skew = self._get_value(transform.skew, 0)
+        if skew != 0:
+            axis = self._get_value(transform.skew_axis, 0) * math.pi / 180
+            skx = skew * math.cos(axis)
+            sky = skew * math.sin(axis)
+            # TODO looks like skew moves things around in svg
+            trans.append("skewX(%s)" % skx)
+            trans.append("skewY(%s)" % sky)
 
         if trans:
             dom.attrib["transform"] = " ".join(trans)
