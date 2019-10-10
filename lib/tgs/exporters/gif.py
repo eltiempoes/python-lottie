@@ -9,7 +9,7 @@ def _png_gif_prepare(image):
     if image.mode not in ["RGBA", "RGBa"]:
         image = image.convert("RGBA")
     alpha = image.getchannel("A")
-    image = image.convert('P', palette=Image.ADAPTIVE, colors=255)
+    image = image.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=255)
     mask = Image.eval(alpha, lambda a: 255 if a <= 128 else 0)
     image.paste(255, mask)
     return image
