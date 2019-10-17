@@ -265,6 +265,7 @@ class FontRenderer:
         self.filename = filename
         self.font = fontTools.ttLib.TTFont(filename)
         self.glyphset = self.font.getGlyphSet()
+        self.cmap = self.font.getBestCmap() or {}
 
     def glyph_beziers(self, name, offset=NVector(0, 0)):
         pen = BezierPen(self.glyphset, offset)
@@ -314,7 +315,7 @@ class FontRenderer:
                 pos.y += line_height
                 continue
 
-            chname = self.font._makeGlyphName(ord(ch))
+            chname = self.cmap.get(ord(ch)) or self.font._makeGlyphName(ord(ch))
             if chname in self.glyphset:
                 for sh in self.glyph_shapes(chname, pos / scale):
                     sh.shape.value.scale(scale)
