@@ -287,10 +287,10 @@ class MultiDimensional(TgsObject, AnimatableMixin):
     """
     keyframe_type = OffsetKeyframe
     _props = [
-        TgsProp("value", "k", NVector, False, lambda l: not l["a"]),
+        TgsProp("value", "k", NVector, False, lambda l: not l.get("a", None)),
         TgsProp("property_index", "ix", int, False),
         TgsProp("animated", "a", PseudoBool, False),
-        TgsProp("keyframes", "k", OffsetKeyframe, True, lambda l: l["a"]),
+        TgsProp("keyframes", "k", OffsetKeyframe, True, lambda l: l.get("a", None)),
     ]
 
 
@@ -360,10 +360,10 @@ class Value(TgsObject, AnimatableMixin):
     """
     keyframe_type = OffsetKeyframe
     _props = [
-        TgsProp("value", "k", float, False, lambda l: not l["a"]),
+        TgsProp("value", "k", float, False, lambda l: not l.get("a", None)),
         TgsProp("property_index", "ix", int, False),
         TgsProp("animated", "a", PseudoBool, False),
-        TgsProp("keyframes", "k", keyframe_type, True, lambda l: l["a"]),
+        TgsProp("keyframes", "k", keyframe_type, True, lambda l: l.get("a", None)),
     ]
 
     def __init__(self, value=0):
