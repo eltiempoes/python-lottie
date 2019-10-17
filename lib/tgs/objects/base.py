@@ -165,7 +165,7 @@ class TgsProp:
                 self.type.__name__,
                 e.__class__.__name__,
                 e
-            ))
+            )) from e
 
     def to_dict(self, obj):
         """!
@@ -202,7 +202,7 @@ class TgsProp:
                 self.type.__name__,
                 e.__class__.__name__,
                 e
-            ))
+            )) from e
 
     def __repr__(self):
         return "<TgsProp %s:%s>" % (self.name, self.lottie)

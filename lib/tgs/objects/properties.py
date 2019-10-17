@@ -148,14 +148,6 @@ class Keyframe(TgsObject):
         else:
             return KeyframeBezier.from_keyframe(self).bezier()
 
-    def to_dict(self):
-        return {
-            prop.lottie: prop.to_dict(self)
-            for prop in self._props
-            if prop.get(self) is not None and
-            (getattr(self, "end", None) is not None or prop.name not in {"in_value", "out_value"})
-        }
-
     def lerp_factor(self, ratio):
         return KeyframeBezier.from_keyframe(self).y_at_x(ratio)
 
@@ -279,9 +271,17 @@ class AnimatableMixin:
                 val = k.end
         return val
 
+    def to_dict(self):
+        d = super().to_dict()
+        if self.animated:
+            last = d["k"][-1]
+            last.pop("i", None)
+            last.pop("o", None)
+        return d
+
 
 ## \ingroup Lottie
-class MultiDimensional(TgsObject, AnimatableMixin):
+class MultiDimensional(AnimatableMixin, TgsObject):
     """!
     An animatable property that holds a NVector
     """
@@ -354,7 +354,7 @@ class GradientColors(TgsObject):
 
 
 ## \ingroup Lottie
-class Value(TgsObject, AnimatableMixin):
+class Value(AnimatableMixin, TgsObject):
     """!
     An animatable property that holds a float
     """
@@ -417,7 +417,7 @@ class ShapePropKeyframe(Keyframe):
 
 
 ## \ingroup Lottie
-class ShapeProperty(TgsObject, AnimatableMixin):
+class ShapeProperty(AnimatableMixin, TgsObject):
     """!
     An animatable property that holds a Bezier
     """
