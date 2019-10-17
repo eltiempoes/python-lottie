@@ -98,6 +98,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         else:
             v = default
 
+        if v is None:
+            return default
         if isinstance(v, NVector):
             return v.clone()
         return v

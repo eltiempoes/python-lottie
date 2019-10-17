@@ -185,17 +185,18 @@ class OffsetKeyframe(Keyframe):
         ## Out Spatial Tangent. Only for spatial properties. Array of numbers.
         self.out_tan = None
 
-    def interpolated_value(self, ratio):
-        if self.end is None:
+    def interpolated_value(self, ratio, next_start=None):
+        end = next_start if self.end is None else self.end
+        if end is None:
             return self.start
         if not self.in_value or not self.out_value:
             return self.start
         if ratio == 1:
-            return self.end
+            return end
         if ratio == 0:
             return self.start
         lerpv = self.lerp_factor(ratio)
-        return self.start.lerp(self.end, lerpv)
+        return self.start.lerp(end, lerpv)
 
 
 class AnimatableMixin:
@@ -264,8 +265,12 @@ class AnimatableMixin:
                     val = k.start
 
                 kp = self.keyframes[i-1] if i > 0 else None
-                if kp and kp.end is not None:
-                    val = kp.interpolated_value((time - kp.time) / (k.time - kp.time))
+                if kp:
+                    end = kp.end
+                    if end is None and i + 1 < len(self.keyframes):
+                        end = self.keyframes[i+1].start
+                    if end is not None:
+                        val = kp.interpolated_value((time - kp.time) / (k.time - kp.time), end)
                 break
             if k.end is not None:
                 val = k.end
@@ -396,23 +401,24 @@ class ShapePropKeyframe(Keyframe):
         ## End value of keyframe segment.
         self.end = end
 
-    def interpolated_value(self, ratio):
-        if self.end is None:
+    def interpolated_value(self, ratio, next_start=None):
+        end = next_start if self.end is None else self.end
+        if end is None:
             return self.start
         if not self.in_value or not self.out_value:
             return self.start
         if ratio == 1:
-            return self.end
-        if ratio == 0 or len(self.start.vertices) != len(self.end.vertices):
+            return end
+        if ratio == 0 or len(self.start.vertices) != len(end.vertices):
             return self.start
 
         lerpv = self.lerp_factor(ratio)
         bez = Bezier()
         bez.closed = self.start.closed
         for i in range(len(self.start.vertices)):
-            bez.vertices.append(self.start.vertices[i].lerp(self.end.vertices[i], lerpv))
-            bez.in_tangents.append(self.start.in_tangents[i].lerp(self.end.in_tangents[i], lerpv))
-            bez.out_tangents.append(self.start.out_tangents[i].lerp(self.end.out_tangents[i], lerpv))
+            bez.vertices.append(self.start.vertices[i].lerp(end.vertices[i], lerpv))
+            bez.in_tangents.append(self.start.in_tangents[i].lerp(end.in_tangents[i], lerpv))
+            bez.out_tangents.append(self.start.out_tangents[i].lerp(end.out_tangents[i], lerpv))
         return bez
 
 
