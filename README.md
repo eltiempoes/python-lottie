@@ -241,7 +241,7 @@ Links
 
 ### Documentation
 
-https://mattia.basaglia.gitlab.io/tgs/index.html
+http://mattia.basaglia.gitlab.io/tgs/index.html
 
 ### Code
 
