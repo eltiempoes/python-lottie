@@ -3,6 +3,7 @@
 import json
 import sys
 import os
+import shutil
 import argparse
 sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -27,6 +28,11 @@ parser.add_argument(
 
 if __name__ == "__main__":
     ns = parser.parse_args()
+    width = shutil.get_terminal_size((-1, -1)).columns
+    if width < 10:
+        width = None
+    else:
+        width = int((width - 3) / 2)
     a1 = parse_tgs(ns.file1)
     a2 = parse_tgs(ns.file2)
-    difflines(a1, a2)
+    difflines(a1, a2, width, width)
