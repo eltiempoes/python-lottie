@@ -324,6 +324,8 @@ class FontRenderer:
                     sh.shape.value.scale(scale)
                     glyph_shape_group.add_shape(sh)
 
+                (glyph_shape_group if len(glyph_shapes) > 1 else sh).name = ch
+
                 pos.x += self.glyphset[chname].width * scale
             elif on_missing:
                 on_missing(ch, size, pos, group)
@@ -351,7 +353,11 @@ class FallbackFontRenderer:
 
     def _on_missing(self, char, size, pos, group):
         font = fonts.best(self.query.clone().char(char))
-        group.add_shape(font.render(char, size, pos))
+        child = font.render(char, size, pos)
+        if len(child.shapes) == 2:
+            group.add_shape(child.shapes[0])
+        else:
+            group.add_shape(child)
 
     def render(self, text, size, pos=None):
         return self.best.render(text, size, pos, self._on_missing)
