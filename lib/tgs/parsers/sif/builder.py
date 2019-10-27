@@ -108,7 +108,8 @@ class SifBuilder(restructure.AbstractBuilder):
         g = self.basic_layer(type, dom_parent)
         if lottie.name:
             g.setAttribute("desc", lottie.name)
-
+        if lottie.hidden:
+            g.setAttribute("active", "false")
         transf = getattr(lottie, "transform", None)
         if transf:
             self.set_transform(g, lottie.transform)
@@ -182,7 +183,7 @@ class SifBuilder(restructure.AbstractBuilder):
                     prev = kframes[i-1]
                     if prev.jump:
                         waypoint.setAttribute("before", "constant")
-                    elif prev.in_value.x < 1:
+                    elif prev.in_value and prev.in_value.x < 1:
                         waypoint.setAttribute("before", "halt")
                     else:
                         waypoint.setAttribute("before", "linear")
@@ -191,7 +192,7 @@ class SifBuilder(restructure.AbstractBuilder):
 
                 if keyframe.jump:
                     waypoint.setAttribute("after", "constant")
-                elif keyframe.out_value.x > 0:
+                elif keyframe.out_value and keyframe.out_value.x > 0:
                     waypoint.setAttribute("after", "halt")
                 else:
                     waypoint.setAttribute("after", "linear")

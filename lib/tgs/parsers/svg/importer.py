@@ -326,11 +326,11 @@ class SvgParser(SvgHandler):
 
     def apply_common_style(self, style, transform):
         opacity = float(style.get("opacity", 1))
-        if style.get("display", "inline") == "none":
-            opacity = 0
-        if style.get("visibility", "visible") == "hidden":
-            opacity = 0
         transform.opacity.value = opacity * 100
+
+    def apply_visibility(self, style, object):
+        if style.get("display", "inline") == "none" or style.get("visibility", "visible") == "hidden":
+            object.hidden = True
 
     def add_shapes(self, element, shapes, shape_parent):
         # TODO inherit style
@@ -338,6 +338,7 @@ class SvgParser(SvgHandler):
 
         group = objects.Group()
         self.apply_common_style(style, group.transform)
+        self.apply_visibility(style, group)
         group.name = self._get_id(element)
 
         shape_parent.shapes.insert(0, group)
@@ -398,6 +399,7 @@ class SvgParser(SvgHandler):
         shape_parent.shapes.insert(0, group)
         style = self.parse_style(element)
         self.apply_common_style(style, group.transform)
+        self.apply_visibility(style, group)
         group.name = self._get_name(element, self.qualified("inkscape", "label"))
         self.parse_children(element, group)
         self.parse_transform(element, group, group.transform)
@@ -651,6 +653,7 @@ class SvgParser(SvgHandler):
         group = objects.Group()
         style = self.parse_style(element)
         self.apply_common_style(style, group.transform)
+        self.apply_visibility(style, group)
         group.name = self._get_id(element)
         if has_font:
             if font_style is None:

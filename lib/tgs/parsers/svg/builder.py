@@ -90,6 +90,10 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             g.attrib[self.qualified("inkscape", "label")] = layer_builder.lottie.__class__.__name__
         if layer_builder.shapegroup:
             g.attrib["style"] = self.group_to_style(layer_builder.shapegroup)
+        if layer_builder.lottie.hidden:
+            g.attrib.setdefault("style", "")
+            g.attrib["style"] += "display: none;"
+
         return g
 
     def _get_value(self, prop, default=NVector(0, 0)):
@@ -257,6 +261,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if "style" not in svgshape.attrib:
             svgshape.attrib["style"] = ""
         svgshape.attrib["style"] += self.group_to_style(shapegroup)
+        if shape.hidden:
+            svgshape.attrib["style"] += "display: none;"
         return svgshape
 
     def build_rect(self, shape, parent):

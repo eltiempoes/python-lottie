@@ -74,6 +74,7 @@ class ShapeElement(TgsObject):
     """
     _props = [
         #TgsProp("match_name", "mn", str, False),
+        TgsProp("hidden", "hd", bool, False),
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", str, False),
         TgsProp("property_index", "ix", int, False),
@@ -90,6 +91,8 @@ class ShapeElement(TgsObject):
         self.name = None
         ## Property index
         self.property_index = None
+        ## Hide element
+        self.hidden = None
 
     def bounding_box(self, time=0):
         """!

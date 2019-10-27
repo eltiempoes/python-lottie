@@ -45,6 +45,7 @@ class Layer(TgsObject):
         TgsProp("blend_mode", "bm", BlendMode, False),
         TgsProp("matte_mode", "tt", MatteMode, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
+        TgsProp("hidden", "hd", bool, False),
         TgsProp("index", "ind", int, False),
         #TgsProp("css_class", "cl", str, False),
         #TgsProp("layer_html_id", "ln", str, False),
@@ -77,6 +78,8 @@ class Layer(TgsObject):
         self.auto_orient = False
         ## 3d layer flag
         self.threedimensional = False
+        ## Hidden layer
+        self.hidden = None
         ## Layer index in AE. Used for parenting and expressions.
         self.index = None
 
