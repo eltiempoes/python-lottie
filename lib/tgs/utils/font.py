@@ -318,13 +318,11 @@ class FontRenderer:
             chname = self.cmap.get(ord(ch)) or self.font._makeGlyphName(ord(ch))
             if chname in self.glyphset:
                 glyph_shapes = self.glyph_shapes(chname, pos / scale)
-                glyph_shape_group = Group() if len(glyph_shapes) > 1 else group
+                glyph_shape_group = group.add_shape(Group()) if len(glyph_shapes) > 1 else group
 
                 for sh in glyph_shapes:
                     sh.shape.value.scale(scale)
                     glyph_shape_group.add_shape(sh)
-                if len(glyph_shapes) > 1:
-                    group.add_shape(glyph_shape_group)
 
                 pos.x += self.glyphset[chname].width * scale
             elif on_missing:
