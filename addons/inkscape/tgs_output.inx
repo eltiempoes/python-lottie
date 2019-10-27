@@ -6,6 +6,7 @@
     <param name="tab" type="notebook">
         <page name="options" _gui-text="Options">
             <param name="frames" type="int" min="1" max="180" gui-text="Number of frames">60</param>
+            <param name="layer-frames" type="int" min="0" max="180" gui-text="Layer frame delay (if greater than 0 each top-level layer is treated as a different frame)">0</param>
             <param name="fps" type="int" min="1" max="180" gui-text="Frames per secons">60</param>
             <param name="format" type="string" gui-hidden="true">tgs</param>
             <param name="tgspath" type="string" gui-text="Path to the tgs packge installation path"></param>

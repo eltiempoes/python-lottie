@@ -39,11 +39,18 @@ if __name__ == "__main__":
         help="Additional path to add to sys.path",
         default=""
     )
+    parser.add_argument(
+        "--layer-frames",
+        type=int,
+        help="If greater than 0, treats every layer in the SVG as a different animation frame, "
+            "greater values increase the time each frames lasts for.",
+        default=0
+    )
     ns, _ = parser.parse_known_args()
     if ns.tgspath:
         sys.path.append(ns.tgspath)
     import tgs
-    animation = tgs.parsers.svg.importer.parse_svg_file(ns.infile, ns.frames, ns.fps)
+    animation = tgs.parsers.svg.importer.parse_svg_file(ns.infile, ns.layer_frames, ns.frames, ns.fps)
     if ns.format == "lottie":
         tgs.exporters.export_lottie(animation, sys.stdout, ns.pretty)
     else:
