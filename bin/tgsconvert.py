@@ -34,6 +34,9 @@ class Importer:
 
 importers = [
     Importer("SVG", ["svg"], parsers.svg.parse_svg_file, [
+        ExtraOption("layer_frames", type=int, default=0,
+            help="If greater than 0, treats every layer in the SVG as a different animation frame, "
+            "greater values increase the time each frames lasts for."),
         ExtraOption("n_frames", type=int, default=60),
         ExtraOption("framerate", type=int, default=60),
     ]),

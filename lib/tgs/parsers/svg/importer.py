@@ -525,7 +525,7 @@ class SvgParser(SvgHandler):
                 if handler:
                     handler(child)
 
-    def parse_etree(self, etree, *args, **kwargs):
+    def parse_etree(self, etree, layer_frames=0, *args, **kwargs):
         animation = objects.Animation(*args, **kwargs)
         self.animation = animation
         self.max_time = 0
@@ -536,13 +536,24 @@ class SvgParser(SvgHandler):
         else:
             _, _, animation.width, animation.height = map(int, svg.attrib["viewBox"].split(" "))
         animation.name = self._get_name(svg, self.qualified("sodipodi", "docname"))
-        layer = objects.ShapeLayer()
-        animation.add_layer(layer)
-        self.parse_children(svg, layer)
-        if self.max_time:
+        if layer_frames:
+            for frame in svg:
+                if self.unqualified(frame.tag) == "g":
+                    layer = objects.ShapeLayer()
+                    layer.in_point = self.max_time
+                    animation.add_layer(layer)
+                    self._parseshape_g(frame, layer)
+                    self.max_time += layer_frames
+                    layer.out_point = self.max_time
             animation.out_point = self.max_time
-            for layer in animation.layers:
-                layer.out_point = self.max_time
+        else:
+            layer = objects.ShapeLayer()
+            animation.add_layer(layer)
+            self.parse_children(svg, layer)
+            if self.max_time:
+                animation.out_point = self.max_time
+                for layer in animation.layers:
+                    layer.out_point = self.max_time
         return animation
 
     def _parse_defs(self, element):
@@ -1116,10 +1127,10 @@ class PathDParser:
         self._parse_Z()
 
 
-def parse_svg_etree(etree, *args, **kwargs):
+def parse_svg_etree(etree, layer_frames=0, *args, **kwargs):
     parser = SvgParser()
-    return parser.parse_etree(etree, *args, **kwargs)
+    return parser.parse_etree(etree, layer_frames, *args, **kwargs)
 
 
-def parse_svg_file(file, *args, **kwargs):
-    return parse_svg_etree(ElementTree.parse(file), *args, **kwargs)
+def parse_svg_file(file, layer_frames=0, *args, **kwargs):
+    return parse_svg_etree(ElementTree.parse(file), layer_frames, *args, **kwargs)
