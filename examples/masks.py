@@ -14,6 +14,7 @@ from tgs import Point, Color
 
 an = parse_svg_file(os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
+    0,
     "blep.svg"
 ))
 

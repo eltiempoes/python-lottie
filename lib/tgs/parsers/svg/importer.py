@@ -403,6 +403,8 @@ class SvgParser(SvgHandler):
         group.name = self._get_name(element, self.qualified("inkscape", "label"))
         self.parse_children(element, group)
         self.parse_transform(element, group, group.transform)
+        if group.hidden: # Lottie web doesn't seem to support .hd
+            group.transform.opacity.value = 0
         return group
 
     def _parseshape_ellipse(self, element, shape_parent):

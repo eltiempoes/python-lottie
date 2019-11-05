@@ -15,7 +15,7 @@ last_frame = 60
 an = parse_svg_file(os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "blep.svg"
-), last_frame)
+), 0, last_frame)
 
 layer = an.find("durg")
 
