@@ -135,7 +135,7 @@ class Conversion:
     def hsl_to_rgb(h, s, l):
         return colorsys.hls_to_rgb(h, l, s)
 
-    ## http://w3.uqo.ca/missaoui/Publications/TRColorSpace.zip
+    # http://w3.uqo.ca/missaoui/Publications/TRColorSpace.zip
     #@staticmethod
     #def rgb_to_hcl(r, g, b, gamma=3, y0=100):
         #maxc = max(r, g, b)
