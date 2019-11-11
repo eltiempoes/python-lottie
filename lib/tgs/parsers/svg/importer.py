@@ -533,8 +533,8 @@ class SvgParser(SvgHandler):
         self.max_time = 0
         svg = etree.getroot()
         if "width" in svg.attrib and "height" in svg.attrib:
-            animation.width = int(round(float(svg.attrib["width"])))
-            animation.height = int(round(float(svg.attrib["height"])))
+            animation.width = int(round(self._parse_unit(svg.attrib["width"])))
+            animation.height = int(round(self._parse_unit(svg.attrib["height"])))
         else:
             _, _, animation.width, animation.height = map(int, svg.attrib["viewBox"].split(" "))
         animation.name = self._get_name(svg, self.qualified("sodipodi", "docname"))
