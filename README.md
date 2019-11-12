@@ -51,6 +51,10 @@ Scripts
 
   Pretty prints two tgs / lottie files side by side, highlighting differences (useful to debug / diff lottie files)
 
+* `bin/tgscheck.py`
+
+  Checks a lottie or tgs file to see if it's compatible with telegram stickers
+
 
 Installation
 ------------
