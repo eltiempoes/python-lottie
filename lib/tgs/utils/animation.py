@@ -4,6 +4,7 @@ from ..nvector import NVector
 from ..objects.shapes import Path
 from .. import objects
 from ..objects import easing
+from ..objects import properties
 
 
 def shake(position_prop, x_radius, y_radius, start_time, end_time, n_frames):
@@ -110,8 +111,8 @@ def generate_path_appear(bezier, appear_start, appear_end, n_keyframes, reverse=
         deltap = maxp - len(segment.vertices)
         if deltap > 0:
             segment.vertices += [segment.vertices[-1]] * deltap
-            segment.in_tangents += [NVector(0,0)] * deltap
-            segment.out_tangents += [NVector(0,0)] * deltap
+            segment.in_tangents += [NVector(0, 0)] * deltap
+            segment.out_tangents += [NVector(0, 0)] * deltap
 
     return obj
 
@@ -142,8 +143,8 @@ def generate_path_disappear(bezier, disappear_start, disappear_end, n_keyframes,
         deltap = maxp - len(segment.vertices)
         if deltap > 0:
             segment.vertices += [segment.vertices[-1]] * deltap
-            segment.in_tangents += [NVector(0,0)] * deltap
-            segment.out_tangents += [NVector(0,0)] * deltap
+            segment.in_tangents += [NVector(0, 0)] * deltap
+            segment.out_tangents += [NVector(0, 0)] * deltap
 
     return obj
 
@@ -196,9 +197,9 @@ def generate_path_segment(bezier, appear_start, appear_end, disappear_start, dis
 class PointDisplacer:
     def __init__(self, time_start, time_end, n_frames):
         """!
-        \param time_start   When the animation shall start
-        \param time_end     When the animation shall end
-        \param n_frames     Number of frames in the animation
+        @param time_start   When the animation shall start
+        @param time_end     When the animation shall end
+        @param n_frames     Number of frames in the animation
         """
         ## When the animation shall start
         self.time_start = time_start
@@ -239,6 +240,12 @@ class PointDisplacer:
 
     def frame_time(self, f):
         return f * self.time_delta + self.time_start
+
+    def _init_lerp(self, val_from, val_to, easing):
+        self._kf = properties.OffsetKeyframe(0, NVector(val_from), NVector(val_to), easing)
+
+    def _lerp_get(self, offset):
+        return self._kf.interpolated_value(offset / self.n_frames)[0]
 
 
 class SineDisplacer(PointDisplacer):
@@ -404,7 +411,8 @@ class DepthRotationDisplacer(PointDisplacer):
     axis_y = DepthRotation.axis_y
     axis_z = DepthRotation.axis_z
 
-    def __init__(self, center, time_start, time_end, n_frames, axis, depth=0, angle=360, anglestart=0):
+    def __init__(self, center, time_start, time_end, n_frames, axis,
+                 depth=0, angle=360, anglestart=0, ease=easing.Linear()):
         super().__init__(time_start, time_end, n_frames)
         self.rotation = DepthRotation(center)
         if isinstance(axis, NVector):
@@ -413,9 +421,10 @@ class DepthRotationDisplacer(PointDisplacer):
         self.depth = depth
         self.angle = angle
         self.anglestart = anglestart
+        self._init_lerp(0, angle, ease)
 
     def _on_displace(self, startpos, f):
-        angle = self.anglestart + self.angle * f / self.n_frames
+        angle = self.anglestart + self._lerp_get(f)
         if len(startpos) < 3:
             startpos = NVector(*(startpos.components + [self.depth]))
         return self.rotation.rotate3d(startpos, angle, self.axis) - startpos

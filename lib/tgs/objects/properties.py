@@ -249,7 +249,6 @@ class AnimatableMixin:
     def get_value(self, time=0):
         """!
         @brief Returns the value of the property at the given frame/time
-        \todo honour easing
         """
         if not self.animated:
             return self.value

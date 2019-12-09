@@ -174,4 +174,3 @@ class TgsValidator(ObjectVisitor):
             o,
             Severity.Note
         )
-
