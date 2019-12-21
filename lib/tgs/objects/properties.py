@@ -198,6 +198,15 @@ class OffsetKeyframe(Keyframe):
         lerpv = self.lerp_factor(ratio)
         return self.start.lerp(end, lerpv)
 
+    def __repr__(self):
+        return "<%s.%s %s %s%s>" % (
+            type(self).__module__,
+            type(self).__name__,
+            self.time,
+            self.start,
+            (" -> %s" % self.end) if self.end is not None else ""
+        )
+
 
 class AnimatableMixin:
     keyframe_type = Keyframe
@@ -266,8 +275,8 @@ class AnimatableMixin:
                 kp = self.keyframes[i-1] if i > 0 else None
                 if kp:
                     end = kp.end
-                    if end is None and i + 1 < len(self.keyframes):
-                        end = self.keyframes[i+1].start
+                    if end is None:
+                        end = val
                     if end is not None:
                         val = kp.interpolated_value((time - kp.time) / (k.time - kp.time), end)
                 break
@@ -282,6 +291,13 @@ class AnimatableMixin:
             last.pop("i", None)
             last.pop("o", None)
         return d
+
+    def __repr__(self):
+        if self.keyframes and len(self.keyframes) > 1:
+            val = "%s -> %s" % (self.keyframes[0].start, self.keyframes[-2].end)
+        else:
+            val = self.value
+        return "<%s.%s %s>" % (type(self).__module__, type(self).__name__, val)
 
 
 ## \ingroup Lottie
