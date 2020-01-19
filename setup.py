@@ -23,7 +23,7 @@ def find_packages(root="tgs"):
 
 setuptools.setup(
     name="tgs",
-    version=os.environ.get("VERSION_OVERRIDE", "0.3.5"),
+    version=os.environ.get("VERSION_OVERRIDE", "0.3.6"),
     author="Mattia Basaglia",
     author_email="mattia.basaglia@gmail.com",
     description="A framework to work with lottie / tgs files",
@@ -37,6 +37,7 @@ setuptools.setup(
         os.path.join("bin", "raster_palette.py"),
         os.path.join("bin", "tgs2svg.py"),
         os.path.join("bin", "tgscat.py"),
+        os.path.join("bin", "tgscheck.py"),
         os.path.join("bin", "tgsconvert.py"),
         os.path.join("bin", "tgsdiff.py"),
         os.path.join("bin", "tgsfonts.py"),
