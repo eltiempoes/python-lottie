@@ -31,6 +31,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://gitlab.com/mattia.basaglia/tgs/",
     package_dir={'': 'lib'},
+    license="GNU Affero General Public License v3 or later (AGPLv3+)",
     packages=find_packages(),
     scripts=[
         os.path.join("bin", "raster2tgs.py"),
