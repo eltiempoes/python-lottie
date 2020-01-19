@@ -1,6 +1,9 @@
+import os
 import enum
+import json
 import inspect
 
+from ..parsers.tgs import parse_tgs
 from ..objects.base import ObjectVisitor
 from ..objects.animation import Animation
 from ..objects import layers
@@ -21,6 +24,8 @@ class TgsError:
         self.severity = severity
 
     def target_id(self):
+        if isinstance(self.target, str):
+            return self.target
         if getattr(self.target, "name", ""):
             return self.target.name
         return self.target.__class__.__name__
@@ -41,6 +46,24 @@ class TgsValidator(ObjectVisitor):
     def _check(self, expr, message, target, severity=Severity.Warning):
         if severity.value >= self.severity.value and not expr:
             self.errors.append(TgsError(message, target, severity))
+
+    def check_file(self, filename):
+        size_k = os.path.getsize(filename) / 1024
+        self._check(
+            size_k <= 64,
+            "Invalid size (%.1fk), should be less than 64k" % size_k,
+            filename,
+            Severity.Error
+        )
+        try:
+            self(parse_tgs(filename))
+        except json.decoder.JSONDecodeError as e:
+            self._check(
+                False,
+                "Invalid JSON: %s" % e,
+                filename,
+                Severity.Error
+            )
 
     def visit(self, object):
         for cls in inspect.getmro(object.__class__):

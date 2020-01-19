@@ -7,7 +7,6 @@ sys.path.append(os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs.parsers.tgs import parse_tgs
 from tgs.exporters.tgs_validator import TgsValidator, Severity
 
 
@@ -33,10 +32,9 @@ parser.add_argument(
 if __name__ == "__main__":
     ns = parser.parse_args()
     severity = Severity.__members__[ns.level]
-    an = parse_tgs(ns.infile)
 
     validator = TgsValidator(severity)
-    validator(an)
+    validator.check_file(ns.infile)
     if validator.errors:
         sys.stdout.write("\n".join(map(str, validator.errors))+"\n")
         sys.exit(1)
