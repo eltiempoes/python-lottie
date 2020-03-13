@@ -195,7 +195,7 @@ class ImageLayer(Layer):
 class PreCompLayer(Layer):
     _props = [
         TgsProp("reference_id", "refId", str, False),
-        TgsProp("time_remapping", "tm", float, False),
+        TgsProp("time_remapping", "tm", Value, False),
     ]
     ## %Layer type.
     type = 0
