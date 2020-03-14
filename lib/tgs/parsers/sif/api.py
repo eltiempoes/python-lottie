@@ -280,7 +280,7 @@ class XmlParam(XmlAnimatable):
         return param
 
 
-class XmlCompositeParam(XmlDescriptor):
+class XmlTransformParam(XmlDescriptor):
     def from_xml(self, obj, parent: minidom.Element):
         for cn in parent.childNodes:
             if (
@@ -649,6 +649,19 @@ class BlendMethod(enum.Enum):
     Subtract = 5
 
 
+class BlurType(enum.Enum):
+    Box = 0
+    FastGaussian = 1
+    CrossHatch = 2
+    Gaussian = 3
+    Disc = 4
+
+
+class WindingStyle(enum.Enum):
+    NonZero = 0
+    EvenOdd = 1
+
+
 class Layer(SifNode):
     _layer_type = None
 
@@ -694,7 +707,7 @@ class GroupLayer(Layer):
 
     _nodes = [
         XmlParam("origin", "vector", NVector(0, 0)),
-        XmlCompositeParam("transformation"),
+        XmlTransformParam("transformation"),
         XmlCanvasParam(),
         XmlParam("time_dilation", "real", 0.),
         XmlParam("time_offset", "time", FrameTime(0, FrameTime.Unit.Frame)),
@@ -731,6 +744,25 @@ class CircleLayer(Layer):
         XmlParam("feather", "real", 0.),
         XmlParam("origin", "vector", NVector(0, 0)),
         XmlParam("invert", "bool", False),
+    ]
+
+
+class StarLayer(Layer):
+    _layer_type = "star"
+
+    _nodes = [
+        XmlParam("color", "color", NVector(0, 0, 0, 1)),
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("invert", "bool", False),
+        XmlParam("antialias", "bool", False),
+        XmlParam("feather", "real", 0.),
+        XmlParam("blurtype", "integer", BlurType.FastGaussian, False, BlurType),
+        XmlParam("winding_style", "integer", WindingStyle.NonZero, False, WindingStyle),
+        XmlParam("radius1", "real", 0.),
+        XmlParam("radius2", "real", 0.),
+        XmlParam("angle", "angle", 0.),
+        XmlParam("points", "integer", 5),
+        XmlParam("regular_polygon", "bool", False),
     ]
 
 

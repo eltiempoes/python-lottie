@@ -24,7 +24,7 @@ class Converter:
         self.view_p2 = NVector(canvas.view_box[2], canvas.view_box[3])
         self.target_size = NVector(canvas.width, canvas.height)
         self.shape_layer = self.animation.add_layer(objects.ShapeLayer())
-        for layer in canvas.layers:
+        for layer in reversed(canvas.layers):
             self._convert_layer(layer, self.shape_layer)
         return self.animation
 
@@ -33,19 +33,37 @@ class Converter:
 
     def _convert_layer(self, layer: api.Layer, parent):
         if isinstance(layer, api.GroupLayer):
-            shape = objects.Group()
-            shape.transform.anchor_point.value = shape.transform.position.value = self.target_size / 2
-            # TODO transform
-            for sub in layer.canvas:
-                self._convert_layer(sub, shape)
+            shape = self._convert_group(layer)
         elif isinstance(layer, api.RectangleLayer):
             shape = self._convert_fill(layer, self._convert_rect)
         elif isinstance(layer, api.CircleLayer):
             shape = self._convert_fill(layer, self._convert_circle)
+        elif isinstance(layer, api.StarLayer):
+            shape = self._convert_fill(layer, self._convert_star)
         else:
             return
 
         parent.add_shape(shape)
+
+    def _convert_group(self, layer: api.GroupLayer):
+        shape = objects.Group()
+        shape.transform.anchor_point.value = shape.transform.position.value = self.target_size / 2
+        shape.transform.position = self._adjust_coords(self._convert_vector(layer.transformation.offset))
+        shape.transform.rotation = self._adjust_animated(
+            self._convert_scalar(layer.transformation.angle),
+            lambda x: -x
+        )
+        shape.transform.scale = self._adjust_animated(
+            self._convert_vector(layer.transformation.scale),
+            lambda x: x * 100
+        )
+        shape.transform.skew_axis = self._adjust_animated(
+            self._convert_scalar(layer.transformation.skew_angle),
+            lambda x: -x
+        )
+        for sub in reversed(layer.canvas):
+            self._convert_layer(sub, shape)
+        return shape
 
     def _convert_fill(self, layer, converter):
         shape = objects.Group()
@@ -70,7 +88,7 @@ class Converter:
         rect.rounded = self._adjust_scalar(self._convert_scalar(layer.bevel))
         return rect
 
-    def _convert_circle(self, layer: api.RectangleLayer):
+    def _convert_circle(self, layer: api.CircleLayer):
         shape = objects.Ellipse()
         shape.position = self._adjust_coords(self._convert_vector(layer.origin))
         radius = self._adjust_scalar(self._convert_scalar(layer.radius))
@@ -81,6 +99,20 @@ class Converter:
                 shape.size.keyframes[-1].out_value = kf.out_value
         else:
             shape.size.value = NVector(radius.value, radius.value) * 2
+        return shape
+
+    def _convert_star(self, layer: api.StarLayer):
+        shape = objects.Star()
+        shape.position = self._adjust_coords(self._convert_vector(layer.origin))
+        shape.inner_radius = self._adjust_scalar(self._convert_scalar(layer.radius2))
+        shape.outer_radius = self._adjust_scalar(self._convert_scalar(layer.radius1))
+        shape.rotation = self._adjust_animated(
+            self._convert_scalar(layer.angle),
+            lambda x: 90-x
+        )
+        shape.points = self._convert_scalar(layer.points)
+        #if layer.regular_polygon:
+            #shape.star_type = objects.StarType.Polygon
         return shape
 
     def _mix_animations(self, v1: objects.properties.AnimatableMixin, v2: objects.properties.AnimatableMixin):
@@ -136,4 +168,3 @@ class Converter:
             self.target_size.x * (val.x / (self.view_p2.x - self.view_p1.x) + 0.5),
             self.target_size.y * (val.y / (self.view_p2.y - self.view_p1.y) + 0.5),
         )
-
