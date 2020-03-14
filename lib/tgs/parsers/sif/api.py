@@ -187,14 +187,44 @@ class XmlList(XmlDescriptor):
             parent.appendChild(value.to_dom(dom))
 
 
-class XmlParam(XmlDescriptor):
-    def __init__(self, name, typename, default=None, static=False, type_wrapper=lambda x: x):
-        super().__init__(name)
+class AnimatableTypeDescriptor:
+    def __init__(self, typename, default=None, static=False, type_wrapper=lambda x: x):
         self.typename = typename
         self.static = static
         self.type_wrapper = type_wrapper
         self.default_value = default
 
+    def default(self):
+        return SifAnimatable(self, copy.deepcopy(self.default_value))
+
+
+class XmlAnimatable(AnimatableTypeDescriptor, XmlDescriptor):
+    def __init__(self, name, *a, **kw):
+        XmlDescriptor.__init__(self, name)
+        AnimatableTypeDescriptor.__init__(self, *a, **kw)
+
+    def from_xml(self, obj, parent: minidom.Element):
+        for cn in parent.childNodes:
+            if cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == self.name:
+                value = SifAnimatable.from_dom(xml_first_element_child(cn), self)
+                break
+        else:
+            value = self.default()
+
+        setattr(obj, self.att_name, value)
+
+    def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
+        param = parent.appendChild(dom.createElement(self.name))
+        param.appendChild(getattr(obj, self.att_name).to_dom(dom))
+        return param
+
+    def clean(self, value):
+        if not isinstance(value, SifAnimatable) or value._param is not self:
+            raise ValueError("%s isn't a valid value for %s" % (value, self.name))
+        return value
+
+
+class XmlParam(XmlAnimatable):
     def from_xml(self, obj, parent: minidom.Element):
         for cn in parent.childNodes:
             if (
@@ -214,13 +244,34 @@ class XmlParam(XmlDescriptor):
         param.appendChild(getattr(obj, self.att_name).to_dom(dom))
         return param
 
-    def default(self):
-        return SifAnimatable(self, copy.deepcopy(self.default_value))
+
+class XmlCompositeParam(XmlDescriptor):
+    def from_xml(self, obj, parent: minidom.Element):
+        for cn in parent.childNodes:
+            if (
+                cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == "param"
+                and cn.getAttribute("name") == self.name
+            ):
+                value = SifTransform.from_dom(xml_first_element_child(cn))
+                break
+        else:
+            value = self.default()
+
+        setattr(obj, self.att_name, value)
+
+    def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
+        param = parent.appendChild(dom.createElement("param"))
+        param.setAttribute("name", self.name)
+        param.appendChild(getattr(obj, self.att_name).to_dom(dom))
+        return param
 
     def clean(self, value):
-        if not isinstance(value, SifAnimatable) or value._param is not self:
+        if not isinstance(value, SifTransform):
             raise ValueError("%s isn't a valid value for %s" % (value, self.name))
         return value
+
+    def default(self):
+        return SifTransform()
 
 
 class FrameTime:
@@ -299,25 +350,25 @@ class SifKeyframe:
         self.ease_out = ease_out
 
     @classmethod
-    def from_dom(cls, xml: minidom.Element, param: XmlParam):
+    def from_dom(cls, xml: minidom.Element, param: AnimatableTypeDescriptor):
         return cls(
-            SifAnimatable.value_from_dom(xml.firstChild, param),
+            SifAnimatable.value_from_dom(xml_first_element_child(xml), param),
             FrameTime(xml.getAttribute("time")),
             Interpolation(xml.getAttribute("before")),
             Interpolation(xml.getAttribute("after"))
         )
 
-    def to_dom(self, dom: minidom.Document, param: XmlParam):
+    def to_dom(self, dom: minidom.Document, param: AnimatableTypeDescriptor):
         element = dom.createElement("waypoint")
         element.setAttribute("time", str(self.time))
-        element.setAttribute("before", self.ease_in.value())
-        element.setAttribute("after", self.ease_out.value())
+        element.setAttribute("before", self.ease_in.value)
+        element.setAttribute("after", self.ease_out.value)
         element.appendChild(SifAnimatable.value_to_dom(self.value, dom, param))
         return element
 
 
 class SifAnimatable:
-    def __init__(self, param: XmlParam, value=None):
+    def __init__(self, param: AnimatableTypeDescriptor, value=None):
         self._value = value
         self._animated = False
         self._keyframes = None
@@ -327,17 +378,17 @@ class SifAnimatable:
         return "<%s.%s %r>" % (__name__, self.__class__.__name__, self._value if not self._animated else "animated")
 
     @classmethod
-    def from_dom(cls, xml: minidom.Element, param: XmlParam):
+    def from_dom(cls, xml: minidom.Element, param: AnimatableTypeDescriptor):
         if xml.tagName == param.typename:
             return SifAnimatable(param, SifAnimatable.value_from_dom(xml, param))
         elif xml.tagName != "animated":
-            raise ValueError("Unknown element: %s" % xml.tagName)
+            raise ValueError("Unknown element %s for %s" % (xml.tagName, param.name))
 
         if xml.getAttribute("type") != param.typename:
             raise ValueError("Invalid type %s (should be %s)" % (xml.getAttribute("type"), param.typename))
 
         if param.static:
-            raise ValueError("Animating static value")
+            raise ValueError("Animating static value for %s" % (param.name))
 
         obj = SifAnimatable(param)
         obj._animated = True
@@ -355,7 +406,7 @@ class SifAnimatable:
             return element
 
         element = dom.createElement("animated")
-        element.setAttribute("type", self._param)
+        element.setAttribute("type", self._param.typename)
         for kf in self._keyframes:
             element.appendChild(kf.to_dom(dom, self._param))
         return element
@@ -365,7 +416,7 @@ class SifAnimatable:
         return str(uuid4()).replace("-", "").upper()
 
     @classmethod
-    def value_to_dom(cls, value, dom: minidom.Document, param: XmlParam):
+    def value_to_dom(cls, value, dom: minidom.Document, param: AnimatableTypeDescriptor):
         element = dom.createElement(param.typename)
 
         if param.typename == "vector":
@@ -382,7 +433,7 @@ class SifAnimatable:
         return element
 
     @classmethod
-    def value_from_dom(cls, xml: minidom.Element, param: XmlParam):
+    def value_from_dom(cls, xml: minidom.Element, param: AnimatableTypeDescriptor):
         if xml.tagName != param.typename:
             raise ValueError("Wrong value type (%s instead of %s)" % (xml.tagName, param.typename))
 
@@ -391,7 +442,7 @@ class SifAnimatable:
                 float(xml_text(xml.getElementsByTagName("x")[0])),
                 float(xml_text(xml.getElementsByTagName("y")[0]))
             )
-        elif param.typename == "real":
+        elif param.typename == "real" or param.typename == "angle":
             value = float(xml.getAttribute("value"))
         elif param.typename == "integer":
             value = int(xml.getAttribute("value"))
@@ -458,6 +509,28 @@ class SifAnimatable:
         return self._keyframes
 
 
+class SifTransform(SifNode):
+    _nodes = [
+        XmlAnimatable("offset", "vector", NVector(0, 0)),
+        XmlAnimatable("angle", "angle", 0.),
+        XmlAnimatable("skew_angle", "angle", 0.),
+        XmlAnimatable("scale", "vector", NVector(1, 1)),
+    ]
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element):
+        if xml.tagName != "composite" or xml.getAttribute("type") != "transformation":
+            raise ValueError("Invalid transform element: %s" % xml.tagName)
+        return super().from_dom(xml)
+
+    def to_dom(self, dom: minidom.Document):
+        element = dom.createElement("composite")
+        element.setAttribute("type", "transformation")
+        for node in self._nodes:
+            node.to_xml(self, element, dom)
+        return element
+
+
 class BlendMethod(enum.Enum):
     Composite = 0
     Multiply = 6
@@ -496,7 +569,7 @@ class Layer(SifNode):
         XmlParam("amount", "real", 1.),
         XmlParam("blend_method", "integer", BlendMethod.Composite, True, BlendMethod),
         XmlParam("origin", "vector", NVector(0, 0)),
-        # transformation
+        XmlCompositeParam("transformation"),
         # canvas
         XmlParam("time_dilation", "real", 0.),
         XmlParam("time_offset", "time", FrameTime(0, FrameTime.Unit.Frame)),
