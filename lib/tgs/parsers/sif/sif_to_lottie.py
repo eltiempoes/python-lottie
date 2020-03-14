@@ -1,6 +1,6 @@
 from ... import objects
 from . import api
-from ... import NVector
+from ... import NVector, PolarVector
 
 
 def convert(canvas: api.Canvas):
@@ -40,6 +40,8 @@ class Converter:
             shape = self._convert_fill(layer, self._convert_circle)
         elif isinstance(layer, api.StarLayer):
             shape = self._convert_fill(layer, self._convert_star)
+        elif isinstance(layer, api.OutlineLayer):
+            shape = self._convert_outline(layer, self._convert_bline)
         else:
             return
 
@@ -71,6 +73,17 @@ class Converter:
         fill = objects.Fill()
         fill.color = self._convert_vector(layer.color)
         shape.add_shape(fill)
+        return shape
+
+    def _convert_outline(self, layer, converter):
+        shape = objects.Group()
+        shape.add_shape(converter(layer))
+        stroke = objects.Stroke()
+        stroke.color = self._convert_vector(layer.color)
+        stroke.line_cap = objects.LineCap.Square if layer.round_tip_0 else objects.LineCap.Round
+        stroke.line_join = objects.LineJoin.Miter if layer.sharp_cusps else objects.LineJoin.Round
+        stroke.width = self._adjust_scalar(self._convert_scalar(layer.width))
+        shape.add_shape(stroke)
         return shape
 
     def _convert_rect(self, layer: api.RectangleLayer):
@@ -111,19 +124,19 @@ class Converter:
             lambda x: 90-x
         )
         shape.points = self._convert_scalar(layer.points)
-        #if layer.regular_polygon:
-            #shape.star_type = objects.StarType.Polygon
+        if layer.regular_polygon:
+            shape.star_type = objects.StarType.Polygon
         return shape
 
-    def _mix_animations(self, v1: objects.properties.AnimatableMixin, v2: objects.properties.AnimatableMixin):
-        self._force_animated(v1)
-        self._force_animated(v2)
+    def _mix_animations(self, *animatable):
         times = set()
-        for kf in v1.keyframes + v2.keyframes:
-            times.add(kf.time)
+        for v in animatable:
+            self._force_animated(v)
+            for kf in v.keyframes:
+                times.add(kf.time)
 
         for time in sorted(times):
-            yield time, v1.get_value(time), v2.get_value(time)
+            yield [time] + [v.get_value(time) for v in animatable]
 
     def _force_animated(self, lottieval):
         if not lottieval:
@@ -158,7 +171,10 @@ class Converter:
         return lottieval
 
     def _adjust_scalar(self, lottieval: objects.Value):
-        return self._adjust_animated(lottieval, lambda x: x*60)
+        return self._adjust_animated(lottieval, self._scalar_mult)
+
+    def _scalar_mult(self, x):
+        return x * 60
 
     def _adjust_coords(self, lottieval: objects.MultiDimensional):
         return self._adjust_animated(lottieval, self._coord)
@@ -168,3 +184,27 @@ class Converter:
             self.target_size.x * (val.x / (self.view_p2.x - self.view_p1.x) + 0.5),
             self.target_size.y * (val.y / (self.view_p2.y - self.view_p1.y) + 0.5),
         )
+
+    def _convert_bline(self, layer: api.OutlineLayer):
+        lot = objects.Path()
+        closed = layer.bline.loop
+        animatables = []
+        for p in layer.bline.points:
+            animatables += [p.point, p.t1.radius, p.t1.theta, p.t2.radius, p.t2.theta]
+        animated = any(x.animated for x in animatables)
+        if not animated:
+            lot.shape.value = self._bezier(closed, [x.value for x in animatables])
+        # TODO animated
+        return lot
+
+    def _bezier(self, closed, values):
+        chunk_size = 5
+        bezier = objects.Bezier()
+        bezier.closed = closed
+        for i in range(0, len(values), chunk_size):
+            point, r1, a1, r2, a2 = values[i:i+chunk_size]
+            bezier.add_point(self._coord(point), self._polar(r1, a1), self._polar(r2, a2))
+        return bezier
+
+    def _polar(self, radius, angle):
+        return PolarVector(self._scalar_mult(radius), -angle)

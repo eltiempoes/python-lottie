@@ -67,7 +67,7 @@ def xml_first_element_child(xml: minidom.Node):
 class XmlDescriptor:
     def __init__(self, name, default_value=None):
         self.name = name
-        self.att_name = name.replace("-", "_")
+        self.att_name = name.replace("-", "_").replace("[", "_").replace("]", "")
 
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
         raise NotImplementedError
@@ -162,64 +162,74 @@ class XmlMeta(TypedXmlDescriptor):
             meta.setAttribute("content", value_to_xml(value, self.type))
 
 
-class LayerList:
-    def __init__(self):
-        self._layers = []
+class SifNodeList:
+    def __init__(self, type):
+        self._items = []
+        self._type = type
 
     def __len__(self):
-        return len(self._layers)
+        return len(self._items)
 
     def __iter__(self):
-        return iter(self._layers)
+        return iter(self._items)
 
     def __getitem__(self, name):
-        return self._layers[name]
+        return self._items[name]
 
     def __getslice__(self, i, j):
-        return self._layers[i:j]
+        return self._items[i:j]
 
     def __setitem__(self, key, value: "Layer"):
         self.validate(value)
-        self._layers[key] = value
+        self._items[key] = value
 
     def append(self, value: "Layer"):
         self.validate(value)
-        self._layers.append(value)
+        self._items.append(value)
 
     def __str__(self):
-        return str(self._layers)
+        return str(self._items)
 
     def __repr__(self):
-        return "<LayerList %s>" % self._layers
+        return "<SifNodeList %s>" % self._items
 
-    def validate(self, value: "Layer"):
-        if not isinstance(value, Layer):
-            raise ValueError("Not a layer: %s" % value)
+    def validate(self, value):
+        if not isinstance(value, self._type):
+            raise ValueError("Not a valid object: %s" % value)
 
 
 class XmlList(XmlDescriptor):
-    def __init__(self, child_node, name=None):
-        super().__init__(child_node._tag)
+    def __init__(self, child_node, name=None, wrapper_tag=None):
+        super().__init__(wrapper_tag or child_node._tag)
         self.child_node = child_node
         self.att_name = self.att_name + "s" if name is None else name
+        self.wrapper_tag = wrapper_tag
 
     def default(self):
-        return LayerList()
+        return SifNodeList(self.child_node)
 
     def clean(self, value):
         return value
 
     def from_xml(self, obj, domnode: minidom.Element):
-        values = LayerList()
+        values = self.default()
         for cn in domnode.childNodes:
             if cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == self.name:
-                values.append(self.child_node.from_dom(cn))
+                value_node = cn
+                if self.wrapper_tag:
+                    value_node = xml_first_element_child(cn)
+                values.append(self.child_node.from_dom(value_node))
 
         setattr(obj, self.att_name, values)
 
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
         for value in getattr(obj, self.att_name):
-            parent.appendChild(value.to_dom(dom))
+            value_node = value.to_dom(dom)
+            if self.wrapper_tag:
+                wrapper = dom.createElement(self.wrapper_tag)
+                wrapper.appendChild(value_node)
+                value_node = wrapper
+            parent.appendChild(value_node)
 
 
 class AnimatableTypeDescriptor:
@@ -280,14 +290,18 @@ class XmlParam(XmlAnimatable):
         return param
 
 
-class XmlTransformParam(XmlDescriptor):
+class XmlParamSif(XmlDescriptor):
+    def __init__(self, name, child_node):
+        super().__init__(name)
+        self.child_node = child_node
+
     def from_xml(self, obj, parent: minidom.Element):
         for cn in parent.childNodes:
             if (
                 cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == "param"
                 and cn.getAttribute("name") == self.name
             ):
-                value = SifTransform.from_dom(xml_first_element_child(cn))
+                value = self.child_node.from_dom(xml_first_element_child(cn))
                 break
         else:
             value = self.default()
@@ -301,20 +315,21 @@ class XmlTransformParam(XmlDescriptor):
         return param
 
     def clean(self, value):
-        if not isinstance(value, SifTransform):
+        if not isinstance(value, self.child_node):
             raise ValueError("%s isn't a valid value for %s" % (value, self.name))
         return value
 
     def default(self):
-        return SifTransform()
+        return self.child_node()
 
 
+# TODO Should be able to remove this class and just use XmlList
 class XmlCanvasParam(XmlDescriptor):
     def __init__(self, name="canvas"):
         super().__init__(name)
 
     def from_xml(self, obj, parent: minidom.Element):
-        value = LayerList()
+        value = SifNodeList(Layer)
 
         for cn in parent.childNodes:
             if (
@@ -341,12 +356,42 @@ class XmlCanvasParam(XmlDescriptor):
         return param
 
     def clean(self, value):
-        if not isinstance(value, LayerList):
+        if not isinstance(value, SifNodeList):
             raise ValueError("%s isn't a valid value for %s" % (value, self.name))
         return value
 
     def default(self):
-        return LayerList()
+        return SifNodeList(Layer)
+
+
+class XmlSifElement(XmlDescriptor):
+    def __init__(self, name, child_node):
+        super().__init__(name)
+        self.child_node = child_node
+
+    def default(self):
+        return self.child_node()
+
+    def clean(self, value):
+        if not isinstance(value, self.child_node):
+            raise ValueError("Invalid value for %s: %s" % (self.name, value))
+        return value
+
+    def from_xml(self, obj, parent: minidom.Element):
+        for cn in parent.childNodes:
+            if cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == self.name:
+                value = self.child_node.from_dom(xml_first_element_child(cn))
+                break
+        else:
+            value = self.default()
+
+        setattr(obj, self.att_name, value)
+
+    def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
+        value = getattr(obj, self.att_name)
+        node = dom.createElement(self.name)
+        node.appendChild(value.to_dom(dom))
+        parent.appendChild(node)
 
 
 class FrameTime:
@@ -623,6 +668,48 @@ class SifTransform(SifNode):
         return element
 
 
+class RadialComposite(SifNode):
+    _nodes = [
+        XmlAnimatable("radius", "real", 0.),
+        XmlAnimatable("theta", "angle", 0.),
+    ]
+
+    def to_dom(self, dom: minidom.Document):
+        element = dom.createElement("radial_composite")
+        element.setAttribute("type", "vector")
+        for node in self._nodes:
+            node.to_xml(self, element, dom)
+        return element
+
+
+class BlinePoint(SifNode):
+    _nodes = [
+        XmlAnimatable("point", "vector", NVector(0, 0)),
+        XmlAnimatable("width", "real", 1.),
+        XmlAnimatable("origin", "real", .5),
+        XmlAnimatable("split", "bool", False),
+        XmlSifElement("t1", RadialComposite),
+        XmlSifElement("t2", RadialComposite),
+        XmlAnimatable("split_radius", "bool", True),
+        XmlAnimatable("split_angle", "bool", False),
+    ]
+
+    def to_dom(self, dom: minidom.Document):
+        element = dom.createElement("composite")
+        element.setAttribute("type", "bline_point")
+        for node in self._nodes:
+            node.to_xml(self, element, dom)
+        return element
+
+
+class Bline(SifNode):
+    _nodes = [
+        XmlAttribute("loop", bool_str, False),
+        XmlAttribute("type", str, "bline_point"),
+        XmlList(BlinePoint, "points", "entry"),
+    ]
+
+
 class BlendMethod(enum.Enum):
     Composite = 0
     Multiply = 6
@@ -707,7 +794,7 @@ class GroupLayer(Layer):
 
     _nodes = [
         XmlParam("origin", "vector", NVector(0, 0)),
-        XmlTransformParam("transformation"),
+        XmlParamSif("transformation", SifTransform),
         XmlCanvasParam(),
         XmlParam("time_dilation", "real", 0.),
         XmlParam("time_offset", "time", FrameTime(0, FrameTime.Unit.Frame)),
@@ -727,6 +814,7 @@ class RectangleLayer(Layer):
         XmlParam("color", "color", NVector(0, 0, 0, 1)),
         XmlParam("point1", "vector", NVector(0, 0)),
         XmlParam("point2", "vector", NVector(0, 0)),
+        XmlParam("expand", "real", 0.),
         XmlParam("invert", "bool", False),
         XmlParam("feather_x", "real", 0.),
         XmlParam("feather_y", "real", 0.),
@@ -763,6 +851,27 @@ class StarLayer(Layer):
         XmlParam("angle", "angle", 0.),
         XmlParam("points", "integer", 5),
         XmlParam("regular_polygon", "bool", False),
+    ]
+
+
+class OutlineLayer(Layer):
+    _layer_type = "outline"
+
+    _nodes = [
+        XmlParam("color", "color", NVector(0, 0, 0, 1)),
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("invert", "bool", False),
+        XmlParam("antialias", "bool", False),
+        XmlParam("feather", "real", 0.),
+        XmlParam("blurtype", "integer", BlurType.FastGaussian, False, BlurType),
+        XmlParam("winding_style", "integer", WindingStyle.NonZero, False, WindingStyle),
+        XmlParam("width", "real", 0.1),
+        XmlParam("expand", "real", 0.),
+        XmlParam("sharp_cusps", "bool", True),
+        XmlParam("round_tip[0]", "bool", True),
+        XmlParam("round_tip[1]", "bool", True),
+        XmlParam("homogeneous_width", "bool", True),
+        XmlParamSif("bline", Bline)
     ]
 
 
