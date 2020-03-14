@@ -1,6 +1,8 @@
 import enum
+from uuid import uuid4
 from xml.dom import minidom
 from distutils.util import strtobool
+import copy
 
 from ...nvector import NVector, Color
 
@@ -40,6 +42,28 @@ def value_isinstance(value, type):
     return isinstance(value, type)
 
 
+def xml_text(node):
+    return "".join(
+        x.nodeValue
+        for x in node.childNodes
+        if x.nodeType in {minidom.Node.TEXT_NODE, minidom.Node.CDATA_SECTION_NODE}
+    )
+
+
+def xml_make_text(dom: minidom.Document, tag_name, text):
+    e = dom.createElement(tag_name)
+    e.appendChild(dom.createTextNode(text))
+    return e
+
+
+def xml_first_element_child(xml: minidom.Node):
+    for ch in xml.childNodes:
+        if ch.nodeType == minidom.Node.ELEMENT_NODE:
+            return ch
+
+    raise ValueError("No child element in %s" % getattr(xml, "tagName", "node"))
+
+
 class XmlDescriptor:
     def __init__(self, name, default_value=None):
         self.name = name
@@ -66,20 +90,15 @@ class XmlDescriptor:
     def default(self):
         return None
 
+    def __repr__(self):
+        return "%s.%s(%r)" % (__name__, self.__class__, self.name)
 
-class XmlAttribute(XmlDescriptor):
+
+class TypedXmlDescriptor(XmlDescriptor):
     def __init__(self, name, type=str, default_value=None):
         super().__init__(name, default_value)
         self.type = type
         self.default_value = default_value
-
-    def from_xml(self, obj, domnode: minidom.Element):
-        xml_str = domnode.getAttribute(self.name)
-        if xml_str:
-            setattr(obj, self.att_name, value_from_xml(xml_str, self.type))
-
-    def __repr__(self):
-        return "%s.Attribute(%r)" % (__name__, self.name)
 
     def from_python(self, value):
         if value is None and self.default_value is None:
@@ -88,26 +107,27 @@ class XmlAttribute(XmlDescriptor):
             return self.type(value)
         return value
 
+    def default(self):
+        return copy.deepcopy(self.default_value)
+
+
+class XmlAttribute(TypedXmlDescriptor):
+    def from_xml(self, obj, domnode: minidom.Element):
+        xml_str = domnode.getAttribute(self.name)
+        if xml_str:
+            setattr(obj, self.att_name, value_from_xml(xml_str, self.type))
+
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
         value = getattr(obj, self.att_name)
         if value is not None:
             parent.setAttribute(self.name, value_to_xml(value, self.type))
 
-    def default(self):
-        return self.default_value
 
-
-class XmlSimpleElement(XmlDescriptor):
-    def __init__(self, name, type=str, default_value=None):
-        super().__init__(name, default_value)
-        self.type = type
-        self.default_value = default_value
-
+class XmlSimpleElement(TypedXmlDescriptor):
     def from_xml(self, obj, domnode: minidom.Element):
         for cn in domnode.childNodes:
             if cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == self.name:
-                xml_str = "".join(x.nodeValue for x in cn.childNodes)
-                value = value_from_xml(xml_str, self.type)
+                value = value_from_xml(xml_text(cn), self.type)
                 break
         else:
             value = self.default_value
@@ -117,47 +137,29 @@ class XmlSimpleElement(XmlDescriptor):
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
         value = getattr(obj, self.att_name)
         if value is not None:
-            parent.appendChild(dom.createElement(self.name)).appendChild(
-                dom.createTextNode(value_to_xml(value, self.type))
-            )
-
-    def from_python(self, value):
-        if value is None and self.default_value is None:
-            return None
-        if not value_isinstance(value, self.type):
-            return self.type(value)
-        return value
-
-    def default(self):
-        return self.default_value
+            parent.appendChild(xml_make_text(dom, self.name, value_to_xml(value, self.type)))
 
 
-class XmlMeta(XmlDescriptor):
-    def __init__(self, values, name="meta"):
-        super().__init__(name)
-        self.values = values
-
-    def default(self):
-        return {}
-
+class XmlMeta(TypedXmlDescriptor):
     def from_xml(self, obj, domnode: minidom.Element):
-        values = {}
-
         for cn in domnode.childNodes:
-            if cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == self.name:
-                name = cn.getAttribute("name")
-                values[name] = value_from_xml(cn.getAttribute("content"), self.values[name])
+            if (
+                cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == "meta"
+                and cn.getAttribute("name") == self.name
+            ):
+                value = value_from_xml(cn.getAttribute("content"), self.type)
+                break
+        else:
+            value = self.default_value
 
-        setattr(obj, self.att_name, values)
+        setattr(obj, self.att_name, value)
 
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
-        for name, value in getattr(obj, self.att_name).items():
-            element = parent.appendChild(dom.createElement(self.name))
-            element.setAttribute("name", name)
-            element.setAttribute("content", value_to_xml(value, self.values[name]))
-
-    def clean(self, value):
-        return value
+        value = getattr(obj, self.att_name)
+        if value is not None:
+            meta = parent.appendChild(dom.createElement("meta"))
+            meta.setAttribute("name", self.name)
+            meta.setAttribute("content", value_to_xml(value, self.type))
 
 
 class XmlList(XmlDescriptor):
@@ -185,6 +187,42 @@ class XmlList(XmlDescriptor):
             parent.appendChild(value.to_dom(dom))
 
 
+class XmlParam(XmlDescriptor):
+    def __init__(self, name, typename, default=None, static=False, type_wrapper=lambda x: x):
+        super().__init__(name)
+        self.typename = typename
+        self.static = static
+        self.type_wrapper = type_wrapper
+        self.default_value = default
+
+    def from_xml(self, obj, parent: minidom.Element):
+        for cn in parent.childNodes:
+            if (
+                cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == "param"
+                and cn.getAttribute("name") == self.name
+            ):
+                value = SifAnimatable.from_dom(xml_first_element_child(cn), self)
+                break
+        else:
+            value = self.default()
+
+        setattr(obj, self.att_name, value)
+
+    def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
+        param = parent.appendChild(dom.createElement("param"))
+        param.setAttribute("name", self.name)
+        param.appendChild(getattr(obj, self.att_name).to_dom(dom))
+        return param
+
+    def default(self):
+        return SifAnimatable(self, copy.deepcopy(self.default_value))
+
+    def clean(self, value):
+        if not isinstance(value, SifAnimatable) or value._param is not self:
+            raise ValueError("%s isn't a valid value for %s" % (value, self.name))
+        return value
+
+
 class FrameTime:
     class Unit(enum.Enum):
         Frame = "f"
@@ -203,6 +241,14 @@ class FrameTime:
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self)
+
+
+class Interpolation(enum.Enum):
+    Auto = "auto"
+    Linear = "linear"
+    Clamped = "clamped"
+    Ease = "halt"
+    Constant = "constant"
 
 
 class SifNodeMeta(type):
@@ -245,13 +291,226 @@ class SifNode(metaclass=SifNodeMeta):
         return element
 
 
+class SifKeyframe:
+    def __init__(self, value, time: FrameTime, ease_in=Interpolation.Clamped, ease_out=Interpolation.Clamped):
+        self.value = value
+        self.time = time
+        self.ease_in = ease_in
+        self.ease_out = ease_out
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element, param: XmlParam):
+        return cls(
+            SifAnimatable.value_from_dom(xml.firstChild, param),
+            FrameTime(xml.getAttribute("time")),
+            Interpolation(xml.getAttribute("before")),
+            Interpolation(xml.getAttribute("after"))
+        )
+
+    def to_dom(self, dom: minidom.Document, param: XmlParam):
+        element = dom.createElement("waypoint")
+        element.setAttribute("time", str(self.time))
+        element.setAttribute("before", self.ease_in.value())
+        element.setAttribute("after", self.ease_out.value())
+        element.appendChild(SifAnimatable.value_to_dom(self.value, dom, param))
+        return element
+
+
+class SifAnimatable:
+    def __init__(self, param: XmlParam, value=None):
+        self._value = value
+        self._animated = False
+        self._keyframes = None
+        self._param = param
+
+    def __repr__(self):
+        return "<%s.%s %r>" % (__name__, self.__class__.__name__, self._value if not self._animated else "animated")
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element, param: XmlParam):
+        if xml.tagName == param.typename:
+            return SifAnimatable(param, SifAnimatable.value_from_dom(xml, param))
+        elif xml.tagName != "animated":
+            raise ValueError("Unknown element: %s" % xml.tagName)
+
+        if xml.getAttribute("type") != param.typename:
+            raise ValueError("Invalid type %s (should be %s)" % (xml.getAttribute("type"), param.typename))
+
+        if param.static:
+            raise ValueError("Animating static value")
+
+        obj = SifAnimatable(param)
+        obj._animated = True
+        obj._keyframes = []
+        for waypoint in xml.childNodes:
+            if waypoint.nodeType == minidom.Node.ELEMENT_NODE and waypoint.tagName == "waypoint":
+                obj._keyframes.append(SifKeyframe.from_dom(waypoint, param))
+        return obj
+
+    def to_dom(self, dom: minidom.Document):
+        if not self._animated:
+            element = SifAnimatable.value_to_dom(self.value, dom, self._param)
+            if self._param.static:
+                element.setAttribute("static", "true")
+            return element
+
+        element = dom.createElement("animated")
+        element.setAttribute("type", self._param)
+        for kf in self._keyframes:
+            element.appendChild(kf.to_dom(dom, self._param))
+        return element
+
+    @classmethod
+    def guid(cls):
+        return str(uuid4()).replace("-", "").upper()
+
+    @classmethod
+    def value_to_dom(cls, value, dom: minidom.Document, param: XmlParam):
+        element = dom.createElement(param.typename)
+
+        if param.typename == "vector":
+            element.appendChild(xml_make_text(dom, "x", str(value.x)))
+            element.appendChild(xml_make_text(dom, "y", str(value.y)))
+            element.setAttribute("guid", cls.guid())
+        elif param.typename == "bool":
+            element.setAttribute("value", "true" if value else "false")
+        else:
+            if isinstance(value, enum.Enum):
+                value = value.value
+            element.setAttribute("value", str(value))
+
+        return element
+
+    @classmethod
+    def value_from_dom(cls, xml: minidom.Element, param: XmlParam):
+        if xml.tagName != param.typename:
+            raise ValueError("Wrong value type (%s instead of %s)" % (xml.tagName, param.typename))
+
+        if param.typename == "vector":
+            value = NVector(
+                float(xml_text(xml.getElementsByTagName("x")[0])),
+                float(xml_text(xml.getElementsByTagName("y")[0]))
+            )
+        elif param.typename == "real":
+            value = float(xml.getAttribute("value"))
+        elif param.typename == "integer":
+            value = int(xml.getAttribute("value"))
+        elif param.typename == "time":
+            value = FrameTime(xml.getAttribute("value"))
+        elif param.typename == "bool":
+            value = bool(strtobool(xml.getAttribute("value")))
+        else:
+            raise ValueError("Unsupported type %s" % param.typename)
+
+        return param.type_wrapper(value)
+
+    def add_keyframe(self, *args, **kwargs):
+        if self._static:
+            raise ValueError("Cannot animate static value")
+        if not kwargs and len(args) == 1 and isinstance(args[0], SifKeyframe):
+            keyframe = args[0]
+        else:
+            keyframe = SifKeyframe(*args, **kwargs)
+
+        if not self._animated:
+            self._animated = True
+            self._keyframes = [keyframe]
+            self._value = None
+        else:
+            self._keyframes.append(keyframe)
+
+    @property
+    def static(self):
+        return self._param.static
+
+    @property
+    def animated(self):
+        return self._animated
+
+    @animated.setter
+    def animated(self, v):
+        if v != self._animated:
+            if self._param.static:
+                raise ValueError("Cannot animate static value")
+            self._animated = v
+            if self._animated:
+                self._keyframes = []
+                if self._value is not None:
+                    self._keyframes.append(SifKeyframe(self.value, FrameTime(0, FrameTime.Unit.Frame)))
+                self._value = None
+            else:
+                if self._keyframes:
+                    self._value = self._keyframes[0].value
+                self._keyframes = None
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, v):
+        self._value = self._param.type_wrapper(v)
+        self._animated = False
+        self._keyframes = None
+
+    @property
+    def keyframes(self):
+        return self._keyframes
+
+
+class BlendMethod(enum.Enum):
+    Composite = 0
+    Multiply = 6
+    Screen = 16
+    Overlay = 20
+    Darken = 3
+    Lighten = 2
+    HardLight = 17
+    Difference = 18
+    Hue = 9
+    Saturation = 10
+    Color = 8
+    Luminosity = 11
+    Exclusion = 18
+    SoftLight = 6
+    ColorDodge = 0
+    ColorBurn = 0
+    Straight = 1
+    Onto = 13
+    StraightOnto = 21
+    Behind = 12
+    Divide = 7
+    Add = 4
+    Subtract = 5
+
+
 class Layer(SifNode):
     _nodes = [
         XmlAttribute("type", str, "group"),
         XmlAttribute("active", bool_str, True),
         XmlAttribute("version", str, "0.3"),
         XmlAttribute("exclude_from_rendering", bool_str, False),
+        XmlAttribute("desc", str, ""),
+
+        XmlParam("z_depth", "real", 0.),
+        XmlParam("amount", "real", 1.),
+        XmlParam("blend_method", "integer", BlendMethod.Composite, True, BlendMethod),
+        XmlParam("origin", "vector", NVector(0, 0)),
+        # transformation
+        # canvas
+        XmlParam("time_dilation", "real", 0.),
+        XmlParam("time_offset", "time", FrameTime(0, FrameTime.Unit.Frame)),
+        XmlParam("children_lock", "bool", False),
+        XmlParam("outline_grow", "real", 0.),
+        XmlParam("z_range", "bool", False, True),
+        XmlParam("z_range_position", "real", 0.),
+        XmlParam("z_range_depth", "real", 0.),
+        XmlParam("z_range_blur", "real", 0.),
+
     ]
+
+    def __repr__(self):
+        return "<%s.%s %r>" % (__name__, self.__class__.__name__, self.desc or self.type)
 
 
 class Canvas(SifNode):
@@ -271,24 +530,22 @@ class Canvas(SifNode):
         XmlAttribute("end-time", FrameTime, FrameTime(3, FrameTime.Unit.Seconds)),
         XmlAttribute("bgcolor", NVector, NVector(0, 0, 0, 0)),
         XmlSimpleElement("name"),
-        XmlMeta({
-            "background_first_color": NVector,
-            "background_rendering": bool,
-            "background_second_color": NVector,
-            "background_size": NVector,
-            "grid_color": NVector,
-            "grid_show": bool,
-            "grid_size": NVector,
-            "grid_snap": bool,
-            "guide_color": NVector,
-            "guide_show": bool,
-            "guide_snap": bool,
-            "jack_offset": float,
-            "onion_skin": bool,
-            "onion_skin_future": int,
-            "onion_skin_past": int,
-        }),
-        XmlList(Layer)
+        XmlMeta("background_first_color", NVector, NVector(0.88, 0.88, 0.88)),
+        XmlMeta("background_rendering", bool, False),
+        XmlMeta("background_second_color", NVector, NVector(0.65, 0.65, 0.65)),
+        XmlMeta("background_size", NVector, NVector(15, 15)),
+        XmlMeta("grid_color", NVector, NVector(0.62, 0.62, 0.62)),
+        XmlMeta("grid_show", bool, False),
+        XmlMeta("grid_size", NVector, NVector(0.25, 0.25)),
+        XmlMeta("grid_snap", bool, False),
+        XmlMeta("guide_color", NVector, NVector(0.4, 0.4, 1)),
+        XmlMeta("guide_show", bool, True),
+        XmlMeta("guide_snap", bool, False),
+        XmlMeta("jack_offset", float, 0),
+        XmlMeta("onion_skin", bool, False),
+        XmlMeta("onion_skin_future", int, 0),
+        XmlMeta("onion_skin_past", int, 1),
+        XmlList(Layer),
     ]
 
     def to_xml(self):
