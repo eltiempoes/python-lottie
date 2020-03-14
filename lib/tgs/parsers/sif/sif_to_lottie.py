@@ -34,28 +34,55 @@ class Converter:
     def _convert_layer(self, layer: api.Layer, parent):
         if isinstance(layer, api.GroupLayer):
             shape = objects.Group()
+            shape.transform.anchor_point.value = shape.transform.position.value = self.target_size / 2
+            # TODO transform
             for sub in layer.canvas:
                 self._convert_layer(sub, shape)
         elif isinstance(layer, api.RectangleLayer):
-            rect = objects.Rect()
-            p1 = self._adjust_coords(self._convert_vector(layer.point1))
-            p2 = self._adjust_coords(self._convert_vector(layer.point2))
-            if p1.animated or p2.animated:
-                # TODO
-                pass
-            else:
-                rect.position.value = (p1.value + p2.value) / 2
-                rect.size.value = abs(p2.value - p1.value)
-            rect.rounded = self._convert_scalar(layer.bevel)
-            shape = objects.Group()
-            shape.add_shape(rect)
-            fill = objects.Fill()
-            fill.color = self._convert_vector(layer.color)
-            shape.add_shape(fill)
+            shape = self._convert_fill(layer, self._convert_rect)
         else:
             return
 
         parent.add_shape(shape)
+
+    def _convert_fill(self, layer, converter):
+        shape = objects.Group()
+        shape.add_shape(converter(layer))
+        fill = objects.Fill()
+        fill.color = self._convert_vector(layer.color)
+        shape.add_shape(fill)
+        return shape
+
+    def _convert_rect(self, layer: api.RectangleLayer):
+        rect = objects.Rect()
+        p1 = self._adjust_coords(self._convert_vector(layer.point1))
+        p2 = self._adjust_coords(self._convert_vector(layer.point2))
+        if p1.animated or p2.animated:
+            for time, p1v, p2v in self._mix_animations(p1, p2):
+                rect.position.add_keyframe(time, (p1v + p2v) / 2)
+                rect.size.add_keyframe(time, abs(p2v - p1v))
+            pass
+        else:
+            rect.position.value = (p1.value + p2.value) / 2
+            rect.size.value = abs(p2.value - p1.value)
+        rect.rounded = self._convert_scalar(layer.bevel)
+        return rect
+
+    def _mix_animations(self, v1: objects.properties.AnimatableMixin, v2: objects.properties.AnimatableMixin):
+        self._force_animated(v1)
+        self._force_animated(v2)
+        times = set()
+        for kf in v1.keyframes + v2.keyframes:
+            times.add(kf.time)
+
+        for time in sorted(times):
+            yield time, v1.get_value(time), v2.get_value(time)
+
+    def _force_animated(self, lottieval):
+        if not lottieval:
+            v = lottieval.value
+            lottieval.add_keyframe(0, v)
+            lottieval.add_keyframe(self.animation.out_point, v)
 
     def _convert_animatable(self, v: api.SifAnimatable, lot: objects.properties.AnimatableMixin):
         if v.animated:

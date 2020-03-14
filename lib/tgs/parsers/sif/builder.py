@@ -158,17 +158,6 @@ class SifBuilder(restructure.AbstractBuilder):
 
         return self.process_vector_ext(name, multidim.keyframes, parent, "vector", getter)
 
-    def process_vector(self, name, multidim, parent):
-        def getter(keyframe, elem):
-            if keyframe is None:
-                v = multidim.value
-            else:
-                v = keyframe.start
-            self._settext(self._subelement(elem, "x"), str(v[0]))
-            self._settext(self._subelement(elem, "y"), str(v[1]))
-
-        return self.process_vector_ext(name, multidim.keyframes, parent, "vector", getter)
-
     def process_vector_ext(self, name, kframes, parent, type, getter):
         wrap = self._subelement(parent, name)
         if kframes is not None:
