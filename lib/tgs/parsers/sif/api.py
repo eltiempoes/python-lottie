@@ -162,6 +162,41 @@ class XmlMeta(TypedXmlDescriptor):
             meta.setAttribute("content", value_to_xml(value, self.type))
 
 
+class LayerList:
+    def __init__(self):
+        self._layers = []
+
+    def __len__(self):
+        return len(self._layers)
+
+    def __iter__(self):
+        return iter(self._layers)
+
+    def __getitem__(self, name):
+        return self._layers[name]
+
+    def __getslice__(self, i, j):
+        return self._layers[i:j]
+
+    def __setitem__(self, key, value: "Layer"):
+        self.validate(value)
+        self._layers[key] = value
+
+    def append(self, value: "Layer"):
+        self.validate(value)
+        self._layers.append(value)
+
+    def __str__(self):
+        return str(self._layers)
+
+    def __repr__(self):
+        return "<LayerList %s>" % self._layers
+
+    def validate(self, value: "Layer"):
+        if not isinstance(value, Layer):
+            raise ValueError("Not a layer: %s" % value)
+
+
 class XmlList(XmlDescriptor):
     def __init__(self, child_node, name=None):
         super().__init__(child_node._tag)
@@ -169,13 +204,13 @@ class XmlList(XmlDescriptor):
         self.att_name = self.att_name + "s" if name is None else name
 
     def default(self):
-        return []
+        return LayerList()
 
     def clean(self, value):
         return value
 
     def from_xml(self, obj, domnode: minidom.Element):
-        values = []
+        values = LayerList()
         for cn in domnode.childNodes:
             if cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == self.name:
                 values.append(self.child_node.from_dom(cn))
@@ -274,6 +309,46 @@ class XmlCompositeParam(XmlDescriptor):
         return SifTransform()
 
 
+class XmlCanvasParam(XmlDescriptor):
+    def __init__(self, name="canvas"):
+        super().__init__(name)
+
+    def from_xml(self, obj, parent: minidom.Element):
+        value = LayerList()
+
+        for cn in parent.childNodes:
+            if (
+                cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == "param"
+                and cn.getAttribute("name") == self.name
+            ):
+                canvas = xml_first_element_child(cn)
+                if canvas.tagName != "canvas":
+                    raise ValueError("Missing canvas")
+                for gc in canvas.childNodes:
+                    if gc.nodeType == minidom.Node.ELEMENT_NODE and gc.tagName == "layer":
+                        value.append(Layer.from_dom(gc))
+                break
+
+        setattr(obj, self.att_name, value)
+
+    def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
+        param = parent.appendChild(dom.createElement("param"))
+        param.setAttribute("name", self.name)
+        canvas = param.appendChild(dom.createElement("canvas"))
+        value = getattr(obj, self.att_name)
+        for layer in value:
+            canvas.appendChild(layer.to_dom(dom))
+        return param
+
+    def clean(self, value):
+        if not isinstance(value, LayerList):
+            raise ValueError("%s isn't a valid value for %s" % (value, self.name))
+        return value
+
+    def default(self):
+        return LayerList()
+
+
 class FrameTime:
     class Unit(enum.Enum):
         Frame = "f"
@@ -328,12 +403,16 @@ class SifNode(metaclass=SifNodeMeta):
             value = self._nodemap[name].clean(value)
         return super().__setattr__(name, value)
 
-    @classmethod
-    def from_dom(cls, xml: minidom.Element):
+    @staticmethod
+    def static_from_dom(cls, xml: minidom.Element):
         instance = cls()
         for node in cls._nodes:
             node.from_xml(instance, xml)
         return instance
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element):
+        return SifNode.static_from_dom(cls, xml)
 
     def to_dom(self, dom: minidom.Document):
         element = dom.createElement(self._tag)
@@ -423,6 +502,12 @@ class SifAnimatable:
             element.appendChild(xml_make_text(dom, "x", str(value.x)))
             element.appendChild(xml_make_text(dom, "y", str(value.y)))
             element.setAttribute("guid", cls.guid())
+        elif param.typename == "color":
+            element.appendChild(xml_make_text(dom, "r", str(value[0])))
+            element.appendChild(xml_make_text(dom, "g", str(value[1])))
+            element.appendChild(xml_make_text(dom, "b", str(value[2])))
+            element.appendChild(xml_make_text(dom, "a", str(value[3])))
+            element.setAttribute("guid", cls.guid())
         elif param.typename == "bool":
             element.setAttribute("value", "true" if value else "false")
         else:
@@ -441,6 +526,13 @@ class SifAnimatable:
             value = NVector(
                 float(xml_text(xml.getElementsByTagName("x")[0])),
                 float(xml_text(xml.getElementsByTagName("y")[0]))
+            )
+        elif param.typename == "color":
+            value = NVector(
+                float(xml_text(xml.getElementsByTagName("r")[0])),
+                float(xml_text(xml.getElementsByTagName("g")[0])),
+                float(xml_text(xml.getElementsByTagName("b")[0])),
+                float(xml_text(xml.getElementsByTagName("a")[0]))
             )
         elif param.typename == "real" or param.typename == "angle":
             value = float(xml.getAttribute("value"))
@@ -558,19 +650,52 @@ class BlendMethod(enum.Enum):
 
 
 class Layer(SifNode):
+    _layer_type = None
+
     _nodes = [
-        XmlAttribute("type", str, "group"),
+        XmlAttribute("type", str),
         XmlAttribute("active", bool_str, True),
         XmlAttribute("version", str, "0.3"),
         XmlAttribute("exclude_from_rendering", bool_str, False),
         XmlAttribute("desc", str, ""),
-
         XmlParam("z_depth", "real", 0.),
         XmlParam("amount", "real", 1.),
-        XmlParam("blend_method", "integer", BlendMethod.Composite, True, BlendMethod),
+        XmlParam("blend_method", "integer", BlendMethod.Composite, False, BlendMethod),
+    ]
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.type = self._layer_type
+
+    def __repr__(self):
+        return "<%s.%s %r>" % (__name__, self.__class__.__name__, self.desc or self.type)
+
+    def to_dom(self, dom: minidom.Document):
+        element = dom.createElement("layer")
+        for node in self._nodes:
+            node.to_xml(self, element, dom)
+        return element
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element):
+        actual_class = cls
+        if cls == Layer:
+            type = xml.getAttribute("type")
+            for subcls in Layer.__subclasses__():
+                if subcls._layer_type == type:
+                    actual_class = subcls
+                    break
+
+        return SifNode.static_from_dom(actual_class, xml)
+
+
+class GroupLayer(Layer):
+    _layer_type = "group"
+
+    _nodes = [
         XmlParam("origin", "vector", NVector(0, 0)),
         XmlCompositeParam("transformation"),
-        # canvas
+        XmlCanvasParam(),
         XmlParam("time_dilation", "real", 0.),
         XmlParam("time_offset", "time", FrameTime(0, FrameTime.Unit.Frame)),
         XmlParam("children_lock", "bool", False),
@@ -579,11 +704,22 @@ class Layer(SifNode):
         XmlParam("z_range_position", "real", 0.),
         XmlParam("z_range_depth", "real", 0.),
         XmlParam("z_range_blur", "real", 0.),
-
     ]
 
-    def __repr__(self):
-        return "<%s.%s %r>" % (__name__, self.__class__.__name__, self.desc or self.type)
+
+class RectangleLayer(Layer):
+    _layer_type = "rectangle"
+
+    _nodes = [
+        XmlParam("color", "color", NVector(0, 0, 0, 1)),
+        XmlParam("point1", "vector", NVector(0, 0)),
+        XmlParam("point2", "vector", NVector(0, 0)),
+        XmlParam("invert", "bool", False),
+        XmlParam("feather_x", "real", 0.),
+        XmlParam("feather_y", "real", 0.),
+        XmlParam("bevel", "real", 0.),
+        XmlParam("bevCircle", "bool", True),
+    ]
 
 
 class Canvas(SifNode):
@@ -642,3 +778,8 @@ class Canvas(SifNode):
         xml.unlink()
         return obj
 
+    def time_to_frames(self, time: FrameTime):
+        if time.unit == FrameTime.Unit.Frame:
+            return time.value
+        elif time.unit == FrameTime.Unit.Seconds:
+            return time.value * self.fps

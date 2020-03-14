@@ -67,6 +67,9 @@ class NVector():
     def __eq__(self, other):
         return self.components == other.components
 
+    def __abs__(self):
+        return NVector(*(abs(c) for c in self.components))
+
     @property
     def length(self):
         return math.sqrt(sum(map(lambda x: x**2, self.components)))
