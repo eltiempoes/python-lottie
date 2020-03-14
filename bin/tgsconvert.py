@@ -41,6 +41,7 @@ importers = [
         ExtraOption("framerate", type=int, default=60),
     ]),
     Importer("Lottie JSON / Telegram Sticker", ["json", "tgs"], parsers.tgs.parse_tgs, [], "lottie"),
+    Importer("Synfig", ["sif", "sifz"], parsers.sif.parse_sif_file, []),
 ]
 if pixel:
     try:
