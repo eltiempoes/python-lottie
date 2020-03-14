@@ -593,7 +593,7 @@ class SifAnimatable:
         return param.type_wrapper(value)
 
     def add_keyframe(self, *args, **kwargs):
-        if self._static:
+        if self._param.static:
             raise ValueError("Cannot animate static value")
         if not kwargs and len(args) == 1 and isinstance(args[0], SifKeyframe):
             keyframe = args[0]

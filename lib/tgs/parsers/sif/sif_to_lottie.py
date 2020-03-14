@@ -1,3 +1,4 @@
+import math
 from ... import objects
 from . import api
 from ... import NVector, PolarVector
@@ -139,7 +140,7 @@ class Converter:
             yield [time] + [v.get_value(time) for v in animatable]
 
     def _force_animated(self, lottieval):
-        if not lottieval:
+        if not lottieval.animated:
             v = lottieval.value
             lottieval.add_keyframe(0, v)
             lottieval.add_keyframe(self.animation.out_point, v)
@@ -190,11 +191,21 @@ class Converter:
         closed = layer.bline.loop
         animatables = []
         for p in layer.bline.points:
-            animatables += [p.point, p.t1.radius, p.t1.theta, p.t2.radius, p.t2.theta]
+            animatables += [
+                self._convert_vector(p.point),
+                self._convert_scalar(p.t1.radius),
+                self._convert_scalar(p.t1.theta),
+                self._convert_scalar(p.t2.radius),
+                self._convert_scalar(p.t2.theta)
+            ]
         animated = any(x.animated for x in animatables)
         if not animated:
             lot.shape.value = self._bezier(closed, [x.value for x in animatables])
-        # TODO animated
+        else:
+            for values in self._mix_animations(*animatables):
+                time = values[0]
+                values = values[1:]
+                lot.shape.add_keyframe(time, self._bezier(closed, values))
         return lot
 
     def _bezier(self, closed, values):
@@ -203,8 +214,11 @@ class Converter:
         bezier.closed = closed
         for i in range(0, len(values), chunk_size):
             point, r1, a1, r2, a2 = values[i:i+chunk_size]
-            bezier.add_point(self._coord(point), self._polar(r1, a1), self._polar(r2, a2))
+            bezier.add_point(self._coord(point), self._polar(r1, a1, 1), self._polar(r2, a2, 2))
         return bezier
 
-    def _polar(self, radius, angle):
-        return PolarVector(self._scalar_mult(radius), -angle)
+    def _polar(self, radius, angle, dir):
+        offset_angle = 0
+        if dir == 1:
+            offset_angle += 180
+        return PolarVector(radius*20, (-angle+offset_angle) * math.pi / 180)
