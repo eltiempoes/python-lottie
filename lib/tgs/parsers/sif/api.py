@@ -722,6 +722,18 @@ class RectangleLayer(Layer):
     ]
 
 
+class CircleLayer(Layer):
+    _layer_type = "circle"
+
+    _nodes = [
+        XmlParam("color", "color", NVector(0, 0, 0, 1)),
+        XmlParam("radius", "real", 0.),
+        XmlParam("feather", "real", 0.),
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("invert", "bool", False),
+    ]
+
+
 class Canvas(SifNode):
     _nodes = [
         XmlAttribute("version"),

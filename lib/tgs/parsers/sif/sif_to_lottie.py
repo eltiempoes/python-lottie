@@ -40,6 +40,8 @@ class Converter:
                 self._convert_layer(sub, shape)
         elif isinstance(layer, api.RectangleLayer):
             shape = self._convert_fill(layer, self._convert_rect)
+        elif isinstance(layer, api.CircleLayer):
+            shape = self._convert_fill(layer, self._convert_circle)
         else:
             return
 
@@ -65,8 +67,21 @@ class Converter:
         else:
             rect.position.value = (p1.value + p2.value) / 2
             rect.size.value = abs(p2.value - p1.value)
-        rect.rounded = self._convert_scalar(layer.bevel)
+        rect.rounded = self._adjust_scalar(self._convert_scalar(layer.bevel))
         return rect
+
+    def _convert_circle(self, layer: api.RectangleLayer):
+        shape = objects.Ellipse()
+        shape.position = self._adjust_coords(self._convert_vector(layer.origin))
+        radius = self._adjust_scalar(self._convert_scalar(layer.radius))
+        if radius.animated:
+            for kf in radius.keyframes:
+                shape.size.add_keyframe(kf.time, NVector(kf.start, kf.start) * 2)
+                shape.size.keyframes[-1].in_value = kf.in_value
+                shape.size.keyframes[-1].out_value = kf.out_value
+        else:
+            shape.size.value = NVector(radius.value, radius.value) * 2
+        return shape
 
     def _mix_animations(self, v1: objects.properties.AnimatableMixin, v2: objects.properties.AnimatableMixin):
         self._force_animated(v1)
@@ -99,16 +114,22 @@ class Converter:
     def _convert_scalar(self, v: api.SifAnimatable):
         return self._convert_animatable(v, objects.Value())
 
-    def _adjust_coords(self, lottieval: objects.MultiDimensional):
+    def _adjust_animated(self, lottieval, transform):
         if lottieval.animated:
             for kf in lottieval.keyframes:
                 if kf.start is not None:
-                    kf.start = self._coord(kf.start)
+                    kf.start = transform(kf.start)
                 if kf.end is not None:
-                    kf.end = self._coord(kf.end)
+                    kf.end = transform(kf.end)
         else:
-            lottieval.value = self._coord(lottieval.value)
+            lottieval.value = transform(lottieval.value)
         return lottieval
+
+    def _adjust_scalar(self, lottieval: objects.Value):
+        return self._adjust_animated(lottieval, lambda x: x*60)
+
+    def _adjust_coords(self, lottieval: objects.MultiDimensional):
+        return self._adjust_animated(lottieval, self._coord)
 
     def _coord(self, val: NVector):
         return NVector(
