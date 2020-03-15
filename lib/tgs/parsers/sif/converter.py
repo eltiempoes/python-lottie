@@ -41,6 +41,8 @@ class Converter:
             shape = self._convert_fill(layer, self._convert_circle)
         elif isinstance(layer, api.StarLayer):
             shape = self._convert_fill(layer, self._convert_star)
+        elif isinstance(layer, api.PolygonLayer):
+            shape = self._convert_fill(layer, self._convert_polygon)
         elif isinstance(layer, api.AbstractOutline):
             shape = self._convert_outline(layer, self._convert_bline)
         else:
@@ -199,6 +201,30 @@ class Converter:
             self.target_size.x * (val.x / (self.view_p2.x - self.view_p1.x) + 0.5),
             self.target_size.y * (val.y / (self.view_p2.y - self.view_p1.y) + 0.5),
         )
+
+    def _convert_polygon(self, layer: api.PolygonLayer):
+        lot = objects.Path()
+        animatables = [
+            self._convert_vector(p)
+            for p in layer.points
+        ]
+        animated = any(x.animated for x in animatables)
+        if not animated:
+            lot.shape.value = self._polygon([x.value for x in animatables])
+        else:
+            for values in self._mix_animations(*animatables):
+                time = values[0]
+                points = values[1:]
+                lot.shape.add_keyframe(time, self._polygon(points))
+        return lot
+
+    def _polygon(self, points):
+        chunk_size = 5
+        bezier = objects.Bezier()
+        bezier.closed = True
+        for point in points:
+            bezier.add_point(self._coord(point))
+        return bezier
 
     def _convert_bline(self, layer: api.AbstractOutline):
         lot = objects.Path()

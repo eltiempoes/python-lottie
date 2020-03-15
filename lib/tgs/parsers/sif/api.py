@@ -56,16 +56,33 @@ def xml_make_text(dom: minidom.Document, tag_name, text):
     return e
 
 
-def xml_first_element_child(xml: minidom.Node):
-    for ch in xml.childNodes:
-        if ch.nodeType == minidom.Node.ELEMENT_NODE:
-            return ch
+def xml_element_matches(ch: minidom.Node, tagname=None):
+    if ch.nodeType != minidom.Node.ELEMENT_NODE:
+        return False
 
+    if tagname is not None and ch.tagName != tagname:
+        return False
+
+    return True
+
+
+def xml_child_elements(xml: minidom.Node, tagname=None):
+    for ch in xml.childNodes:
+        if xml_element_matches(ch, tagname):
+            yield ch
+
+
+def xml_first_element_child(xml: minidom.Node, tagname=None, allow_none=False):
+    for ch in xml_child_elements(xml, tagname):
+        return ch
+
+    if allow_none:
+        return None
     raise ValueError("No child element in %s" % getattr(xml, "tagName", "node"))
 
 
 class XmlDescriptor:
-    def __init__(self, name, default_value=None):
+    def __init__(self, name):
         self.name = name
         self.att_name = name.replace("-", "_").replace("[", "_").replace("]", "")
 
@@ -96,7 +113,7 @@ class XmlDescriptor:
 
 class TypedXmlDescriptor(XmlDescriptor):
     def __init__(self, name, type=str, default_value=None):
-        super().__init__(name, default_value)
+        super().__init__(name)
         self.type = type
         self.default_value = default_value
 
@@ -112,8 +129,8 @@ class TypedXmlDescriptor(XmlDescriptor):
 
 
 class XmlAttribute(TypedXmlDescriptor):
-    def from_xml(self, obj, domnode: minidom.Element):
-        xml_str = domnode.getAttribute(self.name)
+    def from_xml(self, obj, parent: minidom.Element):
+        xml_str = parent.getAttribute(self.name)
         if xml_str:
             setattr(obj, self.att_name, value_from_xml(xml_str, self.type))
 
@@ -124,11 +141,10 @@ class XmlAttribute(TypedXmlDescriptor):
 
 
 class XmlSimpleElement(TypedXmlDescriptor):
-    def from_xml(self, obj, domnode: minidom.Element):
-        for cn in domnode.childNodes:
-            if cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == self.name:
-                value = value_from_xml(xml_text(cn), self.type)
-                break
+    def from_xml(self, obj, parent: minidom.Element):
+        cn = xml_first_element_child(parent, self.name, allow_none=True)
+        if cn:
+            value = value_from_xml(xml_text(cn), self.type)
         else:
             value = self.default_value
 
@@ -141,12 +157,9 @@ class XmlSimpleElement(TypedXmlDescriptor):
 
 
 class XmlMeta(TypedXmlDescriptor):
-    def from_xml(self, obj, domnode: minidom.Element):
-        for cn in domnode.childNodes:
-            if (
-                cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == "meta"
-                and cn.getAttribute("name") == self.name
-            ):
+    def from_xml(self, obj, parent: minidom.Element):
+        for cn in xml_child_elements(parent, "meta"):
+            if cn.getAttribute("name") == self.name:
                 value = value_from_xml(cn.getAttribute("content"), self.type)
                 break
         else:
@@ -211,14 +224,13 @@ class XmlList(XmlDescriptor):
     def clean(self, value):
         return value
 
-    def from_xml(self, obj, domnode: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element):
         values = self.default()
-        for cn in domnode.childNodes:
-            if cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == self.name:
-                value_node = cn
-                if self.wrapper_tag:
-                    value_node = xml_first_element_child(cn)
-                values.append(self.child_node.from_dom(value_node))
+        for cn in xml_child_elements(parent, self.name):
+            value_node = cn
+            if self.wrapper_tag:
+                value_node = xml_first_element_child(cn)
+            values.append(self.child_node.from_dom(value_node))
 
         setattr(obj, self.att_name, values)
 
@@ -271,11 +283,8 @@ class XmlAnimatable(AnimatableTypeDescriptor, XmlDescriptor):
 
 class XmlParam(XmlAnimatable):
     def from_xml(self, obj, parent: minidom.Element):
-        for cn in parent.childNodes:
-            if (
-                cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == "param"
-                and cn.getAttribute("name") == self.name
-            ):
+        for cn in xml_child_elements(parent, "param"):
+            if cn.getAttribute("name") == self.name:
                 value = SifAnimatable.from_dom(xml_first_element_child(cn), self)
                 break
         else:
@@ -296,11 +305,8 @@ class XmlParamSif(XmlDescriptor):
         self.child_node = child_node
 
     def from_xml(self, obj, parent: minidom.Element):
-        for cn in parent.childNodes:
-            if (
-                cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == "param"
-                and cn.getAttribute("name") == self.name
-            ):
+        for cn in xml_child_elements(parent, "param"):
+            if cn.getAttribute("name") == self.name:
                 value = self.child_node.from_dom(xml_first_element_child(cn))
                 break
         else:
@@ -331,17 +337,13 @@ class XmlCanvasParam(XmlDescriptor):
     def from_xml(self, obj, parent: minidom.Element):
         value = SifNodeList(Layer)
 
-        for cn in parent.childNodes:
-            if (
-                cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == "param"
-                and cn.getAttribute("name") == self.name
-            ):
+        for cn in xml_child_elements(parent, "param"):
+            if cn.getAttribute("name") == self.name:
                 canvas = xml_first_element_child(cn)
                 if canvas.tagName != "canvas":
                     raise ValueError("Missing canvas")
-                for gc in canvas.childNodes:
-                    if gc.nodeType == minidom.Node.ELEMENT_NODE and gc.tagName == "layer":
-                        value.append(Layer.from_dom(gc))
+                for gc in xml_child_elements(canvas, "layer"):
+                    value.append(Layer.from_dom(gc))
                 break
 
         setattr(obj, self.att_name, value)
@@ -378,10 +380,9 @@ class XmlSifElement(XmlDescriptor):
         return value
 
     def from_xml(self, obj, parent: minidom.Element):
-        for cn in parent.childNodes:
-            if cn.nodeType == minidom.Node.ELEMENT_NODE and cn.tagName == self.name:
-                value = self.child_node.from_dom(xml_first_element_child(cn))
-                break
+        cn = xml_first_element_child(parent, self.name, allow_none=True)
+        if cn:
+            value = self.child_node.from_dom(xml_first_element_child(cn))
         else:
             value = self.default()
 
@@ -517,9 +518,8 @@ class SifAnimatable:
         obj = SifAnimatable(param)
         obj._animated = True
         obj._keyframes = []
-        for waypoint in xml.childNodes:
-            if waypoint.nodeType == minidom.Node.ELEMENT_NODE and waypoint.tagName == "waypoint":
-                obj._keyframes.append(SifKeyframe.from_dom(waypoint, param))
+        for waypoint in xml_child_elements(xml, "waypoint"):
+            obj._keyframes.append(SifKeyframe.from_dom(waypoint, param))
         return obj
 
     def to_dom(self, dom: minidom.Document):
@@ -546,13 +546,13 @@ class SifAnimatable:
         if param.typename == "vector":
             element.appendChild(xml_make_text(dom, "x", str(value.x)))
             element.appendChild(xml_make_text(dom, "y", str(value.y)))
-            element.setAttribute("guid", cls.guid())
+            #element.setAttribute("guid", cls.guid())
         elif param.typename == "color":
             element.appendChild(xml_make_text(dom, "r", str(value[0])))
             element.appendChild(xml_make_text(dom, "g", str(value[1])))
             element.appendChild(xml_make_text(dom, "b", str(value[2])))
             element.appendChild(xml_make_text(dom, "a", str(value[3])))
-            element.setAttribute("guid", cls.guid())
+            #element.setAttribute("guid", cls.guid())
         elif param.typename == "bool":
             element.setAttribute("value", "true" if value else "false")
         else:
@@ -710,6 +710,47 @@ class Bline(SifNode):
     ]
 
 
+class XmlDynamicListParam(XmlDescriptor):
+    def __init__(self, name, typename, att_name=None):
+        super().__init__(name)
+        self.decriptor = AnimatableTypeDescriptor(typename)
+        if att_name is not None:
+            self.att_name = att_name
+
+    def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
+        param = parent.appendChild(dom.createElement("param"))
+        param.setAttribute("name", self.name)
+        dyl = param.appendChild(dom.createElement("dynamic_list"))
+        dyl.setAttribute("type", self.decriptor.typename)
+        values = getattr(obj, self.att_name)
+        for val in values:
+            entry = dyl.appendChild(dom.createElement("entry"))
+            entry.appendChild(val.to_dom(dom))
+
+    def from_xml(self, obj, parent: minidom.Element):
+        values = []
+
+        for cn in xml_child_elements(parent, "param"):
+            if cn.getAttribute("name") == self.name:
+                list = xml_first_element_child(cn)
+                if list.getAttribute("type") != self.decriptor.typename:
+                    raise ValueError(
+                        "Wrong type for %s: got %s instead of %s" %
+                        (self.name, self.decriptor.typename, list.getAttribute("type"))
+                    )
+                for entry in xml_child_elements(list, "entry"):
+                    values.append(SifAnimatable.from_dom(xml_first_element_child(entry), self.decriptor))
+                break
+
+        setattr(obj, self.att_name, values)
+
+    def from_python(self, value):
+        return value
+
+    def default(self):
+        return []
+
+
 class BlendMethod(enum.Enum):
     Composite = 0
     Multiply = 6
@@ -802,7 +843,6 @@ class Layer(SifNode):
             Layer._gather_layer_types(subcls)
 
 
-
 class GroupLayer(Layer):
     _layer_type = "group"
 
@@ -849,9 +889,7 @@ class CircleLayer(Layer):
     ]
 
 
-class StarLayer(Layer):
-    _layer_type = "star"
-
+class ComplexShape(Layer):
     _nodes = [
         XmlParam("color", "color", NVector(0, 0, 0, 1)),
         XmlParam("origin", "vector", NVector(0, 0)),
@@ -860,6 +898,13 @@ class StarLayer(Layer):
         XmlParam("feather", "real", 0.),
         XmlParam("blurtype", "integer", BlurType.FastGaussian, False, BlurType),
         XmlParam("winding_style", "integer", WindingStyle.NonZero, False, WindingStyle),
+    ]
+
+
+class StarLayer(ComplexShape):
+    _layer_type = "star"
+
+    _nodes = [
         XmlParam("radius1", "real", 0.),
         XmlParam("radius2", "real", 0.),
         XmlParam("angle", "angle", 0.),
@@ -883,15 +928,8 @@ class CuspStyle(enum.Enum):
     Bevel = 2
 
 
-class AbstractOutline(Layer):
+class AbstractOutline(ComplexShape):
     _nodes = [
-        XmlParam("color", "color", NVector(0, 0, 0, 1)),
-        XmlParam("origin", "vector", NVector(0, 0)),
-        XmlParam("invert", "bool", False),
-        XmlParam("antialias", "bool", False),
-        XmlParam("feather", "real", 0.),
-        XmlParam("blurtype", "integer", BlurType.FastGaussian, False, BlurType),
-        XmlParam("winding_style", "integer", WindingStyle.NonZero, False, WindingStyle),
         XmlParam("width", "real", 0.1),
         XmlParam("expand", "real", 0.),
         XmlParamSif("bline", Bline),
@@ -910,11 +948,11 @@ class OutlineLayer(AbstractOutline):
 
     @property
     def start_tip(self):
-        return LineCap.Rounded if self.sound_tip_0 else LineCap.Flat
+        return LineCap.Rounded if self.round_tip_0 else LineCap.Flat
 
     @property
     def end_tip(self):
-        return LineCap.Rounded if self.sound_tip_1 else LineCap.Flat
+        return LineCap.Rounded if self.round_tip_1 else LineCap.Flat
 
     @property
     def cusp_type(self):
@@ -931,6 +969,14 @@ class AdvancedOutlineLayer(AbstractOutline):
         XmlParam("smoothness", "real", 1.),
         XmlParam("homogeneous", "bool", False),
         # TODO wplist
+    ]
+
+
+class PolygonLayer(ComplexShape):
+    _layer_type = "polygon"
+
+    _nodes = [
+        XmlDynamicListParam("vector_list", "vector", "points"),
     ]
 
 
