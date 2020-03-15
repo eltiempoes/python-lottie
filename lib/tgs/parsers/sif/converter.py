@@ -41,7 +41,7 @@ class Converter:
             shape = self._convert_fill(layer, self._convert_circle)
         elif isinstance(layer, api.StarLayer):
             shape = self._convert_fill(layer, self._convert_star)
-        elif isinstance(layer, api.OutlineLayer):
+        elif isinstance(layer, api.AbstractOutline):
             shape = self._convert_outline(layer, self._convert_bline)
         else:
             return
@@ -76,13 +76,27 @@ class Converter:
         shape.add_shape(fill)
         return shape
 
-    def _convert_outline(self, layer, converter):
+    def _convert_linecap(self, lc: api.LineCap):
+        if lc == api.LineCap.Rounded:
+            return objects.LineCap.Round
+        if lc == api.LineCap.Squared:
+            return objects.LineCap.Square
+        return objects.LineCap.Butt
+
+    def _convert_cusp(self, lc: api.CuspStyle):
+        if lc == api.CuspStyle.Miter:
+            return objects.LineJoin.Miter
+        if lc == api.CuspStyle.Bevel:
+            return objects.LineJoin.Bevel
+        return objects.LineJoin.Round
+
+    def _convert_outline(self, layer: api.AbstractOutline, converter):
         shape = objects.Group()
         shape.add_shape(converter(layer))
         stroke = objects.Stroke()
         stroke.color = self._convert_vector(layer.color)
-        stroke.line_cap = objects.LineCap.Square if layer.round_tip_0 else objects.LineCap.Round
-        stroke.line_join = objects.LineJoin.Miter if layer.sharp_cusps else objects.LineJoin.Round
+        stroke.line_cap = self._convert_linecap(layer.start_tip)
+        stroke.line_join = self._convert_cusp(layer.cusp_type)
         stroke.width = self._adjust_scalar(self._convert_scalar(layer.width))
         shape.add_shape(stroke)
         return shape
@@ -186,7 +200,7 @@ class Converter:
             self.target_size.y * (val.y / (self.view_p2.y - self.view_p1.y) + 0.5),
         )
 
-    def _convert_bline(self, layer: api.OutlineLayer):
+    def _convert_bline(self, layer: api.AbstractOutline):
         lot = objects.Path()
         closed = layer.bline.loop
         animatables = []

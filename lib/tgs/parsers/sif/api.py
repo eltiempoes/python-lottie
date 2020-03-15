@@ -750,6 +750,8 @@ class WindingStyle(enum.Enum):
 
 
 class Layer(SifNode):
+    _types = None
+
     _layer_type = None
 
     _nodes = [
@@ -781,12 +783,24 @@ class Layer(SifNode):
         actual_class = cls
         if cls == Layer:
             type = xml.getAttribute("type")
-            for subcls in Layer.__subclasses__():
-                if subcls._layer_type == type:
-                    actual_class = subcls
-                    break
+            actual_class = Layer.layer_types().get(type, Layer)
 
         return SifNode.static_from_dom(actual_class, xml)
+
+    @staticmethod
+    def layer_types():
+        if Layer._types is None:
+            Layer._types = {}
+            Layer._gather_layer_types(Layer)
+        return Layer._types
+
+    @staticmethod
+    def _gather_layer_types(cls):
+        for subcls in cls.__subclasses__():
+            if subcls._layer_type:
+                Layer._types[subcls._layer_type] = subcls
+            Layer._gather_layer_types(subcls)
+
 
 
 class GroupLayer(Layer):
@@ -854,9 +868,22 @@ class StarLayer(Layer):
     ]
 
 
-class OutlineLayer(Layer):
-    _layer_type = "outline"
+class LineCap(enum.Enum):
+    Rounded = 1
+    Squared = 2
+    Peak = 3
+    Flat = 4
+    InnerRounded = 5
+    OffPeak = 6
 
+
+class CuspStyle(enum.Enum):
+    Miter = 0
+    Round = 1
+    Bevel = 2
+
+
+class AbstractOutline(Layer):
     _nodes = [
         XmlParam("color", "color", NVector(0, 0, 0, 1)),
         XmlParam("origin", "vector", NVector(0, 0)),
@@ -867,11 +894,43 @@ class OutlineLayer(Layer):
         XmlParam("winding_style", "integer", WindingStyle.NonZero, False, WindingStyle),
         XmlParam("width", "real", 0.1),
         XmlParam("expand", "real", 0.),
+        XmlParamSif("bline", Bline),
+    ]
+
+
+class OutlineLayer(AbstractOutline):
+    _layer_type = "outline"
+
+    _nodes = [
         XmlParam("sharp_cusps", "bool", True),
         XmlParam("round_tip[0]", "bool", True),
         XmlParam("round_tip[1]", "bool", True),
         XmlParam("homogeneous_width", "bool", True),
-        XmlParamSif("bline", Bline)
+    ]
+
+    @property
+    def start_tip(self):
+        return LineCap.Rounded if self.sound_tip_0 else LineCap.Flat
+
+    @property
+    def end_tip(self):
+        return LineCap.Rounded if self.sound_tip_1 else LineCap.Flat
+
+    @property
+    def cusp_type(self):
+        return CuspStyle.Miter if self.sharp_cusps else CuspStyle.Round
+
+
+class AdvancedOutlineLayer(AbstractOutline):
+    _layer_type = "advanced_outline"
+
+    _nodes = [
+        XmlParam("start_tip", "integer", LineCap.Rounded, False, LineCap),
+        XmlParam("end_tip", "integer", LineCap.Rounded, False, LineCap),
+        XmlParam("cusp_type", "integer", CuspStyle.Miter, False, CuspStyle),
+        XmlParam("smoothness", "real", 1.),
+        XmlParam("homogeneous", "bool", False),
+        # TODO wplist
     ]
 
 
