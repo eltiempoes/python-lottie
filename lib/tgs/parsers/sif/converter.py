@@ -47,6 +47,8 @@ class Converter:
                 parent.add_shape(self._convert_fill(layer, self._convert_bline))
             elif isinstance(layer, api.AbstractOutline):
                 parent.add_shape(self._convert_outline(layer, self._convert_bline))
+            elif isinstance(layer, api.GradientLayer):
+                parent.add_shape(self._convert_gradient(layer, parent))
             elif isinstance(layer, api.TransformDown):
                 shape = self._convert_transform_down(layer)
                 parent.add_shape(shape)
@@ -291,7 +293,6 @@ class Converter:
 
     def _convert_transform_down(self, tl: api.TransformDown):
         group = objects.Group()
-        group.name = tl.desc
         self._set_name(group, tl)
 
         if isinstance(tl, api.TranslateLayer):
@@ -320,3 +321,57 @@ class Converter:
 
     def _set_name(self, lottie, sif):
         lottie.name = sif.desc if sif.desc is not None else sif.__class__.__name__
+
+    def _convert_gradient(self, layer: api.GradientLayer, parent):
+        group = objects.Group()
+
+        parent_shapes = parent.shapes
+        parent.shapes = []
+        if isinstance(parent, objects.Group):
+            parent.shapes.append(parent_shapes[-1])
+
+        self._gradient_gather_shapes(parent_shapes, group)
+
+        gradient = objects.GradientFill()
+        self._set_name(gradient, layer)
+        group.add_shape(gradient)
+        gradient.colors = self._convert_gradient_stops(layer.gradient)
+        gradient.opacity = self._adjust_animated(
+            self._convert_scalar(layer.amount),
+            lambda x: x * 100
+        )
+
+        if isinstance(layer, api.LinearGradient):
+            gradient.start_point = self._adjust_coords(self._convert_vector(layer.p1))
+            gradient.end_point = self._adjust_coords(self._convert_vector(layer.p2))
+            gradient.gradient_type = objects.GradientType.Linear
+            pass
+
+        return group
+
+    def _gradient_gather_shapes(self, shapes, output: objects.Group):
+        for shape in shapes:
+            if isinstance(shape, objects.Shape):
+                output.add_shape(shape)
+            elif isinstance(shape, objects.Group):
+                self._gradient_gather_shapes(shape.shapes, output)
+
+    def _convert_gradient_stops(self, sif_gradient):
+        stops = objects.GradientColors()
+        if not sif_gradient.animated:
+            stops.colors.value = self._flatten_gradient_colors(sif_gradient.value)
+            stops.count = len(sif_gradient.value)
+        else:
+            # TODO easing
+            for kf in sif_gradient.keyframes:
+                stops.colors.add_keyframe(self._time(kf.time), self._flatten_gradient_colors(kf.value))
+                stops.count = len(kf.value)
+
+        return stops
+
+    def _flatten_gradient_colors(self, stops):
+        flat = []
+        for stop in stops:
+            flat.append(stop.pos)
+            flat += stop.color.components[:3]
+        return NVector(*flat)

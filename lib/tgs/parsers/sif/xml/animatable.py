@@ -18,6 +18,65 @@ class AnimatableTypeDescriptor:
         return SifAnimatable(self, copy.deepcopy(self.default_value))
 
 
+def value_to_xml_element(value, dom: minidom.Document, param: AnimatableTypeDescriptor):
+    element = dom.createElement(param.typename)
+
+    if param.typename == "vector":
+        element.appendChild(xml_make_text(dom, "x", str(value.x)))
+        element.appendChild(xml_make_text(dom, "y", str(value.y)))
+    elif param.typename == "color":
+        element.appendChild(xml_make_text(dom, "r", str(value[0])))
+        element.appendChild(xml_make_text(dom, "g", str(value[1])))
+        element.appendChild(xml_make_text(dom, "b", str(value[2])))
+        element.appendChild(xml_make_text(dom, "a", str(value[3])))
+    elif param.typename == "gradient":
+        for point in value:
+            element.appendChild(point.to_dom(dom))
+    elif param.typename == "bool":
+        element.setAttribute("value", "true" if value else "false")
+    else:
+        if isinstance(value, enum.Enum):
+            value = value.value
+        element.setAttribute("value", str(value))
+
+    return element
+
+
+def value_from_xml_element(xml: minidom.Element, param: AnimatableTypeDescriptor):
+    if xml.tagName != param.typename:
+        raise ValueError("Wrong value type (%s instead of %s)" % (xml.tagName, param.typename))
+
+    if param.typename == "vector":
+        value = NVector(
+            float(xml_text(xml.getElementsByTagName("x")[0])),
+            float(xml_text(xml.getElementsByTagName("y")[0]))
+        )
+    elif param.typename == "color":
+        value = NVector(
+            float(xml_text(xml.getElementsByTagName("r")[0])),
+            float(xml_text(xml.getElementsByTagName("g")[0])),
+            float(xml_text(xml.getElementsByTagName("b")[0])),
+            float(xml_text(xml.getElementsByTagName("a")[0]))
+        )
+    elif param.typename == "gradient":
+        value = [
+            GradientPoint.from_dom(sub)
+            for sub in xml_child_elements(xml, GradientPoint.anim_type.typename)
+        ]
+    elif param.typename == "real" or param.typename == "angle":
+        value = float(xml.getAttribute("value"))
+    elif param.typename == "integer":
+        value = int(xml.getAttribute("value"))
+    elif param.typename == "time":
+        value = FrameTime(xml.getAttribute("value"))
+    elif param.typename == "bool":
+        value = str_to_bool(xml.getAttribute("value"))
+    else:
+        raise ValueError("Unsupported type %s" % param.typename)
+
+    return param.type_wrapper(value)
+
+
 class XmlAnimatable(AnimatableTypeDescriptor, XmlDescriptor):
     def __init__(self, name, *a, **kw):
         XmlDescriptor.__init__(self, name)
@@ -99,7 +158,7 @@ class SifKeyframe:
     @classmethod
     def from_dom(cls, xml: minidom.Element, param: AnimatableTypeDescriptor):
         return cls(
-            SifAnimatable.value_from_dom(xml_first_element_child(xml), param),
+            value_from_xml_element(xml_first_element_child(xml), param),
             FrameTime(xml.getAttribute("time")),
             Interpolation(xml.getAttribute("before")),
             Interpolation(xml.getAttribute("after"))
@@ -110,8 +169,11 @@ class SifKeyframe:
         element.setAttribute("time", str(self.time))
         element.setAttribute("before", self.ease_in.value)
         element.setAttribute("after", self.ease_out.value)
-        element.appendChild(SifAnimatable.value_to_dom(self.value, dom, param))
+        element.appendChild(value_to_xml_element(self.value, dom, param))
         return element
+
+    def __repr__(self):
+        return "<SifKeyframe %s %s>" % (self.time, self.value)
 
 
 class SifAnimatable:
@@ -127,7 +189,7 @@ class SifAnimatable:
     @classmethod
     def from_dom(cls, xml: minidom.Element, param: AnimatableTypeDescriptor):
         if xml.tagName == param.typename:
-            return SifAnimatable(param, SifAnimatable.value_from_dom(xml, param))
+            return SifAnimatable(param, value_from_xml_element(xml, param))
         elif xml.tagName != "animated":
             raise ValueError("Unknown element %s for %s" % (xml.tagName, param.name))
 
@@ -146,7 +208,7 @@ class SifAnimatable:
 
     def to_dom(self, dom: minidom.Document):
         if not self._animated:
-            element = SifAnimatable.value_to_dom(self.value, dom, self._param)
+            element = value_to_xml_element(self.value, dom, self._param)
             if self._param.static:
                 element.setAttribute("static", "true")
             return element
@@ -156,59 +218,6 @@ class SifAnimatable:
         for kf in self._keyframes:
             element.appendChild(kf.to_dom(dom, self._param))
         return element
-
-    @classmethod
-    def value_to_dom(cls, value, dom: minidom.Document, param: AnimatableTypeDescriptor):
-        element = dom.createElement(param.typename)
-
-        if param.typename == "vector":
-            element.appendChild(xml_make_text(dom, "x", str(value.x)))
-            element.appendChild(xml_make_text(dom, "y", str(value.y)))
-            #element.setAttribute("guid", cls.guid())
-        elif param.typename == "color":
-            element.appendChild(xml_make_text(dom, "r", str(value[0])))
-            element.appendChild(xml_make_text(dom, "g", str(value[1])))
-            element.appendChild(xml_make_text(dom, "b", str(value[2])))
-            element.appendChild(xml_make_text(dom, "a", str(value[3])))
-            #element.setAttribute("guid", cls.guid())
-        elif param.typename == "bool":
-            element.setAttribute("value", "true" if value else "false")
-        else:
-            if isinstance(value, enum.Enum):
-                value = value.value
-            element.setAttribute("value", str(value))
-
-        return element
-
-    @classmethod
-    def value_from_dom(cls, xml: minidom.Element, param: AnimatableTypeDescriptor):
-        if xml.tagName != param.typename:
-            raise ValueError("Wrong value type (%s instead of %s)" % (xml.tagName, param.typename))
-
-        if param.typename == "vector":
-            value = NVector(
-                float(xml_text(xml.getElementsByTagName("x")[0])),
-                float(xml_text(xml.getElementsByTagName("y")[0]))
-            )
-        elif param.typename == "color":
-            value = NVector(
-                float(xml_text(xml.getElementsByTagName("r")[0])),
-                float(xml_text(xml.getElementsByTagName("g")[0])),
-                float(xml_text(xml.getElementsByTagName("b")[0])),
-                float(xml_text(xml.getElementsByTagName("a")[0]))
-            )
-        elif param.typename == "real" or param.typename == "angle":
-            value = float(xml.getAttribute("value"))
-        elif param.typename == "integer":
-            value = int(xml.getAttribute("value"))
-        elif param.typename == "time":
-            value = FrameTime(xml.getAttribute("value"))
-        elif param.typename == "bool":
-            value = str_to_bool(xml.getAttribute("value"))
-        else:
-            raise ValueError("Unsupported type %s" % param.typename)
-
-        return param.type_wrapper(value)
 
     def add_keyframe(self, *args, **kwargs):
         if self._param.static:
@@ -303,3 +312,26 @@ class XmlDynamicListParam(XmlDescriptor):
 
     def default(self):
         return []
+
+
+class GradientPoint:
+    anim_type = AnimatableTypeDescriptor("color")
+
+    def __init__(self, pos: float, color: NVector):
+        self.pos = pos
+        self.color = color
+
+    def to_dom(self, dom: minidom.Document):
+        element = value_to_xml_element(self.color, dom, self.anim_type)
+        element.setAttribute("pos", value_to_xml_string(self.pos, float))
+        return element
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element):
+        return GradientPoint(
+            value_from_xml_string(xml.getAttribute("pos"), float),
+            value_from_xml_element(xml, cls.anim_type)
+        )
+
+    def __repr__(self):
+        return "<GradientPoint %s %s>" % (self.pos, self.color)

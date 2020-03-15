@@ -116,28 +116,28 @@ class Bline(SifNode):
 
 class BlendMethod(enum.Enum):
     Composite = 0
-    Multiply = 6
-    Screen = 16
-    Overlay = 20
-    Darken = 3
-    Lighten = 2
-    HardLight = 17
-    Difference = 18
-    Hue = 9
-    Saturation = 10
-    Color = 8
-    Luminosity = 11
-    Exclusion = 18
-    SoftLight = 6
-    ColorDodge = 0
-    ColorBurn = 0
     Straight = 1
     Onto = 13
     StraightOnto = 21
     Behind = 12
+    Screen = 16
+    Overlay = 20
+    HardLight = 17
+    Multiply = 6
     Divide = 7
     Add = 4
     Subtract = 5
+    Difference = 18
+    Lighten = 2
+    Darken = 3
+    Color = 8
+    Hue = 9
+    Saturation = 10
+    Luminosity = 11
+    AlphaOver = 19
+    AlphaBrighten = 14
+    AlphaDarken = 15
+    Alpha = 23
 
 
 class BlurType(enum.Enum):
@@ -383,6 +383,23 @@ class ScaleLayer(TransformDown):
     _nodes = [
         XmlParam("center", "vector", NVector(0, 0)),
         XmlParam("amount", "real", 0.),
+    ]
+
+
+class GradientLayer(DrawableLayer):
+    _nodes = [
+        XmlParam("gradient", "gradient", [])
+    ]
+
+
+class LinearGradient(GradientLayer):
+    _layer_type = "linear_gradient"
+
+    _nodes = [
+        XmlParam("p1", "vector", NVector(0, 0)),
+        XmlParam("p2", "vector", NVector(0, 0)),
+        XmlParam("loop", "bool", False),
+        XmlParam("zigzag", "bool", False),
     ]
 
 
