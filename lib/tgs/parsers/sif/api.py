@@ -980,6 +980,14 @@ class PolygonLayer(ComplexShape):
     ]
 
 
+class RegionLayer(ComplexShape):
+    _layer_type = "region"
+
+    _nodes = [
+        XmlParamSif("bline", Bline),
+    ]
+
+
 class Canvas(SifNode):
     _nodes = [
         XmlAttribute("version"),

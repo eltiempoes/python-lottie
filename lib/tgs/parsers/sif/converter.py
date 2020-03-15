@@ -43,6 +43,8 @@ class Converter:
             shape = self._convert_fill(layer, self._convert_star)
         elif isinstance(layer, api.PolygonLayer):
             shape = self._convert_fill(layer, self._convert_polygon)
+        elif isinstance(layer, api.RegionLayer):
+            shape = self._convert_fill(layer, self._convert_bline)
         elif isinstance(layer, api.AbstractOutline):
             shape = self._convert_outline(layer, self._convert_bline)
         else:
