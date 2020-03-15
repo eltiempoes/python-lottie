@@ -25,35 +25,36 @@ class Converter:
         self.view_p2 = NVector(canvas.view_box[2], canvas.view_box[3])
         self.target_size = NVector(canvas.width, canvas.height)
         self.shape_layer = self.animation.add_layer(objects.ShapeLayer())
-        for layer in reversed(canvas.layers):
-            self._convert_layer(layer, self.shape_layer)
+        self._process_layers(canvas.layers, self.shape_layer)
         return self.animation
 
     def _time(self, t: api.FrameTime):
         return self.canvas.time_to_frames(t)
 
-    def _convert_layer(self, layer: api.Layer, parent):
-        if isinstance(layer, api.GroupLayer):
-            shape = self._convert_group(layer)
-        elif isinstance(layer, api.RectangleLayer):
-            shape = self._convert_fill(layer, self._convert_rect)
-        elif isinstance(layer, api.CircleLayer):
-            shape = self._convert_fill(layer, self._convert_circle)
-        elif isinstance(layer, api.StarLayer):
-            shape = self._convert_fill(layer, self._convert_star)
-        elif isinstance(layer, api.PolygonLayer):
-            shape = self._convert_fill(layer, self._convert_polygon)
-        elif isinstance(layer, api.RegionLayer):
-            shape = self._convert_fill(layer, self._convert_bline)
-        elif isinstance(layer, api.AbstractOutline):
-            shape = self._convert_outline(layer, self._convert_bline)
-        else:
-            return
-
-        parent.add_shape(shape)
+    def _process_layers(self, layers, parent):
+        for layer in reversed(layers):
+            if isinstance(layer, api.GroupLayer):
+                parent.add_shape(self._convert_group(layer))
+            elif isinstance(layer, api.RectangleLayer):
+                parent.add_shape(self._convert_fill(layer, self._convert_rect))
+            elif isinstance(layer, api.CircleLayer):
+                parent.add_shape(self._convert_fill(layer, self._convert_circle))
+            elif isinstance(layer, api.StarLayer):
+                parent.add_shape(self._convert_fill(layer, self._convert_star))
+            elif isinstance(layer, api.PolygonLayer):
+                parent.add_shape(self._convert_fill(layer, self._convert_polygon))
+            elif isinstance(layer, api.RegionLayer):
+                parent.add_shape(self._convert_fill(layer, self._convert_bline))
+            elif isinstance(layer, api.AbstractOutline):
+                parent.add_shape(self._convert_outline(layer, self._convert_bline))
+            elif isinstance(layer, api.TransformDown):
+                shape = self._convert_transform_down(layer)
+                parent.add_shape(shape)
+                parent = shape
 
     def _convert_group(self, layer: api.GroupLayer):
         shape = objects.Group()
+        self._set_name(shape, layer)
         shape.transform.anchor_point = self._adjust_coords(self._convert_vector(layer.origin))
         shape.transform.position = self._adjust_coords(self._convert_vector(layer.transformation.offset))
         shape.transform.rotation = self._adjust_animated(
@@ -68,12 +69,12 @@ class Converter:
             self._convert_scalar(layer.transformation.skew_angle),
             lambda x: -x
         )
-        for sub in reversed(layer.canvas):
-            self._convert_layer(sub, shape)
+        self._process_layers(layer.canvas, shape)
         return shape
 
     def _convert_fill(self, layer, converter):
         shape = objects.Group()
+        self._set_name(shape, layer)
         shape.add_shape(converter(layer))
         fill = objects.Fill()
         fill.color = self._convert_vector(layer.color)
@@ -96,6 +97,7 @@ class Converter:
 
     def _convert_outline(self, layer: api.AbstractOutline, converter):
         shape = objects.Group()
+        self._set_name(shape, layer)
         shape.add_shape(converter(layer))
         stroke = objects.Stroke()
         stroke.color = self._convert_vector(layer.color)
@@ -192,6 +194,20 @@ class Converter:
     def _adjust_scalar(self, lottieval: objects.Value):
         return self._adjust_animated(lottieval, self._scalar_mult)
 
+    def _adjust_add_dimension(self, lottieval, transform):
+        to_val = objects.MultiDimensional()
+        to_val.animated = lottieval.animated
+        if lottieval.animated:
+            for kf in lottieval.keyframes:
+                if kf.start is not None:
+                    kf.start = transform(kf.start[0])
+                if kf.end is not None:
+                    kf.end = transform(kf.end[0])
+                to_val.keyframes.append(kf)
+        else:
+            to_val.value = transform(lottieval.value)
+        return to_val
+
     def _scalar_mult(self, x):
         return x * 60
 
@@ -268,3 +284,35 @@ class Converter:
         if dir == 1:
             offset_angle += 180
         return PolarVector(radius*20, (-angle+offset_angle) * math.pi / 180)
+
+    def _convert_transform_down(self, tl: api.TransformDown):
+        group = objects.Group()
+        group.name = tl.desc
+        self._set_name(group, tl)
+
+        if isinstance(tl, api.TranslateLayer):
+            group.transform.anchor_point.value = self.target_size / 2
+            group.transform.position = self._adjust_coords(self._convert_vector(tl.origin))
+        elif isinstance(tl, api.RotateLayer):
+            group.transform.anchor_point = self._adjust_coords(self._convert_vector(tl.origin))
+            group.transform.position = group.transform.anchor_point.clone()
+            group.transform.rotation = self._adjust_animated(
+                self._convert_scalar(tl.amount),
+                lambda x: -x
+            )
+        elif isinstance(tl, api.ScaleLayer):
+            group.transform.anchor_point = self._adjust_coords(self._convert_vector(tl.center))
+            group.transform.position = group.transform.anchor_point.clone()
+            group.transform.scale = self._adjust_add_dimension(
+                self._convert_scalar(tl.amount),
+                self._zoom_to_scale
+            )
+
+        return group
+
+    def _zoom_to_scale(self, value):
+        zoom = math.e ** value * 100
+        return NVector(zoom, zoom)
+
+    def _set_name(self, lottie, sif):
+        lottie.name = sif.desc if sif.desc is not None else sif.__class__.__name__

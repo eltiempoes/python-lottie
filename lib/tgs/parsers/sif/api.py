@@ -275,7 +275,7 @@ class XmlAnimatable(AnimatableTypeDescriptor, XmlDescriptor):
         param.appendChild(getattr(obj, self.att_name).to_dom(dom))
         return param
 
-    def clean(self, value):
+    def from_python(self, value):
         if not isinstance(value, SifAnimatable) or value._param is not self:
             raise ValueError("%s isn't a valid value for %s" % (value, self.name))
         return value
@@ -801,9 +801,6 @@ class Layer(SifNode):
         XmlAttribute("version", str, "0.3"),
         XmlAttribute("exclude_from_rendering", bool_str, False),
         XmlAttribute("desc", str, ""),
-        XmlParam("z_depth", "real", 0.),
-        XmlParam("amount", "real", 1.),
-        XmlParam("blend_method", "integer", BlendMethod.Composite, False, BlendMethod),
     ]
 
     def __init__(self, **kw):
@@ -843,7 +840,15 @@ class Layer(SifNode):
             Layer._gather_layer_types(subcls)
 
 
-class GroupLayer(Layer):
+class DrawableLayer(Layer):
+    _nodes = [
+        XmlParam("z_depth", "real", 0.),
+        XmlParam("amount", "real", 1.),
+        XmlParam("blend_method", "integer", BlendMethod.Composite, False, BlendMethod),
+    ]
+
+
+class GroupLayer(DrawableLayer):
     _layer_type = "group"
 
     _nodes = [
@@ -861,7 +866,7 @@ class GroupLayer(Layer):
     ]
 
 
-class RectangleLayer(Layer):
+class RectangleLayer(DrawableLayer):
     _layer_type = "rectangle"
 
     _nodes = [
@@ -877,7 +882,7 @@ class RectangleLayer(Layer):
     ]
 
 
-class CircleLayer(Layer):
+class CircleLayer(DrawableLayer):
     _layer_type = "circle"
 
     _nodes = [
@@ -889,7 +894,7 @@ class CircleLayer(Layer):
     ]
 
 
-class ComplexShape(Layer):
+class ComplexShape(DrawableLayer):
     _nodes = [
         XmlParam("color", "color", NVector(0, 0, 0, 1)),
         XmlParam("origin", "vector", NVector(0, 0)),
@@ -985,6 +990,36 @@ class RegionLayer(ComplexShape):
 
     _nodes = [
         XmlParamSif("bline", Bline),
+    ]
+
+
+class TransformDown(Layer):
+    pass
+
+
+class TranslateLayer(TransformDown):
+    _layer_type = "translate"
+
+    _nodes = [
+        XmlParam("origin", "vector", NVector(0, 0)),
+    ]
+
+
+class RotateLayer(TransformDown):
+    _layer_type = "rotate"
+
+    _nodes = [
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("amount", "angle", 0.),
+    ]
+
+
+class ScaleLayer(TransformDown):
+    _layer_type = "zoom"
+
+    _nodes = [
+        XmlParam("center", "vector", NVector(0, 0)),
+        XmlParam("amount", "real", 0.),
     ]
 
 
