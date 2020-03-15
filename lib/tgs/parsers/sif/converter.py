@@ -69,7 +69,7 @@ class Converter:
             self._convert_scalar(layer.transformation.skew_angle),
             lambda x: -x
         )
-        self._process_layers(layer.canvas, shape)
+        self._process_layers(layer.layers, shape)
         return shape
 
     def _convert_fill(self, layer, converter):
@@ -149,7 +149,7 @@ class Converter:
             lambda x: 90-x
         )
         shape.points = self._convert_scalar(layer.points)
-        if layer.regular_polygon:
+        if layer.regular_polygon.value:
             shape.star_type = objects.StarType.Polygon
         return shape
 
