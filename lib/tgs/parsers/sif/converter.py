@@ -54,7 +54,7 @@ class Converter:
 
     def _convert_group(self, layer: api.GroupLayer):
         shape = objects.Group()
-        shape.transform.anchor_point.value = shape.transform.position.value = self.target_size / 2
+        shape.transform.anchor_point = self._adjust_coords(self._convert_vector(layer.origin))
         shape.transform.position = self._adjust_coords(self._convert_vector(layer.transformation.offset))
         shape.transform.rotation = self._adjust_animated(
             self._convert_scalar(layer.transformation.angle),
@@ -206,32 +206,35 @@ class Converter:
 
     def _convert_polygon(self, layer: api.PolygonLayer):
         lot = objects.Path()
-        animatables = [
+        animatables = [self._convert_vector(layer.origin)] + [
             self._convert_vector(p)
             for p in layer.points
         ]
         animated = any(x.animated for x in animatables)
         if not animated:
-            lot.shape.value = self._polygon([x.value for x in animatables])
+            lot.shape.value = self._polygon([x.value for x in animatables[1:]], animatables[0].value)
         else:
             for values in self._mix_animations(*animatables):
                 time = values[0]
-                points = values[1:]
-                lot.shape.add_keyframe(time, self._polygon(points))
+                origin = values[1]
+                points = values[2:]
+                lot.shape.add_keyframe(time, self._polygon(points, origin))
         return lot
 
-    def _polygon(self, points):
+    def _polygon(self, points, origin):
         chunk_size = 5
         bezier = objects.Bezier()
         bezier.closed = True
         for point in points:
-            bezier.add_point(self._coord(point))
+            bezier.add_point(self._coord(point+origin))
         return bezier
 
     def _convert_bline(self, layer: api.AbstractOutline):
         lot = objects.Path()
         closed = layer.bline.loop
-        animatables = []
+        animatables = [
+            self._convert_vector(layer.origin)
+        ]
         for p in layer.bline.points:
             animatables += [
                 self._convert_vector(p.point),
@@ -242,21 +245,22 @@ class Converter:
             ]
         animated = any(x.animated for x in animatables)
         if not animated:
-            lot.shape.value = self._bezier(closed, [x.value for x in animatables])
+            lot.shape.value = self._bezier(closed, [x.value for x in animatables[1:]], animatables[0].value)
         else:
             for values in self._mix_animations(*animatables):
                 time = values[0]
-                values = values[1:]
-                lot.shape.add_keyframe(time, self._bezier(closed, values))
+                origin = values[1]
+                values = values[2:]
+                lot.shape.add_keyframe(time, self._bezier(closed, values, origin))
         return lot
 
-    def _bezier(self, closed, values):
+    def _bezier(self, closed, values, origin):
         chunk_size = 5
         bezier = objects.Bezier()
         bezier.closed = closed
         for i in range(0, len(values), chunk_size):
             point, r1, a1, r2, a2 = values[i:i+chunk_size]
-            bezier.add_point(self._coord(point), self._polar(r1, a1, 1), self._polar(r2, a2, 2))
+            bezier.add_point(self._coord(point+origin), self._polar(r1, a1, 1), self._polar(r2, a2, 2))
         return bezier
 
     def _polar(self, radius, angle, dir):
