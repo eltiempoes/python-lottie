@@ -536,10 +536,6 @@ class SifAnimatable:
         return element
 
     @classmethod
-    def guid(cls):
-        return str(uuid4()).replace("-", "").upper()
-
-    @classmethod
     def value_to_dom(cls, value, dom: minidom.Document, param: AnimatableTypeDescriptor):
         element = dom.createElement(param.typename)
 
@@ -1058,6 +1054,17 @@ class Canvas(SifNode):
         XmlList(Layer),
     ]
 
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.registry = {}
+
+    def register(self, object):
+        guid = getattr(object, "guid", None)
+        if guid is None:
+            guid = Canvas.guid()
+            object.guid = guid
+        self.registry[guid] = object
+
     def to_xml(self):
         dom = minidom.Document()
         dom.appendChild(self.to_dom(dom))
@@ -1084,3 +1091,7 @@ class Canvas(SifNode):
             return time.value
         elif time.unit == FrameTime.Unit.Seconds:
             return time.value * self.fps
+
+    @classmethod
+    def guid(cls):
+        return str(uuid4()).replace("-", "").upper()
