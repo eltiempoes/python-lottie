@@ -78,6 +78,10 @@ class Converter:
         shape.add_shape(converter(layer))
         fill = objects.Fill()
         fill.color = self._convert_vector(layer.color)
+        fill.opacity = self._adjust_animated(
+            self._convert_scalar(layer.amount),
+            lambda x: x * 100
+        )
         shape.add_shape(fill)
         return shape
 
