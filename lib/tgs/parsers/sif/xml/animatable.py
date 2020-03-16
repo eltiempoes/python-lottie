@@ -2,7 +2,7 @@ from xml.dom import minidom
 import copy
 import enum
 
-from .core_nodes import XmlDescriptor
+from .core_nodes import XmlDescriptor, ObjectRegistry
 from .utils import *
 from tgs import NVector
 
@@ -84,10 +84,10 @@ class XmlAnimatable(AnimatableTypeDescriptor, XmlDescriptor):
         XmlDescriptor.__init__(self, name)
         AnimatableTypeDescriptor.__init__(self, *a, **kw)
 
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         cn = xml_first_element_child(parent, self.name)
         if cn:
-            value = SifAnimatable.from_dom(xml_first_element_child(cn), self)
+            value = SifAnimatable.from_dom(xml_first_element_child(cn), self, registry)
         else:
             value = self.default()
 
@@ -105,10 +105,10 @@ class XmlAnimatable(AnimatableTypeDescriptor, XmlDescriptor):
 
 
 class XmlParam(XmlAnimatable):
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         for cn in xml_child_elements(parent, "param"):
             if cn.getAttribute("name") == self.name:
-                value = SifAnimatable.from_dom(xml_first_element_child(cn), self)
+                value = SifAnimatable.from_dom(xml_first_element_child(cn), self, registry)
                 break
         else:
             value = self.default()
@@ -189,7 +189,7 @@ class SifAnimatable:
         return "<%s.%s %r>" % (__name__, self.__class__.__name__, self._value if not self._animated else "animated")
 
     @classmethod
-    def from_dom(cls, xml: minidom.Element, param: AnimatableTypeDescriptor):
+    def from_dom(cls, xml: minidom.Element, param: AnimatableTypeDescriptor, registry: ObjectRegistry):
         if xml.tagName == param.typename:
             return SifAnimatable(param, value_from_xml_element(xml, param))
         elif xml.tagName != "animated":
@@ -292,7 +292,7 @@ class XmlDynamicListParam(XmlDescriptor):
             entry = dyl.appendChild(dom.createElement("entry"))
             entry.appendChild(val.to_dom(dom))
 
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         values = []
 
         for cn in xml_child_elements(parent, "param"):
@@ -304,7 +304,7 @@ class XmlDynamicListParam(XmlDescriptor):
                         (self.name, self.decriptor.typename, list.getAttribute("type"))
                     )
                 for entry in xml_child_elements(list, "entry"):
-                    values.append(SifAnimatable.from_dom(xml_first_element_child(entry), self.decriptor))
+                    values.append(SifAnimatable.from_dom(xml_first_element_child(entry), self.decriptor, registry))
                 break
 
         setattr(obj, self.att_name, values)

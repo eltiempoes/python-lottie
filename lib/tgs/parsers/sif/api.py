@@ -1,5 +1,4 @@
 import enum
-from uuid import uuid4
 from .xml.utils import *
 from .xml.core_nodes import *
 from .xml.animatable import *
@@ -33,15 +32,15 @@ class SifNode(metaclass=SifNodeMeta):
         return super().__setattr__(name, value)
 
     @staticmethod
-    def static_from_dom(cls, xml: minidom.Element):
+    def static_from_dom(cls, xml: minidom.Element, registry: ObjectRegistry):
         instance = cls()
         for node in cls._nodes:
-            node.from_xml(instance, xml)
+            node.from_xml(instance, xml, registry)
         return instance
 
     @classmethod
-    def from_dom(cls, xml: minidom.Element):
-        return SifNode.static_from_dom(cls, xml)
+    def from_dom(cls, xml: minidom.Element, registry: ObjectRegistry):
+        return SifNode.static_from_dom(cls, xml, registry)
 
     def to_dom(self, dom: minidom.Document):
         element = dom.createElement(self._tag)
@@ -59,10 +58,13 @@ class SifTransform(SifNode):
     ]
 
     @classmethod
-    def from_dom(cls, xml: minidom.Element):
+    def from_dom(cls, xml: minidom.Element, registry: ObjectRegistry):
+        if xml.tagName == "bone_link":
+            # TODO
+            return SifTransform()
         if xml.tagName != "composite" or xml.getAttribute("type") != "transformation":
             raise ValueError("Invalid transform element: %s" % xml.tagName)
-        return super().from_dom(xml)
+        return super().from_dom(xml, registry)
 
     def to_dom(self, dom: minidom.Document):
         element = dom.createElement("composite")
@@ -180,13 +182,13 @@ class Layer(SifNode):
         return element
 
     @classmethod
-    def from_dom(cls, xml: minidom.Element):
+    def from_dom(cls, xml: minidom.Element, registry: ObjectRegistry):
         actual_class = cls
         if cls == Layer:
             type = xml.getAttribute("type")
             actual_class = Layer.layer_types().get(type, Layer)
 
-        return SifNode.static_from_dom(actual_class, xml)
+        return SifNode.static_from_dom(actual_class, xml, registry)
 
     @staticmethod
     def layer_types():
@@ -438,7 +440,41 @@ class LinearGradient(GradientLayer):
     ]
 
 
-class Canvas(SifNode):
+class BoneRoot(SifNode):
+    _nodes = [
+        XmlAttribute("type", str, "bone_object"),
+        XmlAttribute("guid", str)
+    ]
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element, registry: ObjectRegistry):
+        if xml.tagName == "bone_root":
+            val = SifNode.static_from_dom(BoneRoot, xml, registry)
+        else:
+            val = SifNode.static_from_dom(Bone, xml, registry)
+        registry.register(val)
+        return val
+
+    def __repr__(self):
+        return "<%s %r>" % (self.__class__.__name__, self.guid)
+
+
+class Bone(BoneRoot):
+    _nodes = [
+        XmlSimpleElement("name", str),
+        XmlBoneReference("parent"),
+        XmlAnimatable("origin", "vector", NVector(0, 0)),
+        XmlAnimatable("angle", "angle", 0.),
+        XmlAnimatable("scalelx", "real", 1.),
+        XmlAnimatable("width", "real", .1),
+        XmlAnimatable("scalex", "real", 1.),
+        XmlAnimatable("tipwidth", "real", .1),
+        XmlAnimatable("bone_depth", "real", 0.),
+        XmlAnimatable("length", "real", 1.),
+    ]
+
+
+class Canvas(SifNode, ObjectRegistry):
     _nodes = [
         XmlAttribute("version"),
         XmlAttribute("width", float, 512),
@@ -471,18 +507,12 @@ class Canvas(SifNode):
         XmlMeta("onion_skin_future", int, 0),
         XmlMeta("onion_skin_past", int, 1),
         XmlList(Layer),
+        XmlWrapper("bones", XmlList(BoneRoot, "bones", None, {"bone", "bone_root"})),
     ]
 
     def __init__(self, **kw):
-        super().__init__(**kw)
-        self.registry = {}
-
-    def register(self, object):
-        guid = getattr(object, "guid", None)
-        if guid is None:
-            guid = Canvas.guid()
-            object.guid = guid
-        self.registry[guid] = object
+        SifNode.__init__(self, **kw)
+        ObjectRegistry.__init__(self)
 
     def to_xml(self):
         dom = minidom.Document()
@@ -501,16 +531,19 @@ class Canvas(SifNode):
 
     @classmethod
     def from_xml(cls, xml: minidom.Document):
-        obj = cls.from_dom(xml.documentElement)
+        obj = cls.from_dom(xml.documentElement, None)
         xml.unlink()
         return obj
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element, registry: ObjectRegistry = None):
+        instance = cls()
+        for node in cls._nodes:
+            node.from_xml(instance, xml, instance)
+        return instance
 
     def time_to_frames(self, time: FrameTime):
         if time.unit == FrameTime.Unit.Frame:
             return time.value
         elif time.unit == FrameTime.Unit.Seconds:
             return time.value * self.fps
-
-    @classmethod
-    def guid(cls):
-        return str(uuid4()).replace("-", "").upper()

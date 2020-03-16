@@ -1,5 +1,5 @@
 from .utils import *
-from .core_nodes import XmlDescriptor
+from .core_nodes import XmlDescriptor, ObjectRegistry
 
 
 class XmlParamSif(XmlDescriptor):
@@ -7,10 +7,10 @@ class XmlParamSif(XmlDescriptor):
         super().__init__(name)
         self.child_node = child_node
 
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         for cn in xml_child_elements(parent, "param"):
             if cn.getAttribute("name") == self.name:
-                value = self.child_node.from_dom(xml_first_element_child(cn))
+                value = self.child_node.from_dom(xml_first_element_child(cn), registry)
                 break
         else:
             value = self.default()
@@ -81,10 +81,10 @@ class XmlSifElement(XmlDescriptor):
             raise ValueError("Invalid value for %s: %s" % (self.name, value))
         return value
 
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         cn = xml_first_element_child(parent, self.name, allow_none=True)
         if cn:
-            value = self.child_node.from_dom(xml_first_element_child(cn))
+            value = self.child_node.from_dom(xml_first_element_child(cn), registry)
         else:
             value = self.default()
 
@@ -98,11 +98,15 @@ class XmlSifElement(XmlDescriptor):
 
 
 class XmlList(XmlDescriptor):
-    def __init__(self, child_node, name=None, wrapper_tag=None):
+    def __init__(self, child_node, name=None, wrapper_tag=None, tags=None):
         super().__init__(wrapper_tag or child_node._tag)
         self.child_node = child_node
         self.att_name = self.att_name + "s" if name is None else name
         self.wrapper_tag = wrapper_tag
+        if tags is None:
+            self.tags = {self.name}
+        else:
+            self.tags = tags
 
     def default(self):
         return SifNodeList(self.child_node)
@@ -110,13 +114,14 @@ class XmlList(XmlDescriptor):
     def clean(self, value):
         return value
 
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         values = self.default()
-        for cn in xml_child_elements(parent, self.name):
-            value_node = cn
-            if self.wrapper_tag:
-                value_node = xml_first_element_child(cn)
-            values.append(self.child_node.from_dom(value_node))
+        for cn in xml_child_elements(parent):
+            if cn.tagName in self.tags:
+                value_node = cn
+                if self.wrapper_tag:
+                    value_node = xml_first_element_child(cn)
+                values.append(self.child_node.from_dom(value_node, registry))
 
         setattr(obj, self.att_name, values)
 
@@ -139,10 +144,10 @@ class XmlWrapper(XmlDescriptor):
         wrapper = parent.appendChild(dom.createElement(self.name))
         self.wrapped.to_xml(obj, wrapper, dom)
 
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         wrapper = xml_first_element_child(parent, self.name, True)
         if wrapper:
-            return self.wrapped.from_xml(obj, wrapper)
+            return self.wrapped.from_xml(obj, wrapper, registry)
         return self.default()
 
     def from_python(self, value):
@@ -164,8 +169,42 @@ class XmlWrapperParam(XmlWrapper):
         wrapper.setAttribute("name", self.name)
         self.wrapped.to_xml(obj, wrapper, dom)
 
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         for wrapper in xml_child_elements(parent, "param"):
             if wrapper.getAttribute("name") == self.name:
-                return self.wrapped.from_xml(obj, wrapper)
+                return self.wrapped.from_xml(obj, wrapper, registry)
         return self.default()
+
+
+class XmlBoneReference(XmlDescriptor):
+    def __init__(self, name):
+        super().__init__(name)
+
+    def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
+        value = getattr(obj, self.name, None)
+        if not value:
+            return
+
+        node = parent.appendChild(dom.createElement(self.name))
+        value_node = node.appendChild(dom.createElement("bone_valuenode"))
+        value_node.setAttribute("type", value.type)
+        value_node.setAttribute("guid", value.guid)
+
+        return node
+
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
+        node = xml_first_element_child(parent, self.name, True)
+        if not node:
+            return None
+
+        value_node = xml_first_element_child(node, "bone_valuenode", True)
+        if not node:
+            return None
+
+        value = registry.get_object(value_node.getAttribute("guid"))
+        if value.type != value_node.getAttribute("type"):
+            raise ValueError("Bone type %s is not %s" % (value.type, value_node.getAttribute("type")))
+        return value
+
+    def from_python(self, value):
+        return value

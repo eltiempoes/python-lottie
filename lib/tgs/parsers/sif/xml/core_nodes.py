@@ -1,7 +1,27 @@
 from xml.dom import minidom
 import copy
+from uuid import uuid4
 
 from .utils import *
+
+
+class ObjectRegistry:
+    def __init__(self):
+        self.registry = {}
+
+    def register(self, object):
+        guid = getattr(object, "guid", None)
+        if guid is None:
+            guid = self.guid()
+            object.guid = guid
+        self.registry[guid] = object
+
+    @classmethod
+    def guid(cls):
+        return str(uuid4()).replace("-", "").upper()
+
+    def get_object(self, guid):
+        return self.registry[guid]
 
 
 class XmlDescriptor:
@@ -12,7 +32,7 @@ class XmlDescriptor:
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
         raise NotImplementedError
 
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         raise NotImplementedError
 
     def from_python(self, value):
@@ -31,7 +51,7 @@ class XmlDescriptor:
         return None
 
     def __repr__(self):
-        return "%s.%s(%r)" % (__name__, self.__class__, self.name)
+        return "%s(%r)" % (self.__class__.__name__, self.name)
 
 
 class TypedXmlDescriptor(XmlDescriptor):
@@ -52,7 +72,7 @@ class TypedXmlDescriptor(XmlDescriptor):
 
 
 class XmlAttribute(TypedXmlDescriptor):
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         xml_str = parent.getAttribute(self.name)
         if xml_str:
             setattr(obj, self.att_name, value_from_xml_string(xml_str, self.type))
@@ -64,7 +84,7 @@ class XmlAttribute(TypedXmlDescriptor):
 
 
 class XmlSimpleElement(TypedXmlDescriptor):
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         cn = xml_first_element_child(parent, self.name, allow_none=True)
         if cn:
             value = value_from_xml_string(xml_text(cn), self.type)
@@ -80,7 +100,7 @@ class XmlSimpleElement(TypedXmlDescriptor):
 
 
 class XmlMeta(TypedXmlDescriptor):
-    def from_xml(self, obj, parent: minidom.Element):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         for cn in xml_child_elements(parent, "meta"):
             if cn.getAttribute("name") == self.name:
                 value = value_from_xml_string(cn.getAttribute("content"), self.type)
