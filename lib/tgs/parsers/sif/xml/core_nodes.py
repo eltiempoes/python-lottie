@@ -55,10 +55,12 @@ class XmlDescriptor:
 
 
 class TypedXmlDescriptor(XmlDescriptor):
-    def __init__(self, name, type=str, default_value=None):
+    def __init__(self, name, type=str, default_value=None, att_name=None):
         super().__init__(name)
         self.type = type
         self.default_value = default_value
+        if att_name is not None:
+            self.att_name = att_name
 
     def from_python(self, value):
         if value is None and self.default_value is None:
@@ -81,6 +83,28 @@ class XmlAttribute(TypedXmlDescriptor):
         value = getattr(obj, self.att_name)
         if value is not None:
             parent.setAttribute(self.name, value_to_xml_string(value, self.type))
+
+
+class XmlFixedAttribute(XmlDescriptor):
+    def __init__(self, name, value, type=str):
+        super().__init__(name)
+        self.value = value
+        self.type = type
+
+    def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
+        parent.setAttribute(self.name, value_to_xml_string(self.value, self.type))
+
+    def from_python(self, value):
+        if value != self.value:
+            raise ValueError("Value of %s should be %s, got %s" % (self.name, self.value, value))
+        return value
+
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
+        xml_str = parent.getAttribute(self.name)
+        setattr(obj, self.att_name, value_from_xml_string(xml_str, self.type))
+
+    def default(self):
+        return self.value
 
 
 class XmlSimpleElement(TypedXmlDescriptor):

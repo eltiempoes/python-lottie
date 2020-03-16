@@ -50,16 +50,23 @@ class SifNode(metaclass=SifNodeMeta):
 
 
 class AbstractTransform(SifNode):
+    _nodes = [
+        XmlFixedAttribute("type", "transformation")
+    ]
+
     @classmethod
     def from_dom(cls, xml: minidom.Element, registry: ObjectRegistry):
         if xml.tagName == "bone_link":
             return SifNode.static_from_dom(BoneLinkTransform, xml, registry)
-        if xml.tagName != "composite" or xml.getAttribute("type") != "transformation":
+
+        if xml.tagName != "composite":
             raise ValueError("Invalid transform element: %s" % xml.tagName)
         return SifNode.static_from_dom(SifTransform, xml, registry)
 
 
 class SifTransform(AbstractTransform):
+    _tag = "composite"
+
     _nodes = [
         XmlAnimatable("offset", "vector", NVector(0, 0)),
         XmlAnimatable("angle", "angle", 0.),
@@ -67,30 +74,22 @@ class SifTransform(AbstractTransform):
         XmlAnimatable("scale", "vector", NVector(1, 1)),
     ]
 
-    def to_dom(self, dom: minidom.Document):
-        element = dom.createElement("composite")
-        element.setAttribute("type", "transformation")
-        for node in self._nodes:
-            node.to_xml(self, element, dom)
-        return element
-
 
 class RadialComposite(SifNode):
+    _tag = "radial_composite"
+
     _nodes = [
+        XmlFixedAttribute("type", "vector"),
         XmlAnimatable("radius", "real", 0.),
         XmlAnimatable("theta", "angle", 0.),
     ]
 
-    def to_dom(self, dom: minidom.Document):
-        element = dom.createElement("radial_composite")
-        element.setAttribute("type", "vector")
-        for node in self._nodes:
-            node.to_xml(self, element, dom)
-        return element
-
 
 class BlinePoint(SifNode):
+    _tag = "composite"
+
     _nodes = [
+        XmlFixedAttribute("type", "bline_point"),
         XmlAnimatable("point", "vector", NVector(0, 0)),
         XmlAnimatable("width", "real", 1.),
         XmlAnimatable("origin", "real", .5),
@@ -101,18 +100,11 @@ class BlinePoint(SifNode):
         XmlAnimatable("split_angle", "bool", False),
     ]
 
-    def to_dom(self, dom: minidom.Document):
-        element = dom.createElement("composite")
-        element.setAttribute("type", "bline_point")
-        for node in self._nodes:
-            node.to_xml(self, element, dom)
-        return element
-
 
 class Bline(SifNode):
     _nodes = [
         XmlAttribute("loop", bool_str, False),
-        XmlAttribute("type", str, "bline_point"),
+        XmlFixedAttribute("type", "bline_point"),
         XmlList(BlinePoint, "points", "entry"),
     ]
 
@@ -442,8 +434,10 @@ class LinearGradient(GradientLayer):
 
 
 class BoneRoot(SifNode):
+    _tag = "bone_root"
+
     _nodes = [
-        XmlAttribute("type", str, "bone_object"),
+        XmlFixedAttribute("type", "bone_object"),
         XmlAttribute("guid", str)
     ]
 
@@ -461,8 +455,10 @@ class BoneRoot(SifNode):
 
 
 class Bone(BoneRoot):
+    _tag = "bone"
+
     _nodes = [
-        XmlSimpleElement("name", str),
+        XmlWrapper("name", XmlSimpleElement("string", att_name="name")),
         XmlBoneReference("parent"),
         XmlAnimatable("origin", "vector", NVector(0, 0)),
         XmlAnimatable("angle", "angle", 0.),
@@ -476,9 +472,16 @@ class Bone(BoneRoot):
 
 
 class BoneLinkTransform(AbstractTransform):
+    _tag = "bone_link"
+
     _nodes = [
         XmlBoneReference("bone"),
-        XmlSifElement("base_value", SifTransform)
+        XmlSifElement("base_value", SifTransform),
+        XmlAnimatable("translate", "bool", True),
+        XmlAnimatable("rotate", "bool", True),
+        XmlAnimatable("skew", "bool", True),
+        XmlAnimatable("scale_x", "bool", True),
+        XmlAnimatable("scale_y", "bool", True),
     ]
 
 
