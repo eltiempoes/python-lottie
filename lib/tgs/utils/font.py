@@ -418,6 +418,7 @@ class FontShape(CustomObject):
         else:
             self.style = FontStyle(query, size, justify)
         self.text = text
+        self.hidden = None
 
     def _get(self, a):
         return getattr(self.style, a)

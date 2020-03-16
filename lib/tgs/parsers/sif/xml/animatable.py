@@ -71,6 +71,8 @@ def value_from_xml_element(xml: minidom.Element, param: AnimatableTypeDescriptor
         value = FrameTime(xml.getAttribute("value"))
     elif param.typename == "bool":
         value = str_to_bool(xml.getAttribute("value"))
+    elif param.typename == "string":
+        return xml_text(xml)
     else:
         raise ValueError("Unsupported type %s" % param.typename)
 

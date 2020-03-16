@@ -356,6 +356,32 @@ class RegionLayer(ComplexShape):
     ]
 
 
+class FontStyle(enum.Enum):
+    Normal = 0
+    Oblique = 1
+    Italic = 2
+
+
+class TextLayer(DrawableLayer):
+    _layer_type = "text"
+
+    _nodes = [
+        XmlParam("text", "string"),
+        XmlParam("color", "color", NVector(0, 0, 0, 1)),
+        XmlParam("family", "string"),
+        XmlParam("style", "integer", FontStyle.Normal, False, FontStyle),
+        XmlParam("weight", "integer", 400),
+        XmlParam("compress", "real", 1.),
+        XmlParam("vcompress", "real", 1.),
+        XmlParam("size", "vector", NVector(1, 1)),
+        XmlParam("orient", "vector", NVector(.5, .5)),
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("use_kerning", "bool", False),
+        XmlParam("grid_fit", "bool", False),
+        XmlParam("invert", "bool", False),
+    ]
+
+
 class TransformDown(Layer):
     pass
 

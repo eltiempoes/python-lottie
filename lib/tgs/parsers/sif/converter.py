@@ -3,6 +3,12 @@ from ... import objects
 from . import api
 from ... import NVector, PolarVector
 
+try:
+    from ...utils import font
+    has_font = True
+except ImportError:
+    has_font = False
+
 
 def convert(canvas: api.Canvas):
     return Converter().convert(canvas)
@@ -53,6 +59,9 @@ class Converter:
                 shape = self._convert_transform_down(layer)
                 parent.add_shape(shape)
                 parent = shape
+            elif isinstance(layer, api.TextLayer):
+                if has_font:
+                    parent.add_shape(self._convert_fill(layer, self._convert_text))
 
     def _convert_group(self, layer: api.GroupLayer):
         shape = objects.Group()
@@ -78,6 +87,9 @@ class Converter:
         shape = objects.Group()
         self._set_name(shape, layer)
         shape.add_shape(converter(layer))
+        if layer.invert.value:
+            shape.add_shape(objects.Rect(self.target_size/2, self.target_size))
+
         fill = objects.Fill()
         fill.color = self._convert_vector(layer.color)
         fill.opacity = self._adjust_animated(
@@ -383,3 +395,13 @@ class Converter:
             flat.append(stop.pos)
             flat += stop.color.components[:3]
         return NVector(*flat)
+
+    def _convert_text(self, layer: api.TextLayer):
+        shape = font.FontShape(layer.text.value, font.FontStyle(layer.family.value, 110, font.TextJustify.Center))
+        shape.refresh()
+        trans = shape.wrapped.transform
+        trans.anchor_point.value = shape.wrapped.bounding_box().center()
+        trans.anchor_point.value.x /= 2
+        trans.position = self._adjust_coords(self._convert_vector(layer.origin))
+        # TODO size
+        return shape
