@@ -49,22 +49,23 @@ class SifNode(metaclass=SifNodeMeta):
         return element
 
 
-class SifTransform(SifNode):
+class AbstractTransform(SifNode):
+    @classmethod
+    def from_dom(cls, xml: minidom.Element, registry: ObjectRegistry):
+        if xml.tagName == "bone_link":
+            return SifNode.static_from_dom(BoneLinkTransform, xml, registry)
+        if xml.tagName != "composite" or xml.getAttribute("type") != "transformation":
+            raise ValueError("Invalid transform element: %s" % xml.tagName)
+        return SifNode.static_from_dom(SifTransform, xml, registry)
+
+
+class SifTransform(AbstractTransform):
     _nodes = [
         XmlAnimatable("offset", "vector", NVector(0, 0)),
         XmlAnimatable("angle", "angle", 0.),
         XmlAnimatable("skew_angle", "angle", 0.),
         XmlAnimatable("scale", "vector", NVector(1, 1)),
     ]
-
-    @classmethod
-    def from_dom(cls, xml: minidom.Element, registry: ObjectRegistry):
-        if xml.tagName == "bone_link":
-            # TODO
-            return SifTransform()
-        if xml.tagName != "composite" or xml.getAttribute("type") != "transformation":
-            raise ValueError("Invalid transform element: %s" % xml.tagName)
-        return super().from_dom(xml, registry)
 
     def to_dom(self, dom: minidom.Document):
         element = dom.createElement("composite")
@@ -218,7 +219,7 @@ class GroupLayer(DrawableLayer):
 
     _nodes = [
         XmlParam("origin", "vector", NVector(0, 0)),
-        XmlParamSif("transformation", SifTransform),
+        XmlParamSif("transformation", AbstractTransform),
         XmlWrapperParam("canvas", XmlWrapper("canvas", XmlList(Layer))),
         XmlParam("time_dilation", "real", 0.),
         XmlParam("time_offset", "time", FrameTime(0, FrameTime.Unit.Frame)),
@@ -474,6 +475,13 @@ class Bone(BoneRoot):
     ]
 
 
+class BoneLinkTransform(AbstractTransform):
+    _nodes = [
+        XmlBoneReference("bone"),
+        XmlSifElement("base_value", SifTransform)
+    ]
+
+
 class Canvas(SifNode, ObjectRegistry):
     _nodes = [
         XmlAttribute("version"),
@@ -506,8 +514,8 @@ class Canvas(SifNode, ObjectRegistry):
         XmlMeta("onion_skin", bool, False),
         XmlMeta("onion_skin_future", int, 0),
         XmlMeta("onion_skin_past", int, 1),
-        XmlList(Layer),
         XmlWrapper("bones", XmlList(BoneRoot, "bones", None, {"bone", "bone_root"})),
+        XmlList(Layer),
     ]
 
     def __init__(self, **kw):

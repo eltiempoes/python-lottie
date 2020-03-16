@@ -66,18 +66,23 @@ class Converter:
     def _convert_group(self, layer: api.GroupLayer):
         shape = objects.Group()
         self._set_name(shape, layer)
+        if isinstance(layer.transformation, api.BoneLinkTransform):
+            # TODO
+            transform = layer.transformation.base_value
+        else:
+            transform = layer.transformation
         shape.transform.anchor_point = self._adjust_coords(self._convert_vector(layer.origin))
-        shape.transform.position = self._adjust_coords(self._convert_vector(layer.transformation.offset))
+        shape.transform.position = self._adjust_coords(self._convert_vector(transform.offset))
         shape.transform.rotation = self._adjust_animated(
-            self._convert_scalar(layer.transformation.angle),
+            self._convert_scalar(transform.angle),
             lambda x: -x
         )
         shape.transform.scale = self._adjust_animated(
-            self._convert_vector(layer.transformation.scale),
+            self._convert_vector(transform.scale),
             lambda x: x * 100
         )
         shape.transform.skew_axis = self._adjust_animated(
-            self._convert_scalar(layer.transformation.skew_angle),
+            self._convert_scalar(transform.skew_angle),
             lambda x: -x
         )
         self._process_layers(layer.layers, shape)

@@ -76,7 +76,7 @@ class XmlSifElement(XmlDescriptor):
     def default(self):
         return self.child_node()
 
-    def clean(self, value):
+    def from_python(self, value):
         if not isinstance(value, self.child_node):
             raise ValueError("Invalid value for %s: %s" % (self.name, value))
         return value
@@ -194,17 +194,15 @@ class XmlBoneReference(XmlDescriptor):
 
     def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         node = xml_first_element_child(parent, self.name, True)
-        if not node:
-            return None
+        value = None
+        if node:
+            value_node = xml_first_element_child(node, "bone_valuenode", True)
+            if value_node:
+                value = registry.get_object(value_node.getAttribute("guid"))
+                if value.type != value_node.getAttribute("type"):
+                    raise ValueError("Bone type %s is not %s" % (value.type, value_node.getAttribute("type")))
 
-        value_node = xml_first_element_child(node, "bone_valuenode", True)
-        if not node:
-            return None
-
-        value = registry.get_object(value_node.getAttribute("guid"))
-        if value.type != value_node.getAttribute("type"):
-            raise ValueError("Bone type %s is not %s" % (value.type, value_node.getAttribute("type")))
-        return value
+        setattr(obj, self.att_name, value)
 
     def from_python(self, value):
         return value
