@@ -485,6 +485,17 @@ class BoneLinkTransform(AbstractTransform):
     ]
 
 
+class SkeletonLayer(Layer):
+    _layer_type = "skeleton"
+
+    _nodes = [
+        XmlParam("z_depth", "real", 0.),
+        XmlParam("amount", "real", 1.),
+        XmlParam("name", "string"),
+        XmlStaticListParam("bones", "bone_object")
+    ]
+
+
 class Canvas(SifNode, ObjectRegistry):
     _nodes = [
         XmlAttribute("version"),

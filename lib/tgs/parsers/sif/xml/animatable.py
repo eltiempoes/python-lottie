@@ -19,7 +19,8 @@ class AnimatableTypeDescriptor:
 
 
 def value_to_xml_element(value, dom: minidom.Document, param: AnimatableTypeDescriptor):
-    element = dom.createElement(param.typename)
+    tag_name = _type_tag_names.get(param.typename, param.typename)
+    element = dom.createElement(tag_name)
 
     if param.typename == "vector":
         element.appendChild(xml_make_text(dom, "x", str(value.x)))
@@ -34,6 +35,9 @@ def value_to_xml_element(value, dom: minidom.Document, param: AnimatableTypeDesc
             element.appendChild(point.to_dom(dom))
     elif param.typename == "bool":
         element.setAttribute("value", "true" if value else "false")
+    elif param.typename == "bone_object":
+        element.setAttribute("guid", value.guid)
+        element.setAttribute("type", param.typename)
     else:
         if isinstance(value, enum.Enum):
             value = value.value
@@ -42,9 +46,15 @@ def value_to_xml_element(value, dom: minidom.Document, param: AnimatableTypeDesc
     return element
 
 
-def value_from_xml_element(xml: minidom.Element, param: AnimatableTypeDescriptor):
-    if xml.tagName != param.typename:
-        raise ValueError("Wrong value type (%s instead of %s)" % (xml.tagName, param.typename))
+_type_tag_names = {
+    "bone_object": "bone"
+}
+
+
+def value_from_xml_element(xml: minidom.Element, param: AnimatableTypeDescriptor, registry: ObjectRegistry):
+    tag_name = _type_tag_names.get(param.typename, param.typename)
+    if xml.tagName != tag_name:
+        raise ValueError("Wrong value type (%s instead of %s)" % (xml.tagName, tag_name))
 
     if param.typename == "vector":
         value = NVector(
@@ -60,7 +70,7 @@ def value_from_xml_element(xml: minidom.Element, param: AnimatableTypeDescriptor
         )
     elif param.typename == "gradient":
         value = [
-            GradientPoint.from_dom(sub)
+            GradientPoint.from_dom(sub, registry)
             for sub in xml_child_elements(xml, GradientPoint.anim_type.typename)
         ]
     elif param.typename == "real" or param.typename == "angle":
@@ -73,6 +83,8 @@ def value_from_xml_element(xml: minidom.Element, param: AnimatableTypeDescriptor
         value = str_to_bool(xml.getAttribute("value"))
     elif param.typename == "string":
         return xml_text(xml)
+    elif param.typename == "bone_object":
+        return registry.get_object(xml.getAttribute("guid"))
     else:
         raise ValueError("Unsupported type %s" % param.typename)
 
@@ -158,9 +170,9 @@ class SifKeyframe:
         self.ease_out = ease_out
 
     @classmethod
-    def from_dom(cls, xml: minidom.Element, param: AnimatableTypeDescriptor):
+    def from_dom(cls, xml: minidom.Element, param: AnimatableTypeDescriptor, registry: ObjectRegistry):
         return cls(
-            value_from_xml_element(xml_first_element_child(xml), param),
+            value_from_xml_element(xml_first_element_child(xml), param, registry),
             FrameTime(xml.getAttribute("time")),
             Interpolation(xml.getAttribute("before")),
             Interpolation(xml.getAttribute("after"))
@@ -190,22 +202,23 @@ class SifAnimatable:
 
     @classmethod
     def from_dom(cls, xml: minidom.Element, param: AnimatableTypeDescriptor, registry: ObjectRegistry):
-        if xml.tagName == param.typename:
-            return SifAnimatable(param, value_from_xml_element(xml, param))
+        tag_name = _type_tag_names.get(param.typename, param.typename)
+        if xml.tagName == tag_name:
+            return SifAnimatable(param, value_from_xml_element(xml, param, registry))
         elif xml.tagName != "animated":
-            raise ValueError("Unknown element %s for %s" % (xml.tagName, param.name))
+            raise ValueError("Unknown element %s for %s" % (xml.tagName, param.typename))
 
         if xml.getAttribute("type") != param.typename:
             raise ValueError("Invalid type %s (should be %s)" % (xml.getAttribute("type"), param.typename))
 
         if param.static:
-            raise ValueError("Animating static value for %s" % (param.name))
+            raise ValueError("Animating static value for %s" % (param.typename))
 
         obj = SifAnimatable(param)
         obj._animated = True
         obj._keyframes = []
         for waypoint in xml_child_elements(xml, "waypoint"):
-            obj._keyframes.append(SifKeyframe.from_dom(waypoint, param))
+            obj._keyframes.append(SifKeyframe.from_dom(waypoint, param, registry))
         return obj
 
     def to_dom(self, dom: minidom.Document):
@@ -276,6 +289,8 @@ class SifAnimatable:
 
 
 class XmlDynamicListParam(XmlDescriptor):
+    _tag = "dynamic_list"
+
     def __init__(self, name, typename, att_name=None):
         super().__init__(name)
         self.decriptor = AnimatableTypeDescriptor(typename)
@@ -290,7 +305,10 @@ class XmlDynamicListParam(XmlDescriptor):
         values = getattr(obj, self.att_name)
         for val in values:
             entry = dyl.appendChild(dom.createElement("entry"))
-            entry.appendChild(val.to_dom(dom))
+            entry.appendChild(self._value_to_dom(val, dom))
+
+    def _value_to_dom(self, val, dom):
+        return val.to_dom(dom)
 
     def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         values = []
@@ -304,16 +322,29 @@ class XmlDynamicListParam(XmlDescriptor):
                         (self.name, self.decriptor.typename, list.getAttribute("type"))
                     )
                 for entry in xml_child_elements(list, "entry"):
-                    values.append(SifAnimatable.from_dom(xml_first_element_child(entry), self.decriptor, registry))
+                    values.append(self._value_from_dom(xml_first_element_child(entry), registry))
                 break
 
         setattr(obj, self.att_name, values)
+
+    def _value_from_dom(self, element, registry):
+        return SifAnimatable.from_dom(element, self.decriptor, registry)
 
     def from_python(self, value):
         return value
 
     def default(self):
         return []
+
+
+class XmlStaticListParam(XmlDynamicListParam):
+    _tag = "static_list"
+
+    def _value_to_dom(self, val, dom):
+        return value_to_xml_element(val, dom, self.decriptor)
+
+    def _value_from_dom(self, element, registry):
+        return value_from_xml_element(element, self.decriptor, registry)
 
 
 class GradientPoint:
@@ -329,10 +360,10 @@ class GradientPoint:
         return element
 
     @classmethod
-    def from_dom(cls, xml: minidom.Element):
+    def from_dom(cls, xml: minidom.Element, registry: ObjectRegistry):
         return GradientPoint(
             value_from_xml_string(xml.getAttribute("pos"), float),
-            value_from_xml_element(xml, cls.anim_type)
+            value_from_xml_element(xml, cls.anim_type, registry)
         )
 
     def __repr__(self):
