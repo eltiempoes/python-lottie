@@ -345,7 +345,15 @@ class Converter:
             gradient.start_point = self._adjust_coords(self._convert_vector(layer.p1))
             gradient.end_point = self._adjust_coords(self._convert_vector(layer.p2))
             gradient.gradient_type = objects.GradientType.Linear
-            pass
+        elif isinstance(layer, api.RadialGradient):
+            gradient.gradient_type = objects.GradientType.Radial
+            gradient.start_point = self._adjust_coords(self._convert_vector(layer.center))
+            radius = self._adjust_animated(self._convert_scalar(layer.radius), lambda x: x*45)
+            if not radius.animated and not gradient.start_point.animated:
+                gradient.end_point.value = gradient.start_point.value + NVector(radius.value, radius.value)
+            else:
+                for time, c, r in self._mix_animations(gradient.start_point.clone(), radius):
+                    gradient.end_point.add_keyframe(time, x + NVector(r + r))
 
         return group
 

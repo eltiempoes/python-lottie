@@ -388,7 +388,18 @@ class ScaleLayer(TransformDown):
 
 class GradientLayer(DrawableLayer):
     _nodes = [
-        XmlParam("gradient", "gradient", [])
+        XmlParam("gradient", "gradient", []),
+        XmlParam("loop", "bool", False),
+        XmlParam("zigzag", "bool", False),
+    ]
+
+
+class RadialGradient(GradientLayer):
+    _layer_type = "radial_gradient"
+
+    _nodes = [
+        XmlParam("center", "vector", NVector(0, 0)),
+        XmlParam("radius", "real", 1),
     ]
 
 
@@ -398,8 +409,6 @@ class LinearGradient(GradientLayer):
     _nodes = [
         XmlParam("p1", "vector", NVector(0, 0)),
         XmlParam("p2", "vector", NVector(0, 0)),
-        XmlParam("loop", "bool", False),
-        XmlParam("zigzag", "bool", False),
     ]
 
 
