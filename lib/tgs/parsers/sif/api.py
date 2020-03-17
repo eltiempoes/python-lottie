@@ -202,7 +202,7 @@ class DrawableLayer(Layer):
     _nodes = [
         XmlParam("z_depth", "real", 0.),
         XmlParam("amount", "real", 1.),
-        XmlParam("blend_method", "integer", BlendMethod.Composite, False, BlendMethod),
+        XmlParam("blend_method", "integer", BlendMethod.Composite, BlendMethod, static=True),
     ]
 
 
@@ -217,7 +217,7 @@ class GroupLayer(DrawableLayer):
         XmlParam("time_offset", "time", FrameTime(0, FrameTime.Unit.Frame)),
         XmlParam("children_lock", "bool", False),
         XmlParam("outline_grow", "real", 0.),
-        XmlParam("z_range", "bool", False, True),
+        XmlParam("z_range", "bool", False, static=True),
         XmlParam("z_range_position", "real", 0.),
         XmlParam("z_range_depth", "real", 0.),
         XmlParam("z_range_blur", "real", 0.),
@@ -259,8 +259,8 @@ class ComplexShape(DrawableLayer):
         XmlParam("invert", "bool", False),
         XmlParam("antialias", "bool", False),
         XmlParam("feather", "real", 0.),
-        XmlParam("blurtype", "integer", BlurType.FastGaussian, False, BlurType),
-        XmlParam("winding_style", "integer", WindingStyle.NonZero, False, WindingStyle),
+        XmlParam("blurtype", "integer", BlurType.FastGaussian, BlurType),
+        XmlParam("winding_style", "integer", WindingStyle.NonZero, WindingStyle),
     ]
 
 
@@ -326,9 +326,9 @@ class AdvancedOutlineLayer(AbstractOutline):
     _layer_type = "advanced_outline"
 
     _nodes = [
-        XmlParam("start_tip", "integer", LineCap.Rounded, False, LineCap),
-        XmlParam("end_tip", "integer", LineCap.Rounded, False, LineCap),
-        XmlParam("cusp_type", "integer", CuspStyle.Miter, False, CuspStyle),
+        XmlParam("start_tip", "integer", LineCap.Rounded, LineCap),
+        XmlParam("end_tip", "integer", LineCap.Rounded, LineCap),
+        XmlParam("cusp_type", "integer", CuspStyle.Miter, CuspStyle),
         XmlParam("smoothness", "real", 1.),
         XmlParam("homogeneous", "bool", False),
         # TODO wplist
@@ -364,7 +364,7 @@ class TextLayer(DrawableLayer):
         XmlParam("text", "string"),
         XmlParam("color", "color", NVector(0, 0, 0, 1)),
         XmlParam("family", "string"),
-        XmlParam("style", "integer", FontStyle.Normal, False, FontStyle),
+        XmlParam("style", "integer", FontStyle.Normal, FontStyle),
         XmlParam("weight", "integer", 400),
         XmlParam("compress", "real", 1.),
         XmlParam("vcompress", "real", 1.),
@@ -544,7 +544,8 @@ class Canvas(SifNode, ObjectRegistry):
     @classmethod
     def from_xml_file(cls, xml):
         if isinstance(xml, str):
-            xml = open(xml, "r")
+            with open(xml, "r") as file:
+                return cls.from_xml(minidom.parse(file))
         return cls.from_xml(minidom.parse(xml))
 
     @classmethod
