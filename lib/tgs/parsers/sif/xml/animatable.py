@@ -337,7 +337,7 @@ class XmlDynamicListParam(XmlDescriptor):
             entry = dyl.appendChild(dom.createElement("entry"))
             entry.appendChild(self._value_to_dom(val, dom))
 
-    def _value_to_dom(self, val, dom):
+    def _value_to_dom(self, val, dom: minidom.Document):
         return val.to_dom(dom, self.type)
 
     def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
@@ -370,11 +370,11 @@ class XmlDynamicListParam(XmlDescriptor):
 class XmlStaticListParam(XmlDynamicListParam):
     _tag = "static_list"
 
-    def _value_to_dom(self, val, dom):
-        return value_to_xml_element(val, dom, self.decriptor)
+    def _value_to_dom(self, val, dom: minidom.Document):
+        return self.type.value_to_xml_element(val, dom)
 
-    def _value_from_dom(self, element, registry):
-        return value_from_xml_element(element, self.decriptor, registry)
+    def _value_from_dom(self, element: minidom.Element, registry: ObjectRegistry):
+        return self.type.value_from_xml_element(element, registry)
 
 
 class GradientPoint:

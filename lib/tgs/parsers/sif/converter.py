@@ -39,7 +39,9 @@ class Converter:
 
     def _process_layers(self, layers, parent):
         for layer in reversed(layers):
-            if isinstance(layer, api.GroupLayer):
+            if not layer.active:
+                continue
+            elif isinstance(layer, api.GroupLayer):
                 parent.add_shape(self._convert_group(layer))
             elif isinstance(layer, api.RectangleLayer):
                 parent.add_shape(self._convert_fill(layer, self._convert_rect))
@@ -66,27 +68,60 @@ class Converter:
     def _convert_group(self, layer: api.GroupLayer):
         shape = objects.Group()
         self._set_name(shape, layer)
-        if isinstance(layer.transformation, api.BoneLinkTransform):
-            # TODO
-            transform = layer.transformation.base_value
-        else:
-            transform = layer.transformation
         shape.transform.anchor_point = self._adjust_coords(self._convert_vector(layer.origin))
-        shape.transform.position = self._adjust_coords(self._convert_vector(transform.offset))
-        shape.transform.rotation = self._adjust_animated(
-            self._convert_scalar(transform.angle),
-            lambda x: -x
-        )
-        shape.transform.scale = self._adjust_animated(
-            self._convert_vector(transform.scale),
-            lambda x: x * 100
-        )
-        shape.transform.skew_axis = self._adjust_animated(
-            self._convert_scalar(transform.skew_angle),
-            lambda x: -x
-        )
+        self._convert_transform(layer.transformation, shape.transform)
         self._process_layers(layer.layers, shape)
         return shape
+
+    def _convert_transform(self, sif_transform: api.AbstractTransform, tgs_transform: objects.Transform):
+        if isinstance(sif_transform, api.BoneLinkTransform):
+            base_transform = sif_transform.base_value
+        else:
+            base_transform = sif_transform
+
+        position = self._adjust_coords(self._convert_vector(base_transform.offset))
+        rotation = self._adjust_angle(self._convert_scalar(base_transform.angle))
+        scale = self._adjust_animated(
+            self._convert_vector(base_transform.scale),
+            lambda x: x * 100
+        )
+
+        tgs_transform.skew_axis = self._adjust_angle(self._convert_scalar(base_transform.skew_angle))
+
+        if isinstance(sif_transform, api.BoneLinkTransform):
+            bone = sif_transform.bone
+
+            if sif_transform.translate:
+                tgs_transform.position = self._adjust_coords(self._convert_vector(bone.origin))
+            else:
+                tgs_transform.position = position
+
+            if sif_transform.rotate:
+                b_rot = (self._convert_scalar(bone.angle))
+                self._mix_animations_into(rotation, b_rot, tgs_transform.rotation, lambda a, b: a-b)
+            else:
+                tgs_transform.rotation = position
+
+            if sif_transform.scale_y:
+                b_scale = self._convert_scalar(bone.scalelx)
+                self._mix_animations_into(
+                    scale, b_scale, tgs_transform.scale,
+                    lambda a, b: NVector(a.x, a.y * b)
+                )
+            else:
+                tgs_transform.scale = scale
+        else:
+            tgs_transform.position = position
+            tgs_transform.rotation = rotation
+            tgs_transform.scale = scale
+
+    def _mix_animations_into(self, anim1, anim2, output, mix):
+        if not anim1.animated and not anim2.animated:
+            output.value = mix(anim1.value, anim2.value)
+        else:
+            for vals in self._mix_animations(anim1, anim2):
+                time = vals.pop(0)
+                output.add_keyframe(time, mix(*vals))
 
     def _convert_fill(self, layer, converter):
         shape = objects.Group()
@@ -217,6 +252,9 @@ class Converter:
     def _adjust_scalar(self, lottieval: objects.Value):
         return self._adjust_animated(lottieval, self._scalar_mult)
 
+    def _adjust_angle(self, lottieval: objects.Value):
+        return self._adjust_animated(lottieval, lambda x: -x)
+
     def _adjust_add_dimension(self, lottieval, transform):
         to_val = objects.MultiDimensional()
         to_val.animated = lottieval.animated
@@ -318,10 +356,7 @@ class Converter:
         elif isinstance(tl, api.RotateLayer):
             group.transform.anchor_point = self._adjust_coords(self._convert_vector(tl.origin))
             group.transform.position = group.transform.anchor_point.clone()
-            group.transform.rotation = self._adjust_animated(
-                self._convert_scalar(tl.amount),
-                lambda x: -x
-            )
+            group.transform.rotation = self._adjust_angle(self._convert_scalar(tl.amount))
         elif isinstance(tl, api.ScaleLayer):
             group.transform.anchor_point = self._adjust_coords(self._convert_vector(tl.center))
             group.transform.position = group.transform.anchor_point.clone()
