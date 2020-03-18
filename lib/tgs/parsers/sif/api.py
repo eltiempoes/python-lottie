@@ -252,6 +252,16 @@ class CircleLayer(DrawableLayer):
     ]
 
 
+class SimpleCircleLayer(DrawableLayer):
+    _layer_type = "simple_circle"
+
+    _nodes = [
+        XmlParam("color", "color", NVector(0, 0, 0, 1)),
+        XmlParam("radius", "real", 0.),
+        XmlParam("center", "vector", NVector(0, 0)),
+    ]
+
+
 class ComplexShape(DrawableLayer):
     _nodes = [
         XmlParam("color", "color", NVector(0, 0, 0, 1)),
@@ -493,6 +503,167 @@ class SkeletonLayer(Layer):
         XmlParam("amount", "real", 1.),
         XmlParam("name", "string"),
         XmlStaticListParam("bones", "bone_object")
+    ]
+
+
+class SubsamplingType(enum.Enum):
+    Constant = 0
+    Linear = 1
+    Hyperbolic = 2
+
+
+class MotionBlurLayer(Layer):
+    _layer_type = "MotionBlur"
+
+    _nodes = [
+        XmlParam("aperture", "time", FrameTime(1, FrameTime.Unit.Seconds)),
+        XmlParam("subsamples_factor", "real", 1.),
+        XmlParam("subsampling_type", "integer", SubsamplingType.Hyperbolic, SubsamplingType),
+        XmlParam("subsample_start", "real", 0.),
+        XmlParam("subsample_end", "real", 1.),
+    ]
+
+
+class BlurLayer(DrawableLayer):
+    _layer_type = "blur"
+
+    _nodes = [
+        XmlParam("size", "vector", NVector(1, 1)),
+        XmlParam("type", "integer", BlurType.FastGaussian, BlurType),
+    ]
+
+
+class RadialBlurLayer(DrawableLayer):
+    _layer_type = "radial_blur"
+
+    _nodes = [
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("size", "real", .2),
+        XmlParam("fade_out", "bool", False),
+    ]
+
+
+class CurveWarpLayer(Layer):
+    _layer_type = "curve_warp"
+
+    _nodes = [
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("perp_width", "real", 1.),
+        XmlParam("start_point", "vector", NVector(0, 0)),
+        XmlParam("end_point", "vector", NVector(0, 0)),
+        XmlParamSif("bline", Bline),
+        XmlParam("fast", "bool", True),
+    ]
+
+
+class InsideOutLayer(Layer):
+    _layer_type = "inside_out"
+
+    _nodes = [
+        XmlParam("origin", "vector", NVector(0, 0)),
+    ]
+
+
+class InterpolationType(enum.Enum):
+    NearestNeighbour = 0
+    Linear = 1
+    Cosine = 2
+    Spline = 3
+    Cubic = 4
+
+
+class NoiseDistortLayer(DrawableLayer):
+    _layer_type = "noise_distort"
+
+    _nodes = [
+        XmlParam("displacement", "vector", NVector(0.25, 0.25)),
+        XmlParam("size", "vector", NVector(1, 1)),
+        XmlParam("seed", "integer", 0),
+        XmlParam("smooth", "integer", InterpolationType.Cosine, InterpolationType),
+        XmlParam("detail", "integer", 4),
+        XmlParam("speed", "real", 0.),
+        XmlParam("turbulent", "bool", False),
+    ]
+
+
+class SkeletonDeformationLayer(DrawableLayer):
+    _layer_type = "skeleton_deformation"
+
+    _nodes = [
+        XmlParam("displacement", "vector", NVector(0.25, 0.25)),
+        XmlParam("point1", "vector", NVector(0, 0)),
+        XmlParam("point2", "vector", NVector(0, 0)),
+        XmlParam("x_subdivisions", "integer", 32),
+        XmlParam("y_subdivisions", "integer", 32),
+        # TODO bones (pair_bone_object_bone_object)
+    ]
+
+
+class DistortType(enum.Enum):
+    Spherize = 0
+    VerticalBar = 1
+    HorizontalBar = 2
+
+
+class SpherizeLayer(Layer):
+    _layer_type = "spherize"
+
+    _nodes = [
+        XmlParam("center", "vector", NVector(0., 0.)),
+        XmlParam("radius", "real", 1.),
+        XmlParam("amount", "real", 1.),
+        XmlParam("clip", "bool", False),
+        XmlParam("type", "integer", DistortType.Spherize, DistortType),
+    ]
+
+
+class StretchLayer(Layer):
+    _layer_type = "stretch"
+
+    _nodes = [
+        XmlParam("amount", "vector", NVector(1., 1.)),
+        XmlParam("center", "vector", NVector(0., 0.)),
+    ]
+
+
+class TwirlLayer(Layer):
+    _layer_type = "twirl"
+
+    _nodes = [
+        XmlParam("center", "vector", NVector(0., 0.)),
+        XmlParam("radius", "real", 1.),
+        XmlParam("rotations", "real", 0.),
+        XmlParam("distort_inside", "bool", True),
+        XmlParam("distort_outside", "bool", False),
+    ]
+
+
+class WarpLayer(Layer):
+    _layer_type = "warp"
+
+    _nodes = [
+        XmlParam("src_tl", "vector", NVector(0., 0.)),
+        XmlParam("src_br", "vector", NVector(0., 0.)),
+        XmlParam("dest_tl", "vector", NVector(0., 0.)),
+        XmlParam("dest_tr", "vector", NVector(0., 0.)),
+        XmlParam("dest_bl", "vector", NVector(0., 0.)),
+        XmlParam("dest_br", "vector", NVector(0., 0.)),
+        XmlParam("clip", "bool", True),
+        XmlParam("interpolation", "integer", InterpolationType.Cubic, InterpolationType),
+    ]
+
+
+class MetaballsLayer(DrawableLayer):
+    _layer_type = "metaballs"
+
+    _nodes = [
+        XmlParam("gradient", "gradient", []),
+        XmlDynamicListParam("centers", "vector"),
+        XmlDynamicListParam("radii", "real"),
+        XmlDynamicListParam("weights", "real"),
+        XmlParam("threshold", "real", 0.),
+        XmlParam("threshold1", "real", 1.),
+        XmlParam("positive", "bool", False),
     ]
 
 
