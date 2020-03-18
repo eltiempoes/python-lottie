@@ -28,48 +28,54 @@ class MaskedPath(TgsObject):
 ## \ingroup LottieCheck
 class TextAnimatorDataProperty(TgsObject):
     _props = [
-        TgsProp("r", "r", Value),
+        TgsProp("rotation", "r", Value),
         TgsProp("rx", "rx", Value),
         TgsProp("ry", "ry", Value),
-        TgsProp("sk", "sk", Value),
-        TgsProp("sa", "sa", Value),
-        TgsProp("s", "s", MultiDimensional),
-        TgsProp("a", "a", MultiDimensional),
-        TgsProp("o", "o", Value),
-        TgsProp("p", "p", MultiDimensional),
-        TgsProp("sw", "sw", Value),
-        TgsProp("sc", "sc", MultiDimensional),
-        TgsProp("fc", "fc", MultiDimensional),
+        TgsProp("skew", "sk", Value),
+        TgsProp("skew_axis", "sa", Value),
+        TgsProp("scale", "s", MultiDimensional),
+        TgsProp("anchor", "a", MultiDimensional),
+        TgsProp("opacity", "o", Value),
+        TgsProp("position", "p", MultiDimensional),
+        TgsProp("stroke_width", "sw", Value),
+        TgsProp("stroke_color", "sc", MultiDimensional),
+        TgsProp("fill_color", "fc", MultiDimensional),
         TgsProp("fh", "fh", Value),
         TgsProp("fs", "fs", Value),
         TgsProp("fb", "fb", Value),
-        TgsProp("t", "t", Value),
+        TgsProp("tracking", "t", Value),
     ]
 
     def __init__(self):
-        ## Angle?
+        ## Rotation Angle: z?
         self.r = Value()
+        ## Angle?
         self.rx = Value()
         ## Angle?
         self.ry = Value()
-        ## Angle?
+        ## Skew Angle
         self.sk = Value()
-        ## Angle?
+        ## Skew Axis
         self.sa = Value()
-        ## Scale? 0-100?
+        ## Scale 0-100?
         self.s = MultiDimensional()
         self.a = MultiDimensional()
-        ## Opacity? 0-100?
+        ## Opacity 0-100?
         self.o = Value()
+        ## Position
         self.p = MultiDimensional()
+        ## Stroke width
         self.sw = Value()
+        ## Stroke color
         self.sc = MultiDimensional()
+        ## Fill color
         self.fc = MultiDimensional()
         self.fh = Value()
         ## 0-100?
         self.fs = Value()
         ## 0-100?
         self.fb = Value()
+        ## Tracking
         self.t = Value()
 
 
