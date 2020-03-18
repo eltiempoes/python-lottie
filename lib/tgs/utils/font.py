@@ -260,12 +260,62 @@ class _SystemFontList:
 fonts = _SystemFontList()
 
 
+def collect_kerning_pairs(font):
+    gpos_table = font["GPOS"].table
+
+    unique_kern_lookups = []
+    for item in gpos_table.FeatureList.FeatureRecord:
+        if item.FeatureTag == "kern":
+            feature = item.Feature
+            for featLookupItem in feature.LookupListIndex:
+                if featLookupItem not in unique_kern_lookups:
+                    unique_kern_lookups.append(featLookupItem)
+
+    kerning_pairs = {}
+    for kern_lookup_index in sorted(unique_kern_lookups):
+        lookup = gpos_table.LookupList.Lookup[kern_lookup_index]
+        if lookup.LookupType in {2, 9}:
+            for pairPos in lookup.SubTable:
+                if pairPos.LookupType == 9:  # extension table
+                    if pairPos.ExtensionLookupType == 8:  # contextual
+                        continue
+                    elif pairPos.ExtensionLookupType == 2:
+                        pairPos = pairPos.ExtSubTable
+
+                if pairPos.Format != 1:
+                    continue
+
+                firstGlyphsList = pairPos.Coverage.glyphs
+                for ps_index, _ in enumerate(pairPos.PairSet):
+                    for pairValueRecordItem in pairPos.PairSet[ps_index].PairValueRecord:
+                        secondGlyph = pairValueRecordItem.SecondGlyph
+                        valueFormat = pairPos.ValueFormat1
+
+                        if valueFormat == 5:  # RTL kerning
+                            kernValue = "<%d 0 %d 0>" % (
+                                pairValueRecordItem.Value1.XPlacement,
+                                pairValueRecordItem.Value1.XAdvance)
+                        elif valueFormat == 0:  # RTL pair with value <0 0 0 0>
+                            kernValue = "<0 0 0 0>"
+                        elif valueFormat == 4:  # LTR kerning
+                            kernValue = pairValueRecordItem.Value1.XAdvance
+                        else:
+                            print(
+                                "\tValueFormat1 = %d" % valueFormat,
+                                file=sys.stdout)
+                            continue  # skip the rest
+
+                        kerning_pairs[(firstGlyphsList[ps_index], secondGlyph)] = kernValue
+    return kerning_pairs
+
+
 class FontRenderer:
     def __init__(self, filename):
         self.filename = filename
         self.font = fontTools.ttLib.TTFont(filename)
         self.glyphset = self.font.getGlyphSet()
         self.cmap = self.font.getBestCmap() or {}
+        self._kerning = None
 
     def glyph_beziers(self, name, offset=NVector(0, 0)):
         pen = BezierPen(self.glyphset, offset)
@@ -285,7 +335,10 @@ class FontRenderer:
         group.shapes = self.glyph_shapes(name) + group.shapes
         return group
 
-    def render(self, text, size, pos=None, on_missing=None):
+    def glyph_name(self, ch):
+        return self.cmap.get(ord(ch)) or self.font._makeGlyphName(ord(ch))
+
+    def render(self, text, size, pos=None, on_missing=None, use_kerning=True):
         """!
         Renders some text
 
@@ -302,23 +355,35 @@ class FontRenderer:
         - line_height   Line height
 
         """
+        if use_kerning and self._kerning is None:
+            self._kerning = collect_kerning_pairs(self.font)
+
         scale = size / self.font.tables["head"].unitsPerEm
         line_height = self.font.tables["head"].yMax * scale
         group = Group()
         group.name = text
         if pos is None:
             pos = NVector(0, 0)
+        start_x = pos.x
+        line = Group()
+        group.add_shape(line)
         #group.transform.scale.value = NVector(100, 100) * scale
-        for ch in text:
+        for i, ch in enumerate(text):
             if ch == "\n":
-                pos.x = 0
+                line.next_x = pos.x
+                pos.x = start_x
                 pos.y += line_height
+                line = Group()
+                group.add_shape(line)
                 continue
 
-            chname = self.cmap.get(ord(ch)) or self.font._makeGlyphName(ord(ch))
+            chname = self.glyph_name(ch)
             if chname in self.glyphset:
+                glyphdata = self.glyphset[chname]
+                next_x = pos.x + glyphdata.width * scale
+                pos.x += glyphdata.lsb * scale
                 glyph_shapes = self.glyph_shapes(chname, pos / scale)
-                glyph_shape_group = group.add_shape(Group()) if len(glyph_shapes) > 1 else group
+                glyph_shape_group = line.add_shape(Group()) if len(glyph_shapes) > 1 else line
 
                 for sh in glyph_shapes:
                     sh.shape.value.scale(scale)
@@ -326,12 +391,20 @@ class FontRenderer:
 
                 (glyph_shape_group if len(glyph_shapes) > 1 else sh).name = ch
 
-                pos.x += self.glyphset[chname].width * scale
+                kerning = 0
+                if use_kerning and i < len(text) - 1:
+                    nextcname = text[i+1]
+                    kerning = self.kerning(chname, nextcname)
+                pos.x += (glyphdata.width - glyphdata.lsb + kerning) * scale
             elif on_missing:
-                on_missing(ch, size, pos, group)
+                on_missing(ch, size, pos, line)
 
         group.line_height = line_height
+        group.next_x = line.next_x = pos.x
         return group
+
+    def kerning(self, c1, c2):
+        return self._kerning.get((c1, c2), 0)
 
     def __repr__(self):
         return "<FontRenderer %r>" % self.filename
@@ -359,19 +432,20 @@ class FallbackFontRenderer:
         else:
             group.add_shape(child)
 
-    def render(self, text, size, pos=None):
-        return self.best.render(text, size, pos, self._on_missing)
+    def render(self, text, size, pos=None, use_kerning=True):
+        return self.best.render(text, size, pos, self._on_missing, use_kerning)
 
     def __repr__(self):
         return "<FallbackFontRenderer %s>" % self.query
 
 
 class FontStyle:
-    def __init__(self, query, size, justify=TextJustify.Left, position=None):
+    def __init__(self, query, size, justify=TextJustify.Left, position=None, use_kerning=True):
         self._renderer = FallbackFontRenderer(query)
         self.size = size
         self.justify = justify
         self.position = position.clone() if position else NVector(0, 0)
+        self.use_kerning = use_kerning
 
     @property
     def query(self):
@@ -387,15 +461,16 @@ class FontStyle:
         return self.renderer
 
     def render(self, text, pos=NVector(0, 0)):
-        group = self._renderer.render(text, self.size, self.position+pos)
-        if self.justify == TextJustify.Center:
-            group.transform.position.value.x += group.bounding_box().width / 2
-        elif self.justify == TextJustify.Right:
-            group.transform.position.value.x += group.bounding_box().width
+        group = self._renderer.render(text, self.size, self.position+pos, self.use_kerning)
+        for subg in group.shapes[:-1]:
+            if self.justify == TextJustify.Center:
+                subg.transform.position.value.x -= subg.next_x / 2
+            elif self.justify == TextJustify.Right:
+                subg.transform.position.value.x -= subg.next_x
         return group
 
     def clone(self):
-        return FontStyle(str(self._renderer.query), self.size, self.justify)
+        return FontStyle(str(self._renderer.query), self.size, self.justify, self.use_kerning)
 
 
 def _propfac(a):
