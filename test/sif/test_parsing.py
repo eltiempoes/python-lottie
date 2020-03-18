@@ -127,8 +127,7 @@ class TestParseFile(base.TestCase):
         self.assert_strong_equal(layer.color.value, NVector(1., 0., 0., 1.))
         guid = "735D9D04C276A32CAE9D9F045DFF318B"
         self.assert_strong_equal(layer.origin.value, self.canvas.get_object(guid))
-        # TODO fix this
-        #self.assertIs(layer.origin.value, self.canvas.get_object(guid))
+        self.assertIs(layer.origin.value, self.canvas.get_object(guid))
 
     def _check_layer_rectangle(self, layer):
         self.assertIsInstance(layer, api.RectangleLayer)
@@ -160,6 +159,10 @@ class TestParseFile(base.TestCase):
         self.assertIsInstance(layer.bline, api.Bline)
         self.assertEqual(len(layer.bline.points), 4)
         self.assert_strong_equal(layer.bline.loop, True)
+
+        guid = "735D9D04C276A32CAE9D9F045DFF318B"
+        self.assert_strong_equal(layer.origin.value, self.canvas.get_object(guid))
+        self.assertIs(layer.origin.value, self.canvas.get_object(guid))
 
         point = layer.bline.points[0]
         self.assertIsInstance(point, api.BlinePoint)

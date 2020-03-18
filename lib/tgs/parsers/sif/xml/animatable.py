@@ -59,7 +59,10 @@ class TypeDescriptor:
         if xml.tagName != self.tag_name:
             raise ValueError("Wrong value type (%s instead of %s)" % (xml.tagName, self.tag_name))
 
-        if self.typename == "vector":
+        guid = xml.getAttribute("guid")
+        if guid and guid in registry.registry:
+            value = registry.registry[guid]
+        elif self.typename == "vector":
             value = NVector(
                 float(xml_text(xml.getElementsByTagName("x")[0])),
                 float(xml_text(xml.getElementsByTagName("y")[0]))
