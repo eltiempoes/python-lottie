@@ -667,6 +667,133 @@ class MetaballsLayer(DrawableLayer):
     ]
 
 
+class ClampLayer(Layer):
+    _layer_type = "clamp"
+
+    _nodes = [
+        XmlParam("invert_negative", "bool", False),
+        XmlParam("clamp_ceiling", "bool", False),
+        XmlParam("ceiling", "real", 1.),
+        XmlParam("floor", "real", 0.),
+    ]
+
+
+class ColorCorrectLayer(Layer):
+    _layer_type = "colorcorrect"
+
+    _nodes = [
+        XmlParam("hue_adjust", "angle", 0.),
+        XmlParam("brightness", "real", 0.),
+        XmlParam("contrast", "real", 1.),
+        XmlParam("exposure", "real", 0.),
+        XmlParam("gamma", "real", 1.),
+    ]
+
+
+class HalftoneType(enum.Enum):
+    Symmetric = 0
+    LightOnDark = 2
+    Diamond = 3
+    Stripe = 4
+
+
+class Halftone2Layer(DrawableLayer):
+    _layer_type = "halftone2"
+
+    _nodes = [
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("angle", "angle", 0.),
+        XmlParam("size", "vector", NVector(0.25, 0.25)),
+        XmlParam("color_light", "color", NVector(1, 1, 1, 1)),
+        XmlParam("color_dark", "color", NVector(0, 0, 0, 1)),
+        XmlParam("type", "integer", HalftoneType.Symmetric, HalftoneType),
+    ]
+
+
+class Halftone3Layer(DrawableLayer):
+    _layer_type = "halftone3"
+
+    _nodes = [
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("size", "vector", NVector(0.25, 0.25)),
+        XmlParam("type", "integer", HalftoneType.Symmetric, HalftoneType),
+        XmlParam("subtractive", "bool", True),
+
+        XmlParam("color[0]", "color", NVector(0, 1, 1, 1)),
+        XmlParam("tone[0].origin", "vector", NVector(0, 0)),
+        XmlParam("tone[0].angle", "angle", 0.),
+
+        XmlParam("color[1]", "color", NVector(1, 0, 1, 1)),
+        XmlParam("tone[1].origin", "vector", NVector(0, 0)),
+        XmlParam("tone[1].angle", "angle", 30.),
+
+        XmlParam("color[2]", "color", NVector(1, 1, 0, 1)),
+        XmlParam("tone[2].origin", "vector", NVector(0, 0)),
+        XmlParam("tone[2].angle", "angle", 60.),
+    ]
+
+
+class LumakeyLayer(DrawableLayer):
+    _layer_type = "lumakey"
+
+    _nodes = [
+    ]
+
+
+class JuliaLayer(DrawableLayer):
+    _layer_type = "julia"
+
+    _nodes = [
+        XmlParam("icolor", "color", NVector(0, 0, 0, 1)),
+        XmlParam("ocolor", "color", NVector(0, 0, 0, 1)),
+        XmlParam("color_shift", "real", 0.),
+        XmlParam("iterations", "integer", 32),
+        XmlParam("seed", "vector", NVector(0, 0)),
+        XmlParam("bailout", "real", 2.),
+        XmlParam("distort_inside", "bool", True),
+        XmlParam("shade_inside", "bool", True),
+        XmlParam("solid_inside", "bool", False),
+        XmlParam("invert_inside", "bool", False),
+        XmlParam("color_inside", "bool", True),
+        XmlParam("distort_outside", "bool", True),
+        XmlParam("shade_outside", "bool", True),
+        XmlParam("solid_outside", "bool", False),
+        XmlParam("invert_outside", "bool", False),
+        XmlParam("color_outside", "bool", False),
+        XmlParam("color_cycle", "bool", False),
+        XmlParam("smooth_outside", "bool", True),
+        XmlParam("broken", "bool", False),
+    ]
+
+
+class MandelbrotLayer(Layer):
+    _layer_type = "mandelbrot"
+
+    _nodes = [
+        XmlParam("iterations", "integer", 32),
+        XmlParam("bailout", "real", 2.),
+        XmlParam("broken", "bool", False),
+        XmlParam("distort_inside", "bool", True),
+        XmlParam("shade_inside", "bool", True),
+        XmlParam("solid_inside", "bool", False),
+        XmlParam("invert_inside", "bool", False),
+        XmlParam("distort_outside", "bool", True),
+        XmlParam("shade_outside", "bool", True),
+        XmlParam("solid_outside", "bool", False),
+        XmlParam("invert_outside", "bool", False),
+        XmlParam("smooth_outside", "bool", True),
+
+        XmlParam("gradient_inside", "gradient", []),
+        XmlParam("gradient_offset_inside", "real", 0.),
+        XmlParam("gradient_loop_inside", "bool", True),
+
+        XmlParam("gradient_outside", "gradient", []),
+        XmlParam("gradient_offset_outside", "real", 0.),
+        XmlParam("gradient_loop_outside", "bool", True),
+        XmlParam("gradient_scale_outside", "real", 1.),
+    ]
+
+
 class Canvas(SifNode, ObjectRegistry):
     _nodes = [
         XmlAttribute("version"),

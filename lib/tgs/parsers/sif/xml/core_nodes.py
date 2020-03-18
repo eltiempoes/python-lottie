@@ -27,7 +27,7 @@ class ObjectRegistry:
 class XmlDescriptor:
     def __init__(self, name):
         self.name = name
-        self.att_name = name.replace("-", "_").replace("[", "_").replace("]", "")
+        self.att_name = name.replace("-", "_").replace("[", "_").replace("]", "").replace(".", "_")
 
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
         raise NotImplementedError
