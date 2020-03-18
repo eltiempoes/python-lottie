@@ -29,6 +29,7 @@ class TestParseFile(base.TestCase):
         self._check_file(canvas)
 
     def _check_file(self, canvas):
+        self.canvas = canvas
         self._check_canvas(canvas)
         self._check_layer_polygon(canvas.layers[0])
         self._check_layer_zoom(canvas.layers[1])
@@ -124,6 +125,10 @@ class TestParseFile(base.TestCase):
         self.assert_strong_equal(layer.feather.value, 0.)
         self.assert_strong_equal(layer.origin.value, NVector(-2.7097899914, 2.6285450459))
         self.assert_strong_equal(layer.color.value, NVector(1., 0., 0., 1.))
+        guid = "735D9D04C276A32CAE9D9F045DFF318B"
+        self.assert_strong_equal(layer.origin.value, self.canvas.get_object(guid))
+        # TODO fix this
+        #self.assertIs(layer.origin.value, self.canvas.get_object(guid))
 
     def _check_layer_rectangle(self, layer):
         self.assertIsInstance(layer, api.RectangleLayer)

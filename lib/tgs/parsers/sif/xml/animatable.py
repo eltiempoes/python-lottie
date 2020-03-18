@@ -27,6 +27,8 @@ class TypeDescriptor:
         if self.typename == "vector":
             element.appendChild(xml_make_text(dom, "x", str(value.x)))
             element.appendChild(xml_make_text(dom, "y", str(value.y)))
+            if hasattr(value, "guid"):
+                element.setAttribute("guid", value.guid)
         elif self.typename == "color":
             element.appendChild(xml_make_text(dom, "r", str(value[0])))
             element.appendChild(xml_make_text(dom, "g", str(value[1])))
@@ -62,6 +64,9 @@ class TypeDescriptor:
                 float(xml_text(xml.getElementsByTagName("x")[0])),
                 float(xml_text(xml.getElementsByTagName("y")[0]))
             )
+            if xml.getAttribute("guid"):
+                value.guid = xml.getAttribute("guid")
+                registry.register(value)
         elif self.typename == "color":
             value = NVector(
                 float(xml_text(xml.getElementsByTagName("r")[0])),
