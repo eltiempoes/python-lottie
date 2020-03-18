@@ -93,6 +93,7 @@ class TypeDescriptor:
         elif self.typename == "string":
             return xml_text(xml)
         elif self.typename == "bone_object":
+            # Already done above but this forces the guid to be present
             return registry.get_object(xml.getAttribute("guid"))
         else:
             raise ValueError("Unsupported type %s" % self.typename)
