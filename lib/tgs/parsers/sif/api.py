@@ -794,6 +794,25 @@ class MandelbrotLayer(Layer):
     ]
 
 
+class CheckerboardLayer(DrawableLayer):
+    _layer_type = "checker_board"
+
+    _nodes = [
+        XmlParam("color", "color", NVector(0, 0, 0, 1)),
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("size", "vector", NVector(0.25, 0.25)),
+        XmlParam("antialias", "bool", True),
+    ]
+
+
+class SolidColorLayer(DrawableLayer):
+    _layer_type = "SolidColor"
+
+    _nodes = [
+        XmlParam("color", "color", NVector(0, 0, 0, 1)),
+    ]
+
+
 class Canvas(SifNode, ObjectRegistry):
     _nodes = [
         XmlAttribute("version"),
