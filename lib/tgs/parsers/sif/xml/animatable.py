@@ -330,7 +330,7 @@ class XmlDynamicListParam(XmlDescriptor):
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
         param = parent.appendChild(dom.createElement("param"))
         param.setAttribute("name", self.name)
-        dyl = param.appendChild(dom.createElement("dynamic_list"))
+        dyl = param.appendChild(dom.createElement(self._tag))
         dyl.setAttribute("type", self.type.typename)
         values = getattr(obj, self.att_name)
         for val in values:

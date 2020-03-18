@@ -92,7 +92,8 @@ class Converter:
             bone = sif_transform.bone
 
             if sif_transform.translate:
-                tgs_transform.position = self._adjust_coords(self._convert_vector(bone.origin))
+                b_pos = self._adjust_coords(self._convert_vector(bone.origin))
+                tgs_transform.position = b_pos
             else:
                 tgs_transform.position = position
 
@@ -100,7 +101,7 @@ class Converter:
                 b_rot = (self._convert_scalar(bone.angle))
                 self._mix_animations_into(rotation, b_rot, tgs_transform.rotation, lambda a, b: a-b)
             else:
-                tgs_transform.rotation = position
+                tgs_transform.rotation = rotation
 
             if sif_transform.scale_y:
                 b_scale = self._convert_scalar(bone.scalelx)
