@@ -408,5 +408,8 @@ class Converter:
         trans.anchor_point.value = shape.wrapped.bounding_box().center()
         trans.anchor_point.value.x /= 2
         trans.position = self._adjust_coords(self._convert_vector(layer.origin))
-        # TODO size
+        trans.scale = self._adjust_animated(
+            self._convert_vector(layer.size),
+            lambda v: v * 100
+        )
         return shape
