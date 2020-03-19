@@ -148,6 +148,53 @@ class WindingStyle(enum.Enum):
     EvenOdd = 1
 
 
+class Def(SifNode):
+    _nodes = [
+        XmlAttribute("guid", str),
+        XmlAttribute("id", str),
+    ]
+    _subclasses = None
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element, registry: ObjectRegistry):
+        actual_class = cls
+        if cls == Def:
+            actual_class = Def.def_types()[xml.tagName]
+
+        obj = SifNode.static_from_dom(actual_class, xml, registry)
+        if obj.id:
+            registry.register_as(obj, obj.id)
+        if obj.guid:
+            registry.register(obj)
+        return obj
+
+    @staticmethod
+    def tags():
+        return list(Def.def_types().keys())
+
+    @staticmethod
+    def def_types():
+        if Def._subclasses is None:
+            Def._subclasses = {}
+            Def._gather_def_types(Def)
+        return Def._subclasses
+
+    @staticmethod
+    def _gather_def_types(cls):
+        for subcls in cls.__subclasses__():
+            Def._subclasses[subcls._tag] = subcls
+            Def._gather_def_types(subcls)
+
+
+class Duplicate(Def):
+    _nodes = [
+        XmlFixedAttribute("type", "real"),
+        XmlAnimatable("from", "real", 1.),
+        XmlAnimatable("to", "real", 1.),
+        XmlAnimatable("step", "real", 1.),
+    ]
+
+
 class Layer(SifNode):
     _types = None
 
@@ -864,6 +911,14 @@ class SolidColorLayer(DrawableLayer):
     ]
 
 
+class DuplicateLayer(DrawableLayer):
+    _layer_type = "duplicate"
+
+    _nodes = [
+        XmlParam("index", "real"),
+    ]
+
+
 class Canvas(SifNode, ObjectRegistry):
     _nodes = [
         XmlAttribute("version"),
@@ -896,6 +951,7 @@ class Canvas(SifNode, ObjectRegistry):
         XmlMeta("onion_skin", bool, False),
         XmlMeta("onion_skin_future", int, 0),
         XmlMeta("onion_skin_past", int, 1),
+        XmlWrapper("defs", XmlList(Def, "defs", None, Def.tags())),
         XmlWrapper("bones", XmlList(BoneRoot, "bones", None, {"bone", "bone_root"})),
         XmlList(Layer),
     ]

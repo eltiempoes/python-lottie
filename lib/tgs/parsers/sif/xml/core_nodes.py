@@ -9,6 +9,9 @@ class ObjectRegistry:
     def __init__(self):
         self.registry = {}
 
+    def register_as(self, object, key):
+        self.registry[key] = object
+
     def register(self, object):
         guid = getattr(object, "guid", None)
         if guid is None:

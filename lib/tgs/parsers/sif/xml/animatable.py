@@ -135,14 +135,22 @@ class XmlParam(XmlDescriptor):
         self.type = TypeDescriptor(typename, default, type_wrapper)
         self.static = static
 
+    def _def(self):
+        from ..api import Def
+        return Def
+
     def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         for cn in xml_child_elements(parent, "param"):
             if cn.getAttribute("name") == self.name:
-                value_node = xml_first_element_child(cn)
-                if self.static:
-                    value = self.type.value_from_xml_element(value_node, registry)
+                use = cn.getAttribute("use")
+                if use:
+                    value = registry.get_object(use)
                 else:
-                    value = SifAnimatable.from_dom(value_node, self.type, registry)
+                    value_node = xml_first_element_child(cn)
+                    if self.static:
+                        value = self.type.value_from_xml_element(value_node, registry)
+                    else:
+                        value = SifAnimatable.from_dom(value_node, self.type, registry)
                 break
         else:
             value = self.default()
@@ -153,17 +161,20 @@ class XmlParam(XmlDescriptor):
         param = parent.appendChild(dom.createElement("param"))
         param.setAttribute("name", self.name)
         value = getattr(obj, self.att_name)
-        if self.static:
-            elem = self.type.value_to_xml_element(value, dom)
+        if isinstance(value, self._def()):
+            param.setAttribute("use", value.id)
         else:
-            elem = value.to_dom(dom, self.type)
-        param.appendChild(elem)
+            if self.static:
+                elem = self.type.value_to_xml_element(value, dom)
+            else:
+                elem = value.to_dom(dom, self.type)
+            param.appendChild(elem)
         return param
 
     def from_python(self, value):
         if self.static:
             return self.type.type_wrapper(value)
-        if not isinstance(value, SifAnimatable):
+        if not isinstance(value, (SifAnimatable, self._def())):
             raise ValueError("%s isn't a valid value for %s" % (value, self.name))
         return value
 
