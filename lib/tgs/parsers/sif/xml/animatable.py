@@ -109,7 +109,7 @@ class XmlAnimatable(XmlDescriptor):
     def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         cn = xml_first_element_child(parent, self.name)
         if cn:
-            value = SifAnimatable.from_dom(xml_first_element_child(cn), self.type, registry)
+            value = SifAstNode.from_dom(xml_first_element_child(cn), self.type, registry)
         else:
             value = self.default()
 
@@ -121,12 +121,12 @@ class XmlAnimatable(XmlDescriptor):
         return param
 
     def from_python(self, value):
-        if not isinstance(value, SifAnimatable):
+        if not isinstance(value, SifAstNode):
             raise ValueError("%s isn't a valid value for %s" % (value, self.name))
         return value
 
     def default(self):
-        return SifAnimatable(copy.deepcopy(self.type.default_value))
+        return SifValue(copy.deepcopy(self.type.default_value))
 
 
 class XmlParam(XmlDescriptor):
@@ -150,7 +150,7 @@ class XmlParam(XmlDescriptor):
                     if self.static:
                         value = self.type.value_from_xml_element(value_node, registry)
                     else:
-                        value = SifAnimatable.from_dom(value_node, self.type, registry)
+                        value = SifAstNode.from_dom(value_node, self.type, registry)
                 break
         else:
             value = self.default()
@@ -174,14 +174,14 @@ class XmlParam(XmlDescriptor):
     def from_python(self, value):
         if self.static:
             return self.type.type_wrapper(value)
-        if not isinstance(value, (SifAnimatable, self._def())):
+        if not isinstance(value, (SifAstNode, self._def())):
             raise ValueError("%s isn't a valid value for %s" % (value, self.name))
         return value
 
     def default(self):
         if self.static:
             return copy.deepcopy(self.type.default_value)
-        return SifAnimatable(copy.deepcopy(self.type.default_value))
+        return SifValue(copy.deepcopy(self.type.default_value))
 
 
 class FrameTime:
@@ -246,40 +246,101 @@ class SifKeyframe:
         return "<SifKeyframe %s %s>" % (self.time, self.value)
 
 
-class SifAnimatable:
-    def __init__(self, value=None):
-        self._value = value
-        self._animated = False
-        self._keyframes = None
+class SifAstNode:
+    _subclasses = None
+    _tag = None
 
-    def __repr__(self):
-        return "<%s.%s %r>" % (__name__, self.__class__.__name__, self._value if not self._animated else "animated")
-
-    @classmethod
-    def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
-        if xml.tagName == param.tag_name:
-            return SifAnimatable(param.value_from_xml_element(xml, registry))
-        elif xml.tagName != "animated":
-            raise ValueError("Unknown element %s for %s" % (xml.tagName, param.typename))
+    @staticmethod
+    def from_dom(xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
+        if xml.tagName == param.typename:
+            return SifValue.from_dom(xml, param, registry)
 
         if xml.getAttribute("type") != param.typename:
             raise ValueError("Invalid type %s (should be %s)" % (xml.getAttribute("type"), param.typename))
 
-        obj = SifAnimatable()
-        obj._animated = True
-        obj._keyframes = []
+        return SifAstNode.ast_node_types()[xml.tagName].from_dom(xml, param, registry)
+
+    @staticmethod
+    def ast_node_types():
+        if SifAstNode._subclasses is None:
+            SifAstNode._subclasses = {}
+            SifAstNode._gather_ast_types(SifAstNode)
+        return SifAstNode._subclasses
+
+    @staticmethod
+    def _gather_ast_types(cls):
+        for subcls in cls.__subclasses__():
+            if subcls._tag:
+                SifAstNode._subclasses[subcls._tag] = subcls
+            SifAstNode._gather_ast_types(subcls)
+
+    def _prepare_to_dom(self, dom: minidom.Document, param: TypeDescriptor):
+        element = dom.createElement(self._tag)
+        element.setAttribute("type", param.typename)
+        return element
+
+
+class SifValue(SifAstNode):
+    def __init__(self, value=None):
+        self.value = value
+
+    def __repr__(self):
+        return "<%s %r>" % (self.__class__.__name__, self.value)
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
+        return SifValue(param.value_from_xml_element(xml, registry))
+
+    def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
+        return param.value_to_xml_element(self.value, dom)
+
+
+class SifAdd(SifAstNode):
+    _tag = "add"
+
+    _scalar_type = TypeDescriptor("real")
+
+    def __init__(self, lhs, rhs, scalar):
+        self.lhs = lhs
+        self.rhs = rhs
+        self.scalar = scalar
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
+        fec = xml_first_element_child
+        return SifAdd(
+            SifAstNode.from_dom(fec(fec(xml, "lhs")), param, registry),
+            SifAstNode.from_dom(fec(fec(xml, "rhs")), param, registry),
+            SifAstNode.from_dom(fec(fec(xml, "scalar")), cls._scalar_type, registry)
+        )
+
+    def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
+        element = self._prepare_to_dom(dom, param)
+        lhs = element.appendChild(dom.createElement("lhs"))
+        lhs.appendChild(self.lhs.to_dom(dom, param))
+        rhs = element.appendChild(dom.createElement("rhs"))
+        rhs.appendChild(self.rhs.to_dom(dom, param))
+        scalar = element.appendChild(dom.createElement("scalar"))
+        scalar.appendChild(self.scalar.to_dom(dom, self._scalar_type))
+        return element
+
+
+class SifAnimated(SifAstNode):
+    _tag = "animated"
+
+    def __init__(self):
+        self.keyframes = []
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
+        obj = SifAnimated()
         for waypoint in xml_child_elements(xml, "waypoint"):
-            obj._keyframes.append(SifKeyframe.from_dom(waypoint, param, registry))
+            obj.keyframes.append(SifKeyframe.from_dom(waypoint, param, registry))
         return obj
 
     def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
-        if not self._animated:
-            element = param.value_to_xml_element(self.value, dom)
-            return element
-
-        element = dom.createElement("animated")
-        element.setAttribute("type", param.typename)
-        for kf in self._keyframes:
+        element = self._prepare_to_dom(dom, param)
+        for kf in self.keyframes:
             element.appendChild(kf.to_dom(dom, param))
         return element
 
@@ -289,44 +350,50 @@ class SifAnimatable:
         else:
             keyframe = SifKeyframe(*args, **kwargs)
 
-        if not self._animated:
-            self._animated = True
-            self._keyframes = [keyframe]
-            self._value = None
-        else:
-            self._keyframes.append(keyframe)
+        self.keyframes.append(keyframe)
 
-    @property
-    def animated(self):
-        return self._animated
 
-    @animated.setter
-    def animated(self, v):
-        if v != self._animated:
-            self._animated = v
-            if self._animated:
-                self._keyframes = []
-                if self._value is not None:
-                    self._keyframes.append(SifKeyframe(self.value, FrameTime(0, FrameTime.Unit.Frame)))
-                self._value = None
-            else:
-                if self._keyframes:
-                    self._value = self._keyframes[0].value
-                self._keyframes = None
+class SifAnimatedFile(SifAstNode):
+    _tag = "animated_file"
 
-    @property
-    def value(self):
-        return self._value
+    _filename_type = TypeDescriptor("string")
 
-    @value.setter
-    def value(self, v):
-        self._value = v
-        self._animated = False
-        self._keyframes = None
+    def __init__(self, filename):
+        self.filename = filename
 
-    @property
-    def keyframes(self):
-        return self._keyframes
+    @classmethod
+    def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
+        return SifAnimatedFile(SifAstNode.from_dom(
+            xml_first_element_child(xml_first_element_child(xml, "filename")),
+            cls._filename_type,
+            registry
+        ))
+
+    def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
+        element = self._prepare_to_dom(dom, param)
+        element.appendChild(self.filename.to_dom(dom, self._filename_type))
+        return element
+
+
+class SifAverage(SifAstNode):
+    _tag = "average"
+
+    def __init__(self, entries):
+        self.entries = entries
+
+    @classmethod
+    def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
+        entries = []
+        for entry in xml_child_elements(xml, "entry"):
+            entries.append(SifAstNode.from_dom(xml_first_element_child(entry), param, registry))
+        return SifAverage(entries)
+
+    def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
+        element = self._prepare_to_dom(dom, param)
+        for entry in self.entries:
+            entry_el = element.appendChild(dom.createElement("entry"))
+            entry_el.appendChild(entry.to_dom(dom, param))
+        return element
 
 
 class XmlDynamicListParam(XmlDescriptor):
@@ -369,7 +436,7 @@ class XmlDynamicListParam(XmlDescriptor):
         setattr(obj, self.att_name, values)
 
     def _value_from_dom(self, element, registry):
-        return SifAnimatable.from_dom(element, self.type, registry)
+        return SifAstNode.from_dom(element, self.type, registry)
 
     def from_python(self, value):
         return value

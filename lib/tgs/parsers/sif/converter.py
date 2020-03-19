@@ -18,6 +18,9 @@ class Converter:
     def __init__(self):
         pass
 
+    def _animated(self, sifval):
+        return isinstance(sifval, api.SifAnimated)
+
     def convert(self, canvas: api.Canvas):
         self.canvas = canvas
         self.animation = objects.Animation(
@@ -224,8 +227,8 @@ class Converter:
             lottieval.add_keyframe(0, v)
             lottieval.add_keyframe(self.animation.out_point, v)
 
-    def _convert_animatable(self, v: api.SifAnimatable, lot: objects.properties.AnimatableMixin):
-        if v.animated:
+    def _convert_animatable(self, v: api.SifAstNode, lot: objects.properties.AnimatableMixin):
+        if self._animated(v):
             for kf in v.keyframes:
                 # TODO easing
                 lot.add_keyframe(self._time(kf.time), kf.value)
@@ -233,10 +236,10 @@ class Converter:
             lot.value = v.value
         return lot
 
-    def _convert_vector(self, v: api.SifAnimatable):
+    def _convert_vector(self, v: api.SifAstNode):
         return self._convert_animatable(v, objects.MultiDimensional())
 
-    def _convert_scalar(self, v: api.SifAnimatable):
+    def _convert_scalar(self, v: api.SifAstNode):
         return self._convert_animatable(v, objects.Value())
 
     def _adjust_animated(self, lottieval, transform):
@@ -419,7 +422,7 @@ class Converter:
 
     def _convert_gradient_stops(self, sif_gradient):
         stops = objects.GradientColors()
-        if not sif_gradient.animated:
+        if not self._animated(sif_gradient):
             stops.colors.value = self._flatten_gradient_colors(sif_gradient.value)
             stops.count = len(sif_gradient.value)
         else:

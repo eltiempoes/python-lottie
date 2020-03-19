@@ -200,7 +200,7 @@ class TestParseFile(base.TestCase):
         point = layer.bline.points[1]
         self.assertIsInstance(point, api.BlinePoint)
         self.assert_strong_equal(point.point.value, NVector(0.7732625604, -0.0648742691))
-        self.assertTrue(point.t1.radius.animated)
+        self.assertIsInstance(point.t1.radius, api.SifAnimated)
         self.assertEqual(len(point.t1.radius.keyframes), 2)
         kf = point.t1.radius.keyframes[0]
         self.assertIsInstance(kf, api.SifKeyframe)
