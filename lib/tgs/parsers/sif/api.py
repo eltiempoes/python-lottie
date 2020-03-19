@@ -443,6 +443,65 @@ class LinearGradient(GradientLayer):
     ]
 
 
+class ConicalLinearGradient(DrawableLayer):
+    _layer_type = "conical_gradient"
+
+    _nodes = [
+        XmlParam("gradient", "gradient", []),
+        XmlParam("symmetric", "bool", False),
+        XmlParam("center", "vector", NVector(0, 0)),
+        XmlParam("angle", "angle", 0.),
+    ]
+
+
+class CurveGradient(GradientLayer):
+    _layer_type = "curve_gradient"
+
+    _nodes = [
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("width", "real", 0.0833333358),
+        XmlParamSif("bline", Bline),
+        XmlParam("perpendicular", "bool", False),
+        XmlParam("fast", "bool", True),
+    ]
+
+
+class InterpolationType(enum.Enum):
+    NearestNeighbour = 0
+    Linear = 1
+    Cosine = 2
+    Spline = 3
+    Cubic = 4
+
+
+class NoiseLayer(DrawableLayer):
+    _layer_type = "noise"
+
+    _nodes = [
+        XmlParam("gradient", "gradient", []),
+        XmlParam("seed", "integer", 0),
+        XmlParam("size", "vector", NVector(1, 1)),
+        XmlParam("smooth", "integer", InterpolationType.Cosine, InterpolationType),
+        XmlParam("detail", "integer", 4),
+        XmlParam("speed", "integer", 0.),
+        XmlParam("turbulent", "bool", False),
+        XmlParam("do_alpha", "bool", False),
+        XmlParam("super_sample", "bool", False),
+    ]
+
+
+class SpiralGradient(DrawableLayer):
+    _layer_type = "spiral_gradient"
+
+    _nodes = [
+        XmlParam("gradient", "gradient", []),
+        XmlParam("center", "vector", NVector(0, 0)),
+        XmlParam("radius", "real", 0.5),
+        XmlParam("angle", "real", 0),
+        XmlParam("clockwise", "bool", False),
+    ]
+
+
 class BoneRoot(SifNode):
     _tag = "bone_root"
 
@@ -562,14 +621,6 @@ class InsideOutLayer(Layer):
     _nodes = [
         XmlParam("origin", "vector", NVector(0, 0)),
     ]
-
-
-class InterpolationType(enum.Enum):
-    NearestNeighbour = 0
-    Linear = 1
-    Cosine = 2
-    Spline = 3
-    Cubic = 4
 
 
 class NoiseDistortLayer(DrawableLayer):
