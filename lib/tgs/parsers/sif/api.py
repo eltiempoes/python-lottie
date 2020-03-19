@@ -253,21 +253,43 @@ class DrawableLayer(Layer):
     ]
 
 
-class GroupLayer(DrawableLayer):
-    _layer_type = "group"
-
+class GroupLayerBase(DrawableLayer):
     _nodes = [
         XmlParam("origin", "vector", NVector(0, 0)),
         XmlParamSif("transformation", AbstractTransform),
         XmlWrapperParam("canvas", XmlWrapper("canvas", XmlList(Layer))),
+
         XmlParam("time_dilation", "real", 0.),
         XmlParam("time_offset", "time", FrameTime(0, FrameTime.Unit.Frame)),
         XmlParam("children_lock", "bool", False),
         XmlParam("outline_grow", "real", 0.),
+    ]
+
+
+class FilterGroupLayer(GroupLayerBase):
+    _layer_type = "filter_group"
+
+    _nodes = [
+    ]
+
+
+class GroupLayer(GroupLayerBase):
+    _layer_type = "group"
+
+    _nodes = [
         XmlParam("z_range", "bool", False, static=True),
         XmlParam("z_range_position", "real", 0.),
         XmlParam("z_range_depth", "real", 0.),
         XmlParam("z_range_blur", "real", 0.),
+    ]
+
+
+class SwitchLayer(GroupLayerBase):
+    _layer_type = "switch"
+
+    _nodes = [
+        XmlParam("layer_name", "string"),
+        XmlParam("layer_depth", "integer", -1),
     ]
 
 
@@ -916,6 +938,132 @@ class DuplicateLayer(DrawableLayer):
 
     _nodes = [
         XmlParam("index", "real"),
+    ]
+
+
+class ImportedImageLayer(DrawableLayer):
+    _layer_type = "import"
+
+    _nodes = [
+        XmlParam("tl", "vector", NVector(0, 0)),
+        XmlParam("br", "vector", NVector(0, 0)),
+        XmlParam("c", "integer", InterpolationType.Linear, InterpolationType),
+        XmlParam("gamma_adjust", "real", 1.),
+        XmlParam("filename", "string"),
+        XmlParam("time_offset", "time", FrameTime(0, FrameTime.Unit.Frame)),
+    ]
+
+
+class PlantLayer(DrawableLayer):
+    _layer_type = "plant"
+
+    _nodes = [
+        XmlParamSif("bline", Bline),
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("gradient", "gradient", []),
+        XmlParam("split_angle", "angle", 10.),
+        XmlParam("gravity", "vector", NVector(0, -.1)),
+        XmlParam("velocity", "real", .3),
+        XmlParam("perp_velocity", "real", 0.),
+        XmlParam("size", "real", 0.015),
+        XmlParam("size_as_alpha", "bool", False),
+        XmlParam("reverse", "bool", True),
+        XmlParam("step", "real", 0.01),
+        XmlParam("seed", "integer", 0),
+        XmlParam("splits", "integer", 5),
+        XmlParam("sprouts", "integer", 5),
+        XmlParam("random_factor", "real", 0.2),
+        XmlParam("drag", "real", 0.1),
+        XmlParam("use_width", "bool", True),
+    ]
+
+
+class SoundLayer(Layer):
+    _layer_type = "sound"
+
+    _nodes = [
+        XmlParam("z_depth", "real", 0.),
+        XmlParam("filename", "string"),
+        XmlParam("delay", "time", FrameTime(0, FrameTime.Unit.Seconds)),
+        XmlParam("volume", "real", 1.),
+    ]
+
+
+class SuperSampleLayer(Layer):
+    _layer_type = "super_sample"
+
+    _nodes = [
+        XmlParam("width", "integer", 2),
+        XmlParam("height", "integer", 2),
+        XmlParam("scanline", "bool", False),
+        XmlParam("alpha_aware", "bool", True),
+    ]
+
+
+class XorPatternLayer(DrawableLayer):
+    _layer_type = "xor_pattern"
+
+    _nodes = [
+        XmlParam("origin", "vecor", NVector(0, 0)),
+        XmlParam("size", "vecor", NVector(0.25, 0.25)),
+    ]
+
+
+class BevelLayer(DrawableLayer):
+    _layer_type = "bevel"
+
+    _nodes = [
+        XmlParam("type", "integer", BlurType.FastGaussian, BlurType),
+        XmlParam("color1", "color", NVector(1, 1, 1, 1)),
+        XmlParam("color2", "color", NVector(0, 0, 0, 1)),
+        XmlParam("angle", "angle", 135.),
+        XmlParam("depth", "real", .2),
+        XmlParam("softness", "real", .1),
+        XmlParam("use_luma", "bool", False),
+        XmlParam("solid", "bool", False),
+    ]
+
+
+class ShadeLayer(DrawableLayer):
+    _layer_type = "shade"
+
+    _nodes = [
+        XmlParam("type", "integer", BlurType.FastGaussian, BlurType),
+        XmlParam("color", "color", NVector(1, 1, 1, 1)),
+        XmlParam("origin", "vector", NVector(0, 0)),
+        XmlParam("size", "vector", NVector(0.1, 0.1)),
+        XmlParam("invert", "bool", False),
+    ]
+
+
+class FreeTimeLayer(Layer):
+    _layer_type = "freetime"
+
+    _nodes = [
+        XmlParam("z_depth", "real", 0.),
+        XmlParam("time", "time", FrameTime(0, FrameTime.Unit.Seconds)),
+    ]
+
+
+class StroboscopeLayer(Layer):
+    _layer_type = "stroboscope"
+
+    _nodes = [
+        XmlParam("z_depth", "real", 0.),
+        XmlParam("frequency", "real", 2.),
+    ]
+
+
+class TimeLoopLayer(Layer):
+    _layer_type = "timeloop"
+
+    _nodes = [
+        XmlParam("z_depth", "real", 0.),
+        XmlParam("link_time", "time", FrameTime(0, FrameTime.Unit.Seconds), static=True),
+        XmlParam("local_time", "time", FrameTime(0, FrameTime.Unit.Seconds), static=True),
+        XmlParam("duration", "time", FrameTime(0, FrameTime.Unit.Seconds), static=True),
+        XmlParam("only_for_positive_duration", "bool", False, static=True),
+        XmlParam("symmetrical", "bool", True, static=True),
     ]
 
 

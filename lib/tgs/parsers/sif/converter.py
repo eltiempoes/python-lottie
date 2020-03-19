@@ -41,7 +41,7 @@ class Converter:
         for layer in reversed(layers):
             if not layer.active:
                 continue
-            elif isinstance(layer, api.GroupLayer):
+            elif isinstance(layer, api.GroupLayerBase):
                 parent.add_shape(self._convert_group(layer))
             elif isinstance(layer, api.RectangleLayer):
                 parent.add_shape(self._convert_fill(layer, self._convert_rect))
