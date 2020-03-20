@@ -535,14 +535,6 @@ class CurveGradient(GradientLayer):
     ]
 
 
-class InterpolationType(enum.Enum):
-    NearestNeighbour = 0
-    Linear = 1
-    Cosine = 2
-    Spline = 3
-    Cubic = 4
-
-
 class NoiseLayer(DrawableLayer):
     _layer_type = "noise"
 
@@ -1165,3 +1157,52 @@ class Canvas(SifNode, ObjectRegistry):
             return time.value
         elif time.unit == FrameTime.Unit.Seconds:
             return time.value * self.fps
+
+
+class Segment(SifNode):
+    _nodes = [
+        XmlAnimatable("p1", "vector"),
+        XmlAnimatable("t1", "vector"),
+        XmlAnimatable("p2", "vector"),
+        XmlAnimatable("t2", "vector")
+    ]
+
+
+class SifSegCalcTangent(SifAstComplex):
+    _tag = "segcalctangent"
+
+    _nodes = [
+        XmlSifElement("segment", Segment),
+        XmlAnimatable("amount", "real", .5),
+    ]
+
+
+class SifSegCalcVertex(SifAstComplex):
+    _tag = "segcalcvertex"
+
+    _nodes = [
+        XmlSifElement("segment", Segment),
+        XmlAnimatable("amount", "real", .5),
+    ]
+
+
+class WeightedVector(SifNode):
+    _tag = "weighted_vector"
+
+    _nodes = [
+        XmlAnimatable("weight", "real", 1.),
+        XmlAnimatable("value", "vector"),
+    ]
+
+
+class WeightedAverage(SifAstComplex):
+    _tag = "weighted_average"
+
+    _nodes = [
+        XmlList(WeightedVector, "vectors", "entry"),
+    ]
+
+    def _prepare_to_dom(self, dom: minidom.Document, param: TypeDescriptor):
+        element = dom.createElement(self._tag)
+        element.setAttribute("type", "weighted_vector")
+        return element

@@ -79,4 +79,4 @@ def xml_first_element_child(xml: minidom.Node, tagname=None, allow_none=False):
 
     if allow_none:
         return None
-    raise ValueError("No child element in %s" % getattr(xml, "tagName", "node"))
+    raise ValueError("No %s in %s" % (tagname or "child element", getattr(xml, "tagName", "node")))

@@ -255,8 +255,9 @@ class SifAstNode:
         if xml.tagName == param.typename:
             return SifValue.from_dom(xml, param, registry)
 
-        if xml.getAttribute("type") != param.typename:
-            raise ValueError("Invalid type %s (should be %s)" % (xml.getAttribute("type"), param.typename))
+        xmltype = xml.getAttribute("type")
+        if xmltype != param.typename and xmltype != "weighted_" + param.typename:
+            raise ValueError("Invalid type %s (should be %s)" % (xmltype, param.typename))
 
         return SifAstNode.ast_node_types()[xml.tagName].from_dom(xml, param, registry)
 
@@ -464,6 +465,44 @@ class SifRadialComposite(SifAstComplex):
     ]
 
 
+class InterpolationType(enum.Enum):
+    NearestNeighbour = 0
+    Linear = 1
+    Cosine = 2
+    Spline = 3
+    Cubic = 4
+
+
+class SifRandom(SifAstComplex):
+    _tag = "random"
+
+    _nodes = [
+        XmlAnimatable("link", "vector"),
+        XmlAnimatable("radius", "real", 0.),
+        XmlAnimatable("seed", "integer", 0),
+        XmlAnimatable("speed", "real", 1.),
+        XmlAnimatable("smooth", "integer", InterpolationType.Cubic, InterpolationType),
+        XmlAnimatable("loop", "real", 0.),
+    ]
+
+
+class SifReference(SifAstComplex):
+    _tag = "link"
+
+    _nodes = [
+        XmlAnimatable("reference", "vector"),
+    ]
+
+
+class SifScale(SifAstComplex):
+    _tag = "scale"
+
+    _nodes = [
+        XmlAnimatable("reference", "vector"),
+        XmlAnimatable("scalar", "real", 1.),
+    ]
+
+
 class XmlDynamicListParam(XmlDescriptor):
     _tag = "dynamic_list"
 
@@ -544,3 +583,57 @@ class GradientPoint:
 
     def __repr__(self):
         return "<GradientPoint %s %s>" % (self.pos, self.color)
+
+
+class SifStep(SifAstComplex):
+    _tag = "step"
+
+    _nodes = [
+        XmlAnimatable("link", "vector"),
+        XmlAnimatable("duration", "time", FrameTime(1, FrameTime.Unit.Seconds)),
+        XmlAnimatable("start_time", "time", FrameTime(0, FrameTime.Unit.Seconds)),
+        XmlAnimatable("intersection", "real", 0.5),
+    ]
+
+
+class SifSubtract(SifAstComplex):
+    _tag = "subtract"
+
+    _nodes = [
+        XmlAnimatable("lhs", "vector"),
+        XmlAnimatable("rhs", "vector"),
+        XmlAnimatable("scalar", "real", 1.),
+    ]
+
+
+class SifSwitch(SifAstComplex):
+    _tag = "switch"
+
+    _nodes = [
+        XmlAnimatable("link_off", "vector"),
+        XmlAnimatable("link_on", "vector"),
+        XmlAnimatable("switch", "bool", False),
+    ]
+
+
+class SifTimedSwap(SifAstComplex):
+    _tag = "timed_swap"
+
+    _nodes = [
+        XmlAnimatable("before", "vector"),
+        XmlAnimatable("after", "vector"),
+        XmlAnimatable("time", "time", FrameTime(0, FrameTime.Unit.Seconds)),
+        XmlAnimatable("length", "time", FrameTime(0, FrameTime.Unit.Seconds)),
+    ]
+
+
+class SifTimeLoop(SifAstComplex):
+    _tag = "timeloop"
+
+    _nodes = [
+        XmlAnimatable("link", "vector"),
+        XmlAnimatable("link_time", "time", FrameTime(0, FrameTime.Unit.Seconds)),
+        XmlAnimatable("local_time", "time", FrameTime(0, FrameTime.Unit.Seconds)),
+        XmlAnimatable("duration", "time", FrameTime(0, FrameTime.Unit.Seconds)),
+    ]
+
