@@ -2,7 +2,7 @@ from xml.dom import minidom
 import copy
 import enum
 
-from .core_nodes import XmlDescriptor, ObjectRegistry
+from .core_nodes import XmlDescriptor, ObjectRegistry, XmlSimpleElement
 from .utils import *
 from tgs import NVector
 
@@ -295,34 +295,51 @@ class SifValue(SifAstNode):
         return param.value_to_xml_element(self.value, dom)
 
 
-class SifAdd(SifAstNode):
-    _tag = "add"
+class SifNodeMeta(type):
+    def __new__(cls, name, bases, attr):
+        props = []
+        for base in bases:
+            if type(base) == cls:
+                props += base._nodes
+        attr["_nodes"] = props + attr.get("_nodes", [])
+        if "_tag" not in attr:
+            attr["_tag"] = name.lower()
+        attr["_nodemap"] = {
+            node.att_name: node
+            for node in attr["_nodes"]
+        }
+        return super().__new__(cls, name, bases, attr)
 
-    _scalar_type = TypeDescriptor("real")
 
-    def __init__(self, lhs, rhs, scalar):
-        self.lhs = lhs
-        self.rhs = rhs
-        self.scalar = scalar
+class SifAstComplex(SifAstNode, metaclass=SifNodeMeta):
+    _nodes = []
+
+    def __init__(self, **kw):
+        for node in self._nodes:
+            node.initialize_object(kw, self)
 
     @classmethod
     def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
-        fec = xml_first_element_child
-        return SifAdd(
-            SifAstNode.from_dom(fec(fec(xml, "lhs")), param, registry),
-            SifAstNode.from_dom(fec(fec(xml, "rhs")), param, registry),
-            SifAstNode.from_dom(fec(fec(xml, "scalar")), cls._scalar_type, registry)
-        )
+        instance = cls()
+        for node in cls._nodes:
+            node.from_xml(instance, xml, registry)
+        return instance
 
     def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
         element = self._prepare_to_dom(dom, param)
-        lhs = element.appendChild(dom.createElement("lhs"))
-        lhs.appendChild(self.lhs.to_dom(dom, param))
-        rhs = element.appendChild(dom.createElement("rhs"))
-        rhs.appendChild(self.rhs.to_dom(dom, param))
-        scalar = element.appendChild(dom.createElement("scalar"))
-        scalar.appendChild(self.scalar.to_dom(dom, self._scalar_type))
+        for node in self._nodes:
+            node.to_xml(self, element, dom)
         return element
+
+
+class SifAdd(SifAstComplex):
+    _tag = "add"
+
+    _nodes = [
+        XmlAnimatable("lhs", "vector"),
+        XmlAnimatable("rhs", "vector"),
+        XmlAnimatable("scalar", "real"),
+    ]
 
 
 class SifAnimated(SifAstNode):
@@ -353,47 +370,98 @@ class SifAnimated(SifAstNode):
         self.keyframes.append(keyframe)
 
 
-class SifAnimatedFile(SifAstNode):
+class SifAnimatedFile(SifAstComplex):
     _tag = "animated_file"
 
-    _filename_type = TypeDescriptor("string")
-
-    def __init__(self, filename):
-        self.filename = filename
-
-    @classmethod
-    def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
-        return SifAnimatedFile(SifAstNode.from_dom(
-            xml_first_element_child(xml_first_element_child(xml, "filename")),
-            cls._filename_type,
-            registry
-        ))
-
-    def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
-        element = self._prepare_to_dom(dom, param)
-        element.appendChild(self.filename.to_dom(dom, self._filename_type))
-        return element
+    _nodes = [
+        XmlAnimatable("filename", "string"),
+    ]
 
 
-class SifAverage(SifAstNode):
-    _tag = "average"
+class SifAnimatedFile(SifAstComplex):
+    _tag = "animated_file"
 
-    def __init__(self, entries):
-        self.entries = entries
+    _nodes = [
+        XmlAnimatable("filename", "string"),
+    ]
 
-    @classmethod
-    def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
-        entries = []
-        for entry in xml_child_elements(xml, "entry"):
-            entries.append(SifAstNode.from_dom(xml_first_element_child(entry), param, registry))
-        return SifAverage(entries)
 
-    def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
-        element = self._prepare_to_dom(dom, param)
-        for entry in self.entries:
-            entry_el = element.appendChild(dom.createElement("entry"))
-            entry_el.appendChild(entry.to_dom(dom, param))
-        return element
+class Accuracy(enum.Enum):
+    Rough = 0
+    Normal = 1
+    Fine = 2
+    Extreme = 3
+
+
+class DerivativeOrder:
+    FirstDerivative = 0
+    SecondDerivative = 1
+
+
+class SifDerivative(SifAstComplex):
+    _tag = "derivative"
+
+    _nodes = [
+        XmlAnimatable("link", "vector"),
+        XmlAnimatable("interval", "real", 0.01),
+        XmlAnimatable("accuracy", "integer", Accuracy.Normal, Accuracy),
+        XmlAnimatable("order", "integer", DerivativeOrder.FirstDerivative, DerivativeOrder),
+    ]
+
+
+class SifDynamic(SifAstComplex):
+    _tag = "dynamic"
+
+    _nodes = [
+        XmlAnimatable("tip_static", "vector"),
+        XmlAnimatable("origin", "vector"),
+        XmlAnimatable("force", "vector"),
+        XmlAnimatable("torque", "real", 0.),
+        XmlAnimatable("damping", "real", 0.4),
+        XmlAnimatable("friction", "real", 0.4),
+        XmlAnimatable("spring", "real", 30.),
+        XmlAnimatable("torsion", "real", 30.),
+        XmlAnimatable("mass", "real", 0.3),
+        XmlAnimatable("inertia", "real", 0.3),
+        XmlAnimatable("spring_rigid", "bool", False),
+        XmlAnimatable("torsion_rigid", "bool", False),
+        XmlAnimatable("origin_drags_tip", "bool", True),
+    ]
+
+
+class SifGreyed(SifAstComplex):
+    _tag = "greyed"
+
+    _nodes = [
+        XmlAnimatable("link", "vector"),
+    ]
+
+
+class SifLinear(SifAstComplex):
+    _tag = "linear"
+
+    _nodes = [
+        XmlAnimatable("slope", "vector"),
+        XmlAnimatable("offset", "vector"),
+    ]
+
+
+class SifLinear(SifAstComplex):
+    _tag = "linear"
+
+    _nodes = [
+        XmlAnimatable("slope", "vector"),
+        XmlAnimatable("offset", "vector"),
+    ]
+
+
+class SifRadialComposite(SifAstComplex):
+    _tag = "radial_composite"
+
+    _nodes = [
+        XmlAnimatable("radius", "real", 0.),
+        XmlAnimatable("theta", "angle", 0.),
+    ]
 
 
 class XmlDynamicListParam(XmlDescriptor):

@@ -5,22 +5,6 @@ from .xml.animatable import *
 from .xml.wrappers import *
 
 
-class SifNodeMeta(type):
-    def __new__(cls, name, bases, attr):
-        props = []
-        for base in bases:
-            if type(base) == cls:
-                props += base._nodes
-        attr["_nodes"] = props + attr.get("_nodes", [])
-        if "_tag" not in attr:
-            attr["_tag"] = name.lower()
-        attr["_nodemap"] = {
-            node.att_name: node
-            for node in attr["_nodes"]
-        }
-        return super().__new__(cls, name, bases, attr)
-
-
 class SifNode(metaclass=SifNodeMeta):
     def __init__(self, **kw):
         for node in self._nodes:
@@ -75,15 +59,6 @@ class SifTransform(AbstractTransform):
     ]
 
 
-class RadialComposite(SifNode):
-    _tag = "radial_composite"
-
-    _nodes = [
-        XmlFixedAttribute("type", "vector"),
-        XmlAnimatable("radius", "real", 0.),
-        XmlAnimatable("theta", "angle", 0.),
-    ]
-
 
 class BlinePoint(SifNode):
     _tag = "composite"
@@ -94,8 +69,8 @@ class BlinePoint(SifNode):
         XmlAnimatable("width", "real", 1.),
         XmlAnimatable("origin", "real", .5),
         XmlAnimatable("split", "bool", False),
-        XmlSifElement("t1", RadialComposite),
-        XmlSifElement("t2", RadialComposite),
+        XmlAnimatable("t1", "vector"),
+        XmlAnimatable("t2", "vector"),
         XmlAnimatable("split_radius", "bool", True),
         XmlAnimatable("split_angle", "bool", False),
     ]
@@ -106,6 +81,31 @@ class Bline(SifNode):
         XmlAttribute("loop", bool_str, False),
         XmlFixedAttribute("type", "bline_point"),
         XmlList(BlinePoint, "points", "entry"),
+    ]
+
+
+class SifBlineCalcTangent(SifAstComplex):
+    _tag = "blinecalctangent"
+
+    _nodes = [
+        XmlSifElement("bline", Bline),
+        XmlAnimatable("loop", "bool", False),
+        XmlAnimatable("amount", "real", 0.5),
+        XmlAnimatable("offset", "angle", 0.),
+        XmlAnimatable("scale", "real", 1.),
+        XmlAnimatable("fixed_length", "bool", False),
+        XmlAnimatable("homogeneous", "bool", False),
+    ]
+
+
+class SifBlineCalcVertex(SifAstComplex):
+    _tag = "blinecalcvertex"
+
+    _nodes = [
+        XmlSifElement("bline", Bline),
+        XmlAnimatable("loop", "bool", False),
+        XmlAnimatable("amount", "real", 0.5),
+        XmlAnimatable("homogeneous", "bool", False),
     ]
 
 
@@ -620,6 +620,29 @@ class BoneLinkTransform(AbstractTransform):
         XmlAnimatable("skew", "bool", True),
         XmlAnimatable("scale_x", "bool", True),
         XmlAnimatable("scale_y", "bool", True),
+    ]
+
+
+class SifAstBoneLink(SifAstComplex):
+    _tag = "bone_link"
+
+    _nodes = [
+        XmlBoneReference("bone"),
+        XmlAnimatable("base_value", "vector", NVector(0, 0)),
+        XmlAnimatable("translate", "bool", True),
+        XmlAnimatable("rotate", "bool", True),
+        XmlAnimatable("skew", "bool", True),
+        XmlAnimatable("scale_x", "bool", True),
+        XmlAnimatable("scale_y", "bool", True),
+    ]
+
+
+class SifAstBoneInfluence(SifAstComplex):
+    _tag = "boneinfluence"
+
+    _nodes = [
+        # TODO bone_weight_list
+        XmlAnimatable("link", "vector", NVector(0, 0)),
     ]
 
 

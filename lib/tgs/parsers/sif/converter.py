@@ -231,10 +231,23 @@ class Converter:
         if self._animated(v):
             for kf in v.keyframes:
                 # TODO easing
-                lot.add_keyframe(self._time(kf.time), kf.value)
+                lot.add_keyframe(self._time(kf.time), self._convert_ast_value(kf.value))
         else:
-            lot.value = v.value
+            lot.value = self._convert_ast_value(v)
         return lot
+
+    def _convert_ast_value(self, v):
+        if isinstance(v, api.SifRadialComposite):
+            return self._polar(v.radius.value, v.theta.value, 1)
+        elif isinstance(v, api.SifValue):
+            return v.value
+        else:
+            return v
+
+    def _converted_vector_values(self, v):
+        if isinstance(v, api.SifRadialComposite):
+            return [self._convert_scalar(v.radius), self._convert_scalar(v.theta)]
+        return self._convert_vector(v)
 
     def _convert_vector(self, v: api.SifAstNode):
         return self._convert_animatable(v, objects.MultiDimensional())
