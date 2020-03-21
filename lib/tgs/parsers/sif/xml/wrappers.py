@@ -69,9 +69,10 @@ class SifNodeList:
 
 
 class XmlSifElement(XmlDescriptor):
-    def __init__(self, name, child_node):
+    def __init__(self, name, child_node, nested=True):
         super().__init__(name)
         self.child_node = child_node
+        self.nested = nested
 
     def default(self):
         return self.child_node()
@@ -84,7 +85,11 @@ class XmlSifElement(XmlDescriptor):
     def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         cn = xml_first_element_child(parent, self.name, allow_none=True)
         if cn:
-            value = self.child_node.from_dom(xml_first_element_child(cn), registry)
+            if self.nested:
+                element = xml_first_element_child(cn)
+            else:
+                element = cn
+            value = self.child_node.from_dom(element, registry)
         else:
             value = self.default()
 
@@ -92,9 +97,12 @@ class XmlSifElement(XmlDescriptor):
 
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
         value = getattr(obj, self.att_name)
-        node = dom.createElement(self.name)
+        if self.nested:
+            node = dom.createElement(self.name)
+            parent.appendChild(node)
+        else:
+            node = parent
         node.appendChild(value.to_dom(dom))
-        parent.appendChild(node)
 
 
 class XmlList(XmlDescriptor):

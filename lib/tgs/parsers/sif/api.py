@@ -1082,6 +1082,13 @@ class TimeLoopLayer(Layer):
     ]
 
 
+class Keyframe(SifNode):
+    _nodes = [
+        XmlAttribute("active", bool, True),
+        XmlAttribute("time", FrameTime, FrameTime(0, FrameTime.Unit.Frame)),
+    ]
+
+
 class Canvas(SifNode, ObjectRegistry):
     _nodes = [
         XmlAttribute("version"),
@@ -1114,6 +1121,7 @@ class Canvas(SifNode, ObjectRegistry):
         XmlMeta("onion_skin", bool, False),
         XmlMeta("onion_skin_future", int, 0),
         XmlMeta("onion_skin_past", int, 1),
+        XmlSifElement("keyframe", Keyframe, False),
         XmlWrapper("defs", XmlList(Def, "defs", None, Def.tags())),
         XmlWrapper("bones", XmlList(BoneRoot, "bones", None, {"bone", "bone_root"})),
         XmlList(Layer),
