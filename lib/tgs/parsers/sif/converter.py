@@ -74,6 +74,10 @@ class Converter:
         shape.transform.anchor_point = self._adjust_coords(self._convert_vector(layer.origin))
         self._convert_transform(layer.transformation, shape.transform)
         self._process_layers(layer.layers, shape)
+        shape.transform.opacity = self._adjust_animated(
+            self._convert_scalar(layer.amount),
+            lambda x: x*100
+        )
         return shape
 
     def _convert_transform(self, sif_transform: api.AbstractTransform, tgs_transform: objects.Transform):
@@ -92,38 +96,49 @@ class Converter:
         tgs_transform.skew_axis = self._adjust_angle(self._convert_scalar(base_transform.skew_angle))
 
         if isinstance(sif_transform, api.BoneLinkTransform):
-            bone = sif_transform.bone
+            tgs_transform.position = position
+            tgs_transform.rotation = rotation
+            tgs_transform.scale = scale
+            #bone = sif_transform.bone
+            #b_pos = self._adjust_coords(self._convert_vector(bone.origin))
+            #old_anchor = tgs_transform.anchor_point
 
-            if sif_transform.translate:
-                b_pos = self._adjust_coords(self._convert_vector(bone.origin))
-                tgs_transform.position = b_pos
-            else:
-                tgs_transform.position = position
+            #if sif_transform.translate:
+                #self._mix_animations_into(
+                    #[position, b_pos, old_anchor],
+                    #tgs_transform.position,
+                    #lambda base_p, bone_p, anchor: (anchor-self.target_size/2)/2+self.target_size/2
+                #)
+            #else:
+                #tgs_transform.position = position
 
-            if sif_transform.rotate:
-                b_rot = (self._convert_scalar(bone.angle))
-                self._mix_animations_into(rotation, b_rot, tgs_transform.rotation, lambda a, b: a-b)
-            else:
-                tgs_transform.rotation = rotation
+            #tgs_transform.anchor_point = b_pos
+            #tgs_transform.anchor_point.value += NVector(100,0)
 
-            if sif_transform.scale_y:
-                b_scale = self._convert_scalar(bone.scalelx)
-                self._mix_animations_into(
-                    scale, b_scale, tgs_transform.scale,
-                    lambda a, b: NVector(a.x, a.y * b)
-                )
-            else:
-                tgs_transform.scale = scale
+            #if sif_transform.rotate:
+                #b_rot = self._convert_scalar(bone.angle)
+                #self._mix_animations_into([rotation, b_rot], tgs_transform.rotation, lambda a, b: a-b)
+            #else:
+                #tgs_transform.rotation = rotation
+
+            #if sif_transform.scale_y:
+                #b_scale = self._convert_scalar(bone.scalelx)
+                #self._mix_animations_into(
+                    #scale, b_scale, tgs_transform.scale,
+                    #lambda a, b: NVector(a.x, a.y * b)
+                #)
+            #else:
+                #tgs_transform.scale = scale
         else:
             tgs_transform.position = position
             tgs_transform.rotation = rotation
             tgs_transform.scale = scale
 
-    def _mix_animations_into(self, anim1, anim2, output, mix):
-        if not anim1.animated and not anim2.animated:
-            output.value = mix(anim1.value, anim2.value)
+    def _mix_animations_into(self, animations, output, mix):
+        if not any(x.animated for x in animations):
+            output.value = mix(*(x.value for x in animations))
         else:
-            for vals in self._mix_animations(anim1, anim2):
+            for vals in self._mix_animations(*animations):
                 time = vals.pop(0)
                 output.add_keyframe(time, mix(*vals))
 
@@ -422,7 +437,7 @@ class Converter:
                 gradient.end_point.value = gradient.start_point.value + NVector(radius.value, radius.value)
             else:
                 for time, c, r in self._mix_animations(gradient.start_point.clone(), radius):
-                    gradient.end_point.add_keyframe(time, x + NVector(r + r))
+                    gradient.end_point.add_keyframe(time, c + NVector(r + r))
 
         return group
 
