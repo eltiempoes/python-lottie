@@ -232,11 +232,11 @@ class Interpolation(enum.Enum):
 
 
 class SifKeyframe:
-    def __init__(self, value, time: FrameTime, ease_in=Interpolation.Clamped, ease_out=Interpolation.Clamped):
+    def __init__(self, value, time: FrameTime, before=Interpolation.Clamped, after=Interpolation.Clamped):
         self.value = value
         self.time = time
-        self.ease_in = ease_in
-        self.ease_out = ease_out
+        self.before = before
+        self.after = after
 
     @classmethod
     def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
@@ -250,8 +250,8 @@ class SifKeyframe:
     def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
         element = dom.createElement("waypoint")
         element.setAttribute("time", str(self.time))
-        element.setAttribute("before", self.ease_in.value)
-        element.setAttribute("after", self.ease_out.value)
+        element.setAttribute("before", self.before.value)
+        element.setAttribute("after", self.after.value)
         element.appendChild(param.value_to_xml_element(self.value, dom))
         return element
 

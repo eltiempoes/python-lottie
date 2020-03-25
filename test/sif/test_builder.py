@@ -489,3 +489,144 @@ class TestSifBuilder(base.TestCase):
         self.assert_nvector_equal(sif.layers[1].transformation.offset.value, NVector(0, 0))
         self.assert_nvector_equal(sif.layers[1].origin.value, NVector(0, 0))
         self.assert_nvector_equal(sif.layers[1].transformation.scale.value, NVector(1, 1))
+
+    def test_animated_vector(self):
+        lot = objects.Animation()
+
+        ref_sl = lot.add_layer(objects.ShapeLayer())
+        ref_rect = ref_sl.add_shape(objects.Rect())
+        ref_rect.position.value = NVector(128, 128)
+        ref_rect.size.value = NVector(256, 256)
+        ref_sl.add_shape(objects.Fill(Color(1, 0, 0)))
+        ref_sl.transform.opacity.value = 80
+
+        sl = lot.add_layer(objects.ShapeLayer())
+        rect = sl.add_shape(objects.Rect())
+        rect.position.value = NVector(128, 128)
+        rect.size.value = NVector(256, 256)
+        sl.add_shape(objects.Fill(Color(1, 1, 0)))
+
+        sl.transform.position.add_keyframe(0, NVector(0, 0))
+        sl.transform.position.add_keyframe(30, NVector(256, 256))
+        sl.transform.position.add_keyframe(60, NVector(0, 0))
+
+        sif = builder.to_sif(lot)
+        self.assertEqual(len(sif.layers), 2)
+        self.assertIsInstance(sif.layers[0], api.GroupLayer)
+        self.assertIsInstance(sif.layers[1], api.GroupLayer)
+        self.assertAlmostEqual(sif.layers[0].amount.value, 1)
+        self.assertAlmostEqual(sif.layers[1].amount.value, 0.8)
+
+        self.assert_nvector_equal(sif.layers[1].transformation.offset.value, NVector(0, 0))
+
+        off = sif.layers[0].transformation.offset
+
+        self.assert_nvector_equal(off.keyframes[0].value, NVector(0, 0))
+        self.assert_nvector_equal(off.keyframes[1].value, NVector(256, 256))
+        self.assert_nvector_equal(off.keyframes[2].value, NVector(0, 0))
+
+        self.assertEqual(off.keyframes[0].time, api.FrameTime.frame(0))
+        self.assertEqual(off.keyframes[1].time, api.FrameTime.frame(30))
+        self.assertEqual(off.keyframes[2].time, api.FrameTime.frame(60))
+
+        self.assertEqual(off.keyframes[0].before, api.Interpolation.Linear)
+        self.assertEqual(off.keyframes[1].before, api.Interpolation.Linear)
+        self.assertEqual(off.keyframes[2].before, api.Interpolation.Linear)
+
+        self.assertEqual(off.keyframes[0].after, api.Interpolation.Linear)
+        self.assertEqual(off.keyframes[1].after, api.Interpolation.Linear)
+        self.assertEqual(off.keyframes[2].after, api.Interpolation.Linear)
+
+    def test_animated_vector_ease(self):
+        lot = objects.Animation()
+
+        ref_sl = lot.add_layer(objects.ShapeLayer())
+        ref_rect = ref_sl.add_shape(objects.Rect())
+        ref_rect.position.value = NVector(128, 128)
+        ref_rect.size.value = NVector(256, 256)
+        ref_sl.add_shape(objects.Fill(Color(1, 0, 0)))
+        ref_sl.transform.opacity.value = 80
+
+        sl = lot.add_layer(objects.ShapeLayer())
+        rect = sl.add_shape(objects.Rect())
+        rect.position.value = NVector(128, 128)
+        rect.size.value = NVector(256, 256)
+        sl.add_shape(objects.Fill(Color(1, 1, 0)))
+
+        sl.transform.position.add_keyframe(0, NVector(0, 0), objects.easing.Sigmoid())
+        sl.transform.position.add_keyframe(30, NVector(256, 256), objects.easing.Sigmoid())
+        sl.transform.position.add_keyframe(60, NVector(0, 0), objects.easing.Sigmoid())
+
+        sif = builder.to_sif(lot)
+        self.assertEqual(len(sif.layers), 2)
+        self.assertIsInstance(sif.layers[0], api.GroupLayer)
+        self.assertIsInstance(sif.layers[1], api.GroupLayer)
+        self.assertAlmostEqual(sif.layers[0].amount.value, 1)
+        self.assertAlmostEqual(sif.layers[1].amount.value, 0.8)
+
+        self.assert_nvector_equal(sif.layers[1].transformation.offset.value, NVector(0, 0))
+
+        off = sif.layers[0].transformation.offset
+
+        self.assert_nvector_equal(off.keyframes[0].value, NVector(0, 0))
+        self.assert_nvector_equal(off.keyframes[1].value, NVector(256, 256))
+        self.assert_nvector_equal(off.keyframes[2].value, NVector(0, 0))
+
+        self.assertEqual(off.keyframes[0].time, api.FrameTime.frame(0))
+        self.assertEqual(off.keyframes[1].time, api.FrameTime.frame(30))
+        self.assertEqual(off.keyframes[2].time, api.FrameTime.frame(60))
+
+        #self.assertEqual(off.keyframes[0].before, api.Interpolation.Ease)
+        self.assertEqual(off.keyframes[1].before, api.Interpolation.Ease)
+        self.assertEqual(off.keyframes[2].before, api.Interpolation.Ease)
+
+        self.assertEqual(off.keyframes[0].after, api.Interpolation.Ease)
+        self.assertEqual(off.keyframes[1].after, api.Interpolation.Ease)
+        #self.assertEqual(off.keyframes[2].after, api.Interpolation.Ease)
+
+    def test_animated_vector_jump(self):
+        lot = objects.Animation()
+
+        ref_sl = lot.add_layer(objects.ShapeLayer())
+        ref_rect = ref_sl.add_shape(objects.Rect())
+        ref_rect.position.value = NVector(128, 128)
+        ref_rect.size.value = NVector(256, 256)
+        ref_sl.add_shape(objects.Fill(Color(1, 0, 0)))
+        ref_sl.transform.opacity.value = 80
+
+        sl = lot.add_layer(objects.ShapeLayer())
+        rect = sl.add_shape(objects.Rect())
+        rect.position.value = NVector(128, 128)
+        rect.size.value = NVector(256, 256)
+        sl.add_shape(objects.Fill(Color(1, 1, 0)))
+
+        sl.transform.position.add_keyframe(0, NVector(0, 0), objects.easing.Jump())
+        sl.transform.position.add_keyframe(30, NVector(256, 256), objects.easing.Jump())
+        sl.transform.position.add_keyframe(60, NVector(0, 0), objects.easing.Jump())
+
+        sif = builder.to_sif(lot)
+        self.assertEqual(len(sif.layers), 2)
+        self.assertIsInstance(sif.layers[0], api.GroupLayer)
+        self.assertIsInstance(sif.layers[1], api.GroupLayer)
+        self.assertAlmostEqual(sif.layers[0].amount.value, 1)
+        self.assertAlmostEqual(sif.layers[1].amount.value, 0.8)
+
+        self.assert_nvector_equal(sif.layers[1].transformation.offset.value, NVector(0, 0))
+
+        off = sif.layers[0].transformation.offset
+
+        self.assert_nvector_equal(off.keyframes[0].value, NVector(0, 0))
+        self.assert_nvector_equal(off.keyframes[1].value, NVector(256, 256))
+        self.assert_nvector_equal(off.keyframes[2].value, NVector(0, 0))
+
+        self.assertEqual(off.keyframes[0].time, api.FrameTime.frame(0))
+        self.assertEqual(off.keyframes[1].time, api.FrameTime.frame(30))
+        self.assertEqual(off.keyframes[2].time, api.FrameTime.frame(60))
+
+        self.assertEqual(off.keyframes[1].before, api.Interpolation.Constant)
+        self.assertEqual(off.keyframes[2].before, api.Interpolation.Constant)
+
+        self.assertEqual(off.keyframes[0].after, api.Interpolation.Constant)
+        self.assertEqual(off.keyframes[1].after, api.Interpolation.Constant)
+
+        self._visualize_test(lot)

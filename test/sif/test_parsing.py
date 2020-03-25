@@ -205,27 +205,27 @@ class TestParseFile(base.TestCase):
         kf = point.t1.radius.keyframes[0]
         self.assertIsInstance(kf, api.SifKeyframe)
         self.assert_strong_equal(kf.time, api.FrameTime(0, api.FrameTime.Unit.Seconds))
-        self.assert_strong_equal(kf.ease_in, api.Interpolation.Clamped)
-        self.assert_strong_equal(kf.ease_out, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.before, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.after, api.Interpolation.Clamped)
         self.assert_strong_equal(kf.value, 2.2314351749)
         kf = point.t1.radius.keyframes[1]
         self.assertIsInstance(kf, api.SifKeyframe)
         self.assert_strong_equal(kf.time, api.FrameTime(2, api.FrameTime.Unit.Seconds))
-        self.assert_strong_equal(kf.ease_in, api.Interpolation.Clamped)
-        self.assert_strong_equal(kf.ease_out, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.before, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.after, api.Interpolation.Clamped)
         self.assert_strong_equal(kf.value, 2.6981012388)
 
         kf = point.t1.theta.keyframes[0]
         self.assertIsInstance(kf, api.SifKeyframe)
         self.assert_strong_equal(kf.time, api.FrameTime(0, api.FrameTime.Unit.Seconds))
-        self.assert_strong_equal(kf.ease_in, api.Interpolation.Clamped)
-        self.assert_strong_equal(kf.ease_out, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.before, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.after, api.Interpolation.Clamped)
         self.assert_strong_equal(kf.value, 19.593754)
         kf = point.t1.theta.keyframes[1]
         self.assertIsInstance(kf, api.SifKeyframe)
         self.assert_strong_equal(kf.time, api.FrameTime(2, api.FrameTime.Unit.Seconds))
-        self.assert_strong_equal(kf.ease_in, api.Interpolation.Clamped)
-        self.assert_strong_equal(kf.ease_out, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.before, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.after, api.Interpolation.Clamped)
         self.assert_strong_equal(kf.value, -57.534264)
 
     def _check_layer_gradient(self, layer):
