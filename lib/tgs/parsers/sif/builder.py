@@ -33,19 +33,10 @@ class SifBuilder(restructure.AbstractBuilder):
         @todo Add gamma option to tgsconvert
         """
         super().__init__()
-        self.canvas = api.Canvas
+        self.canvas = api.Canvas()
         self.canvas.version = "1.2"
-        self.canvas.gamma_r = self.canvas.gamma_g = self.canvas.gamma_b = 2.2
+        self.canvas.gamma_r = self.canvas.gamma_g = self.canvas.gamma_b = gamma
         self.autoid = objects.base.Index()
-
-    def _format_time(self, time):
-        return api.FrameTime(time, api.FrameTime.Unit.Frame)
-
-    def _subelement(self, parent, tagname):
-        return parent.appendChild(self.dom.createElement(tagname))
-
-    def _settext(self, element, text):
-        element.appendChild(self.dom.createTextNode(text))
 
     def _on_animation(self, animation: objects.Animation):
         if animation.name:
@@ -56,8 +47,8 @@ class SifBuilder(restructure.AbstractBuilder):
         self.canvas.yres = animation.height
         self.canvas.view_box = NVector(0, 0, animation.width, animation.height)
         self.canvas.fps = animation.frame_rate
-        self.canvas.begin_time = self._format_time(animation.in_point)
-        self.canvas.end_time = self._format_time(animation.out_point)
+        self.canvas.begin_time = api.FrameTime.frame(animation.in_point)
+        self.canvas.end_time = api.FrameTime.frame(animation.out_point)
         self.canvas.antialias = True
         return self.canvas
 
@@ -72,23 +63,23 @@ class SifBuilder(restructure.AbstractBuilder):
         layer.time_drilation = getattr(layer_builder.lottie, "stretch", 1) or 1
 
         in_point = getattr(layer_builder.lottie, "in_point", 0)
-        layer.time_offset = self._format_time(in_point)
+        layer.time_offset.value = api.FrameTime.frame(in_point)
 
-        #layer.canvas.end_time = self._format_time(out_point)
+        #layer.canvas.end_time = api.FrameTime.frame(out_point)
         return layer
 
     def layer_from_lottie(self, type, lottie, dom_parent):
         g = dom_parent.add_layer(type())
         if lottie.name:
             g.desc = lottie.name
-        g.active = lottie.hidden
+        g.active = not lottie.hidden
         transf = getattr(lottie, "transform", None)
         if transf:
             self.set_transform(g, transf)
         return g
 
     def _get_scale(self, transform):
-        def func(keyframe, elem):
+        def func(keyframe):
             t = keyframe.time if keyframe else 0
             scale_x, scale_y = transform.scale.get_value(t)[:2]
             scale_x /= 100
@@ -97,13 +88,12 @@ class SifBuilder(restructure.AbstractBuilder):
             c = math.cos(skew * math.pi / 180)
             if c != 0:
                 scale_y *= 1 / c
-            elem.x = scale_x
-            elem.y = scale_y
+            return NVector(scale_x, scale_y)
         return func
 
     def set_transform(self, group, transform):
         composite = group.transformation
-        self.process_vector("offset", transform.position, composite)
+        composite.offset = self.process_vector(transform.position)
 
         keyframes = self._merge_keyframes([transform.scale, transform.skew])
 
@@ -131,7 +121,7 @@ class SifBuilder(restructure.AbstractBuilder):
             wrap = api.SifAnimated()
             for i in range(len(kframes)):
                 keyframe = kframes[i]
-                waypoint = wrap.add_keyframe(getter(keyframe), self._format_time(keyframe.time))
+                waypoint = wrap.add_keyframe(getter(keyframe), api.FrameTime.frame(keyframe.time))
 
                 if i > 0:
                     prev = kframes[i-1]
@@ -171,15 +161,15 @@ class SifBuilder(restructure.AbstractBuilder):
         if not hasattr(shape, "to_bezier"):
             return []
 
-        if group.fill:
-            sif_shape = self.build_path(api.RegionLayer, shape.to_bezier(), dom_parent)
-            layers.append(sif_shape)
-            self.apply_group_fill(sif_shape, group.fill)
-
         if group.stroke:
-            sif_shape = self.build_path(api.OutlineLayer, shape.to_bezier(), dom_parent)
+            sif_shape = self.build_path(api.OutlineLayer, shape.to_bezier(), dom_parent, shape)
             self.apply_group_stroke(sif_shape, group.stroke)
             layers.append(sif_shape)
+
+        if group.fill:
+            sif_shape = self.build_path(api.RegionLayer, shape.to_bezier(), dom_parent, shape)
+            layers.append(sif_shape)
+            self.apply_group_fill(sif_shape, group.fill)
 
         return layers
 
@@ -190,26 +180,27 @@ class SifBuilder(restructure.AbstractBuilder):
                 keyframes.update({kf.time: kf for kf in prop.keyframes})
         return list(sorted(keyframes.values(), key=lambda kf: kf.time)) or None
 
+    def apply_origin(self, sif_shape, lottie_shape):
+        if hasattr(lottie_shape, "position"):
+            sif_shape.origin.value = lottie_shape.position.get_value()
+        else:
+            sif_shape.origin.value = lottie_shape.bounding_box().center()
+
     def apply_group_fill(self, sif_shape, fill):
         ## @todo gradients?
         if hasattr(fill, "colors"):
             return
 
-        def getter(keyframe, elem):
+        def getter(keyframe):
             if keyframe is None:
                 v = fill.color.value
             else:
                 v = keyframe.start
-            return NVector(
-                v[0] ** self.canvas.gamma_r,
-                v[1] ** self.canvas.gamma_g,
-                v[2] ** self.canvas.gamma_b,
-                1
-            )
+            return self.canvas.make_color(*v)
 
         sif_shape.color = self.process_vector_ext(fill.color.keyframes, getter)
 
-        def get_op(keyframe, elem):
+        def get_op(keyframe):
             if keyframe is None:
                 v = fill.opacity.value
             else:
@@ -221,25 +212,26 @@ class SifBuilder(restructure.AbstractBuilder):
 
     def apply_group_stroke(self, sif_shape, stroke):
         self.apply_group_fill(sif_shape, stroke)
-        sif_shape.sharp_cusps = stroke.line_join == objects.LineJoin.Miter
+        sif_shape.sharp_cusps.value = stroke.line_join == objects.LineJoin.Miter
         round_cap = stroke.line_cap == objects.LineCap.Round
-        sif_shape.round_tip_0 = round_cap
-        sif_shape.round_tip_1 = round_cap
-        sif_shape.width = self.process_scalar(stroke.width)
+        sif_shape.round_tip_0.value = round_cap
+        sif_shape.round_tip_1.value = round_cap
+        sif_shape.width = self.process_scalar(stroke.width, 0.5)
 
-    def build_path(self, type, path, dom_parent):
-        layer = self.layer_from_lottie(type, path, dom_parent)
+    def build_path(self, type, path, dom_parent, lottie_shape):
+        layer = self.layer_from_lottie(type, lottie_shape, dom_parent)
+        self.apply_origin(layer, lottie_shape)
         startbez = path.shape.get_value()
-        layer.bline = startbez.closed
+        layer.bline.loop = startbez.closed
         nverts = len(startbez.vertices)
         for point in range(nverts):
-            self.bezier_point(path, point, layer.bline)
+            self.bezier_point(path, point, layer.bline, layer.origin.value)
         return layer
 
-    def bezier_point(self, lottie_path, point_index, sif_parent):
+    def bezier_point(self, lottie_path, point_index, sif_parent, offset):
         composite = api.BlinePoint()
 
-        def get_point(keyframe, elem):
+        def get_point(keyframe):
             if keyframe is None:
                 bezier = lottie_path.shape.value
             else:
@@ -248,14 +240,14 @@ class SifBuilder(restructure.AbstractBuilder):
                 #elem.parentNode.parentNode.removeChild(elem.parentNode)
                 return
             vert = bezier.vertices[point_index]
-            return NVector(vert[0], vert[1])
+            return NVector(vert[0], vert[1]) - offset
 
         composite.point = self.process_vector_ext(lottie_path.shape.keyframes, get_point)
         composite.split.value = True
         composite.split_radius.value = True
         composite.split_angle.value = True
 
-        def get_tangent(keyframe, elem):
+        def get_tangent(keyframe):
             if keyframe is None:
                 bezier = lottie_path.shape.value
             else:
@@ -274,6 +266,7 @@ class SifBuilder(restructure.AbstractBuilder):
         mult = 1
         which_point = "out_tangents"
         composite.t2 = self.process_vector_ext(lottie_path.shape.keyframes, get_tangent)
+        sif_parent.points.append(composite)
 
     def _on_shapegroup(self, shape_group, dom_parent):
         if shape_group.empty():
@@ -303,7 +296,7 @@ class SifBuilder(restructure.AbstractBuilder):
         dup.id = name_id
         self.canvas.defs.append(dup)
 
-        def getter(keyframe, elem):
+        def getter(keyframe):
             if keyframe is None:
                 v = shape.copies.value
             else:
@@ -320,7 +313,7 @@ class SifBuilder(restructure.AbstractBuilder):
         power = api.SifPower()
         setattr(scalecomposite, "xy"[comp], x)
 
-        def getter(keyframe, elem):
+        def getter(keyframe):
             if keyframe is None:
                 v = shape.transform.scale.value
             else:
@@ -360,7 +353,7 @@ class SifBuilder(restructure.AbstractBuilder):
         inner.amount.rhs = api.SifScale()
         inner.amount.rhs.scalar = api.ValueReference(name_id)
 
-        def getter(keyframe, elem):
+        def getter(keyframe):
             if keyframe is None:
                 t = 0
                 end = shape.transform.end_opacity.value
@@ -387,4 +380,4 @@ class SifBuilder(restructure.AbstractBuilder):
 def to_sif(animation):
     builder = SifBuilder()
     builder.process(animation)
-    return builder.dom
+    return builder.canvas

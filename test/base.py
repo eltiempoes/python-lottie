@@ -9,3 +9,19 @@ sys.path.append(os.path.join(
 
 class TestCase(unittest.TestCase):
     maxDiff = None
+
+    def assert_nvector_equal(self, a, b, places=None, msg=None, delta=None):
+        from tgs import NVector
+        self.assertIsInstance(a, NVector)
+        self.assertIsInstance(b, NVector)
+
+        if msg is None:
+            msg = "%s != %s" % (a, b)
+            msg_len = "%s (length mismatch %s != %s)" % (msg, len(a), len(b))
+        else:
+            msg_len = msg
+
+        self.assertEqual(len(a), len(b), msg_len)
+
+        for ia, ib in zip(a, b):
+            self.assertAlmostEqual(ia, ib, places, msg, delta)

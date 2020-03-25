@@ -3,16 +3,16 @@ import gzip
 import codecs
 
 from .base import exporter
+from ..utils.file import open_file
 
 
 @exporter("Lottie JSON", ["json"], [], {"pretty"}, "lottie")
-def export_lottie(animation, fp, pretty=False):
-    if isinstance(fp, str):
-        fp = open(fp, "w")
-    kw = {}
-    if pretty:
-        kw = dict(sort_keys=True, indent=4)
-    json.dump(animation.to_dict(), fp, **kw)
+def export_lottie(animation, file, pretty=False):
+    with open_file(file) as fp:
+        kw = {}
+        if pretty:
+            kw = dict(sort_keys=True, indent=4)
+        json.dump(animation.to_dict(), fp, **kw)
 
 
 @exporter("Telegram Animated Sticker", ["tgs"])
@@ -81,23 +81,21 @@ class HtmlOutput:
 
 
 @exporter("Lottie HTML", ["html", "htm"])
-def export_embedded_html(animation, fp):
-    if isinstance(fp, str):
-        fp = open(fp, "w")
-    out = HtmlOutput(animation, fp)
-    out.html_begin()
-    out.body_pre()
-    out.body_embedded()
-    out.body_post()
-    out.html_end()
+def export_embedded_html(animation, file):
+    with open_file(file) as fp:
+        out = HtmlOutput(animation, fp)
+        out.html_begin()
+        out.body_pre()
+        out.body_embedded()
+        out.body_post()
+        out.html_end()
 
 
-def export_linked_html(animation, fp, path):
-    if isinstance(fp, str):
-        fp = open(fp, "w")
-    out = HtmlOutput(animation, fp)
-    out.html_begin()
-    out.body_pre()
-    fp.write("path: %r" % path)
-    out.body_post()
-    out.html_end()
+def export_linked_html(animation, file, path):
+    with open_file(file) as fp:
+        out = HtmlOutput(animation, file)
+        out.html_begin()
+        out.body_pre()
+        file.write("path: %r" % path)
+        out.body_post()
+        out.html_end()

@@ -197,17 +197,19 @@ class Duplicate(Def):
 class Layer(SifNode):
     _types = None
 
+    _version = "0.1"
     _layer_type = None
 
     _nodes = [
         XmlAttribute("type", str),
         XmlAttribute("active", bool_str, True),
-        XmlAttribute("version", str, "0.3"),
+        XmlAttribute("version", str),
         XmlAttribute("exclude_from_rendering", bool_str, False),
         XmlAttribute("desc", str, ""),
     ]
 
     def __init__(self, **kw):
+        kw.setdefault("version", self._version)
         super().__init__(**kw)
         self.type = self._layer_type
 
@@ -255,7 +257,7 @@ class DrawableLayer(Layer):
 class GroupLayerBase(DrawableLayer):
     _nodes = [
         XmlParam("origin", "vector", NVector(0, 0)),
-        XmlParamSif("transformation", AbstractTransform),
+        XmlParamSif("transformation", AbstractTransform, SifTransform),
         XmlWrapperParam("canvas", XmlWrapper("canvas", XmlList(Layer))),
 
         XmlParam("time_dilation", "real", 0.),
@@ -278,6 +280,7 @@ class FilterGroupLayer(GroupLayerBase):
 
 class GroupLayer(GroupLayerBase):
     _layer_type = "group"
+    _version = "0.3"
 
     _nodes = [
         XmlParam("z_range", "bool", False, static=True),
@@ -1172,6 +1175,17 @@ class Canvas(SifNode, ObjectRegistry):
     def add_layer(self, layer: Layer):
         self.layers.append(layer)
         return layer
+
+    def make_color(self, r, g, b, a=1):
+        """
+        Applies Gamma to the rgb values
+        """
+        return NVector(
+            r ** self.gamma_r,
+            g ** self.gamma_g,
+            b ** self.gamma_b,
+            a
+        )
 
 
 class Segment(SifNode):

@@ -214,6 +214,14 @@ class FrameTime:
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self)
 
+    @classmethod
+    def frame(cls, amount):
+        return cls(amount, cls.Unit.Frame)
+
+    @classmethod
+    def seconds(cls, amount):
+        return cls(amount, cls.Unit.Seconds)
+
 
 class Interpolation(enum.Enum):
     Auto = "auto"

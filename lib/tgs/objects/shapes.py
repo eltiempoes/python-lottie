@@ -303,7 +303,7 @@ class Star(Shape):
         pos = self.position.get_value(time)
         r1 = self.inner_radius.get_value(time)
         r2 = self.outer_radius.get_value(time)
-        rot = (self.rotation.get_value(time)) * math.pi / 180 + math.pi
+        rot = -(self.rotation.get_value(time)) * math.pi / 180 + math.pi
         p = self.points.get_value(time)
         halfd = math.pi / p
 

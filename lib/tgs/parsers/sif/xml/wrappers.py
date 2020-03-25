@@ -3,9 +3,10 @@ from .core_nodes import XmlDescriptor, ObjectRegistry
 
 
 class XmlParamSif(XmlDescriptor):
-    def __init__(self, name, child_node):
+    def __init__(self, name, child_node, default_ctor=None):
         super().__init__(name)
         self.child_node = child_node
+        self.default_ctor = default_ctor or child_node
 
     def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         for cn in xml_child_elements(parent, "param"):
@@ -29,7 +30,7 @@ class XmlParamSif(XmlDescriptor):
         return value
 
     def default(self):
-        return self.child_node()
+        return self.default_ctor()
 
 
 class SifNodeList:
