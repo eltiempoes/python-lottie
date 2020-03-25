@@ -260,7 +260,7 @@ class GroupLayerBase(DrawableLayer):
         XmlParamSif("transformation", AbstractTransform, SifTransform),
         XmlWrapperParam("canvas", XmlWrapper("canvas", XmlList(Layer))),
 
-        XmlParam("time_dilation", "real", 0.),
+        XmlParam("time_dilation", "real", 1.),
         XmlParam("time_offset", "time", FrameTime(0, FrameTime.Unit.Frame)),
         XmlParam("children_lock", "bool", False),
         XmlParam("outline_grow", "real", 0.),
@@ -1090,7 +1090,7 @@ class TimeLoopLayer(Layer):
 
 class Keyframe(SifNode):
     _nodes = [
-        XmlAttribute("active", bool, True),
+        XmlAttribute("active", bool_str, True),
         XmlAttribute("time", FrameTime, FrameTime(0, FrameTime.Unit.Frame)),
     ]
 

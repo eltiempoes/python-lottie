@@ -629,4 +629,173 @@ class TestSifBuilder(base.TestCase):
         self.assertEqual(off.keyframes[0].after, api.Interpolation.Constant)
         self.assertEqual(off.keyframes[1].after, api.Interpolation.Constant)
 
-        self._visualize_test(lot)
+    def test_animated_real(self):
+        lot = objects.Animation()
+
+        ref_sl = lot.add_layer(objects.ShapeLayer())
+        ref_rect = ref_sl.add_shape(objects.Rect())
+        ref_rect.position.value = NVector(128, 128)
+        ref_rect.size.value = NVector(256, 256)
+        ref_sl.add_shape(objects.Fill(Color(1, 0, 0)))
+
+        ref_sl.transform.opacity.add_keyframe(0, 100)
+        ref_sl.transform.opacity.add_keyframe(30, 0)
+        ref_sl.transform.opacity.add_keyframe(60, 100)
+
+        sif = builder.to_sif(lot)
+        self.assertEqual(len(sif.layers), 1)
+        self.assertIsInstance(sif.layers[0], api.GroupLayer)
+
+        amount = sif.layers[0].amount
+
+        self.assertAlmostEqual(amount.keyframes[0].value, 1)
+        self.assertAlmostEqual(amount.keyframes[1].value, 0)
+        self.assertAlmostEqual(amount.keyframes[2].value, 1)
+
+        self.assertEqual(amount.keyframes[0].time, api.FrameTime.frame(0))
+        self.assertEqual(amount.keyframes[1].time, api.FrameTime.frame(30))
+        self.assertEqual(amount.keyframes[2].time, api.FrameTime.frame(60))
+
+    def test_animated_fill(self):
+        lot = objects.Animation()
+
+        ref_sl = lot.add_layer(objects.ShapeLayer())
+        ref_rect = ref_sl.add_shape(objects.Rect())
+        ref_rect.position.value = NVector(128, 128)
+        ref_rect.size.value = NVector(256, 256)
+        fill = ref_sl.add_shape(objects.Fill())
+
+        fill.opacity.add_keyframe(0, 100)
+        fill.opacity.add_keyframe(30, 50)
+        fill.opacity.add_keyframe(60, 100)
+        fill.color.add_keyframe(0, NVector(1, 0, 0))
+        fill.color.add_keyframe(30, NVector(0, 1, 0))
+        fill.color.add_keyframe(60, NVector(1, 0, 0))
+
+        sif = builder.to_sif(lot)
+        self.assertEqual(len(sif.layers), 1)
+        self.assertIsInstance(sif.layers[0], api.GroupLayer)
+
+        amount = sif.layers[0].layers[0].amount
+
+        self.assertAlmostEqual(amount.keyframes[0].value, 1)
+        self.assertAlmostEqual(amount.keyframes[1].value, 0.5)
+        self.assertAlmostEqual(amount.keyframes[2].value, 1)
+
+        self.assertEqual(amount.keyframes[0].time, api.FrameTime.frame(0))
+        self.assertEqual(amount.keyframes[1].time, api.FrameTime.frame(30))
+        self.assertEqual(amount.keyframes[2].time, api.FrameTime.frame(60))
+
+        color = sif.layers[0].layers[0].color
+
+        self.assert_nvector_equal(color.keyframes[0].value, sif.make_color(1, 0, 0))
+        self.assert_nvector_equal(color.keyframes[1].value, sif.make_color(0, 1, 0))
+        self.assert_nvector_equal(color.keyframes[2].value, sif.make_color(1, 0, 0))
+
+        self.assertEqual(color.keyframes[0].time, api.FrameTime.frame(0))
+        self.assertEqual(color.keyframes[1].time, api.FrameTime.frame(30))
+        self.assertEqual(color.keyframes[2].time, api.FrameTime.frame(60))
+
+    def test_animated_bezier(self):
+        lot = objects.Animation()
+        sl = lot.add_layer(objects.ShapeLayer())
+
+        shape = sl.add_shape(objects.Path())
+        sl.add_shape(objects.Fill(Color(0, .25, 1)))
+
+        bez = objects.Bezier()
+        bez.closed = True
+        bez.add_point(NVector(256, 0))
+        bez.add_point(NVector(256+128, 256), NVector(0, 0), NVector(64, 128))
+        bez.add_smooth_point(NVector(256, 512), NVector(128, 0))
+        bez.add_point(NVector(256-128, 256), NVector(-64, 128), NVector(0, 0))
+
+        new_bez = bez.clone()
+        new_bez.vertices[2] = NVector(256, 256+128)
+        new_bez.in_tangents[2] = NVector(64, 64)
+        new_bez.out_tangents[2] = NVector(-64, 64)
+
+        shape.shape.add_keyframe(0, bez)
+        shape.shape.add_keyframe(30, new_bez)
+        shape.shape.add_keyframe(60, bez)
+
+        sif = builder.to_sif(lot)
+        self.assertEqual(len(sif.layers), 1)
+        self.assertIsInstance(sif.layers[0], api.GroupLayer)
+
+        grp = sif.layers[0]
+        self.assertEqual(len(grp.layers), 1)
+        self.assertIsInstance(grp.layers[0], api.RegionLayer)
+        self.assertTrue(grp.active)
+
+        rgl = grp.layers[0]
+        self.assertEqual(len(rgl.bline.points), 4)
+        self.assert_nvector_equal(rgl.color.value, sif.make_color(0, .25, 1))
+        self.assertTrue(rgl.active)
+        self.assertTrue(rgl.bline.loop)
+
+        for i in range(4):
+            sp = rgl.bline.points[i]
+            lp = bez.vertices[i] - NVector(256, 256)
+            lt1 = bez.in_tangents[i] * -3
+            lt2 = bez.out_tangents[i] * 3
+
+            new_lp = new_bez.vertices[i] - NVector(256, 256)
+            new_lt1 = new_bez.in_tangents[i] * -3
+            new_lt2 = new_bez.out_tangents[i] * 3
+
+            self.assertEqual(sp.point.keyframes[0].time, api.FrameTime.frame(0))
+            self.assert_nvector_equal(sp.point.keyframes[0].value, lp)
+            self.assert_nvector_equal(sp.t1.keyframes[0].value, lt1)
+            self.assert_nvector_equal(sp.t2.keyframes[0].value, lt2)
+
+            self.assertEqual(sp.point.keyframes[1].time, api.FrameTime.frame(30))
+            self.assert_nvector_equal(sp.point.keyframes[1].value, new_lp)
+            self.assert_nvector_equal(sp.t1.keyframes[1].value, new_lt1)
+            self.assert_nvector_equal(sp.t2.keyframes[1].value, new_lt2)
+
+            self.assertEqual(sp.point.keyframes[2].time, api.FrameTime.frame(60))
+            self.assert_nvector_equal(sp.point.keyframes[2].value, lp)
+            self.assert_nvector_equal(sp.t1.keyframes[2].value, lt1)
+            self.assert_nvector_equal(sp.t2.keyframes[2].value, lt2)
+
+    def test_shape_group(self):
+        lot = objects.Animation()
+        sl = lot.add_layer(objects.ShapeLayer())
+
+        gr1 = sl.add_shape(objects.Group())
+        gr1.name = "Group Shape 1"
+
+        rect = gr1.add_shape(objects.Rect())
+        rect.position.value = NVector(128, 256)
+        rect.size.value = NVector(128, 256)
+        gr1.add_shape(objects.Fill(Color(1, .25, 0)))
+
+        gr2 = sl.add_shape(objects.Group())
+        gr2.name = "Group Shape 2"
+        rect = gr2.add_shape(objects.Rect())
+        rect.position.value = NVector(256+128, 256)
+        rect.size.value = NVector(128, 256)
+        gr2.add_shape(objects.Fill(Color(.25, 0, 1)))
+
+        sif = builder.to_sif(lot)
+        self.assertEqual(len(sif.layers), 1)
+        self.assertIsInstance(sif.layers[0], api.GroupLayer)
+
+        grp = sif.layers[0]
+        self.assertEqual(len(grp.layers), 2)
+        sg1 = grp.layers[1]
+        sg2 = grp.layers[0]
+        self.assertIsInstance(sg1, api.GroupLayer)
+        self.assertIsInstance(sg2, api.GroupLayer)
+        self.assertEqual(sg1.desc, "Group Shape 1")
+        self.assertEqual(sg2.desc, "Group Shape 2")
+        self.assertEqual(len(sg1.layers), 1)
+        self.assertEqual(len(sg2.layers), 1)
+        self.assertIsInstance(sg1.layers[0], api.RegionLayer)
+        self.assertIsInstance(sg2.layers[0], api.RegionLayer)
+        self.assert_nvector_equal(sg1.layers[0].color.value, sif.make_color(1, .25, 0))
+        self.assert_nvector_equal(sg2.layers[0].color.value, sif.make_color(.25, 0, 1))
+
+
+

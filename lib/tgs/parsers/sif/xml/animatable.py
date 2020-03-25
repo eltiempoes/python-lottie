@@ -34,6 +34,8 @@ class TypeDescriptor:
             element.appendChild(xml_make_text(dom, "g", str(value[1])))
             element.appendChild(xml_make_text(dom, "b", str(value[2])))
             element.appendChild(xml_make_text(dom, "a", str(value[3])))
+            if hasattr(value, "guid"):
+                element.setAttribute("guid", value.guid)
         elif self.typename == "gradient":
             for point in value:
                 element.appendChild(point.to_dom(dom))

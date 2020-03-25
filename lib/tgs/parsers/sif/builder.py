@@ -204,7 +204,7 @@ class SifBuilder(restructure.AbstractBuilder):
             if keyframe is None:
                 v = fill.opacity.value
             else:
-                v = keyframe.start
+                v = keyframe.start[0]
             v /= 100
             return v
 
@@ -274,11 +274,11 @@ class SifBuilder(restructure.AbstractBuilder):
 
         layer = self.layer_from_lottie(api.GroupLayer, shape_group.lottie, dom_parent)
 
-        self.shapegroup_process_children(shape_group, layer.layers)
+        self.shapegroup_process_children(shape_group, layer)
 
     def _modifier_inner_group(self, modifier, shapegroup, dom_parent):
         layer = dom_parent.add_layer(api.GroupLayer())
-        self.shapegroup_process_child(modifier.child, shapegroup, layer.layers)
+        self.shapegroup_process_child(modifier.child, shapegroup, layer)
         return layer
 
     def _on_shape_modifier(self, modifier, shapegroup, dom_parent):
