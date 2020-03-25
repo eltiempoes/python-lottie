@@ -4,7 +4,7 @@ import enum
 
 from .core_nodes import XmlDescriptor, ObjectRegistry, XmlSimpleElement
 from .utils import *
-from tgs import NVector
+from tgs.nvector import NVector
 
 
 def noop(x):
@@ -106,18 +106,18 @@ class XmlAnimatable(XmlDescriptor):
         super().__init__(name)
         self.type = TypeDescriptor(typename, default, type_wrapper)
 
-    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
+    def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry, param: TypeDescriptor = None):
         cn = xml_first_element_child(parent, self.name)
         if cn:
-            value = SifAstNode.from_dom(xml_first_element_child(cn), self.type, registry)
+            value = SifAstNode.from_dom(xml_first_element_child(cn), self.type_for(param), registry)
         else:
             value = self.default()
 
         setattr(obj, self.att_name, value)
 
-    def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
+    def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document, type: TypeDescriptor = None):
         param = parent.appendChild(dom.createElement(self.name))
-        param.appendChild(getattr(obj, self.att_name).to_dom(dom, self.type))
+        param.appendChild(getattr(obj, self.att_name).to_dom(dom, self.type_for(type)))
         return param
 
     def from_python(self, value):
@@ -127,6 +127,11 @@ class XmlAnimatable(XmlDescriptor):
 
     def default(self):
         return SifValue(copy.deepcopy(self.type.default_value))
+
+    def type_for(self, param: TypeDescriptor):
+        if param is not None and self.type.typename == "_recurse":
+            return param
+        return self.type
 
 
 class XmlParam(XmlDescriptor):
@@ -323,7 +328,7 @@ class SifAstComplex(SifAstNode, metaclass=SifNodeMeta):
     def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
         instance = cls()
         for node in cls._nodes:
-            node.from_xml(instance, xml, registry)
+            node.from_xml(instance, xml, registry, param)
         return instance
 
     def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
@@ -337,8 +342,8 @@ class SifAdd(SifAstComplex):
     _tag = "add"
 
     _nodes = [
-        XmlAnimatable("lhs", "vector"),
-        XmlAnimatable("rhs", "vector"),
+        XmlAnimatable("lhs", "_recurse"),
+        XmlAnimatable("rhs", "_recurse"),
         XmlAnimatable("scalar", "real"),
     ]
 
@@ -369,6 +374,7 @@ class SifAnimated(SifAstNode):
             keyframe = SifKeyframe(*args, **kwargs)
 
         self.keyframes.append(keyframe)
+        return keyframe
 
 
 class SifAnimatedFile(SifAstComplex):
@@ -403,7 +409,7 @@ class SifDerivative(SifAstComplex):
     _tag = "derivative"
 
     _nodes = [
-        XmlAnimatable("link", "vector"),
+        XmlAnimatable("link", "_recurse"),
         XmlAnimatable("interval", "real", 0.01),
         XmlAnimatable("accuracy", "integer", Accuracy.Normal, Accuracy),
         XmlAnimatable("order", "integer", DerivativeOrder.FirstDerivative, DerivativeOrder),
@@ -434,16 +440,7 @@ class SifGreyed(SifAstComplex):
     _tag = "greyed"
 
     _nodes = [
-        XmlAnimatable("link", "vector"),
-    ]
-
-
-class SifLinear(SifAstComplex):
-    _tag = "linear"
-
-    _nodes = [
-        XmlAnimatable("slope", "vector"),
-        XmlAnimatable("offset", "vector"),
+        XmlAnimatable("link", "_recurse"),
     ]
 
 
@@ -465,6 +462,15 @@ class SifRadialComposite(SifAstComplex):
     ]
 
 
+class SifVectorComposite(SifAstComplex):
+    _tag = "vector"
+
+    _nodes = [
+        XmlAnimatable("x", "real", 0.),
+        XmlAnimatable("y", "real", 0.),
+    ]
+
+
 class InterpolationType(enum.Enum):
     NearestNeighbour = 0
     Linear = 1
@@ -477,7 +483,7 @@ class SifRandom(SifAstComplex):
     _tag = "random"
 
     _nodes = [
-        XmlAnimatable("link", "vector"),
+        XmlAnimatable("link", "_recurse"),
         XmlAnimatable("radius", "real", 0.),
         XmlAnimatable("seed", "integer", 0),
         XmlAnimatable("speed", "real", 1.),
@@ -490,7 +496,7 @@ class SifReference(SifAstComplex):
     _tag = "link"
 
     _nodes = [
-        XmlAnimatable("reference", "vector"),
+        XmlAnimatable("reference", "_recurse"),
     ]
 
 
@@ -498,7 +504,7 @@ class SifScale(SifAstComplex):
     _tag = "scale"
 
     _nodes = [
-        XmlAnimatable("reference", "vector"),
+        XmlAnimatable("link", "_recurse"),
         XmlAnimatable("scalar", "real", 1.),
     ]
 
@@ -589,7 +595,7 @@ class SifStep(SifAstComplex):
     _tag = "step"
 
     _nodes = [
-        XmlAnimatable("link", "vector"),
+        XmlAnimatable("link", "_recurse"),
         XmlAnimatable("duration", "time", FrameTime(1, FrameTime.Unit.Seconds)),
         XmlAnimatable("start_time", "time", FrameTime(0, FrameTime.Unit.Seconds)),
         XmlAnimatable("intersection", "real", 0.5),
@@ -600,8 +606,8 @@ class SifSubtract(SifAstComplex):
     _tag = "subtract"
 
     _nodes = [
-        XmlAnimatable("lhs", "vector"),
-        XmlAnimatable("rhs", "vector"),
+        XmlAnimatable("lhs", "_recurse"),
+        XmlAnimatable("rhs", "_recurse"),
         XmlAnimatable("scalar", "real", 1.),
     ]
 
@@ -610,8 +616,8 @@ class SifSwitch(SifAstComplex):
     _tag = "switch"
 
     _nodes = [
-        XmlAnimatable("link_off", "vector"),
-        XmlAnimatable("link_on", "vector"),
+        XmlAnimatable("link_off", "_recurse"),
+        XmlAnimatable("link_on", "_recurse"),
         XmlAnimatable("switch", "bool", False),
     ]
 
@@ -620,8 +626,8 @@ class SifTimedSwap(SifAstComplex):
     _tag = "timed_swap"
 
     _nodes = [
-        XmlAnimatable("before", "vector"),
-        XmlAnimatable("after", "vector"),
+        XmlAnimatable("before", "_recurse"),
+        XmlAnimatable("after", "_recurse"),
         XmlAnimatable("time", "time", FrameTime(0, FrameTime.Unit.Seconds)),
         XmlAnimatable("length", "time", FrameTime(0, FrameTime.Unit.Seconds)),
     ]
@@ -631,9 +637,20 @@ class SifTimeLoop(SifAstComplex):
     _tag = "timeloop"
 
     _nodes = [
-        XmlAnimatable("link", "vector"),
+        XmlAnimatable("link", "_recurse"),
         XmlAnimatable("link_time", "time", FrameTime(0, FrameTime.Unit.Seconds)),
         XmlAnimatable("local_time", "time", FrameTime(0, FrameTime.Unit.Seconds)),
         XmlAnimatable("duration", "time", FrameTime(0, FrameTime.Unit.Seconds)),
+    ]
+
+
+class SifPower(SifAstComplex):
+    _tag = "power"
+
+    _nodes = [
+        XmlAnimatable("base", "real"),
+        XmlAnimatable("power", "real", 1.),
+        XmlAnimatable("epsilon", "real", 0.000001),
+        XmlAnimatable("infinite", "real", 999999.),
     ]
 

@@ -1,7 +1,7 @@
 from xml.dom import minidom
 from distutils.util import strtobool
 
-from tgs import NVector
+from tgs.nvector import NVector
 
 
 class _tag:

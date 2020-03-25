@@ -76,16 +76,34 @@ class TypedXmlDescriptor(XmlDescriptor):
         return copy.deepcopy(self.default_value)
 
 
+class ValueReference:
+    def __init__(self, id, value=None):
+        self.value = value
+        self.id = id
+
+    @classmethod
+    def from_registry(cls, id, registry: ObjectRegistry):
+        return cls(id, registry.get_object(id))
+
+
 class XmlAttribute(TypedXmlDescriptor):
     def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         xml_str = parent.getAttribute(self.name)
         if xml_str:
-            setattr(obj, self.att_name, value_from_xml_string(xml_str, self.type))
+            if xml_str.startswith(":") and xml_str[1:] in registry.registry:
+                value = ValueReference.from_registry(xml_str[1:], registry)
+            else:
+                value = value_from_xml_string(xml_str, self.type)
+            setattr(obj, self.att_name, value)
 
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
         value = getattr(obj, self.att_name)
         if value is not None:
-            parent.setAttribute(self.name, value_to_xml_string(value, self.type))
+            if isinstance(value, ValueReference):
+                xml_str = ":" + value.id
+            else:
+                xml_str = value_to_xml_string(value, self.type)
+            parent.setAttribute(self.name, xml_str)
 
 
 class XmlFixedAttribute(XmlDescriptor):

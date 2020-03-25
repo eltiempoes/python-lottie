@@ -59,7 +59,6 @@ class SifTransform(AbstractTransform):
     ]
 
 
-
 class BlinePoint(SifNode):
     _tag = "composite"
 
@@ -264,6 +263,10 @@ class GroupLayerBase(DrawableLayer):
         XmlParam("children_lock", "bool", False),
         XmlParam("outline_grow", "real", 0.),
     ]
+
+    def add_layer(self, layer: Layer):
+        self.layers.append(layer)
+        return layer
 
 
 class FilterGroupLayer(GroupLayerBase):
@@ -1165,6 +1168,10 @@ class Canvas(SifNode, ObjectRegistry):
             return time.value
         elif time.unit == FrameTime.Unit.Seconds:
             return time.value * self.fps
+
+    def add_layer(self, layer: Layer):
+        self.layers.append(layer)
+        return layer
 
 
 class Segment(SifNode):
