@@ -193,6 +193,26 @@ class Duplicate(Def):
         XmlAnimatable("step", "real", 1.),
     ]
 
+    @property
+    def from_(self):
+        return getattr(self, "from")
+
+    @from_.setter
+    def from_(self, value):
+        setattr(self, "from", value)
+
+
+class ExportedValue(Def):
+    def __init__(self, id, value, typename):
+        self.id = id
+        self.value = value
+        self.type = TypeDescriptor(typename)
+
+    def to_dom(self, dom: minidom.Document):
+        element = self.value.to_dom(dom, self.type)
+        element.setAttribute("id", self.id)
+        return element
+
 
 class Layer(SifNode):
     _types = None
@@ -262,7 +282,7 @@ class GroupLayerBase(DrawableLayer):
 
         XmlParam("time_dilation", "real", 1.),
         XmlParam("time_offset", "time", FrameTime(0, FrameTime.Unit.Frame)),
-        XmlParam("children_lock", "bool", False),
+        XmlParam("children_lock", "bool", False, static=True),
         XmlParam("outline_grow", "real", 0.),
     ]
 
@@ -342,7 +362,7 @@ class ComplexShape(DrawableLayer):
         XmlParam("color", "color", NVector(0, 0, 0, 1)),
         XmlParam("origin", "vector", NVector(0, 0)),
         XmlParam("invert", "bool", False),
-        XmlParam("antialias", "bool", False),
+        XmlParam("antialias", "bool", True),
         XmlParam("feather", "real", 0.),
         XmlParam("blurtype", "integer", BlurType.FastGaussian, BlurType),
         XmlParam("winding_style", "integer", WindingStyle.NonZero, WindingStyle),

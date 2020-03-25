@@ -49,8 +49,6 @@ class TypeDescriptor:
         else:
             if isinstance(value, enum.Enum):
                 value = value.value
-            elif isinstance(value, ValueReference):
-                value = ":" + value.id
             element.setAttribute("value", str(value))
 
         return element
@@ -120,8 +118,12 @@ class XmlAnimatable(XmlDescriptor):
         setattr(obj, self.att_name, value)
 
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document, type: TypeDescriptor = None):
+        value = getattr(obj, self.att_name)
+        if isinstance(value, SifValue) and isinstance(value.value, ValueReference):
+            parent.setAttribute(self.name, ":" + value.value.id)
+            return
         param = parent.appendChild(dom.createElement(self.name))
-        param.appendChild(getattr(obj, self.att_name).to_dom(dom, self.type_for(type)))
+        param.appendChild(value.to_dom(dom, self.type_for(type)))
         return param
 
     def from_python(self, value):
@@ -171,7 +173,7 @@ class XmlParam(XmlDescriptor):
         param.setAttribute("name", self.name)
         value = getattr(obj, self.att_name)
         if isinstance(value, self._def()):
-            param.setAttribute("use", value.id)
+            param.setAttribute("use", ":" + value.id)
         else:
             if self.static:
                 elem = self.type.value_to_xml_element(value, dom)
@@ -338,10 +340,14 @@ class SifAstComplex(SifAstNode, metaclass=SifNodeMeta):
 
     @classmethod
     def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
-        instance = cls()
+        instance = cls.get_class_from_dom(xml, param, registry)()
         for node in cls._nodes:
             node.from_xml(instance, xml, registry, param)
         return instance
+
+    @classmethod
+    def get_class_from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
+        return cls
 
     def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
         element = self._prepare_to_dom(dom, param)
@@ -356,7 +362,7 @@ class SifAdd(SifAstComplex):
     _nodes = [
         XmlAnimatable("lhs", "_recurse"),
         XmlAnimatable("rhs", "_recurse"),
-        XmlAnimatable("scalar", "real"),
+        XmlAnimatable("scalar", "real", 1.),
     ]
 
 
@@ -432,9 +438,9 @@ class SifDynamic(SifAstComplex):
     _tag = "dynamic"
 
     _nodes = [
-        XmlAnimatable("tip_static", "vector"),
-        XmlAnimatable("origin", "vector"),
-        XmlAnimatable("force", "vector"),
+        XmlAnimatable("tip_static", "vector", NVector(0, 0)),
+        XmlAnimatable("origin", "vector", NVector(0, 0)),
+        XmlAnimatable("force", "vector", NVector(0, 0)),
         XmlAnimatable("torque", "real", 0.),
         XmlAnimatable("damping", "real", 0.4),
         XmlAnimatable("friction", "real", 0.4),
@@ -460,8 +466,8 @@ class SifLinear(SifAstComplex):
     _tag = "linear"
 
     _nodes = [
-        XmlAnimatable("slope", "vector"),
-        XmlAnimatable("offset", "vector"),
+        XmlAnimatable("slope", "vector", NVector(0, 0)),
+        XmlAnimatable("offset", "vector", NVector(0, 0)),
     ]
 
 
@@ -474,8 +480,24 @@ class SifRadialComposite(SifAstComplex):
     ]
 
 
-class SifVectorComposite(SifAstComplex):
-    _tag = "vector"
+class SifComposite(SifAstComplex):
+    _tag = "composite"
+
+    @classmethod
+    def get_class_from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
+        type = xml.getAttribute("type")
+        if type == "vector":
+            return SifVectorComposite
+        return None
+
+    def _prepare_to_dom(self, dom: minidom.Document, param: TypeDescriptor):
+        element = dom.createElement("composite")
+        element.setAttribute("type", param.typename)
+        return element
+
+
+class SifVectorComposite(SifComposite):
+    _type = "vector"
 
     _nodes = [
         XmlAnimatable("x", "real", 0.),
@@ -660,7 +682,7 @@ class SifPower(SifAstComplex):
     _tag = "power"
 
     _nodes = [
-        XmlAnimatable("base", "real"),
+        XmlAnimatable("base", "real", 1.),
         XmlAnimatable("power", "real", 1.),
         XmlAnimatable("epsilon", "real", 0.000001),
         XmlAnimatable("infinite", "real", 999999.),

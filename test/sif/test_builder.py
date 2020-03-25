@@ -809,9 +809,108 @@ class TestSifBuilder(base.TestCase):
         star.position.value = NVector(256, 40)
 
         group.add_shape(objects.Fill(Color(1, 1, 0)))
+        group.add_shape(objects.Stroke(Color(0, 0, 0), 3))
+        group.name = "Star"
 
         rep = sl.add_shape(objects.Repeater(4))
+        rep.name = "Repeater"
         rep.transform.position.value = NVector(20, 80)
         rep.transform.end_opacity.value = 20
 
-        self._visualize_test(lot)
+        sif = builder.to_sif(lot)
+        self.assertEqual(len(sif.layers), 1)
+        self.assertIsInstance(sif.layers[0], api.GroupLayer)
+        self.assertEqual(len(sif.layers[0].layers), 1)
+        self.assertIsInstance(sif.layers[0].layers[0], api.GroupLayer)
+        self.assertEqual(sif.layers[0].layers[0].desc, "Repeater")
+        self.assertEqual(len(sif.layers[0].layers[0].layers), 2)
+
+        duplicate_lay = sif.layers[0].layers[0].layers[1]
+        self.assertIsInstance(duplicate_lay, api.DuplicateLayer)
+        self.assertEqual(duplicate_lay.desc, "Repeater")
+        duplicate = sif.get_object(duplicate_lay.index.id)
+        self.assertIsInstance(duplicate, api.Duplicate)
+        self.assertEqual(duplicate.from_.value, 3)
+        self.assertEqual(duplicate.to.value, 0)
+        self.assertEqual(duplicate.step.value, -1)
+
+        dup_trans = sif.layers[0].layers[0].layers[0]
+        self.assertIsInstance(dup_trans, api.GroupLayer)
+        self.assertEqual(dup_trans.desc, "Transformation for Repeater")
+        dup_origin = sif.get_object(dup_trans.origin.id)
+        self.assert_nvector_equal(dup_origin.value.value, NVector(0, 0))
+        trans = dup_trans.transformation
+        self.assertIsInstance(trans.offset, api.SifAdd)
+        self.assertEqual(trans.offset.rhs.value.id, dup_origin.id)
+        self.assertIsInstance(trans.offset.lhs, api.SifScale)
+        self.assert_nvector_equal(trans.offset.lhs.link.value, NVector(20, 80))
+        self.assertEqual(trans.offset.lhs.scalar.value.id, duplicate.id)
+        self.assertIsInstance(trans.angle, api.SifScale)
+        self.assertEqual(trans.angle.link.value, 0)
+        self.assertEqual(trans.angle.scalar.value.id, duplicate.id)
+        self.assertIsInstance(dup_trans.amount, api.SifSubtract)
+        self.assertEqual(dup_trans.amount.lhs.value, 1)
+        self.assertIsInstance(dup_trans.amount.rhs, api.SifScale)
+        self.assertAlmostEqual(dup_trans.amount.rhs.link.value, 0.266666666)
+        self.assertEqual(dup_trans.amount.rhs.scalar.value.id, duplicate.id)
+        self.assertEqual(len(dup_trans.layers), 1)
+        self.assertEqual(dup_trans.layers[0].desc, "Star")
+
+
+    def test_repeater_rot(self):
+        lot = objects.Animation()
+        sl = lot.add_layer(objects.ShapeLayer())
+
+        group = sl.add_shape(objects.Group())
+
+        star = group.add_shape(objects.Star())
+        star.inner_radius.value = 16
+        star.outer_radius.value = 32
+        star.position.value = NVector(256, 40)
+
+        group.add_shape(objects.Fill(Color(1, 1, 0)))
+        group.name = "Star"
+
+        rep = sl.add_shape(objects.Repeater(12))
+        rep.name = "Repeater"
+        rep.transform.anchor_point.value = NVector(256, 256)
+        rep.transform.rotation.value = 30
+
+        sif = builder.to_sif(lot)
+        self.assertEqual(len(sif.layers), 1)
+        self.assertIsInstance(sif.layers[0], api.GroupLayer)
+        self.assertEqual(len(sif.layers[0].layers), 1)
+        self.assertIsInstance(sif.layers[0].layers[0], api.GroupLayer)
+        self.assertEqual(sif.layers[0].layers[0].desc, "Repeater")
+        self.assertEqual(len(sif.layers[0].layers[0].layers), 2)
+
+        duplicate_lay = sif.layers[0].layers[0].layers[1]
+        self.assertIsInstance(duplicate_lay, api.DuplicateLayer)
+        self.assertEqual(duplicate_lay.desc, "Repeater")
+        duplicate = sif.get_object(duplicate_lay.index.id)
+        self.assertIsInstance(duplicate, api.Duplicate)
+        self.assertEqual(duplicate.from_.value, 11)
+        self.assertEqual(duplicate.to.value, 0)
+        self.assertEqual(duplicate.step.value, -1)
+
+        dup_trans = sif.layers[0].layers[0].layers[0]
+        self.assertIsInstance(dup_trans, api.GroupLayer)
+        self.assertEqual(dup_trans.desc, "Transformation for Repeater")
+        dup_origin = sif.get_object(dup_trans.origin.id)
+        self.assert_nvector_equal(dup_origin.value.value, NVector(256, 256))
+        trans = dup_trans.transformation
+        self.assertIsInstance(trans.offset, api.SifAdd)
+        self.assertEqual(trans.offset.rhs.value.id, dup_origin.id)
+        self.assertIsInstance(trans.offset.lhs, api.SifScale)
+        self.assert_nvector_equal(trans.offset.lhs.link.value, NVector(0, 0))
+        self.assertEqual(trans.offset.lhs.scalar.value.id, duplicate.id)
+        self.assertIsInstance(trans.angle, api.SifScale)
+        self.assertEqual(trans.angle.link.value, 30)
+        self.assertEqual(trans.angle.scalar.value.id, duplicate.id)
+        self.assertIsInstance(dup_trans.amount, api.SifSubtract)
+        self.assertEqual(dup_trans.amount.lhs.value, 1)
+        self.assertIsInstance(dup_trans.amount.rhs, api.SifScale)
+        self.assertAlmostEqual(dup_trans.amount.rhs.link.value, 0.)
+        self.assertEqual(dup_trans.amount.rhs.scalar.value.id, duplicate.id)
+        self.assertEqual(len(dup_trans.layers), 1)
+        self.assertEqual(dup_trans.layers[0].desc, "Star")

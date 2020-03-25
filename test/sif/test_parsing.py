@@ -98,7 +98,7 @@ class TestParseFile(base.TestCase):
         self.assert_strong_equal(layer.origin.value, NVector(0., 0.))
         self.assert_strong_equal(layer.time_dilation.value, 1.)
         self.assert_strong_equal(layer.time_offset.value, api.FrameTime(0, api.FrameTime.Unit.Seconds))
-        self.assert_strong_equal(layer.children_lock.value, False)
+        self.assert_strong_equal(layer.children_lock, False)
         self.assert_strong_equal(layer.outline_grow.value, 0.)
         self.assert_strong_equal(layer.z_range, False)
         self.assert_strong_equal(layer.z_range_position.value, 0.)

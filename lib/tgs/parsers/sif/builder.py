@@ -294,6 +294,7 @@ class SifBuilder(restructure.AbstractBuilder):
         dup = api.Duplicate()
         dup.id = name_id
         self.canvas.defs.append(dup)
+        self.canvas.register_as(dup, name_id)
 
         def getter(keyframe):
             if keyframe is None:
@@ -325,13 +326,22 @@ class SifBuilder(restructure.AbstractBuilder):
         # HACK work around an issue in Synfig
         power.power = api.SifAdd()
         power.power.lhs.value = api.ValueReference(name_id)
-        power.power.rhs.value = api.SifValue(0.000001)
+        power.power.rhs.value = 0.000001
 
     def _build_repeater_transform(self, shape, inner, name_id):
+        offset_id = name_id + "_origin"
+        origin = api.ExportedValue(offset_id, self.process_vector(shape.transform.anchor_point), "vector")
+        self.canvas.defs.append(origin)
+        self.canvas.register_as(origin, offset_id)
+        inner.origin = origin
+
         composite = inner.transformation
-        composite.offset = api.SifScale()
-        composite.offset.scalar.value = api.ValueReference(name_id)
-        composite.offset.link = self.process_vector(shape.transform.position)
+
+        composite.offset = api.SifAdd()
+        composite.offset.rhs.value = api.ValueReference(offset_id)
+        composite.offset.lhs = api.SifScale()
+        composite.offset.lhs.scalar.value = api.ValueReference(name_id)
+        composite.offset.lhs.link = self.process_vector(shape.transform.position)
 
         composite.angle = api.SifScale()
         composite.angle.scalar.value = api.ValueReference(name_id)
@@ -340,10 +350,6 @@ class SifBuilder(restructure.AbstractBuilder):
         composite.scale = api.SifVectorComposite()
         self._build_repeater_transform_scale_component(shape, name_id, 0, composite.scale)
         self._build_repeater_transform_scale_component(shape, name_id, 1, composite.scale)
-        #self.process_vector_ext(
-            #"scale", shape.transform.scale.keyframes, composite,
-            #"vector", self._get_scale(shape.transform)
-        #)
 
     def _build_repeater_amount(self, shape, inner, name_id):
         inner.amount = api.SifSubtract()
@@ -370,10 +376,12 @@ class SifBuilder(restructure.AbstractBuilder):
         dup = self._build_repeater_defs(shape, name_id)
         self._build_repeater_transform(shape, inner, name_id)
         self._build_repeater_amount(shape, inner, name_id)
+        inner.desc = "Transformation for " + (dom_parent.desc or "duplicate")
 
         # duplicate layer
         duplicate = dom_parent.add_layer(api.DuplicateLayer())
         duplicate.index = dup
+        duplicate.desc = shape.name
 
 
 def to_sif(animation):
