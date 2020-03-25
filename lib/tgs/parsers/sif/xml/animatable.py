@@ -2,7 +2,7 @@ from xml.dom import minidom
 import copy
 import enum
 
-from .core_nodes import XmlDescriptor, ObjectRegistry, XmlSimpleElement
+from .core_nodes import XmlDescriptor, ObjectRegistry, XmlSimpleElement, ValueReference
 from .utils import *
 from tgs.nvector import NVector
 
@@ -49,6 +49,8 @@ class TypeDescriptor:
         else:
             if isinstance(value, enum.Enum):
                 value = value.value
+            elif isinstance(value, ValueReference):
+                value = ":" + value.id
             element.setAttribute("value", str(value))
 
         return element
@@ -344,7 +346,7 @@ class SifAstComplex(SifAstNode, metaclass=SifNodeMeta):
     def to_dom(self, dom: minidom.Document, param: TypeDescriptor):
         element = self._prepare_to_dom(dom, param)
         for node in self._nodes:
-            node.to_xml(self, element, dom)
+            node.to_xml(self, element, dom, param)
         return element
 
 

@@ -24,8 +24,8 @@ class TestSifBuilder(base.TestCase):
 
     def _visualize_test(self, lot):
         from tgs.exporters.core import export_embedded_html
-        sif = builder.to_sif(lot)
         export_embedded_html(lot, "/tmp/testout.html")
+        sif = builder.to_sif(lot)
         with open("/tmp/testout.sif", "w") as sifile:
             sif.to_xml().writexml(sifile, "", "  ", "\n")
 
@@ -797,5 +797,21 @@ class TestSifBuilder(base.TestCase):
         self.assert_nvector_equal(sg1.layers[0].color.value, sif.make_color(1, .25, 0))
         self.assert_nvector_equal(sg2.layers[0].color.value, sif.make_color(.25, 0, 1))
 
+    def test_repeater(self):
+        lot = objects.Animation()
+        sl = lot.add_layer(objects.ShapeLayer())
 
+        group = sl.add_shape(objects.Group())
 
+        star = group.add_shape(objects.Star())
+        star.inner_radius.value = 16
+        star.outer_radius.value = 32
+        star.position.value = NVector(256, 40)
+
+        group.add_shape(objects.Fill(Color(1, 1, 0)))
+
+        rep = sl.add_shape(objects.Repeater(4))
+        rep.transform.position.value = NVector(20, 80)
+        rep.transform.end_opacity.value = 20
+
+        self._visualize_test(lot)
