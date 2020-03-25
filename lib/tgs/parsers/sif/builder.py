@@ -101,8 +101,8 @@ class SifBuilder(restructure.AbstractBuilder):
         #self.process_vector_ext("scale", transform.scale.keyframes, composite, "vector", get_scale)
         composite.skew_angle = self.process_scalar(transform.skew or objects.Value(0))
         composite.angle = self.process_scalar(transform.rotation)
-        composite.amount = self.process_scalar(transform.opacity, 1/100)
-        composite.origin = self.process_vector(transform.anchor_point)
+        group.amount = self.process_scalar(transform.opacity, 1/100)
+        group.origin = self.process_vector(transform.anchor_point)
         # TODO get z_depth from position
         composite.z_depth = 0
 
