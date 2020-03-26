@@ -3,28 +3,7 @@ import copy
 from uuid import uuid4
 
 from .utils import *
-
-
-class ObjectRegistry:
-    def __init__(self):
-        self.registry = {}
-
-    def register_as(self, object, key):
-        self.registry[key] = object
-
-    def register(self, object):
-        guid = getattr(object, "guid", None)
-        if guid is None:
-            guid = self.guid()
-            object.guid = guid
-        self.registry[guid] = object
-
-    @classmethod
-    def guid(cls):
-        return str(uuid4()).replace("-", "").upper()
-
-    def get_object(self, guid):
-        return self.registry[guid]
+from tgs.parsers.sif.sif.core import ObjectRegistry
 
 
 class XmlDescriptor:

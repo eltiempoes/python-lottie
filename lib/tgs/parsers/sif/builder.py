@@ -4,7 +4,7 @@ from xml.dom import minidom
 from ... import objects
 from ...nvector import NVector
 from ...utils import restructure
-from . import api
+from . import api, ast
 
 
 blend_modes = {
@@ -118,7 +118,7 @@ class SifBuilder(restructure.AbstractBuilder):
 
     def process_vector_ext(self, kframes, getter):
         if kframes is not None:
-            wrap = api.SifAnimated()
+            wrap = ast.SifAnimated()
             for i in range(len(kframes)):
                 keyframe = kframes[i]
                 waypoint = wrap.add_keyframe(getter(keyframe), api.FrameTime.frame(keyframe.time))
@@ -310,7 +310,7 @@ class SifBuilder(restructure.AbstractBuilder):
         return dup
 
     def _build_repeater_transform_scale_component(self, shape, name_id, comp, scalecomposite):
-        power = api.SifPower()
+        power = ast.SifPower()
         setattr(scalecomposite, "xy"[comp], power)
 
         def getter(keyframe):
@@ -324,7 +324,7 @@ class SifBuilder(restructure.AbstractBuilder):
         power.base = self.process_vector_ext(shape.transform.scale.keyframes, getter)
 
         # HACK work around an issue in Synfig
-        power.power = api.SifAdd()
+        power.power = ast.SifAdd()
         power.power.lhs.value = api.ValueReference(name_id)
         power.power.rhs.value = 0.000001
 
@@ -337,25 +337,25 @@ class SifBuilder(restructure.AbstractBuilder):
 
         composite = inner.transformation
 
-        composite.offset = api.SifAdd()
+        composite.offset = ast.SifAdd()
         composite.offset.rhs.value = api.ValueReference(offset_id)
-        composite.offset.lhs = api.SifScale()
+        composite.offset.lhs = ast.SifScale()
         composite.offset.lhs.scalar.value = api.ValueReference(name_id)
         composite.offset.lhs.link = self.process_vector(shape.transform.position)
 
-        composite.angle = api.SifScale()
+        composite.angle = ast.SifScale()
         composite.angle.scalar.value = api.ValueReference(name_id)
         composite.angle.link = self.process_scalar(shape.transform.rotation)
 
-        composite.scale = api.SifVectorComposite()
+        composite.scale = ast.SifVectorComposite()
         self._build_repeater_transform_scale_component(shape, name_id, 0, composite.scale)
         self._build_repeater_transform_scale_component(shape, name_id, 1, composite.scale)
 
     def _build_repeater_amount(self, shape, inner, name_id):
-        inner.amount = api.SifSubtract()
+        inner.amount = ast.SifSubtract()
         inner.amount.lhs = self.process_scalar(shape.transform.start_opacity, 0.01)
 
-        inner.amount.rhs = api.SifScale()
+        inner.amount.rhs = ast.SifScale()
         inner.amount.rhs.scalar.value = api.ValueReference(name_id)
 
         def getter(keyframe):

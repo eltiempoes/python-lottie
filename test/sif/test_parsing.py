@@ -1,7 +1,7 @@
 import os
 import math
 
-from tgs.parsers.sif import api
+from tgs.parsers.sif import api, ast
 from tgs.nvector import NVector, PolarVector
 from .. import base
 
@@ -200,32 +200,32 @@ class TestParseFile(base.TestCase):
         point = layer.bline.points[1]
         self.assertIsInstance(point, api.BlinePoint)
         self.assert_strong_equal(point.point.value, NVector(0.7732625604, -0.0648742691))
-        self.assertIsInstance(point.t1.radius, api.SifAnimated)
+        self.assertIsInstance(point.t1.radius, ast.SifAnimated)
         self.assertEqual(len(point.t1.radius.keyframes), 2)
         kf = point.t1.radius.keyframes[0]
         self.assertIsInstance(kf, api.SifKeyframe)
         self.assert_strong_equal(kf.time, api.FrameTime(0, api.FrameTime.Unit.Seconds))
-        self.assert_strong_equal(kf.before, api.Interpolation.Clamped)
-        self.assert_strong_equal(kf.after, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.before, ast.Interpolation.Clamped)
+        self.assert_strong_equal(kf.after, ast.Interpolation.Clamped)
         self.assert_strong_equal(kf.value, 2.2314351749)
         kf = point.t1.radius.keyframes[1]
         self.assertIsInstance(kf, api.SifKeyframe)
         self.assert_strong_equal(kf.time, api.FrameTime(2, api.FrameTime.Unit.Seconds))
-        self.assert_strong_equal(kf.before, api.Interpolation.Clamped)
-        self.assert_strong_equal(kf.after, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.before, ast.Interpolation.Clamped)
+        self.assert_strong_equal(kf.after, ast.Interpolation.Clamped)
         self.assert_strong_equal(kf.value, 2.6981012388)
 
         kf = point.t1.theta.keyframes[0]
         self.assertIsInstance(kf, api.SifKeyframe)
         self.assert_strong_equal(kf.time, api.FrameTime(0, api.FrameTime.Unit.Seconds))
-        self.assert_strong_equal(kf.before, api.Interpolation.Clamped)
-        self.assert_strong_equal(kf.after, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.before, ast.Interpolation.Clamped)
+        self.assert_strong_equal(kf.after, ast.Interpolation.Clamped)
         self.assert_strong_equal(kf.value, 19.593754)
         kf = point.t1.theta.keyframes[1]
         self.assertIsInstance(kf, api.SifKeyframe)
         self.assert_strong_equal(kf.time, api.FrameTime(2, api.FrameTime.Unit.Seconds))
-        self.assert_strong_equal(kf.before, api.Interpolation.Clamped)
-        self.assert_strong_equal(kf.after, api.Interpolation.Clamped)
+        self.assert_strong_equal(kf.before, ast.Interpolation.Clamped)
+        self.assert_strong_equal(kf.after, ast.Interpolation.Clamped)
         self.assert_strong_equal(kf.value, -57.534264)
 
     def _check_layer_gradient(self, layer):

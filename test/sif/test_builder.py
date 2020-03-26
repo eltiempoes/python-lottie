@@ -1,5 +1,5 @@
 import math
-from tgs.parsers.sif import api, builder
+from tgs.parsers.sif import api, builder, ast
 from tgs import objects
 from tgs.nvector import NVector, Color
 from .. import base
@@ -840,22 +840,21 @@ class TestSifBuilder(base.TestCase):
         dup_origin = sif.get_object(dup_trans.origin.id)
         self.assert_nvector_equal(dup_origin.value.value, NVector(0, 0))
         trans = dup_trans.transformation
-        self.assertIsInstance(trans.offset, api.SifAdd)
+        self.assertIsInstance(trans.offset, ast.SifAdd)
         self.assertEqual(trans.offset.rhs.value.id, dup_origin.id)
-        self.assertIsInstance(trans.offset.lhs, api.SifScale)
+        self.assertIsInstance(trans.offset.lhs, ast.SifScale)
         self.assert_nvector_equal(trans.offset.lhs.link.value, NVector(20, 80))
         self.assertEqual(trans.offset.lhs.scalar.value.id, duplicate.id)
-        self.assertIsInstance(trans.angle, api.SifScale)
+        self.assertIsInstance(trans.angle, ast.SifScale)
         self.assertEqual(trans.angle.link.value, 0)
         self.assertEqual(trans.angle.scalar.value.id, duplicate.id)
-        self.assertIsInstance(dup_trans.amount, api.SifSubtract)
+        self.assertIsInstance(dup_trans.amount, ast.SifSubtract)
         self.assertEqual(dup_trans.amount.lhs.value, 1)
-        self.assertIsInstance(dup_trans.amount.rhs, api.SifScale)
+        self.assertIsInstance(dup_trans.amount.rhs, ast.SifScale)
         self.assertAlmostEqual(dup_trans.amount.rhs.link.value, 0.266666666)
         self.assertEqual(dup_trans.amount.rhs.scalar.value.id, duplicate.id)
         self.assertEqual(len(dup_trans.layers), 1)
         self.assertEqual(dup_trans.layers[0].desc, "Star")
-
 
     def test_repeater_rot(self):
         lot = objects.Animation()
@@ -899,17 +898,17 @@ class TestSifBuilder(base.TestCase):
         dup_origin = sif.get_object(dup_trans.origin.id)
         self.assert_nvector_equal(dup_origin.value.value, NVector(256, 256))
         trans = dup_trans.transformation
-        self.assertIsInstance(trans.offset, api.SifAdd)
+        self.assertIsInstance(trans.offset, ast.SifAdd)
         self.assertEqual(trans.offset.rhs.value.id, dup_origin.id)
-        self.assertIsInstance(trans.offset.lhs, api.SifScale)
+        self.assertIsInstance(trans.offset.lhs, ast.SifScale)
         self.assert_nvector_equal(trans.offset.lhs.link.value, NVector(0, 0))
         self.assertEqual(trans.offset.lhs.scalar.value.id, duplicate.id)
-        self.assertIsInstance(trans.angle, api.SifScale)
+        self.assertIsInstance(trans.angle, ast.SifScale)
         self.assertEqual(trans.angle.link.value, 30)
         self.assertEqual(trans.angle.scalar.value.id, duplicate.id)
-        self.assertIsInstance(dup_trans.amount, api.SifSubtract)
+        self.assertIsInstance(dup_trans.amount, ast.SifSubtract)
         self.assertEqual(dup_trans.amount.lhs.value, 1)
-        self.assertIsInstance(dup_trans.amount.rhs, api.SifScale)
+        self.assertIsInstance(dup_trans.amount.rhs, ast.SifScale)
         self.assertAlmostEqual(dup_trans.amount.rhs.link.value, 0.)
         self.assertEqual(dup_trans.amount.rhs.scalar.value.id, duplicate.id)
         self.assertEqual(len(dup_trans.layers), 1)
