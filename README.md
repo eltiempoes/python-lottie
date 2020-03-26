@@ -67,6 +67,8 @@ To install, just copy (or symlink) ./addons/synfig/tgs-exporter
 into the synfig plugin directory.
 You might have to copy ./lib/tgs in there as well.
 
+You can download a zipfile from http://mattia.basaglia.gitlab.io/tgs/downloads.html
+
 
 ### Inkscape
 
@@ -85,6 +87,8 @@ set the path on the import/export dialogues.
 
 See also https://inkscape.org/~mattia.basaglia/%E2%98%85tgslottie-importexport
 
+You can download a zipfile from http://mattia.basaglia.gitlab.io/tgs/downloads.html
+
 
 ### Blender
 
@@ -99,6 +103,8 @@ paths through the Blender Python console:
     import addon_utils; print(addon_utils.paths())
 
 You can also install the addon from Blender using the zipfile created by `make`.
+
+You can download a zipfile from http://mattia.basaglia.gitlab.io/tgs/downloads.html
 
 
 ### Pip

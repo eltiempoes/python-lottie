@@ -41,10 +41,14 @@ docs/dox/lottie.dox: $(OBJECTS)
 docs/dox/examples/%.dox: examples/%.py docs/dox_examples.py
 	$(PYTHON) docs/dox_examples.py $*
 
+docs/dox/downloads.dox: docs/dox_download.py setup.py
+	$(PYTHON) docs/dox_download.py --version-base $(VERSION_BASE) --version-suf $(VERSION_SUF) --version $(VERSION)
+
 docs/html/index.html: docs/Doxyfile
 docs/html/index.html: $(foreach file,$(wildcard examples/*.py), docs/dox/examples/$(basename $(notdir $(file))).dox)
 docs/html/index.html: docs/dox/lottie.dox
 docs/html/index.html: docs/dox/scripts.dox
+docs/html/index.html: docs/dox/downloads.dox
 docs/html/index.html: $(SRC)
 	doxygen docs/Doxyfile
 
