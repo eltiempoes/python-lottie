@@ -20,7 +20,9 @@ with open(ns.infile) as sif_file:
 validator = TgsValidator(Severity.Error)
 validator(animation)
 if validator.errors:
-    raise Exception("\n".join(map(str, validator.errors))+"\n")
+    sys.stderr.write("Could not export TGS:\n")
+    sys.stderr.write("\n".join(map(str, validator.errors))+"\n")
+    sys.exit(1)
 
 
 with open(os.path.splitext(ns.infile)[0]+".tgs", "wb") as tgs_file:
