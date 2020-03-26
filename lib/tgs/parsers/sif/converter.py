@@ -203,13 +203,7 @@ class Converter:
         shape = objects.Ellipse()
         shape.position = self._adjust_coords(self._convert_vector(layer.origin))
         radius = self._adjust_scalar(self._convert_scalar(layer.radius))
-        if radius.animated:
-            for kf in radius.keyframes:
-                shape.size.add_keyframe(kf.time, NVector(kf.start, kf.start) * 2)
-                shape.size.keyframes[-1].in_value = kf.in_value
-                shape.size.keyframes[-1].out_value = kf.out_value
-        else:
-            shape.size.value = NVector(radius.value, radius.value) * 2
+        shape.size = self._adjust_add_dimension(radius, lambda x: NVector(x, x) * 2)
         return shape
 
     def _convert_star(self, layer: api.StarLayer):
@@ -291,6 +285,7 @@ class Converter:
         to_val = objects.MultiDimensional()
         to_val.animated = lottieval.animated
         if lottieval.animated:
+            to_val.keyframes = []
             for kf in lottieval.keyframes:
                 if kf.start is not None:
                     kf.start = transform(kf.start[0])

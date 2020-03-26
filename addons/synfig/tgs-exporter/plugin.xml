@@ -2,4 +2,7 @@
 <plugin>
    <name>Export Telegram Sticker</name>
    <exec>tgs-exporter.py</exec>
+   <type>exporter</type>
+   <extension>.tgs</extension>
+   <description>Telegram Sticker (*.tgs)</description>
 </plugin>
