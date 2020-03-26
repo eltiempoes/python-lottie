@@ -23,7 +23,7 @@ def find_packages(root="tgs"):
 
 setuptools.setup(
     name="tgs",
-    version=os.environ.get("VERSION_OVERRIDE", "0.4.0"),
+    version=os.environ.get("VERSION_OVERRIDE", "0.4.1"),
     author="Mattia Basaglia",
     author_email="mattia.basaglia@gmail.com",
     description="A framework to work with lottie / tgs files",
@@ -64,8 +64,9 @@ setuptools.setup(
     test_suite="test",
     project_urls={
         "Code": "https://gitlab.com/mattia.basaglia/tgs/",
-        "Documentation": "https://mattia.basaglia.gitlab.io/tgs/index.html",
+        "Documentation": "http://mattia.basaglia.gitlab.io/tgs/index.html",
         "Chat": "https://t.me/tgs_stuff",
-        "Coverage": "https://mattia.basaglia.gitlab.io/tgs/coverage/",
+        "Coverage": "http://mattia.basaglia.gitlab.io/tgs/coverage/",
+        "Downloads": "http://mattia.basaglia.gitlab.io/tgs/downloads.html",
     },
 )
