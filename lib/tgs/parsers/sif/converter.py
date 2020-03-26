@@ -1,6 +1,6 @@
 import math
 from ... import objects
-from . import api
+from . import api, ast
 from ... import NVector, PolarVector
 
 try:
@@ -19,7 +19,7 @@ class Converter:
         pass
 
     def _animated(self, sifval):
-        return isinstance(sifval, api.SifAnimated)
+        return isinstance(sifval, ast.SifAnimated)
 
     def convert(self, canvas: api.Canvas):
         self.canvas = canvas
@@ -242,7 +242,7 @@ class Converter:
             lottieval.add_keyframe(0, v)
             lottieval.add_keyframe(self.animation.out_point, v)
 
-    def _convert_animatable(self, v: api.SifAstNode, lot: objects.properties.AnimatableMixin):
+    def _convert_animatable(self, v: ast.SifAstNode, lot: objects.properties.AnimatableMixin):
         if self._animated(v):
             for kf in v.keyframes:
                 # TODO easing
@@ -252,22 +252,22 @@ class Converter:
         return lot
 
     def _convert_ast_value(self, v):
-        if isinstance(v, api.SifRadialComposite):
+        if isinstance(v, ast.SifRadialComposite):
             return self._polar(v.radius.value, v.theta.value, 1)
-        elif isinstance(v, api.SifValue):
+        elif isinstance(v, ast.SifValue):
             return v.value
         else:
             return v
 
     def _converted_vector_values(self, v):
-        if isinstance(v, api.SifRadialComposite):
+        if isinstance(v, ast.SifRadialComposite):
             return [self._convert_scalar(v.radius), self._convert_scalar(v.theta)]
         return self._convert_vector(v)
 
-    def _convert_vector(self, v: api.SifAstNode):
+    def _convert_vector(self, v: ast.SifAstNode):
         return self._convert_animatable(v, objects.MultiDimensional())
 
-    def _convert_scalar(self, v: api.SifAstNode):
+    def _convert_scalar(self, v: ast.SifAstNode):
         return self._convert_animatable(v, objects.Value())
 
     def _adjust_animated(self, lottieval, transform):

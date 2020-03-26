@@ -65,7 +65,7 @@ dist/$(PACKAGE_NAME)-blender-$(VERSION).zip: $(wildcard addons/blender/tgs_io/*.
 	cd addons/blender && find -L -name '*.py' | xargs zip --filesync ../../$@
 
 dist/$(PACKAGE_NAME)-synfig-$(VERSION).zip: $(wildcard addons/synfig/*)
-	cd addons/synfig && find -type f | xargs zip --filesync ../../$@
+	cd addons/synfig && find -L -type f -not -name "*.pyc" | xargs zip --filesync ../../$@
 
 pypi: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
 

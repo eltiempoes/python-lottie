@@ -65,8 +65,8 @@ Installation
 There's a Synfig studio plugin to export telegram stickers.
 To install, just copy (or symlink) ./addons/synfig/tgs-exporter
 into the synfig plugin directory.
+You might have to copy ./lib/tgs in there as well.
 
-(Note: the bulk of this code has nothing to do with this package)
 
 ### Inkscape
 
