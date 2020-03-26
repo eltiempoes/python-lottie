@@ -23,7 +23,7 @@ def find_packages(root="tgs"):
 
 setuptools.setup(
     name="tgs",
-    version=os.environ.get("VERSION_OVERRIDE", "0.3.6"),
+    version=os.environ.get("VERSION_OVERRIDE", "0.4.0"),
     author="Mattia Basaglia",
     author_email="mattia.basaglia@gmail.com",
     description="A framework to work with lottie / tgs files",
