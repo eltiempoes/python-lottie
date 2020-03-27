@@ -209,6 +209,12 @@ class SvgDefsParent:
     def __getitem__(self, key):
         return self.items[key]
 
+    def __setitem__(self, key, value):
+        self.items[key] = value
+
+    def __contains__(self, key):
+        return key in self.items
+
     @property
     def shapes(self):
         return self
@@ -413,8 +419,14 @@ class SvgParser(SvgHandler):
     def _parseshape_use(self, element, shape_parent):
         link = element.attrib[self.qualified("xlink", "href")]
         if link.startswith("#"):
+            id = link[1:]
+            if id in self.defs:
+                base = self.defs[id]
+            else:
+                base_element = self.document.find(".//*[@id='%s']" % id)
+                base = self.parse_shape(base_element, self.defs)
             used = objects.Group()
-            used.add_shape(self.defs[link[1:]].clone())
+            used.add_shape(base.clone())
             used.transform.position.value.x = float(element.attrib.get("x", 0))
             used.transform.position.value.y = float(element.attrib.get("y", 0))
             self.parse_transform(element, used, used.transform)
@@ -545,21 +557,26 @@ class SvgParser(SvgHandler):
             tag = self.unqualified(child.tag)
             if limit and tag not in limit:
                 continue
-            handler = getattr(self, "_parseshape_" + tag, None)
-            if handler:
-                out = handler(child, shape_parent)
-                self.parse_animations(out, child)
-                if child.attrib.get("id"):
-                    self.defs.items[child.attrib["id"]] = out
-            else:
+            if not self.parse_shape(child, shape_parent):
                 handler = getattr(self, "_parse_" + tag, None)
                 if handler:
                     handler(child)
+
+    def parse_shape(self, element, shape_parent):
+        handler = getattr(self, "_parseshape_" + self.unqualified(element.tag), None)
+        if handler:
+            out = handler(element, shape_parent)
+            self.parse_animations(out, element)
+            if element.attrib.get("id"):
+                self.defs.items[element.attrib["id"]] = out
+            return out
+        return None
 
     def parse_etree(self, etree, layer_frames=0, *args, **kwargs):
         animation = objects.Animation(*args, **kwargs)
         self.animation = animation
         self.max_time = 0
+        self.document = etree
         svg = etree.getroot()
         if "width" in svg.attrib and "height" in svg.attrib:
             animation.width = int(round(self._parse_unit(svg.attrib["width"])))
