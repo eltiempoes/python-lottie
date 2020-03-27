@@ -791,13 +791,19 @@ class SvgParser(SvgHandler):
 
 
 class PathDParser:
+    _re = re.compile("|".join((
+        r"[a-zA-Z]",
+        r"[-+]?[0-9]*\.?[0-9]*[eE][-+]?[0-9]+",
+        r"[-+]?[0-9]*\.?[0-9]+",
+    )))
+
     def __init__(self, d_string):
         self.path = objects.properties.Bezier()
         self.paths = []
         self.p = NVector(0, 0)
         self.la = None
         self.la_type = None
-        self.tokens = list(map(self.d_subsplit, re.findall("[a-zA-Z]|[-+.0-9eE]+", d_string)))
+        self.tokens = list(map(self.d_subsplit, self._re.findall(d_string)))
         self.add_p = True
         self.implicit = "M"
 
