@@ -199,6 +199,21 @@ def parse_color(color, current_color=NVector(0, 0, 0, 1)):
     return NVector(*color_table[color])
 
 
+class SvgDefsParent:
+    def __init__(self):
+        self.items = {}
+
+    def insert(self, dummy, shape):
+        self.items[shape.name] = shape
+
+    def __getitem__(self, key):
+        return self.items[key]
+
+    @property
+    def shapes(self):
+        return self
+
+
 class SvgParser(SvgHandler):
     def __init__(self, name_mode=NameMode.Inkscape):
         self.init_etree()
@@ -206,6 +221,7 @@ class SvgParser(SvgHandler):
         self.current_color = NVector(0, 0, 0, 1)
         self.gradients = {}
         self.max_time = 0
+        self.defs = SvgDefsParent()
 
     def _get_name(self, element, inkscapequal):
         if self.name_mode == NameMode.Inkscape:
@@ -394,6 +410,17 @@ class SvgParser(SvgHandler):
             fill.opacity.value = opacity * 100
             group.add_shape(fill)
 
+    def _parseshape_use(self, element, shape_parent):
+        link = element.attrib[self.qualified("xlink", "href")]
+        if link.startswith("#"):
+            used = objects.Group()
+            used.add_shape(self.defs[link[1:]].clone())
+            used.transform.position.value.x = float(element.attrib.get("x", 0))
+            used.transform.position.value.y = float(element.attrib.get("y", 0))
+            self.parse_transform(element, used, used.transform)
+            shape_parent.shapes.insert(0, used)
+            return used
+
     def _parseshape_g(self, element, shape_parent):
         group = objects.Group()
         shape_parent.shapes.insert(0, group)
@@ -522,6 +549,8 @@ class SvgParser(SvgHandler):
             if handler:
                 out = handler(child, shape_parent)
                 self.parse_animations(out, child)
+                if child.attrib.get("id"):
+                    self.defs.items[child.attrib["id"]] = out
             else:
                 handler = getattr(self, "_parse_" + tag, None)
                 if handler:
@@ -559,7 +588,7 @@ class SvgParser(SvgHandler):
         return animation
 
     def _parse_defs(self, element):
-        self.parse_children(element, None, {"linearGradient", "radialGradient"})
+        self.parse_children(element, self.defs)
 
     def _gradient(self, element, grad):
         # TODO parse gradientTransform
