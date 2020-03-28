@@ -2,7 +2,8 @@ import io
 from PIL import Image
 
 from .cairo import export_png
-from .base import exporter, ExtraOption
+from .base import exporter
+from ..parsers.baseporter import ExtraOption
 
 
 def _png_gif_prepare(image):

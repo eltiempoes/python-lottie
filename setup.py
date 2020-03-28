@@ -60,6 +60,7 @@ setuptools.setup(
         "Load image": ["pillow"],
         "PNG": ["cairosvg"],
         "Text": ["fonttools"],
+        "Video output": ["opencv-python"],
     },
     test_suite="test",
     project_urls={
