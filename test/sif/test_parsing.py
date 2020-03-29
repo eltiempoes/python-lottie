@@ -56,6 +56,10 @@ class TestParseFile(base.TestCase):
         self.assert_strong_equal(canvas.begin_time, api.FrameTime(0, api.FrameTime.Unit.Frame))
         self.assert_strong_equal(canvas.end_time, api.FrameTime(3., api.FrameTime.Unit.Seconds))
         self.assert_strong_equal(canvas.bgcolor, NVector(.5, .5, .5, 1.))
+        self.assertEqual(len(canvas.keyframes), 1)
+        kf = canvas.keyframes[0]
+        self.assert_strong_equal(kf.time, api.FrameTime.frame(0))
+        self.assert_strong_equal(kf.active, True)
 
     def _check_layer_polygon(self, layer):
         self.assertIsInstance(layer, api.PolygonLayer)
