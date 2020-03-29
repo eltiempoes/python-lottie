@@ -1,0 +1,4 @@
+TGS exporter plugin
+
+Extract, and place the directory with this file in the synfig plugins directory.
+See https://wiki.synfig.org/Doc:Plugins
