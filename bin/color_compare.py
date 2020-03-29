@@ -37,6 +37,31 @@ class ColorCompare:
     def rep(self, space):
         return self.representations[space].vector
 
+    def ansi_str(self, length):
+        return color_str(self.rep("RGB"), length)
+
+
+class SimilarColor:
+    def __init__(self, name, rgbvec, space):
+        self.name = name
+        self.rgb = ManagedColor(*rgbvec[:3])
+        self.vec = self.rgb.converted(ColorMode[space]).vector
+        self.space = space
+
+    def dist(self, colorcompare):
+        return (self.vec - colorcompare.rep(self.space)).length
+
+    def ansi_str(self, length):
+        return color_str(self.rgb.vector, length)
+
+
+def color_str(rgbvec, length):
+    comps = [
+        str(int(round(c * 255)))
+        for c in rgbvec[:3]
+    ]
+    return "\x1b[48;2;%sm%s\x1b[m" % (";".join(comps), " " * length)
+
 
 def table_row(name, items=[""], pad=" "):
     print("|".join([name.ljust(titlepad, pad)]+[item.center(itempad, pad) for item in items])+"|")
@@ -73,6 +98,19 @@ parser.add_argument(
     default=1,
     help="Number of similar colors to get"
 )
+parser.add_argument(
+    "--colors",
+    action="store_true",
+    default=os.environ.get("COLORTERM", "") in {"truecolor", "24bit"},
+    dest="term_colors",
+    help="Enables color previews",
+)
+parser.add_argument(
+    "--no-colors",
+    action="store_false",
+    dest="term_colors",
+    help="Disables color previews",
+)
 
 
 def compare(colors, space, similar_count):
@@ -90,21 +128,25 @@ def compare(colors, space, similar_count):
         print(("Nearest CSS Name [%s]" % space).center(linelen))
         print("-" * linelen)
         table_row(space, (c.name for c in colors))
+        if term_colors:
+            table_row("", (c.ansi_str(itempad) for c in colors))
         table_sep(len(colors))
 
-        csscolors = {
-            name: ManagedColor(*vec[:3]).converted(ColorMode[space]).vector
+        csscolors = [
+            SimilarColor(name, vec, space)
             for name, vec in color_table.items()
-        }
+        ]
 
         for color in colors:
             color.matches = sorted(
-                ((cn, (color.rep(space) - cv).length) for cn, cv in csscolors.items()),
+                ((c, c.dist(color)) for c in csscolors),
                 key=lambda c: c[1]
             )
 
         for i in range(similar_count):
-            table_row("", (c.matches[i][0] for c in colors))
+            table_row("", (c.matches[i][0].name for c in colors))
+            if term_colors:
+                table_row("", (c.matches[i][0].ansi_str(itempad) for c in colors))
             table_row("", ("%10.8f" % c.matches[i][1] for c in colors))
             table_sep(len(colors))
 
@@ -116,11 +158,14 @@ if __name__ == "__main__":
     titlepad = max(namepad, 6)
     itempad = max(namepad, 6*3+2)
     linelen = titlepad + (itempad + 1) * len(ns.colors) + 1
+    term_colors = ns.term_colors
 
     print("=" * linelen)
     print("Colors".center(linelen))
     print("-" * linelen)
     table_row("Color", (c.name for c in ns.colors))
+    if term_colors:
+        table_row("", (c.ansi_str(itempad) for c in ns.colors))
     table_sep(len(ns.colors))
     for cs in ["RGB", "HSV", "XYZ", "LAB", "LUV", "LCH_uv"]:
         table_row(cs, (vfmt(c.representations[cs].vector) for c in ns.colors))
