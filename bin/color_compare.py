@@ -63,10 +63,50 @@ parser.add_argument(
 )
 parser.add_argument(
     "--space", "-s",
-    choices=spaces,
+    choices=spaces+["all"],
     default="LAB",
     help="Color space for the distance"
 )
+parser.add_argument(
+    "--count", "-c",
+    type=int,
+    default=1,
+    help="Number of similar colors to get"
+)
+
+
+def compare(colors, space, similar_count):
+    print("=" * linelen)
+    print(("Distances [%s]" % space).center(linelen))
+    print("-" * linelen)
+    table_row("", (c.name for c in colors))
+    table_sep(len(colors))
+
+    for color in colors:
+        table_row(color.name, ("%10.8f" % color.dist(c2, space) if c2 is not color else "-" for c2 in colors))
+
+    if similar_count:
+        print("=" * linelen)
+        print(("Nearest CSS Name [%s]" % space).center(linelen))
+        print("-" * linelen)
+        table_row(space, (c.name for c in colors))
+        table_sep(len(colors))
+
+        csscolors = {
+            name: ManagedColor(*vec[:3]).converted(ColorMode[space]).vector
+            for name, vec in color_table.items()
+        }
+
+        for color in colors:
+            color.matches = sorted(
+                ((cn, (color.rep(space) - cv).length) for cn, cv in csscolors.items()),
+                key=lambda c: c[1]
+            )
+
+        for i in range(similar_count):
+            table_row("", (c.matches[i][0] for c in colors))
+            table_row("", ("%10.8f" % c.matches[i][1] for c in colors))
+            table_sep(len(colors))
 
 
 if __name__ == "__main__":
@@ -86,33 +126,10 @@ if __name__ == "__main__":
         table_row(cs, (vfmt(c.representations[cs].vector) for c in ns.colors))
     table_sep(len(ns.colors))
 
-    print("=" * linelen)
-    print("Distances".center(linelen))
-    print("-" * linelen)
-    table_row("", (c.name for c in ns.colors))
-    table_sep(len(ns.colors))
-
-    for color in ns.colors:
-        table_row(color.name, ("%10.8f" % color.dist(c2, ns.space) if c2 is not color else "-" for c2 in ns.colors))
-
-    print("=" * linelen)
-    print("Nearest CSS Name".center(linelen))
-    print("-" * linelen)
-    table_row("", (c.name for c in ns.colors))
-    table_sep(len(ns.colors))
-
-    csscolors = {
-        name: ManagedColor(*vec[:3]).converted(ColorMode[ns.space]).vector
-        for name, vec in color_table.items()
-    }
-
-    for color in ns.colors:
-        color.match, color.match_dist = reduce(
-            lambda a, b: a if a[1] <= b[1] else b,
-            ((cn, (color.rep(ns.space) - cv).length) for cn, cv in csscolors.items())
-        )
-
-    table_row("", (c.match for c in ns.colors))
-    table_row("", ("%10.8f" % c.match_dist for c in ns.colors))
+    if ns.space == "all":
+        for space in spaces:
+            compare(ns.colors, space, ns.count)
+    else:
+        compare(ns.colors, ns.space, ns.count)
 
     print("=" * linelen)
