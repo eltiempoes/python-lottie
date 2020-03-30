@@ -10,7 +10,7 @@ from tgs.exporters.tgs_validator import TgsValidator, Severity
 
 parser = argparse.ArgumentParser()
 parser.add_argument("infile")
-parser.add_argument("outfile")
+parser.add_argument("outfile", nargs="?")
 
 ns = parser.parse_args()
 
@@ -26,5 +26,5 @@ if validator.errors:
     sys.exit(1)
 
 
-with open(ns.outfile, "wb") as tgs_file:
+with open(ns.outfile or ns.infile+".tgs", "wb") as tgs_file:
     tgs.exporters.core.export_tgs(animation, tgs_file)
