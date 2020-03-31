@@ -62,7 +62,7 @@ def run(animation, ns):
             if ns.verbosity:
                 print("file://" + absname)
             exporter = exporters.get_from_extension(fmt)
-            exporter.export(animation, absname, exporter.argparse_options(ns))
+            exporter.process(animation, absname, *exporter.argparse_options(ns))
 
 
 def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1, strip=float_strip):
