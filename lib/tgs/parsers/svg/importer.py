@@ -604,6 +604,7 @@ class SvgParser(SvgHandler):
         else:
             _, _, animation.width, animation.height = map(int, svg.attrib["viewBox"].split(" "))
         animation.name = self._get_name(svg, self.qualified("sodipodi", "docname"))
+
         if layer_frames:
             for frame in svg:
                 if self.unqualified(frame.tag) == "g":
@@ -622,6 +623,16 @@ class SvgParser(SvgHandler):
                 animation.out_point = self.max_time
                 for layer in animation.layers:
                     layer.out_point = self.max_time
+
+
+
+        if "viewBox" in svg.attrib:
+            vbx, vby, vbw, vbh = map(float, svg.attrib["viewBox"].split())
+            if vbx != 0 or vby != 0 or vbw != animation.width or vbh != animation.height:
+                for layer in animation.layers:
+                    layer.transform.position.value = -NVector(vbx, vby)
+                    layer.transform.scale.value = NVector(animation.width / vbw, animation.height / vbh) * 100
+
         return animation
 
     def _parse_defs(self, element):
