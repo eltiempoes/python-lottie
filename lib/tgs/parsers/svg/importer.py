@@ -244,9 +244,25 @@ class SvgParser(SvgHandler):
             return value
 
         mult = 1
+        cmin = 2.54
         if value.endswith("px"):
             value = value[:-2]
-        # TODO mm and similar, based on dpi from the metadata
+        elif value.endswith("in"):
+            value = value[:-2]
+            mult = self.dpi
+        elif value.endswith("pc"):
+            value = value[:-2]
+            mult = self.dpi / 6
+        elif value.endswith("pt"):
+            value = value[:-2]
+            mult = self.dpi / 72
+        elif value.endswith("cm"):
+            value = value[:-2]
+            mult = self.dpi / cmin
+        elif value.endswith("mm"):
+            value = value[:-2]
+            mult = self.dpi / cmin / 10
+
         return float(value) * mult
 
     def parse_color(self, color):
@@ -577,7 +593,11 @@ class SvgParser(SvgHandler):
         self.animation = animation
         self.max_time = 0
         self.document = etree
+
         svg = etree.getroot()
+
+        self.dpi = float(svg.attrib.get(self.qualified("inkscape", "export-xdpi"), 96))
+
         if "width" in svg.attrib and "height" in svg.attrib:
             animation.width = int(round(self._parse_unit(svg.attrib["width"])))
             animation.height = int(round(self._parse_unit(svg.attrib["height"])))
