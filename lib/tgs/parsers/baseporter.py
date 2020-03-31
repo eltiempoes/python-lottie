@@ -67,7 +67,6 @@ class Loader:
             try:
                 importlib.import_module(full_modname, self._module_name)
             except ImportError:
-                import pdb; pdb.set_trace(); pass
                 pass
 
     @property
