@@ -624,8 +624,6 @@ class SvgParser(SvgHandler):
                 for layer in animation.layers:
                     layer.out_point = self.max_time
 
-
-
         if "viewBox" in svg.attrib:
             vbx, vby, vbw, vbh = map(float, svg.attrib["viewBox"].split())
             if vbx != 0 or vby != 0 or vbw != animation.width or vbh != animation.height:
