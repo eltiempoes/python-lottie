@@ -223,6 +223,8 @@ class _SystemFontList:
         out, returncode = self.cmd("fc-match", r"--format=%{family}\t%{style}", str(query))
         if returncode == 0:
             fam, style = out.split("\t")
+            fam = fam.split(",")[0]
+            style = style.split(",")[0].split()
             return self[fam][style]
 
     def default(self):
@@ -358,8 +360,8 @@ class FontRenderer:
         if use_kerning and self._kerning is None:
             self._kerning = collect_kerning_pairs(self.font)
 
-        scale = size / self.font.tables["head"].unitsPerEm
-        line_height = self.font.tables["head"].yMax * scale
+        scale = size / self.font["head"].unitsPerEm
+        line_height = self.font["head"].yMax * scale
         group = Group()
         group.name = text
         if pos is None:
@@ -470,7 +472,7 @@ class FontStyle:
         return group
 
     def clone(self):
-        return FontStyle(str(self._renderer.query), self.size, self.justify, self.use_kerning)
+        return FontStyle(str(self._renderer.query), self.size, self.justify, self.position, self.use_kerning)
 
 
 def _propfac(a):

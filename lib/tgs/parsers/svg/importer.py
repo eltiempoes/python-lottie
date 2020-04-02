@@ -731,14 +731,23 @@ class SvgParser(SvgHandler):
 
         if element.text:
             group.add_shape(font.FontShape(element.text, font_style)).refresh()
+
+        childpos = NVector(0, 0)
         for child in element:
             if child.tag == self.qualified("svg", "tspan"):
-                self._parseshape_text(child, group, font_style.clone())
+                fs = self._parseshape_text(child, group, font_style.clone())
+                if "x" not in child.attrib:
+                    fs.transform.position.value.x += childpos.x
+                    fs.transform.position.value.y += childpos.y
             if child.tail:
-                group.add_shape(font.FontShape(child.text, font_style)).refresh()
+                fs = font.FontShape(child.text, font_style)
+                fs.refresh()
+                group.add_shape(fs)
+            childpos.x = fs.bounding_box().x2
 
     def _parseshape_text(self, element, shape_parent, font_style=None):
         group = objects.Group()
+
         style = self.parse_style(element)
         self.apply_common_style(style, group.transform)
         self.apply_visibility(style, group)
@@ -770,6 +779,7 @@ class SvgParser(SvgHandler):
 
         shape_parent.shapes.insert(0, group)
         self.parse_transform(element, group, group.transform)
+        return group
 
     def parse_animations(self, lottie, element):
         animations = {}
