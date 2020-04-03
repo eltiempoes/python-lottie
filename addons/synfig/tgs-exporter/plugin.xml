@@ -4,38 +4,39 @@
    <exec>tgs-exporter.py</exec>
 
    <exporter>
-      <extension>.tgs</extension>
+      <extension>tgs</extension>
       <description>[TGS] Telegram Sticker (*.tgs)</description>
       <exec>tgs-exporter.py</exec>
    </exporter>
    <exporter>
-      <extension>.svg</extension>
+      <extension>svg</extension>
       <description>[TGS] SVG (*.svg)</description>
       <exec>tgs-exporter.py</exec>
    </exporter>
    <exporter>
-      <extension>.json</extension>
+      <extension>json</extension>
       <description>[TGS] Lottie JSON (*.json)</description>
       <exec>tgs-exporter.py</exec>
    </exporter>
    <exporter>
-      <extension>.html</extension>
+      <extension>html</extension>
       <description>[TGS] Lottie HTML Preview (*.html)</description>
       <exec>tgs-exporter.py</exec>
    </exporter>
 
    <importer>
-      <extension>.tgs</extension>
+      <extension>tgs</extension>
       <description>[TGS] Telegram Sticker (*.tgs)</description>
       <exec>tgs-exporter.py</exec>
    </importer>
    <importer>
-      <extension>.svg</extension>
-      <description>[TGS] SVG (*.svg)</description>
+      <extension>svg</extension>
+      <extension>svgz</extension>
+      <description>[TGS] SVG (*.svg, *.svgz)</description>
       <exec>tgs-exporter.py</exec>
    </importer>
    <importer>
-      <extension>.json</extension>
+      <extension>json</extension>
       <description>[TGS] Lottie JSON (*.json)</description>
       <exec>tgs-exporter.py</exec>
    </importer>
