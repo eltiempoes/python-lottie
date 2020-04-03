@@ -28,7 +28,7 @@ blend_modes = {
 
 
 class SifBuilder(restructure.AbstractBuilder):
-    def __init__(self, gamma=2.2):
+    def __init__(self, gamma=1.0):
         """
         @todo Add gamma option to tgsconvert
         """
