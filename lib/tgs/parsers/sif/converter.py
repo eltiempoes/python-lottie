@@ -375,7 +375,7 @@ class Converter:
         offset_angle = 0
         if dir == 1:
             offset_angle += 180
-        return PolarVector(radius/3, (-angle+offset_angle) * math.pi / 180)
+        return PolarVector(radius/3, (angle+offset_angle) * math.pi / 180)
 
     def _convert_transform_down(self, tl: api.TransformDown):
         group = objects.Group()
