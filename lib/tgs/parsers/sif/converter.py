@@ -364,14 +364,18 @@ class Converter:
         bezier.closed = closed
         for i in range(0, len(values), chunk_size):
             point, r1, a1, r2, a2 = values[i:i+chunk_size]
-            bezier.add_point(self._coord(point+origin), self._polar(r1, a1, 1), self._polar(r2, a2, 2))
+            sifvert = point+origin
+            vert = self._coord(sifvert)
+            t1 = self._coord(sifvert + self._polar(r1, a1, 1)) - vert
+            t2 = self._coord(sifvert + self._polar(r2, a2, 2)) - vert
+            bezier.add_point(vert, t1, t2)
         return bezier
 
     def _polar(self, radius, angle, dir):
         offset_angle = 0
         if dir == 1:
             offset_angle += 180
-        return PolarVector(radius*20, (-angle+offset_angle) * math.pi / 180)
+        return PolarVector(radius/3, (-angle+offset_angle) * math.pi / 180)
 
     def _convert_transform_down(self, tl: api.TransformDown):
         group = objects.Group()
