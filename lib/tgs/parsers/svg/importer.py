@@ -6,6 +6,7 @@ from ...nvector import NVector
 from .svgdata import color_table, css_atrrs
 from .handler import SvgHandler, NameMode
 from ...utils.ellipse import Ellipse
+from ...utils.transform import TransformMatrix
 try:
     from ...utils import font
     has_font = True
@@ -13,12 +14,6 @@ except ImportError:
     has_font = False
 
 nocolor = {"none"}
-
-
-def _sign(x):
-    if x < 0:
-        return -1
-    return 1
 
 
 def hsl_to_rgb(h, s, l):
@@ -322,33 +317,14 @@ class SvgParser(SvgHandler):
                 dest_trans.position.value -= dest_trans.anchor_point.value
                 dest_trans.anchor_point.value = NVector(0, 0)
 
-                a, b, c, d, tx, ty = params
-
-                delta = a * d - b * c
-                if a != 0 or b != 0:
-                    r = math.hypot(a, b)
-                    angle = _sign(b) * math.acos(a/r)
-                    sx = r
-                    sy = delta / r
-                    dest_trans.skew_axis.value = 0
-                    sm = -1
-                else:
-                    r = math.hypot(c, d)
-                    angle = math.pi / 2 - _sign(d) * math.acos(c / r)
-                    sx = delta / r
-                    sy = r
-                    dest_trans.skew_axis.value = 90
-                    sm = 1
-
-                dest_trans.position.value += NVector(tx, ty)
-
-                dest_trans.rotation.value += angle / math.pi * 180
-
-                dest_trans.scale.value[0] = (dest_trans.scale.value[0] / 100 * sx) * 100
-                dest_trans.scale.value[1] = (dest_trans.scale.value[1] / 100 * sy) * 100
-
-                skew = sm * math.atan2(a * c + b * d, r * r)
-                dest_trans.skew.value = skew * 180 / math.pi
+                m = TransformMatrix()
+                m.a, m.b, m.c, m.d, m.tx, m.ty = params
+                trans = m.extract_transform()
+                dest_trans.skew_axis.value = math.degrees(trans["skew_axis"])
+                dest_trans.skew.value = -math.degrees(trans["skew_angle"])
+                dest_trans.position.value += trans["translation"]
+                dest_trans.rotation.value += math.degrees(trans["angle"])
+                dest_trans.scale.value *= trans["scale"]
 
     def parse_style(self, element):
         style = {}
