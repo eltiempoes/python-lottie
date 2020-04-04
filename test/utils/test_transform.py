@@ -166,7 +166,7 @@ class TestTransform(base.TestCase):
         self.assertEqual(m.apply(v), v)
         m.scale(2, 4)
         self.assertEqual(m.apply(v), NVector(2, 8))
-        m.translate(-1, -3)
+        m.translate(-1/2, -3/4)
         self.assertEqual(m.apply(v), NVector(1, 5))
         m.rotate(math.pi/2)
         self.assert_nvector_equal(m.apply(v), NVector(-5, 1))

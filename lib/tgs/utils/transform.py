@@ -92,9 +92,10 @@ class TransformMatrix:
         return self
 
     def translate(self, x, y):
-        self.tx += x
-        self.ty += y
-
+        m = TransformMatrix()
+        m.tx = x
+        m.ty = y
+        self *= m
         return self
 
     def skew(self, x_rad, y_rad):

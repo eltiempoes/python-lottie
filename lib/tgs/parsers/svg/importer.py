@@ -283,6 +283,9 @@ class SvgParser(SvgHandler):
         if "transform" not in element.attrib:
             return
 
+        matrix = TransformMatrix()
+        read_matrix = False
+
         for t in re.finditer(r"([a-zA-Z]+)\s*\(([^\)]*)\)", element.attrib["transform"]):
             name = t[1]
             params = list(map(float, t[2].strip().replace(",", " ").split()))
@@ -308,23 +311,26 @@ class SvgParser(SvgHandler):
                     dest_trans.anchor_point.value += dap
                 dest_trans.rotation.value = ang
             elif name == "skewX":
-                dest_trans.skew.value = -params[0]
-                dest_trans.skew_axis.value = 0
+                read_matrix = True
+                matrix.skew(math.radians(params[0]), 0)
             elif name == "skewY":
-                dest_trans.skew.value = params[0]
-                dest_trans.skew_axis.value = 90
+                read_matrix = True
+                matrix.skew(0, math.radians(params[0]))
             elif name == "matrix":
-                dest_trans.position.value -= dest_trans.anchor_point.value
-                dest_trans.anchor_point.value = NVector(0, 0)
-
+                read_matrix = True
                 m = TransformMatrix()
                 m.a, m.b, m.c, m.d, m.tx, m.ty = params
-                trans = m.extract_transform()
-                dest_trans.skew_axis.value = math.degrees(trans["skew_axis"])
-                dest_trans.skew.value = -math.degrees(trans["skew_angle"])
-                dest_trans.position.value += trans["translation"]
-                dest_trans.rotation.value += math.degrees(trans["angle"])
-                dest_trans.scale.value *= trans["scale"]
+                matrix *= m
+
+        if read_matrix:
+            dest_trans.position.value -= dest_trans.anchor_point.value
+            dest_trans.anchor_point.value = NVector(0, 0)
+            trans = matrix.extract_transform()
+            dest_trans.skew_axis.value = math.degrees(trans["skew_axis"])
+            dest_trans.skew.value = -math.degrees(trans["skew_angle"])
+            dest_trans.position.value += trans["translation"]
+            dest_trans.rotation.value += math.degrees(trans["angle"])
+            dest_trans.scale.value *= trans["scale"]
 
     def parse_style(self, element):
         style = {}
