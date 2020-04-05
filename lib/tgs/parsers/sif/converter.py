@@ -349,16 +349,16 @@ class Converter:
             ]
         animated = any(x.animated for x in animatables)
         if not animated:
-            lot.shape.value = self._bezier(closed, [x.value for x in animatables[1:]], animatables[0].value)
+            lot.shape.value = self._bezier(closed, [x.value for x in animatables[1:]], animatables[0].value, layer.bline.points)
         else:
             for values in self._mix_animations(*animatables):
                 time = values[0]
                 origin = values[1]
                 values = values[2:]
-                lot.shape.add_keyframe(time, self._bezier(closed, values, origin))
+                lot.shape.add_keyframe(time, self._bezier(closed, values, origin, layer.bline.points))
         return lot
 
-    def _bezier(self, closed, values, origin):
+    def _bezier(self, closed, values, origin, points):
         chunk_size = 5
         bezier = objects.Bezier()
         bezier.closed = closed
@@ -366,6 +366,10 @@ class Converter:
             point, r1, a1, r2, a2 = values[i:i+chunk_size]
             sifvert = point+origin
             vert = self._coord(sifvert)
+            if not points[i//chunk_size].split_radius.value:
+                r2 = r1
+            if not points[i//chunk_size].split_angle.value:
+                a2 = a1
             t1 = self._coord(sifvert + self._polar(r1, a1, 1)) - vert
             t2 = self._coord(sifvert + self._polar(r2, a2, 2)) - vert
             bezier.add_point(vert, t1, t2)
