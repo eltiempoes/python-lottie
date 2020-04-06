@@ -187,6 +187,20 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             elif group.stroke.line_join == objects.LineJoin.Miter:
                 style["stroke-linejoin"] = "miter"
 
+            if group.stroke.dashes:
+                dasharray = []
+                last = 0
+                last_mode = objects.StrokeDashType.Dash
+                for dash in group.stroke.dashes:
+                    if last_mode == dash.type:
+                        last += dash.length.get_value(self.time)
+                    else:
+                        if last_mode != objects.StrokeDashType.Offset:
+                            dasharray.append(str(last))
+                            last = 0
+                        last_mode = dash.type
+                style["stroke-dasharray"] = " ".join(dasharray)
+
         return ";".join(map(
             lambda x: ":".join(map(str, x)),
             style.items()

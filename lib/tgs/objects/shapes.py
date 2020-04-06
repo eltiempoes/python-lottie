@@ -597,10 +597,10 @@ class StrokeDash(TgsObject):
         TgsProp("length", "v", Value, False),
     ]
 
-    def __init__(self):
-        self.name = ""
-        self.type = StrokeDashType.Dash
-        self.length = Value(0)
+    def __init__(self, length=0, type=StrokeDashType.Dash):
+        self.name = type.name.lower()
+        self.type = type
+        self.length = Value(length)
 
 
 ## \ingroup Lottie

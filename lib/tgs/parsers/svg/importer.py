@@ -382,9 +382,12 @@ class SvgParser(SvgHandler):
                 color = self.parse_color(stroke_color)
                 stroke.color.value = color[:3]
                 opacity = color[3]
-            stroke.opacity.value = opacity * float(style.get("stroke-opacity", 1)) * 100
             group.add_shape(stroke)
+
+            stroke.opacity.value = opacity * float(style.get("stroke-opacity", 1)) * 100
+
             stroke.width.value = self._parse_unit(style.get("stroke-width", 1))
+
             linecap = style.get("stroke-linecap")
             if linecap == "round":
                 stroke.line_cap = objects.shapes.LineCap.Round
@@ -392,6 +395,7 @@ class SvgParser(SvgHandler):
                 stroke.line_cap = objects.shapes.LineCap.Butt
             elif linecap == "square":
                 stroke.line_cap = objects.shapes.LineCap.Square
+
             linejoin = style.get("stroke-linejoin")
             if linejoin == "round":
                 stroke.line_join = objects.shapes.LineJoin.Round
@@ -399,7 +403,19 @@ class SvgParser(SvgHandler):
                 stroke.line_join = objects.shapes.LineJoin.Bevel
             elif linejoin in {"miter", "arcs", "miter-clip"}:
                 stroke.line_join = objects.shapes.LineJoin.Miter
+
             stroke.miter_limit = self._parse_unit(style.get("stroke-miterlimit", 0))
+
+            dash_array = style.get("stroke-dasharray")
+            if dash_array:
+                values = list(map(self._parse_unit, dash_array.replace(",", " ").split()))
+                if len(values) % 2:
+                    values += values
+
+                stroke.dashes = []
+                for i in range(0, len(values), 2):
+                    stroke.dashes.append(objects.StrokeDash(values[i], objects.StrokeDashType.Dash))
+                    stroke.dashes.append(objects.StrokeDash(values[i+1], objects.StrokeDashType.Gap))
 
         fill_color = style.get("fill", "inherit")
         if fill_color not in nocolor:
