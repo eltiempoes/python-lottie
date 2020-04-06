@@ -48,35 +48,35 @@ class TextAnimatorDataProperty(TgsObject):
 
     def __init__(self):
         ## Rotation Angle: z?
-        self.r = Value()
+        self.rotation = Value()
         ## Angle?
         self.rx = Value()
         ## Angle?
         self.ry = Value()
         ## Skew Angle
-        self.sk = Value()
+        self.skew = Value()
         ## Skew Axis
-        self.sa = Value()
+        self.skew_axis = Value()
         ## Scale 0-100?
-        self.s = MultiDimensional()
-        self.a = MultiDimensional()
+        self.scale = MultiDimensional()
+        self.anchor = MultiDimensional()
         ## Opacity 0-100?
-        self.o = Value()
+        self.opacity = Value()
         ## Position
-        self.p = MultiDimensional()
+        self.position = MultiDimensional()
         ## Stroke width
-        self.sw = Value()
+        self.stroke_width = Value()
         ## Stroke color
-        self.sc = MultiDimensional()
+        self.stroke_color = MultiDimensional()
         ## Fill color
-        self.fc = MultiDimensional()
+        self.fill_color = MultiDimensional()
         self.fh = Value()
         ## 0-100?
         self.fs = Value()
         ## 0-100?
         self.fb = Value()
         ## Tracking
-        self.t = Value()
+        self.tracking = Value()
 
 
 ## \ingroup Lottie

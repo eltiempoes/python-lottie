@@ -352,6 +352,7 @@ class FontRenderer:
         - Font size
         - [in, out] Character position
         - Group shape
+        @param use_kerning Whether to honour kerning info from the font file
 
         @returns a Group shape, augmented with some extra attributes:
         - line_height   Line height

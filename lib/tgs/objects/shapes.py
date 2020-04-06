@@ -78,7 +78,7 @@ class ShapeElement(TgsObject):
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", str, False),
         TgsProp("property_index", "ix", int, False),
-        #TgsProp("bm", "bm", int, False),
+        TgsProp("bm", "bm", int, False),
     ]
     ## %Shape type.
     type = None
@@ -95,7 +95,7 @@ class ShapeElement(TgsObject):
         ## Hide element
         self.hidden = None
         ## \todo figure out?
-        #self.bm = None
+        self.bm = None
 
     def bounding_box(self, time=0):
         """!
@@ -395,7 +395,7 @@ class Path(Shape):
     """
     _props = [
         TgsProp("shape", "ks", ShapeProperty, False),
-        #TgsProp("index", "ind", int, False),
+        TgsProp("index", "ind", int, False),
     ]
     ## %Shape type.
     type = "sh"
@@ -405,7 +405,7 @@ class Path(Shape):
         ## Shape's vertices
         self.shape = ShapeProperty(bezier or Bezier())
         ## \todo Index?
-        #self.index = None
+        self.index = None
 
     def bounding_box(self, time=0):
         pos = self.shape.get_value(time)
@@ -498,7 +498,7 @@ class Fill(ShapeElement):
     _props = [
         TgsProp("opacity", "o", Value, False),
         TgsProp("color", "c", MultiDimensional, False),
-        #TgsProp("r", "r", int, False),
+        TgsProp("r", "r", int, False),
     ]
     ## %Shape type.
     type = "fl"
@@ -510,7 +510,7 @@ class Fill(ShapeElement):
         ## Fill Color
         self.color = MultiDimensional(color or NVector(1, 1, 1))
         ## \todo figure out?
-        #self.r = None
+        self.r = None
 
 
 ## \ingroup Lottie
@@ -554,6 +554,7 @@ class GradientFill(ShapeElement, Gradient):
     """
     _props = [
         TgsProp("opacity", "o", Value, False),
+        TgsProp("r", "r", int, False),
     ]
     ## %Shape type.
     type = "gf"
@@ -563,6 +564,8 @@ class GradientFill(ShapeElement, Gradient):
         Gradient.__init__(self, colors)
         ## Fill Opacity
         self.opacity = Value(100)
+        ## \todo figure out?
+        self.r = None
 
 
 ## \ingroup Lottie
@@ -685,7 +688,7 @@ class Trim(ShapeElement):
         TgsProp("start", "s", Value, False),
         TgsProp("end", "e", Value, False),
         TgsProp("angle", "o", Value, False),
-        #TgsProp("m", "m", int, False),
+        TgsProp("m", "m", int, False),
     ]
     ## %Shape type.
     type = "tm"
@@ -699,7 +702,7 @@ class Trim(ShapeElement):
         ## Angle where to start
         self.angle = Value(0)
         ## \todo?
-        #self.m = None
+        self.m = None
 
 
 ## \ingroup Lottie
