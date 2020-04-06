@@ -52,6 +52,11 @@ class SifBuilder(restructure.AbstractBuilder):
         self.canvas.antialias = True
         return self.canvas
 
+    def _on_precomp(self, id, dom_parent):
+        g = dom_parent.add_layer(api.GroupLayer())
+        g.desc = id
+        return g
+
     def _on_layer(self, layer_builder, dom_parent):
         layer = self.layer_from_lottie(api.GroupLayer, layer_builder.lottie, dom_parent)
         if not layer_builder.lottie.name:
@@ -76,6 +81,10 @@ class SifBuilder(restructure.AbstractBuilder):
         transf = getattr(lottie, "transform", None)
         if transf:
             self.set_transform(g, transf)
+
+        if isinstance(lottie, objects.NullLayer):
+            g.amount.value = 1
+
         return g
 
     def _get_scale(self, transform):
@@ -93,16 +102,25 @@ class SifBuilder(restructure.AbstractBuilder):
 
     def set_transform(self, group, transform):
         composite = group.transformation
-        composite.offset = self.process_vector(transform.position)
 
-        keyframes = self._merge_keyframes([transform.scale, transform.skew])
+        if transform.position:
+            composite.offset = self.process_vector(transform.position)
 
-        composite.scale = self.process_vector_ext(keyframes, self._get_scale(transform))
-        #self.process_vector_ext("scale", transform.scale.keyframes, composite, "vector", get_scale)
+        if transform.scale:
+            keyframes = self._merge_keyframes([transform.scale, transform.skew])
+            composite.scale = self.process_vector_ext(keyframes, self._get_scale(transform))
+
         composite.skew_angle = self.process_scalar(transform.skew or objects.Value(0))
-        composite.angle = self.process_scalar(transform.rotation)
-        group.amount = self.process_scalar(transform.opacity, 1/100)
-        group.origin = self.process_vector(transform.anchor_point)
+
+        if transform.rotation:
+            composite.angle = self.process_scalar(transform.rotation)
+
+        if transform.opacity:
+            group.amount = self.process_scalar(transform.opacity, 1/100)
+
+        if transform.anchor_point:
+            group.origin = self.process_vector(transform.anchor_point)
+
         # TODO get z_depth from position
         composite.z_depth = 0
 
