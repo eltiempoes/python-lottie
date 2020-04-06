@@ -196,6 +196,8 @@ class PreCompLayer(Layer):
     _props = [
         TgsProp("reference_id", "refId", str, False),
         TgsProp("time_remapping", "tm", Value, False),
+        TgsProp("width", "w", int, False),
+        TgsProp("height", "h", int, False),
     ]
     ## %Layer type.
     type = 0
@@ -206,6 +208,10 @@ class PreCompLayer(Layer):
         self.reference_id = ""
         ## Comp's Time remapping
         self.time_remapping = Value()
+        ## Width
+        self.width = 512
+        ## Height
+        self.height = 512
 
 
 ## \ingroup Lottie

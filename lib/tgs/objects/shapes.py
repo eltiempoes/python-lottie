@@ -78,6 +78,7 @@ class ShapeElement(TgsObject):
         TgsProp("name", "nm", str, False),
         TgsProp("type", "ty", str, False),
         TgsProp("property_index", "ix", int, False),
+        #TgsProp("bm", "bm", int, False),
     ]
     ## %Shape type.
     type = None
@@ -93,6 +94,8 @@ class ShapeElement(TgsObject):
         self.property_index = None
         ## Hide element
         self.hidden = None
+        ## \todo figure out?
+        #self.bm = None
 
     def bounding_box(self, time=0):
         """!
@@ -392,6 +395,7 @@ class Path(Shape):
     """
     _props = [
         TgsProp("shape", "ks", ShapeProperty, False),
+        #TgsProp("index", "ind", int, False),
     ]
     ## %Shape type.
     type = "sh"
@@ -400,6 +404,8 @@ class Path(Shape):
         Shape.__init__(self)
         ## Shape's vertices
         self.shape = ShapeProperty(bezier or Bezier())
+        ## \todo Index?
+        #self.index = None
 
     def bounding_box(self, time=0):
         pos = self.shape.get_value(time)
@@ -492,6 +498,7 @@ class Fill(ShapeElement):
     _props = [
         TgsProp("opacity", "o", Value, False),
         TgsProp("color", "c", MultiDimensional, False),
+        #TgsProp("r", "r", int, False),
     ]
     ## %Shape type.
     type = "fl"
@@ -502,6 +509,8 @@ class Fill(ShapeElement):
         self.opacity = Value(100)
         ## Fill Color
         self.color = MultiDimensional(color or NVector(1, 1, 1))
+        ## \todo figure out?
+        #self.r = None
 
 
 ## \ingroup Lottie
@@ -571,6 +580,27 @@ class LineCap(TgsEnum):
 
 
 ## \ingroup Lottie
+class StrokeDashType(TgsEnum):
+    Dash = "d"
+    Gap = "g"
+    Offset = "o"
+
+
+## \ingroup Lottie
+class StrokeDash(TgsObject):
+    _props = [
+        TgsProp("name", "nm", str, False),
+        TgsProp("type", "n", StrokeDashType, False),
+        TgsProp("length", "v", Value, False),
+    ]
+
+    def __init__(self):
+        self.name = ""
+        self.type = StrokeDashType.Dash
+        self.length = Value(0)
+
+
+## \ingroup Lottie
 class BaseStroke(TgsObject):
     _props = [
         TgsProp("line_cap", "lc", LineCap, False),
@@ -578,6 +608,7 @@ class BaseStroke(TgsObject):
         TgsProp("miter_limit", "ml", float, False),
         TgsProp("opacity", "o", Value, False),
         TgsProp("width", "w", Value, False),
+        TgsProp("dashes", "d", StrokeDash, True),
     ]
 
     def __init__(self, width=1):
@@ -591,6 +622,8 @@ class BaseStroke(TgsObject):
         self.opacity = Value(100)
         ## Stroke Width
         self.width = Value(width)
+        ## Dashes
+        self.dashes = None
 
 
 ## \ingroup Lottie
@@ -652,6 +685,7 @@ class Trim(ShapeElement):
         TgsProp("start", "s", Value, False),
         TgsProp("end", "e", Value, False),
         TgsProp("angle", "o", Value, False),
+        #TgsProp("m", "m", int, False),
     ]
     ## %Shape type.
     type = "tm"
@@ -664,6 +698,8 @@ class Trim(ShapeElement):
         self.end = Value(100)
         ## Angle where to start
         self.angle = Value(0)
+        ## \todo?
+        #self.m = None
 
 
 ## \ingroup Lottie
