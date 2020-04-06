@@ -39,25 +39,28 @@ class MatteMode(TgsEnum):
 ## \ingroup Lottie
 class Layer(TgsObject):
     _props = [
-        TgsProp("type", "ty", int, False),
-        TgsProp("transform", "ks", Transform, False),
-        TgsProp("auto_orient", "ao", PseudoBool, False),
-        TgsProp("blend_mode", "bm", BlendMode, False),
-        TgsProp("matte_mode", "tt", MatteMode, False),
         TgsProp("threedimensional", "ddd", PseudoBool, False),
         TgsProp("hidden", "hd", bool, False),
-        TgsProp("index", "ind", int, False),
-        #TgsProp("css_class", "cl", str, False),
-        #TgsProp("layer_html_id", "ln", str, False),
+        TgsProp("type", "ty", int, False),
+        TgsProp("name", "nm", str, False),
+        TgsProp("parent", "parent", int, False),
+
+        TgsProp("stretch", "sr", float, False),
+        TgsProp("transform", "ks", Transform, False),
+        TgsProp("auto_orient", "ao", PseudoBool, False),
+
         TgsProp("in_point", "ip", float, False),
         TgsProp("out_point", "op", float, False),
         TgsProp("start_time", "st", float, False),
-        TgsProp("name", "nm", str, False),
+        TgsProp("blend_mode", "bm", BlendMode, False),
+
+        TgsProp("matte_mode", "tt", MatteMode, False),
+        TgsProp("index", "ind", int, False),
+        #TgsProp("css_class", "cl", str, False),
+        #TgsProp("layer_html_id", "ln", str, False),
         TgsProp("has_masks", "hasMask", bool, False),
         TgsProp("masks", "masksProperties", Mask, True),
         TgsProp("effects", "ef", Effect, True),
-        TgsProp("stretch", "sr", float, False),
-        TgsProp("parent", "parent", int, False),
     ]
     ## %Layer type.
     ## @see https://github.com/bodymovin/bodymovin-extension/blob/master/bundle/jsx/enums/layerTypes.jsx

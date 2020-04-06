@@ -21,6 +21,7 @@ class Animation(TgsObject):
     @todo rename to Composition?
     """
     _props = [
+        TgsProp("tgs", "tgs", PseudoBool, False),
         TgsProp("version", "v", str, False),
         TgsProp("frame_rate", "fr", float, False),
         TgsProp("in_point", "ip", float, False),
@@ -35,7 +36,6 @@ class Animation(TgsObject):
         TgsProp("layers", "layers", Layer, True),
         TgsProp("chars", "chars", Chars, True),
         #TgsProp("markers", "markers", Marker, True),
-        TgsProp("tgs", "tgs", PseudoBool, False),
         #TgsProp("motion_blur", "mb", MotionBlur, False),
     ]
     _version = "5.5.2"

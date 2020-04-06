@@ -11,7 +11,7 @@ def export_lottie(animation, file, pretty=False):
     with open_file(file) as fp:
         kw = {}
         if pretty:
-            kw = dict(sort_keys=True, indent=4)
+            kw = dict(indent=4)
         json.dump(animation.to_dict(), fp, **kw)
 
 

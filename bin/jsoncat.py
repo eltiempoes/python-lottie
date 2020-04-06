@@ -20,8 +20,14 @@ parser.add_argument(
     "infile",
     help="Input file"
 )
+parser.add_argument(
+    "--no-sort",
+    action="store_false",
+    help="Don't sort keys",
+    dest="sort"
+)
 
 if __name__ == "__main__":
     ns = parser.parse_args()
     a = parse_tgs_json(ns.infile)
-    json.dump(a, sys.stdout, indent=4, sort_keys=True)
+    json.dump(a, sys.stdout, indent=4, sort_keys=ns.sort)
