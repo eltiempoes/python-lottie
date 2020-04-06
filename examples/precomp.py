@@ -48,5 +48,23 @@ pcl3 = an.add_layer(objects.PreCompLayer("myid"))
 pcl3.start_time = 60
 pcl3.transform.position.value = NVector(0, 200)
 
+# Uses time remapping to have more fine tuning on the animation
+# (goes forward for 40 frames, than backwards)
+pcl4 = an.add_layer(objects.PreCompLayer("myid"))
+pcl4.transform.position.value = NVector(0, 300)
+pcl4.time_remapping = objects.Value()
+pcl4.time_remapping.add_keyframe(0, 0.1)
+pcl4.time_remapping.add_keyframe(40, 0.5)
+pcl4.time_remapping.add_keyframe(80, 0.1)
+
+# Same effect as pcl2+pcl3 but using a single layer and time remapping
+pcl5 = an.add_layer(objects.PreCompLayer("myid"))
+pcl5.transform.position.value = NVector(0, 400)
+pcl5.time_remapping = objects.Value()
+pcl5.time_remapping.add_keyframe(0, 0.333)
+pcl5.time_remapping.add_keyframe(59, 1.333, objects.easing.Jump())
+pcl5.time_remapping.add_keyframe(60, 0)
+pcl5.time_remapping.add_keyframe(80, 0.333)
+
 script.script_main(an)
 
