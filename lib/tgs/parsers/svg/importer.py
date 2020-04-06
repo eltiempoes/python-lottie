@@ -407,7 +407,7 @@ class SvgParser(SvgHandler):
             stroke.miter_limit = self._parse_unit(style.get("stroke-miterlimit", 0))
 
             dash_array = style.get("stroke-dasharray")
-            if dash_array:
+            if dash_array and dash_array != "none":
                 values = list(map(self._parse_unit, dash_array.replace(",", " ").split()))
                 if len(values) % 2:
                     values += values
