@@ -38,8 +38,8 @@ class TestMultiDimensional(base.TestCase):
                         "t": 0,
                         "s": [1, 2],
                         "e": [4, 5],
-                        "i": {"x": [1], "y": [1]},
-                        "o": {"x": [0], "y": [0]},
+                        "i": {"x": 1, "y": 1},
+                        "o": {"x": 0, "y": 0},
                     },
                     {
                         "t": 3,
@@ -131,6 +131,41 @@ class TestMultiDimensional(base.TestCase):
         self.assertEqual(md.keyframes[0].time, 0)
         self.assertEqual(md.keyframes[0].start, NVector(1, 2))
         self.assertEqual(md.keyframes[0].end, NVector(4, 5))
+        self.assertEqual(md.keyframes[0].in_value.x, [6])
+        self.assertEqual(md.keyframes[0].in_value.y, [7])
+        self.assertEqual(md.keyframes[0].out_value.x, [8])
+        self.assertEqual(md.keyframes[0].out_value.y, [9])
+
+        self.assertEqual(md.keyframes[1].time, 3)
+        self.assertEqual(md.keyframes[1].start, NVector(4, 5))
+        self.assertEqual(md.keyframes[1].end, None)
+        self.assertEqual(md.keyframes[1].in_value, None)
+        self.assertEqual(md.keyframes[1].out_value, None)
+
+    def test_load_anim_nolist(self):
+        md = objects.MultiDimensional.load({
+                "a": 1,
+                "k": [
+                    {
+                        "t": 0,
+                        "s": [1, 2],
+                        "e": [4, 5],
+                        "i": {"x": 6, "y": 7},
+                        "o": {"x": 8, "y": 9},
+                    },
+                    {
+                        "t": 3,
+                        "s": [4, 5],
+                    }
+                ]
+        })
+        self.assertIs(md.animated, True)
+        self.assertIsNone(md.value)
+        self.assertEqual(len(md.keyframes), 2)
+
+        self.assertEqual(md.keyframes[0].time, 0)
+        self.assertEqual(md.keyframes[0].start, NVector(1, 2))
+        self.assertEqual(md.keyframes[0].end, NVector(4, 5))
         self.assertEqual(md.keyframes[0].in_value.x, 6)
         self.assertEqual(md.keyframes[0].in_value.y, 7)
         self.assertEqual(md.keyframes[0].out_value.x, 8)
@@ -141,5 +176,3 @@ class TestMultiDimensional(base.TestCase):
         self.assertEqual(md.keyframes[1].end, None)
         self.assertEqual(md.keyframes[1].in_value, None)
         self.assertEqual(md.keyframes[1].out_value, None)
-
-
