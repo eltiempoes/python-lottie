@@ -4,6 +4,7 @@ import enum
 from tgs.nvector import NVector
 from tgs.parsers.sif.xml.utils import xml_text, str_to_bool
 from tgs.parsers.sif.xml.utils import xml_child_elements, value_from_xml_string, xml_make_text, value_to_xml_string
+from tgs.parsers.sif.sif.frame_time import FrameTime
 
 
 class ObjectRegistry:
@@ -110,7 +111,7 @@ class TypeDescriptor:
         elif self.typename == "integer":
             value = int(xml.getAttribute("value"))
         elif self.typename == "time":
-            value = FrameTime(xml.getAttribute("value"))
+            value = FrameTime.parse_string(xml.getAttribute("value"), registry)
         elif self.typename == "bool":
             value = str_to_bool(xml.getAttribute("value"))
         elif self.typename == "string":
@@ -139,7 +140,7 @@ class GradientPoint:
     @classmethod
     def from_dom(cls, xml: minidom.Element, registry: ObjectRegistry):
         return GradientPoint(
-            value_from_xml_string(xml.getAttribute("pos"), float),
+            value_from_xml_string(xml.getAttribute("pos"), float, registry),
             cls.type.value_from_xml_element(xml, registry)
         )
 
@@ -161,37 +162,3 @@ class SifNodeMeta(type):
             for node in attr["_nodes"]
         }
         return super().__new__(cls, name, bases, attr)
-
-
-class FrameTime:
-    class Unit(enum.Enum):
-        Frame = "f"
-        Seconds = "s"
-
-    def __init__(self, value, unit=None):
-        if isinstance(value, str) or unit is None:
-            self.value = float(value[:-1])
-            self.unit = self.Unit(value[-1])
-        else:
-            self.value = value
-            self.unit = unit
-
-    def __eq__(self, other):
-        return self.value == other.value and self.unit == other.unit
-
-    def __ne__(self, other):
-        return self.value == other.value and self.unit == other.unit
-
-    def __str__(self):
-        return "%s%s" % (self.value, self.unit.value)
-
-    def __repr__(self):
-        return "<%s %s>" % (self.__class__.__name__, self)
-
-    @classmethod
-    def frame(cls, amount):
-        return cls(amount, cls.Unit.Frame)
-
-    @classmethod
-    def seconds(cls, amount):
-        return cls(amount, cls.Unit.Seconds)

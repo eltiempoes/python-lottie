@@ -74,7 +74,7 @@ class SifKeyframe:
     def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
         return cls(
             param.value_from_xml_element(xml_first_element_child(xml), registry),
-            FrameTime(xml.getAttribute("time")),
+            FrameTime.parse_string(xml.getAttribute("time"), registry),
             Interpolation(xml.getAttribute("before")),
             Interpolation(xml.getAttribute("after"))
         )

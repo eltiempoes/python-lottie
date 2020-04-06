@@ -2,6 +2,7 @@ from xml.dom import minidom
 from distutils.util import strtobool
 
 from tgs.nvector import NVector
+from tgs.parsers.sif.sif.frame_time import FrameTime
 
 
 class _tag:
@@ -19,11 +20,13 @@ def str_to_bool(strval):
     return bool(strtobool(strval))
 
 
-def value_from_xml_string(xml_str, type):
+def value_from_xml_string(xml_str, type, registry):
     if type in (bool_str, bool):
         return str_to_bool(xml_str)
     elif type is NVector:
         return NVector(*map(float, xml_str.split()))
+    if type is FrameTime:
+        return FrameTime.parse_string(xml_str, registry)
     return type(xml_str)
 
 

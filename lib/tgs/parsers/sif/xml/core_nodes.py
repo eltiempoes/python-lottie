@@ -72,7 +72,7 @@ class XmlAttribute(TypedXmlDescriptor):
             if xml_str.startswith(":") and xml_str[1:] in registry.registry:
                 value = ValueReference.from_registry(xml_str[1:], registry)
             else:
-                value = value_from_xml_string(xml_str, self.type)
+                value = value_from_xml_string(xml_str, self.type, registry)
             setattr(obj, self.att_name, value)
 
     def to_xml(self, obj, parent: minidom.Element, dom: minidom.Document):
@@ -101,7 +101,7 @@ class XmlFixedAttribute(XmlDescriptor):
 
     def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         xml_str = parent.getAttribute(self.name)
-        setattr(obj, self.att_name, value_from_xml_string(xml_str, self.type))
+        setattr(obj, self.att_name, value_from_xml_string(xml_str, self.type, registry))
 
     def default(self):
         return self.value
@@ -111,7 +111,7 @@ class XmlSimpleElement(TypedXmlDescriptor):
     def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         cn = xml_first_element_child(parent, self.name, allow_none=True)
         if cn:
-            value = value_from_xml_string(xml_text(cn), self.type)
+            value = value_from_xml_string(xml_text(cn), self.type, registry)
         else:
             value = self.default_value
 
@@ -127,7 +127,7 @@ class XmlMeta(TypedXmlDescriptor):
     def from_xml(self, obj, parent: minidom.Element, registry: ObjectRegistry):
         for cn in xml_child_elements(parent, "meta"):
             if cn.getAttribute("name") == self.name:
-                value = value_from_xml_string(cn.getAttribute("content"), self.type)
+                value = value_from_xml_string(cn.getAttribute("content"), self.type, registry)
                 break
         else:
             value = self.default_value
