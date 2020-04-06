@@ -80,20 +80,31 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         return self.svg
 
     def _on_layer(self, layer_builder, dom_parent):
-        if layer_builder.lottie.in_point > self.time or layer_builder.lottie.out_point < self.time:
+        lot = layer_builder.lottie
+        if (lot.in_point > self.time or lot.out_point < self.time) and dom_parent not in self.defs:
             return None
 
-        g = self.group_from_lottie(layer_builder.lottie, dom_parent, True)
-        if isinstance(layer_builder.lottie, objects.NullLayer):
+        g = self.group_from_lottie(lot, dom_parent, True)
+
+        if isinstance(lot, objects.PreCompLayer):
+            use = ElementTree.SubElement(g, "use")
+            use.attrib[self.qualified("xlink", "href")] = "#" + lot.reference_id
+        elif isinstance(lot, objects.NullLayer):
             g.attrib["opacity"] = "1"
-        if not layer_builder.lottie.name:
-            g.attrib[self.qualified("inkscape", "label")] = layer_builder.lottie.__class__.__name__
+
+        if not lot.name:
+            g.attrib[self.qualified("inkscape", "label")] = lot.__class__.__name__
         if layer_builder.shapegroup:
             g.attrib["style"] = self.group_to_style(layer_builder.shapegroup)
-        if layer_builder.lottie.hidden:
+        if lot.hidden:
             g.attrib.setdefault("style", "")
             g.attrib["style"] += "display: none;"
 
+        return g
+
+    def _on_precomp(self, id, dom_parent):
+        g = ElementTree.SubElement(self.defs, "g")
+        g.attrib["id"] = id
         return g
 
     def _get_value(self, prop, default=NVector(0, 0)):
@@ -291,6 +302,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         d = ""
         for shape in shapes:
             bez = shape.shape.get_value(self.time)
+            if isinstance(bez, list):
+                bez = bez[0]
             if not bez.vertices:
                 continue
             if d:

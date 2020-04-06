@@ -5,6 +5,7 @@ from . import animation, base, effects, enums, helpers, layers, shapes, assets, 
 from .animation import Animation
 from .layers import *
 from .shapes import *
+from .assets import Precomp
 from .bezier import Bezier
 
 __all__ = [
@@ -14,5 +15,5 @@ __all__ = [
     "NullLayer", "TextLayer", "ShapeLayer", "ImageLayer", "PreCompLayer", "SolidLayer",
     "Rect", "Fill", "Trim", "Repeater", "GFill", "Stroke", "RoundedCorners", "Path",
     "TransformShape", "Group", "Star", "Ellipse", "Merge", "GStroke",
-    "Bezier",
+    "Bezier", "Precomp",
 ]

@@ -139,10 +139,11 @@ class TgsProp:
         \returns the Python equivalent of the JSON value
         """
         if self.list is PseudoList and isinstance(lottieval, list):
-            return [
-                self._load_scalar(it)
-                for it in lottieval
-            ]
+            return self._load_scalar(lottieval[0])
+            #return [
+                #self._load_scalar(it)
+                #for it in lottieval
+            #]
         elif self.list is True:
             return [
                 self._load_scalar(it)

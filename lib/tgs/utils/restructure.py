@@ -61,6 +61,12 @@ class RestructuredPathMerger:
         self.paths.append(path)
 
 
+class RestructuredAnimation:
+    def __init__(self):
+        self.layers = []
+        self.precomp = {}
+
+
 class AbstractBuilder:
     merge_paths = False
 
@@ -81,10 +87,20 @@ class AbstractBuilder:
 
     def process(self, animation: objects.Animation):
         out_parent = self._on_animation(animation)
-        for layer_builder in self.restructure_animation(animation, self.merge_paths):
+
+        restructured = self.restructure_animation(animation, self.merge_paths)
+        for id, layers in restructured.precomp.items():
+            precomp_parent = self._on_precomp(id, out_parent)
+            for layer_builder in layers:
+                self.process_layer(layer_builder, precomp_parent)
+
+        for layer_builder in restructured.layers:
             self.process_layer(layer_builder, out_parent)
 
     def _on_layer(self, layer_builder, out_parent):
+        raise NotImplementedError()
+
+    def _on_precomp(self, id, out_parent):
         raise NotImplementedError()
 
     def process_layer(self, layer_builder, out_parent):
@@ -118,9 +134,18 @@ class AbstractBuilder:
             self.shapegroup_process_child(shape, shapegroup, out_parent)
 
     def restructure_animation(self, animation, merge_paths):
+        restr = RestructuredAnimation()
+        restr.layers = self.restructure_layer_list(animation.layers, merge_paths)
+        if animation.assets:
+            for asset in animation.assets:
+                if isinstance(asset, objects.Precomp):
+                    restr.precomp[asset.id] = self.restructure_layer_list(asset.layers, merge_paths)
+        return restr
+
+    def restructure_layer_list(self, layer_list, merge_paths):
         layers = {}
         flat_layers = []
-        for layer in animation.layers:
+        for layer in layer_list:
             laybuilder = RestructuredLayer(layer)
             flat_layers.append(laybuilder)
             if layer.index is not None:

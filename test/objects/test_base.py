@@ -100,9 +100,6 @@ class TestTgsProp(TestCase):
         prop = base.TgsProp("foo", "f", mock.MagicMock, base.PseudoList)
         sv = mock.MagicMock()
         v = prop.load([sv])
-        self.assertIsInstance(v, list)
-        self.assertEqual(len(v), 1)
-        v = v[0]
         self.assertIsInstance(v, mock.MagicMock)
         self.assertEqual(v, sv)
         self.assertIs(v, sv)
