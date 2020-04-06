@@ -205,12 +205,12 @@ class PreCompLayer(Layer):
     ## %Layer type.
     type = 0
 
-    def __init__(self):
+    def __init__(self, reference_id=""):
         Layer.__init__(self)
         ## id pointing to the source composition defined on 'assets' object
-        self.reference_id = ""
+        self.reference_id = reference_id
         ## Comp's Time remapping
-        self.time_remapping = Value()
+        self.time_remapping = None
         ## Width
         self.width = 512
         ## Height

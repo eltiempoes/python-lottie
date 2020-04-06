@@ -1,4 +1,4 @@
-from .base import TgsObject, TgsProp, PseudoBool
+from .base import TgsObject, TgsProp, PseudoBool, Index
 from .layers import Layer
 from .shapes import ShapeElement
 
@@ -125,8 +125,29 @@ class Precomp(Asset):
         TgsProp("layers", "layers", Layer, True),
     ]
 
-    def __init__(self):
+    def __init__(self, id="", animation=None):
         ## Precomp ID
-        self.id = ""
+        self.id = id
         ## List of Precomp Layers
         self.layers = []
+        self._index_gen = Index()
+        self.animation = animation
+
+    def add_layer(self, layer):
+        """!
+        @brief Appends a layer to the animation
+        \see insert_layer
+        """
+        return self.insert_layer(len(self.layers), layer)
+
+    def insert_layer(self, index, layer):
+        """!
+        @brief Inserts a layer to the animation
+        @note Layers added first will be rendered on top of later layers
+        """
+        self.layers.insert(index, layer)
+        if layer.index is None:
+            layer.index = next(self._index_gen)
+        if self.animation:
+            self.animation.prepare_layer(layer)
+        return layer

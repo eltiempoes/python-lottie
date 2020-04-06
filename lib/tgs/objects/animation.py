@@ -83,13 +83,16 @@ class Animation(TgsObject):
         @note Layers added first will be rendered on top of later layers
         """
         self.layers.insert(index, layer)
+        self.prepare_layer(layer)
+        return layer
+
+    def prepare_layer(self, layer):
         if layer.index is None:
             layer.index = next(self._index_gen)
         if layer.in_point is None:
             layer.in_point = self.in_point
         if layer.out_point is None:
             layer.out_point = self.out_point
-        return layer
 
     def clone(self):
         c = super().clone()
