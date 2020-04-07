@@ -263,6 +263,9 @@ fonts = _SystemFontList()
 
 
 def collect_kerning_pairs(font):
+    if "GPOS" not in font:
+        return {}
+
     gpos_table = font["GPOS"].table
 
     unique_kern_lookups = []
@@ -340,6 +343,15 @@ class FontRenderer:
     def glyph_name(self, ch):
         return self.cmap.get(ord(ch)) or self.font._makeGlyphName(ord(ch))
 
+    def scale(self, size):
+        return size / self.font["head"].unitsPerEm
+
+    def line_height(self, size):
+        return self.font["head"].yMax * self.scale(size)
+
+    def ex(self, size):
+        return self.glyphset["x"].width * self.scale(size)
+
     def render(self, text, size, pos=None, use_kerning=True, on_missing=None):
         """!
         Renders some text
@@ -361,8 +373,8 @@ class FontRenderer:
         if use_kerning and self._kerning is None:
             self._kerning = collect_kerning_pairs(self.font)
 
-        scale = size / self.font["head"].unitsPerEm
-        line_height = self.font["head"].yMax * scale
+        scale = self.scale(size)
+        line_height = self.line_height(size)
         group = Group()
         group.name = text
         if pos is None:
@@ -419,6 +431,15 @@ class FallbackFontRenderer:
         self._best = None
         self._bq = None
 
+    def line_height(self, size):
+        return self.best.line_height(size)
+
+    def ex(self, size):
+        best = self.best
+        if "x" not in self.best.glyphset:
+            best = fonts.best(self.query.clone().char("x"))
+        return best.ex(size)
+
     @property
     def best(self):
         cq = str(self.query)
@@ -472,7 +493,7 @@ class FontStyle:
 
     @property
     def renderer(self):
-        return self.renderer
+        return self._renderer
 
     def render(self, text, pos=NVector(0, 0)):
         group = self._renderer.render(text, self.size, self.position+pos, self.use_kerning)
@@ -485,6 +506,14 @@ class FontStyle:
 
     def clone(self):
         return FontStyle(str(self._renderer.query), self.size, self.justify, self.position, self.use_kerning)
+
+    @property
+    def ex(self):
+        return self._renderer.ex(self.size)
+
+    @property
+    def line_height(self):
+        return self._renderer.line_height(self.size)
 
 
 def _propfac(a):

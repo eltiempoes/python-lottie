@@ -149,7 +149,7 @@ Here is a list of features of the tgs python framework:
 * Importing raster images and convert them into vectors
 * Export lottie JSON or TGS
 * Export (non-animated) SVG
-* Export Synfig files
+* Importt/Export Synfig files
 * Export PNG/PDF/PostScript
 * Export GIF
 * Export Video (MP4, AVI, WebM)
@@ -213,6 +213,7 @@ There are several things marked as unsupported in telegram animated stickers tha
 * Gradient Strokes
 * Repeaters
 * Solids
+* Time Remapping (Works on desktop but not on Android)
 
 
 The following things are actually unsupported:
@@ -230,7 +231,6 @@ Things marked as unsupported that I haven't tested:
 * 3D Layers
 * Merge Paths
 * Time Stretching
-* Time Remapping
 * Auto-Oriented Layers
 
 

@@ -141,7 +141,7 @@ class TgsValidator(ObjectVisitor):
             Severity.Warning
         )
         self._check(
-            o.matte_mode == layers.MatteMode.Normal,
+            o.matte_mode in {None, layers.MatteMode.Normal},
             "Mattes are not supported",
             o,
             Severity.Warning
