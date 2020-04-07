@@ -404,7 +404,10 @@ class FontRenderer:
                     sh.shape.value.scale(scale)
                     glyph_shape_group.add_shape(sh)
 
-                (glyph_shape_group if len(glyph_shapes) > 1 else sh).name = ch
+                if len(glyph_shapes) > 1:
+                    glyph_shape_group.name = ch
+                elif len(glyph_shapes) == 1:
+                    sh.name = ch
 
                 kerning = 0
                 if use_kerning and i < len(text) - 1:
