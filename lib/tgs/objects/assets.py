@@ -151,3 +151,10 @@ class Precomp(Asset):
         if self.animation:
             self.animation.prepare_layer(layer)
         return layer
+
+    def set_timing(self, outpoint, inpoint=0, override=True):
+        for layer in layers:
+            if override or layer.in_point is None:
+                layer.in_point = inpoint
+            if override or layer.out_point is None:
+                layer.out_point = outpoint
