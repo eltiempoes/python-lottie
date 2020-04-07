@@ -156,6 +156,14 @@ class TgsValidator(ObjectVisitor):
                 Severity.Warning
             )
 
+    def _visit_precomplayer(self, o: layers.PreCompLayer):
+        self._check(
+            o.time_remapping is None,
+            "Time remapping is not supported",
+            o,
+            Severity.Warning
+        )
+
     def _visit_merge(self, o: shapes.Merge):
         self._check(
             False,
