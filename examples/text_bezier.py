@@ -15,6 +15,8 @@ an = objects.Animation(120)
 layer = objects.ShapeLayer()
 an.add_layer(layer)
 
+# The font name "Ubuntu" here, can be detected among the system fonts if fontconfig is available
+# Otherwise you can use the full path to the font file
 t = layer.add_shape(FontShape("Hello\nWorld\nF\U0001F600O", "Ubuntu", 128))
 t.refresh()
 t.wrapped.transform.position.value.y += t.line_height

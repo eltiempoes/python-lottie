@@ -340,7 +340,7 @@ class FontRenderer:
     def glyph_name(self, ch):
         return self.cmap.get(ord(ch)) or self.font._makeGlyphName(ord(ch))
 
-    def render(self, text, size, pos=None, on_missing=None, use_kerning=True):
+    def render(self, text, size, pos=None, use_kerning=True, on_missing=None):
         """!
         Renders some text
 
@@ -436,7 +436,7 @@ class FallbackFontRenderer:
             group.add_shape(child)
 
     def render(self, text, size, pos=None, use_kerning=True):
-        return self.best.render(text, size, pos, self._on_missing, use_kerning)
+        return self.best.render(text, size, pos, use_kerning, self._on_missing)
 
     def __repr__(self):
         return "<FallbackFontRenderer %s>" % self.query
@@ -444,20 +444,31 @@ class FallbackFontRenderer:
 
 class FontStyle:
     def __init__(self, query, size, justify=TextJustify.Left, position=None, use_kerning=True):
-        self._renderer = FallbackFontRenderer(query)
+        if isinstance(query, str) and os.path.isfile(query):
+            self._renderer = FontRenderer(query)
+        else:
+            self._renderer = FallbackFontRenderer(query)
         self.size = size
         self.justify = justify
         self.position = position.clone() if position else NVector(0, 0)
         self.use_kerning = use_kerning
 
+    def _set_query(self, query):
+        if isinstance(query, str) and os.path.isfile(query):
+            self._renderer = FontRenderer(query)
+        else:
+            self._renderer = FallbackFontRenderer(query)
+
     @property
     def query(self):
-        return self._renderer.query
+        if isinstance(self._renderer, FallbackFontRenderer):
+            return self._renderer.query
+        return self._renderer.filename
 
     @query.setter
     def query(self, value):
         if str(value) != str(self.query):
-            self._renderer = FallbackFontRenderer(value)
+            self._set_query(value)
 
     @property
     def renderer(self):
