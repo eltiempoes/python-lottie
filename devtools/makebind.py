@@ -23,6 +23,12 @@ class LanguageBind:
         self.outpath = outpath
         self.out = None
 
+    def _on_global_start(self):
+        pass
+
+    def _on_global_close(self):
+        pass
+
     def _on_module_start(self, name):
         pass
 
@@ -32,7 +38,7 @@ class LanguageBind:
     def _on_module_close(self, name):
         pass
 
-    def _on_class_open(self, name, docs, bases):
+    def _on_class_open(self, cls, name, docs, bases):
         pass
 
     def _on_class_attribute(self, prop):
@@ -95,6 +101,12 @@ class LanguageBind:
         self.out.close()
         self.out = None
 
+    def global_start(self):
+        self._on_global_start()
+
+    def global_close(self):
+        self._on_global_close()
+
     def filename(self, base):
         return "%s.%s" % (base, self.extension)
 
@@ -109,8 +121,8 @@ class LanguageBind:
                 depdict[mod].append(name)
         self._on_module_dependencies(depdict)
 
-    def class_open(self, name, docs, bases):
-        self._on_class_open(name, docs.rstrip(), bases)
+    def class_open(self, cls, name, docs, bases):
+        self._on_class_open(cls, name, docs.rstrip(), bases)
 
     def class_attribute(self, prop):
         self._on_class_attribute(prop)
@@ -162,6 +174,138 @@ class LanguageBind:
         raise NotImplementedError("%s" % value)
 
 
+class JsBind(LanguageBind):
+    extension = "js"
+
+    def _on_global_start(self):
+        self.all = {}
+
+    def _on_global_close(self):
+        with open(os.path.join(self.outpath, self.filename("all")), "w") as allf:
+            for k, v in self.all.items():
+                allf.write("export { %s } from './%s.js';\n" % (", ".join(v), k))
+
+    def _on_module_start(self, name):
+        self.all[name] = []
+        self.all_current = self.all[name]
+        self.wl("import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';")
+
+    def _on_module_dependencies(self, depdict):
+        for module, values in depdict.items():
+            if module == "base":
+                continue
+            self.wl("import { %s } from './%s.js';" % (", ".join(values), module))
+        self.wl("")
+
+    def _on_class_open(self, cls, name, docs, bases):
+        self.current_class = cls
+        self.all_current.append(name)
+        self.wl("/*{docs}\n*/\nexport class {name} extends {base}\n{{"
+            .format(name=name, docs=docs, base=bases[-1].__name__))
+
+    def _on_class_attribute(self, prop):
+        self.wl(prop.name + ";", 1)
+
+    def _on_class_close(self):
+        self.wl("}\n")
+
+    def _on_class_init(self, name, valuedict, props):
+        self.wl("")
+
+        skip = set()
+
+        if name in ["MultiDimensional", "Value"]:
+            self.wl("constructor(value=null)", 1)
+            skip.add("value");
+        else:
+            self.wl("constructor()", 1)
+
+        self.wl("{", 1)
+        self.wl("super();", 2)
+
+        if issubclass(self.current_class, tgs.objects.Layer) or issubclass(self.current_class, tgs.objects.ShapeElement):
+            if self.current_class.type:
+                self.wl("this.type = %r;" % self.current_class.type, 2)
+                skip.add("type")
+
+        if name in ["MultiDimensional", "Value"]:
+            self.wl("this.value = value;", 2)
+
+        for propname, value in valuedict.items():
+            if propname not in skip:
+                self.wl("this.%s = %s;" % (propname, self.convert_value(value)), 2)
+
+
+        self.wl("}", 1)
+
+    def _on_value_null(self):
+        return "null"
+
+    def _on_class_to_lottie(self, name, props):
+        self.wl("")
+        self.wl("to_lottie()", 1)
+        self.wl("{", 1)
+        self.wl("var arr = {};", 2)
+        #self.wl("var arr = super.to_lottie();", 2)
+        for prop in props:
+            self.wl("if ( this.%s !== null )" % prop.name, 2)
+            self.out.write(" "*4*3)
+            self.out.write('arr["%s"] = value_to_lottie(' % prop.lottie)
+            if prop.list is PseudoList:
+                self.out.write("[")
+            if prop.type is PseudoBool:
+                self.out.write("Number(")
+            self.out.write("this.%s" % prop.name)
+            if prop.type is PseudoBool:
+                self.out.write(")")
+            if prop.list is PseudoList:
+                self.out.write("]")
+            self.out.write(");\n")
+        self.wl("return arr;", 2)
+        self.wl("}", 1)
+
+        self.wl("")
+        self.wl("static from_lottie(arr)", 1)
+        self.wl("{", 1)
+        self.wl("var obj = new %s();" % name, 2)
+        for prop in props:
+            self.wl('if ( arr["%s"] !== undefined )' % prop.lottie, 2)
+            self.out.write(" "*4*3)
+            self.out.write("obj.%s = value_from_lottie(" % prop.name)
+            if prop.type is PseudoBool:
+                self.out.write("Boolean(")
+            self.out.write('arr["%s"]' % prop.lottie)
+            if prop.type is PseudoBool:
+                self.out.write(")")
+            if prop.list is PseudoList:
+                self.out.write("[0]")
+            self.out.write(");\n")
+
+        self.wl("return obj;", 2)
+        self.wl("}", 1)
+
+    def _on_enum_open(self, name, docs):
+        self.all_current.append(name)
+        self.wl("/*{docs}\n*/\nexport const {name} = Object.freeze({{".format(name=name, docs=docs))
+
+    def _on_enum_value(self, name, value):
+        self.wl("%s: %s," % (name, value), 1)
+
+    def _on_enum_close(self):
+        self.wl("});")
+
+    # Values
+
+    def _on_value_object(self, value, ctorargs):
+        return "new %s(%s)" % (
+            value.__class__.__name__,
+            ", ".join(ctorargs)
+        )
+
+    def _on_value_enum(self, value):
+        return str(value)
+
+
 class PhpBind(LanguageBind):
     extension = "php"
 
@@ -173,7 +317,7 @@ class PhpBind(LanguageBind):
             self.wl("require_once(\"%s.php\");" % module)
         self.wl("")
 
-    def _on_class_open(self, name, docs, bases):
+    def _on_class_open(self, cls, name, docs, bases):
         self.wl("/*{docs}\n*/\nclass {name} extends {base}\n{{".format(name=name, docs=docs, base=bases[0].__name__))
 
     def _on_class_attribute(self, prop):
@@ -283,7 +427,7 @@ class ObjectWrapper(ClassWrapper):
         super().__init__(cls)
 
     def bind(self, binder):
-        binder.class_open(self.cls.__name__, self.cls.__doc__ or "", self.cls.__bases__)
+        binder.class_open(self.cls, self.cls.__name__, self.cls.__doc__ or "", self.cls.__bases__)
         for p in self.cls._props:
             binder.class_attribute(p)
         binder.class_init(self.cls.__name__, self.objprops, self.cls._props)
@@ -309,7 +453,8 @@ class EnumWrapper(ClassWrapper):
 
 
 binds = {
-    "php": PhpBind
+    "php": PhpBind,
+    "js": JsBind,
 }
 
 parser = argparse.ArgumentParser()
@@ -330,6 +475,8 @@ os.makedirs(ns.output, exist_ok=True)
 
 
 bind = binds[ns.language](ns.output)
+
+bind.global_start()
 
 for _, modname, _ in pkgutil.iter_modules(tgs.objects.__path__):
     if modname == "base":
@@ -377,3 +524,5 @@ for _, modname, _ in pkgutil.iter_modules(tgs.objects.__path__):
         cls.bind(bind)
 
     bind.module_close(modname)
+
+bind.global_close()

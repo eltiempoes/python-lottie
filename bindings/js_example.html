@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        html, body { width: 100%; height: 100%; margin: 0; }
+        body { display: flex; }
+    </style>
+    <style>
+        #bodymovin { width: 512px; height: 512px; margin: auto;
+            background-color: white;
+            background-size: 64px 64px;
+            background-image:
+                linear-gradient(to right, rgba(0, 0, 0, .3) 50%, transparent 50%),
+                linear-gradient(to bottom, rgba(0, 0, 0, .3) 50%, transparent 50%),
+                linear-gradient(to bottom, white 50%, transparent 50%),
+                linear-gradient(to right, transparent 50%, rgba(0, 0, 0, .5) 50%);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.3/lottie.js"></script>
+    </head><body>
+<div id="bodymovin"></div>
+
+<script type="module">
+import * as objects from './js/generated/all.js';
+import { Vector } from './js/vector.js';
+
+var bm_anim = null;
+
+function bm_reload(data)
+{
+    if ( bm_anim )
+        bm_anim.destroy();
+    var animData = {
+        container: document.getElementById('bodymovin'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        animationData: data,
+    };
+    bm_anim = bodymovin.loadAnimation(animData);
+}
+
+var an = new objects.Animation();
+var layer = new objects.ShapeLayer();
+an.layers.push(layer);
+an.in_point = layer.in_point = 0;
+an.out_point = layer.out_point = 60;
+
+var circle = new objects.Ellipse()
+layer.shapes.push(circle);
+circle.size.value = new Vector(100, 100);
+circle.position.value = new Vector(220, 100);
+
+var fill = new objects.Fill();
+fill.color.value = new Vector(1, 1, 0);
+layer.shapes.push(fill);
+
+// console.log(JSON.stringify(an.lot));
+bm_reload(an.to_lottie());
+</script>
+
+<script>
+
+</script></body></html>

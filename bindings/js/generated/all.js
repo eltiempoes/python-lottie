@@ -1,0 +1,11 @@
+export { Animation } from './animation.js';
+export { Asset, CharacterData, Chars, Image, Precomp } from './assets.js';
+export { Bezier } from './bezier.js';
+export { KeyframeBezierHandle } from './easing.js';
+export { EffectValue, EffectValueAngle, EffectValueCheckbox, EffectValueColor, EffectValueDropDown, EffectValueLayer, EffectValuePoint, EffectValueSlider, Effect, EffectNoValue, FillEffect, GaussianBlurEffect, Matte3Effect, ProLevelsEffect, StrokeEffect, TintEffect, TritoneEffect, ChangeColorEffect, DropShadowEffect } from './effects.js';
+export { TestBased, TextGrouping, TextShape } from './enums.js';
+export { MaskMode, Transform, Mask } from './helpers.js';
+export { BlendMode, MatteMode, Layer, NullLayer, PreCompLayer, ShapeLayer, SolidColorLayer, TextLayer, ImageLayer } from './layers.js';
+export { Keyframe, OffsetKeyframe, ShapePropKeyframe, ShapeProperty, Value, MultiDimensional, GradientColors } from './properties.js';
+export { Composite, GradientType, LineCap, LineJoin, RepeaterTransform, ShapeElement, StarType, StrokeDashType, TransformShape, Trim, Fill, Gradient, GradientFill, Group, Merge, Modifier, Repeater, RoundedCorners, Shape, Star, StrokeDash, BaseStroke, Ellipse, GradientStroke, Path, Rect, Stroke } from './shapes.js';
+export { Font, FontList, MaskedPath, TextAnimatorDataProperty, TextJustify, TextMoreOptions, TextDocument, TextDataKeyframe, TextData, TextAnimatorData } from './text.js';
