@@ -38,8 +38,8 @@ class TestMultiDimensional(base.TestCase):
                         "t": 0,
                         "s": [1, 2],
                         "e": [4, 5],
-                        "i": {"x": 1, "y": 1},
-                        "o": {"x": 0, "y": 0},
+                        "i": {"x": [1], "y": [1]},
+                        "o": {"x": [0], "y": [0]},
                     },
                     {
                         "t": 3,
