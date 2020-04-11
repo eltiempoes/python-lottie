@@ -319,6 +319,21 @@ class MultiDimensional(AnimatableMixin, TgsObject):
 class GradientColors(TgsObject):
     """!
     Represents colors and offsets in a gradient
+
+    Colors are represented as a flat list interleaving offsets and color components in weird ways
+    There are two possible layouts:
+
+    Without alpha, the colors are a sequence of offset, r, g, b
+
+    With alpha, same as above but at the end of the list there is a sequence of offset, alpha
+
+    Examples:
+
+    For the gradient [0, red], [0.5, yellow], [1, green]
+    The list would be [0, 1, 0, 0, 0.5, 1, 1, 0, 1, 0, 1, 0]
+
+    For the gradient [0, red at 80% opacity], [0.5, yellow at 70% opacity], [1, green at 60% opacity]
+    The list would be [0, 1, 0, 0, 0.5, 1, 1, 0, 1, 0, 1, 0, 0, 0.8, 0.5, 0.7, 1, 0.6]
     """
     _props = [
         TgsProp("colors", "k", MultiDimensional),
