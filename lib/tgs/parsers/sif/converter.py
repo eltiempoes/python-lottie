@@ -454,22 +454,21 @@ class Converter:
     def _convert_gradient_stops(self, sif_gradient):
         stops = objects.GradientColors()
         if not self._animated(sif_gradient):
-            stops.colors.value = self._flatten_gradient_colors(sif_gradient.value)
+            stops.set_sane_colors(self._flatten_gradient_colors(sif_gradient.value))
             stops.count = len(sif_gradient.value)
         else:
             # TODO easing
             for kf in sif_gradient.keyframes:
-                stops.colors.add_keyframe(self._time(kf.time), self._flatten_gradient_colors(kf.value))
+                stops.add_sane_keyframe(self._time(kf.time), self._flatten_gradient_colors(kf.value))
                 stops.count = len(kf.value)
 
         return stops
 
     def _flatten_gradient_colors(self, stops):
-        flat = []
-        for stop in stops:
-            flat.append(stop.pos)
-            flat += stop.color.components[:3]
-        return NVector(*flat)
+        return [
+            (stop.pos, stop.color)
+            for stop in stops
+        ]
 
     def _convert_text(self, layer: api.TextLayer):
         shape = font.FontShape(layer.text.value, font.FontStyle(layer.family.value, 110, font.TextJustify.Center))

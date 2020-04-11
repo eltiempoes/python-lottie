@@ -340,16 +340,16 @@ class GradientColors(TgsObject):
         TgsProp("count", "p", int),
     ]
 
-    def __init__(self, colors=[], alpha=None):
+    def __init__(self, colors=[]):
         ## Animatable colors, as a vector containing [offset, r, g, b] values as a flat array
         self.colors = MultiDimensional(NVector())
         ## Number of colors
         self.count = 0
         if colors:
-            self.set_colors(colors, alpha)
+            self.set_colors(colors)
 
-    def set_colors(self, colors, keyframe=None, alpha=None):
-        flat = self._flatten_colors(colors, alpha)
+    def set_colors(self, colors, keyframe=None):
+        flat = self._flatten_colors(colors)
         if self.colors.animated and keyframe is not None:
             if keyframe > 1:
                 self.colors.keyframes[keyframe-1].end = flat
@@ -358,29 +358,44 @@ class GradientColors(TgsObject):
             self.colors.clear_animation(flat)
         self.count = len(colors)
 
-    def _flatten_colors(self, colors, alpha):
-        if alpha is None:
-            alpha = any(len(c) > 3 for c in colors)
+    def set_sane_colors(self, colors, keyframe=None):
+        """!
+        \param colors iterable of (offset, NVector) tuples
+        \param keyframe keyframe index (or None if not animated)
+        """
+        flat = self._flatten_sane_colors(colors)
+        if self.colors.animated and keyframe is not None:
+            if keyframe > 1:
+                self.colors.keyframes[keyframe-1].end = flat
+            self.colors.keyframes[keyframe].start = flat
+        else:
+            self.colors.clear_animation(flat)
+        self.count = len(colors)
 
-        def offset(n):
-            return [n / (len(colors)-1)]
-
+    def _flatten_sane_colors(self, colors):
         flattened_colors = NVector(*reduce(
             lambda a, b: a + b,
-            map(
-                lambda it: offset(it[0]) + it[1].components[:3],
-                enumerate(colors),
+            (
+                [off] + color.components[:3]
+                for off, color in colors
             )
         ))
-        if alpha:
+
+        if any(len(c) > 3 for o, c in colors):
             flattened_colors.components += reduce(
                 lambda a, b: a + b,
-                map(
-                    lambda it: offset(it[0]) + [self._get_alpha(it[1])],
-                    enumerate(colors),
+                (
+                    [off] + [self._get_alpha(color)]
+                    for off, color in colors
                 )
             )
         return flattened_colors
+
+    def _flatten_colors(self, colors):
+        return self._flatten_sane_colors(
+                (i / (len(colors)-1), color)
+                for i, color in enumerate(colors)
+        )
 
     def _get_alpha(self, color):
         if len(color) > 3:
@@ -418,8 +433,16 @@ class GradientColors(TgsObject):
             self._add_to_flattened(offset, color, self.colors.value.components)
         self.count += 1
 
-    def add_keyframe(self, time, colors=None, ease=easing.Linear(), alpha=None):
-        self.colors.add_keyframe(time, self._flatten_colors(colors, alpha) if colors else NVector(), ease)
+    def add_keyframe(self, time, colors=None, ease=easing.Linear()):
+        self.colors.add_keyframe(time, self._flatten_colors(colors) if colors else NVector(), ease)
+
+    def add_sane_keyframe(self, time, colors, ease=easing.Linear()):
+        """!
+        \param time   Frame time
+        \param colors Iterable of (offset, NVector) tuples
+        \param ease   Easing function
+        """
+        self.colors.add_keyframe(time, self._flatten_sane_colors(colors), ease)
 
     def get_sane_colors(self, keyframe=None):
         if keyframe is not None:
