@@ -332,8 +332,8 @@ class SvgParser(SvgHandler):
             dest_trans.rotation.value += math.degrees(trans["angle"])
             dest_trans.scale.value *= trans["scale"]
 
-    def parse_style(self, element):
-        style = {}
+    def parse_style(self, element, parent_style):
+        style = parent_style.copy()
         for att in css_atrrs & set(element.attrib.keys()):
             if att in element.attrib:
                 style[att] = element.attrib[att]
@@ -352,9 +352,9 @@ class SvgParser(SvgHandler):
         if style.get("display", "inline") == "none" or style.get("visibility", "visible") == "hidden":
             object.hidden = True
 
-    def add_shapes(self, element, shapes, shape_parent):
+    def add_shapes(self, element, shapes, shape_parent, parent_style):
         # TODO inherit style
-        style = self.parse_style(element)
+        style = self.parse_style(element, parent_style)
 
         group = objects.Group()
         self.apply_common_style(style, group.transform)
@@ -430,7 +430,7 @@ class SvgParser(SvgHandler):
             fill.opacity.value = opacity * 100
             group.add_shape(fill)
 
-    def _parseshape_use(self, element, shape_parent):
+    def _parseshape_use(self, element, shape_parent, parent_style):
         link = element.attrib[self.qualified("xlink", "href")]
         if link.startswith("#"):
             id = link[1:]
@@ -438,7 +438,7 @@ class SvgParser(SvgHandler):
                 base = self.defs[id]
             else:
                 base_element = self.document.find(".//*[@id='%s']" % id)
-                base = self.parse_shape(base_element, self.defs)
+                base = self.parse_shape(base_element, self.defs, parent_style)
             used = objects.Group()
             used.add_shape(base.clone())
             used.transform.position.value.x = float(element.attrib.get("x", 0))
@@ -447,20 +447,20 @@ class SvgParser(SvgHandler):
             shape_parent.shapes.insert(0, used)
             return used
 
-    def _parseshape_g(self, element, shape_parent):
+    def _parseshape_g(self, element, shape_parent, parent_style):
         group = objects.Group()
         shape_parent.shapes.insert(0, group)
-        style = self.parse_style(element)
+        style = self.parse_style(element, parent_style)
         self.apply_common_style(style, group.transform)
         self.apply_visibility(style, group)
         group.name = self._get_name(element, self.qualified("inkscape", "label"))
-        self.parse_children(element, group)
+        self.parse_children(element, group, style)
         self.parse_transform(element, group, group.transform)
         if group.hidden: # Lottie web doesn't seem to support .hd
             group.transform.opacity.value = 0
         return group
 
-    def _parseshape_ellipse(self, element, shape_parent):
+    def _parseshape_ellipse(self, element, shape_parent, parent_style):
         ellipse = objects.Ellipse()
         ellipse.position.value = NVector(
             self._parse_unit(element.attrib["cx"]),
@@ -470,7 +470,7 @@ class SvgParser(SvgHandler):
             self._parse_unit(element.attrib["rx"]) * 2,
             self._parse_unit(element.attrib["ry"]) * 2
         )
-        self.add_shapes(element, [ellipse], shape_parent)
+        self.add_shapes(element, [ellipse], shape_parent, parent_style)
         return ellipse
 
     def _parseshape_anim_ellipse(self, ellipse, element, animations):
@@ -479,7 +479,7 @@ class SvgParser(SvgHandler):
         self._apply_animations(ellipse.position, "position", animations)
         self._apply_animations(ellipse.size, "size", animations)
 
-    def _parseshape_circle(self, element, shape_parent):
+    def _parseshape_circle(self, element, shape_parent, parent_style):
         ellipse = objects.Ellipse()
         ellipse.position.value = NVector(
             self._parse_unit(element.attrib["cx"]),
@@ -487,7 +487,7 @@ class SvgParser(SvgHandler):
         )
         r = self._parse_unit(element.attrib["r"]) * 2
         ellipse.size.value = NVector(r, r)
-        self.add_shapes(element, [ellipse], shape_parent)
+        self.add_shapes(element, [ellipse], shape_parent, parent_style)
         return ellipse
 
     def _parseshape_anim_circle(self, ellipse, element, animations):
@@ -495,7 +495,7 @@ class SvgParser(SvgHandler):
         self._apply_animations(ellipse.position, "position", animations)
         self._apply_animations(ellipse.size, "r", animations, lambda r: NVector(r, r) * 2)
 
-    def _parseshape_rect(self, element, shape_parent):
+    def _parseshape_rect(self, element, shape_parent, parent_style):
         rect = objects.Rect()
         w = self._parse_unit(element.attrib["width"])
         h = self._parse_unit(element.attrib["height"])
@@ -507,7 +507,7 @@ class SvgParser(SvgHandler):
         rx = self._parse_unit(element.attrib.get("rx", 0))
         ry = self._parse_unit(element.attrib.get("ry", 0))
         rect.rounded.value = (rx + ry) / 2
-        self.add_shapes(element, [rect], shape_parent)
+        self.add_shapes(element, [rect], shape_parent, parent_style)
         return rect
 
     def _parseshape_anim_rect(self, rect, element, animations):
@@ -519,7 +519,7 @@ class SvgParser(SvgHandler):
         self._merge_animations(element, animations, "rx", "ry", "rounded", lambda x, y: (x + y) / 2)
         self._apply_animations(rect.rounded, "rounded", animations)
 
-    def _parseshape_line(self, element, shape_parent):
+    def _parseshape_line(self, element, shape_parent, parent_style):
         line = objects.Path()
         line.shape.value.add_point(NVector(
             self._parse_unit(element.attrib["x1"]),
@@ -529,7 +529,7 @@ class SvgParser(SvgHandler):
             self._parse_unit(element.attrib["x2"]),
             self._parse_unit(element.attrib["y2"])
         ))
-        return self.add_shapes(element, [line], shape_parent)
+        return self.add_shapes(element, [line], shape_parent, parent_style)
 
     def _parseshape_anim_line(self, group, element, animations):
         line = group.shapes[0]
@@ -545,16 +545,16 @@ class SvgParser(SvgHandler):
             line.shape.value.add_point(coords[i:i+2])
         return line
 
-    def _parseshape_polyline(self, element, shape_parent):
+    def _parseshape_polyline(self, element, shape_parent, parent_style):
         line = self._handle_poly(element)
-        return self.add_shapes(element, [line], shape_parent)
+        return self.add_shapes(element, [line], shape_parent, parent_style)
 
-    def _parseshape_polygon(self, element, shape_parent):
+    def _parseshape_polygon(self, element, shape_parent, parent_style):
         line = self._handle_poly(element)
         line.shape.value.close()
-        return self.add_shapes(element, [line], shape_parent)
+        return self.add_shapes(element, [line], shape_parent, parent_style)
 
-    def _parseshape_path(self, element, shape_parent):
+    def _parseshape_path(self, element, shape_parent, parent_style):
         d_parser = PathDParser(element.attrib.get("d", ""))
         d_parser.parse()
         paths = []
@@ -564,22 +564,20 @@ class SvgParser(SvgHandler):
             paths.append(p)
         #if len(d_parser.paths) > 1:
             #paths.append(objects.shapes.Merge())
-        return self.add_shapes(element, paths, shape_parent)
+        return self.add_shapes(element, paths, shape_parent, parent_style)
 
-    def parse_children(self, element, shape_parent, limit=None):
+    def parse_children(self, element, shape_parent, parent_style):
         for child in element:
             tag = self.unqualified(child.tag)
-            if limit and tag not in limit:
-                continue
-            if not self.parse_shape(child, shape_parent):
+            if not self.parse_shape(child, shape_parent, parent_style):
                 handler = getattr(self, "_parse_" + tag, None)
                 if handler:
                     handler(child)
 
-    def parse_shape(self, element, shape_parent):
+    def parse_shape(self, element, shape_parent, parent_style):
         handler = getattr(self, "_parseshape_" + self.unqualified(element.tag), None)
         if handler:
-            out = handler(element, shape_parent)
+            out = handler(element, shape_parent, parent_style)
             self.parse_animations(out, element)
             if element.attrib.get("id"):
                 self.defs.items[element.attrib["id"]] = out
@@ -609,14 +607,14 @@ class SvgParser(SvgHandler):
                     layer = objects.ShapeLayer()
                     layer.in_point = self.max_time
                     animation.add_layer(layer)
-                    self._parseshape_g(frame, layer)
+                    self._parseshape_g(frame, layer, {})
                     self.max_time += layer_frames
                     layer.out_point = self.max_time
             animation.out_point = self.max_time
         else:
             layer = objects.ShapeLayer()
             animation.add_layer(layer)
-            self.parse_children(svg, layer)
+            self.parse_children(svg, layer, {})
             if self.max_time:
                 animation.out_point = self.max_time
                 for layer in animation.layers:
@@ -632,7 +630,7 @@ class SvgParser(SvgHandler):
         return animation
 
     def _parse_defs(self, element):
-        self.parse_children(element, self.defs)
+        self.parse_children(element, self.defs, {})
 
     def _gradient(self, element, grad):
         # TODO parse gradientTransform
@@ -718,7 +716,7 @@ class SvgParser(SvgHandler):
             elif fz.isnumeric():
                 font_style.size = float(fz)
 
-    def _parse_text_elem(self, element, style, group, font_style):
+    def _parse_text_elem(self, element, style, group, parent_style, font_style):
         self._parse_text_style(style, font_style)
 
         if "x" in element.attrib or "y" in element.attrib:
@@ -733,7 +731,7 @@ class SvgParser(SvgHandler):
         childpos = NVector(0, 0)
         for child in element:
             if child.tag == self.qualified("svg", "tspan"):
-                fs = self._parseshape_text(child, group, font_style.clone())
+                fs = self._parseshape_text(child, group, parent_style, font_style.clone())
                 if "x" not in child.attrib:
                     fs.transform.position.value.x += childpos.x
                     fs.transform.position.value.y += childpos.y
@@ -743,17 +741,17 @@ class SvgParser(SvgHandler):
                 group.add_shape(fs)
             childpos.x = fs.bounding_box().x2
 
-    def _parseshape_text(self, element, shape_parent, font_style=None):
+    def _parseshape_text(self, element, shape_parent, parent_style, font_style=None):
         group = objects.Group()
 
-        style = self.parse_style(element)
+        style = self.parse_style(element, parent_style)
         self.apply_common_style(style, group.transform)
         self.apply_visibility(style, group)
         group.name = self._get_id(element)
         if has_font:
             if font_style is None:
                 font_style = font.FontStyle("", 64)
-            self._parse_text_elem(element, style, group, font_style)
+            self._parse_text_elem(element, style, group, style, font_style)
 
         style.setdefault("fill", "none")
         self._add_style_shapes(style, group)
