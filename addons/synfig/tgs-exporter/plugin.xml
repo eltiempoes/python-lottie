@@ -10,7 +10,8 @@
    </exporter>
    <exporter>
       <extension>svg</extension>
-      <description>[TGS] SVG (*.svg)</description>
+      <extension>svgz</extension>
+      <description>[TGS] SVG (*.svg, *.svgz)</description>
       <exec>tgs-exporter.py</exec>
    </exporter>
    <exporter>
@@ -38,6 +39,12 @@
    <importer>
       <extension>json</extension>
       <description>[TGS] Lottie JSON (*.json)</description>
+      <exec>tgs-exporter.py</exec>
+   </importer>
+
+   <importer>
+      <extension>svg</extension>
+      <description>SVG... again! (*.svg)</description>
       <exec>tgs-exporter.py</exec>
    </importer>
 </plugin>

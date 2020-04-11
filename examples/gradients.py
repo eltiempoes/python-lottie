@@ -6,7 +6,7 @@ sys.path.append(os.path.join(
     "lib"
 ))
 from tgs.utils import script
-from tgs import objects
+from tgs import objects, NVector
 from tgs import Color, Point
 
 
@@ -19,7 +19,7 @@ g1 = layer.add_shape(objects.Group())
 
 circle = g1.add_shape(objects.Ellipse())
 circle.size.value = Point(100, 100)
-circle.position.value = Point(128, 256)
+circle.position.value = Point(128, 156)
 
 
 fill = g1.add_shape(objects.GradientFill())
@@ -39,7 +39,6 @@ stroke.colors.count = 2
 stroke.width.value = 10
 
 
-
 g2 = layer.add_shape(objects.Group())
 
 circle = g2.add_shape(objects.Ellipse())
@@ -57,6 +56,16 @@ fill.colors.set_colors([Color(1, 0, 0), Color(1, 1, 0)])
 #fill.highlight_length.add_keyframe(59, -50)
 #fill.highlight_angle.value = 45
 fill.highlight_length.value = 90
+
+
+g3 = layer.add_shape(objects.Group())
+circle = g3.add_shape(objects.Ellipse())
+circle.size.value = Point(100, 100)
+circle.position.value = Point(128, 356)
+fill = g3.add_shape(objects.GradientFill())
+fill.start_point.value = Point(100, 0)
+fill.end_point.value = Point(200, 0)
+fill.colors.set_colors([NVector(1, 0, 0, 1), NVector(1, .5, 0, 1), NVector(1, 1, 0, 0)])
 
 
 script.script_main(an)

@@ -325,16 +325,16 @@ class GradientColors(TgsObject):
         TgsProp("count", "p", int),
     ]
 
-    def __init__(self, colors=[]):
+    def __init__(self, colors=[], alpha=None):
         ## Animatable colors, as a vector containing [offset, r, g, b] values as a flat array
         self.colors = MultiDimensional(NVector())
         ## Number of colors
         self.count = 0
         if colors:
-            self.set_colors(colors)
+            self.set_colors(colors, alpha)
 
-    def set_colors(self, colors, keyframe=None):
-        flat = self._flatten_colors(colors)
+    def set_colors(self, colors, keyframe=None, alpha=None):
+        flat = self._flatten_colors(colors, alpha)
         if self.colors.animated and keyframe is not None:
             if keyframe > 1:
                 self.colors.keyframes[keyframe-1].end = flat
@@ -343,17 +343,51 @@ class GradientColors(TgsObject):
             self.colors.clear_animation(flat)
         self.count = len(colors)
 
-    def _flatten_colors(self, colors):
-        return NVector(*reduce(
+    def _flatten_colors(self, colors, alpha):
+        if alpha is None:
+            alpha = any(len(c) > 3 for c in colors)
+
+        def offset(n):
+            return [n / (len(colors)-1)]
+
+        flattened_colors = NVector(*reduce(
             lambda a, b: a + b,
             map(
-                lambda it: [it[0] / (len(colors)-1)] + it[1].components,
+                lambda it: offset(it[0]) + it[1].components[:3],
                 enumerate(colors),
             )
         ))
+        if alpha:
+            flattened_colors.components += reduce(
+                lambda a, b: a + b,
+                map(
+                    lambda it: offset(it[0]) + [self._get_alpha(it[1])],
+                    enumerate(colors),
+                )
+            )
+        return flattened_colors
+
+    def _get_alpha(self, color):
+        if len(color) > 3:
+            return color[3]
+        return 1
+
+    def _add_to_flattened(self, offset, color, flattened):
+        flat = [offset] + color[:3]
+        rgb_size = 4 * self.count
+
+        if len(flattened) == rgb_size:
+            # No alpha
+            flattened.extend(flat)
+            if self.count == 0 and len(color) > 3:
+                flattened.append(offset)
+                flattened.append(color[3])
+        else:
+            flattened[rgb_size:rgb_size] = flat
+            flattened.append(offset)
+            flattened.append(self._get_alpha(color))
 
     def add_color(self, offset, color, keyframe=None):
-        flat = [offset] + color
         if self.colors.animated:
             if keyframe is None:
                 for kf in self.colors.keyframes:
@@ -363,14 +397,35 @@ class GradientColors(TgsObject):
                         kf.end += flat
             else:
                 if keyframe > 1:
-                    self.colors.keyframes[keyframe-1].end.components += flat
-                self.colors.keyframes[keyframe].start.components += flat
+                    self._add_to_flattened(offset, color, self.colors.keyframes[keyframe-1].end.components)
+                self._add_to_flattened(offset, color, self.colors.keyframes[keyframe].start.components)
         else:
-            self.colors.value.components += flat
+            self._add_to_flattened(offset, color, self.colors.value.components)
         self.count += 1
 
-    def add_keyframe(self, time, colors=None, ease=easing.Linear()):
-        self.colors.add_keyframe(time, self._flatten_colors(colors) if colors else NVector(), ease)
+    def add_keyframe(self, time, colors=None, ease=easing.Linear(), alpha=None):
+        self.colors.add_keyframe(time, self._flatten_colors(colors, alpha) if colors else NVector(), ease)
+
+    def get_sane_colors(self, keyframe=None):
+        if keyframe is not None:
+            colors = self.colors.keyframes[keyframe].start
+        else:
+            colors = self.colors.value
+        return self._sane_colors_from_flat(colors)
+
+    def _sane_colors_from_flat(self, colors):
+        if len(colors) == 4 * self.count:
+            for i in range(self.count):
+                off = i * 4
+                yield colors[off], NVector(*colors[off+1:off+4])
+        else:
+            for i in range(self.count):
+                off = i * 4
+                aoff = self.count * 4 + i * 2 + 1
+                yield colors[off], NVector(colors[off+1], colors[off+2], colors[off+3], colors[aoff])
+
+    def sane_colors_at(self, time):
+        return self._sane_colors_from_flat(self.colors.get_value(time))
 
 
 ## \ingroup Lottie

@@ -85,7 +85,6 @@ class Bline(SifNode):
     ]
 
 
-
 class BlendMethod(enum.Enum):
     Composite = 0
     Straight = 1

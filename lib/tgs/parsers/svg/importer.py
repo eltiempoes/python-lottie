@@ -79,9 +79,10 @@ class SvgGradient:
     def __init__(self):
         self.colors = []
         self.coords = []
+        self.matrix = TransformMatrix()
 
     def add_color(self, offset, color):
-        self.colors.append((offset, color[:3]))
+        self.colors.append((offset, color[:4]))
 
     def to_lottie(self, gradient_shape, shape, time=0):
         """!
@@ -113,14 +114,14 @@ class SvgLinearGradient(SvgGradient):
 
     def to_lottie(self, gradient_shape, shape, time=0):
         bbox = shape.bounding_box(time)
-        gradient_shape.start_point.value = NVector(
+        gradient_shape.start_point.value = self.matrix.apply(NVector(
             self.x1.to_value(bbox),
             self.y1.to_value(bbox),
-        )
-        gradient_shape.end_point.value = NVector(
+        ))
+        gradient_shape.end_point.value = self.matrix.apply(NVector(
             self.x2.to_value(bbox),
             self.y2.to_value(bbox),
-        )
+        ))
         gradient_shape.gradient_type = objects.GradientType.Linear
 
         super().to_lottie(gradient_shape, shape, time)
@@ -139,9 +140,9 @@ class SvgRadialGradient(SvgGradient):
         bbox = shape.bounding_box(time)
         cx = self.cx.to_value(bbox)
         cy = self.cy.to_value(bbox)
-        gradient_shape.start_point.value = NVector(cx, cy)
+        gradient_shape.start_point.value = self.matrix.apply(NVector(cx, cy))
         r = self.r.to_value(bbox)
-        gradient_shape.end_point.value = NVector(cx+r, cy)
+        gradient_shape.end_point.value = self.matrix.apply(NVector(cx+r, cy))
 
         fx = self.fx.to_value(bbox, cx) - cx
         fy = self.fy.to_value(bbox, cy) - cy
@@ -310,17 +311,9 @@ class SvgParser(SvgHandler):
                     dest_trans.position.value += dap
                     dest_trans.anchor_point.value += dap
                 dest_trans.rotation.value = ang
-            elif name == "skewX":
+            else:
                 read_matrix = True
-                matrix.skew(math.radians(params[0]), 0)
-            elif name == "skewY":
-                read_matrix = True
-                matrix.skew(0, math.radians(params[0]))
-            elif name == "matrix":
-                read_matrix = True
-                m = TransformMatrix()
-                m.a, m.b, m.c, m.d, m.tx, m.ty = params
-                matrix *= m
+                self._apply_transform_element_to_matrix(matrix, t)
 
         if read_matrix:
             dest_trans.position.value -= dest_trans.anchor_point.value
@@ -631,8 +624,49 @@ class SvgParser(SvgHandler):
     def _parse_defs(self, element):
         self.parse_children(element, self.defs, {})
 
+    def _apply_transform_element_to_matrix(self, matrix, t):
+        name = t[1]
+        params = list(map(float, t[2].strip().replace(",", " ").split()))
+        if name == "translate":
+            matrix.translate(
+                params[0],
+                (params[1] if len(params) > 1 else 0),
+            )
+        elif name == "scale":
+            xfac = params[0]
+            yfac = params[1] if len(params) > 1 else xfac
+            matrix.scale(xfac, yfac)
+        elif name == "rotate":
+            ang = params[0]
+            x = y = 0
+            if len(params) > 2:
+                x = params[1]
+                y = params[2]
+                matrix.translate(-x, -y)
+                matrix.rotate(math.radians(ang))
+                matrix.translate(x, y)
+            else:
+                matrix.rotate(math.radians(angle))
+        elif name == "skewX":
+            matrix.skew(math.radians(params[0]), 0)
+        elif name == "skewY":
+            matrix.skew(0, math.radians(params[0]))
+        elif name == "matrix":
+            m = TransformMatrix()
+            m.a, m.b, m.c, m.d, m.tx, m.ty = params
+            matrix *= m
+
+    def _transform_to_matrix(self, transform):
+        matrix = TransformMatrix()
+
+        for t in re.finditer(r"([a-zA-Z]+)\s*\(([^\)]*)\)", transform):
+            self._apply_transform_element_to_matrix(matrix, t)
+
+        return matrix
+
     def _gradient(self, element, grad):
-        # TODO parse gradientTransform
+        grad.matrix = self._transform_to_matrix(element.attrib.get("gradientTransform", ""))
+
         id = element.attrib["id"]
         if id in self.gradients:
             grad.colors = self.gradients[id].colors
@@ -646,12 +680,16 @@ class SvgParser(SvgHandler):
                 src = grad.__class__()
                 self.gradients[srcid] = src
             grad.colors = src.colors
+
         for stop in element.findall("./%s" % self.qualified("svg", "stop")):
             off = float(stop.attrib["offset"].strip("%"))
             if stop.attrib["offset"].endswith("%"):
                 off /= 100
-            style = self.parse_style(stop)
-            grad.add_color(off, self.parse_color(style["stop-color"]))
+            style = self.parse_style(stop, {})
+            color = self.parse_color(style["stop-color"])
+            if "stop-opacity" in style:
+                color[3] = float(style["stop-opacity"])
+            grad.add_color(off, color)
         self.gradients[id] = grad
 
     def _parse_linearGradient(self, element):
