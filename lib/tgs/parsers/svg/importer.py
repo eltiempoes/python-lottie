@@ -353,7 +353,6 @@ class SvgParser(SvgHandler):
             object.hidden = True
 
     def add_shapes(self, element, shapes, shape_parent, parent_style):
-        # TODO inherit style
         style = self.parse_style(element, parent_style)
 
         group = objects.Group()
