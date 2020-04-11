@@ -315,6 +315,8 @@ def collect_kerning_pairs(font):
 
 
 class FontRenderer:
+    tab_width = 4
+
     def __init__(self, filename):
         self.filename = filename
         self.font = fontTools.ttLib.TTFont(filename)
@@ -391,11 +393,19 @@ class FontRenderer:
                 line = Group()
                 group.add_shape(line)
                 continue
+            elif ch == "\t":
+                chname = self.glyph_name(ch)
+                if chname in self.glyphset:
+                    width = self.glyphset[chname].width
+                else:
+                    width = self.ex
+                pos.x += width * scale * self.tab_width
+                continue
 
             chname = self.glyph_name(ch)
             if chname in self.glyphset:
                 glyphdata = self.glyphset[chname]
-                next_x = pos.x + glyphdata.width * scale
+                #next_x = pos.x + glyphdata.width * scale
                 pos.x += glyphdata.lsb * scale
                 glyph_shapes = self.glyph_shapes(chname, pos / scale)
                 glyph_shape_group = line.add_shape(Group()) if len(glyph_shapes) > 1 else line
