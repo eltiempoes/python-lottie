@@ -230,7 +230,7 @@ class SolidColorLayer(Layer):
     ## %Layer type.
     type = 1
 
-    def __init__(self, color="", width=0, height=0):
+    def __init__(self, color="", width=512, height=512):
         Layer.__init__(self)
         ## Color of the layer as a \c \#rrggbb hex
         # \todo Convert NVector to string

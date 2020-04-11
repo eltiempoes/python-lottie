@@ -178,7 +178,8 @@ class TgsProp:
         """
         val = self._basic_to_dict(self.get(obj))
         if self.list is PseudoList:
-            pass
+            if not isinstance(obj, list):
+                return [val]
         elif isinstance(self.type, TgsConverter):
             val = self._basic_to_dict(self.type.py_to_lottie(val))
         return val
