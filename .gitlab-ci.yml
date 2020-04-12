@@ -2,7 +2,7 @@ default:
     image: ubuntu:latest
     before_script:
         - apt-get update -qq
-        - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make python3-opencv libagg-dev fonts-ubuntu zip git
+        - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make python3-opencv libagg-dev fonts-ubuntu zip git m4
         - pip3 install coverage Pillow numpy scipy cairosvg fonttools
 
 variables:
