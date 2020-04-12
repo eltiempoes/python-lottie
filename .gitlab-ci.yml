@@ -1,4 +1,5 @@
 default:
+    image: ubuntu:latest
     before_script:
         - apt-get update -qq
         - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make python3-opencv libagg-dev libpotrace-dev zip
