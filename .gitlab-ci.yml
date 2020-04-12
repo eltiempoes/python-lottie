@@ -2,7 +2,7 @@ default:
     image: ubuntu:latest
     before_script:
         - apt-get update -qq
-        - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make python3-opencv libagg-dev libpotrace-dev zip curl
+        - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make python3-opencv libagg-dev libpotrace-dev zip curl pkg-config
         - curl https://assets.ubuntu.com/v1/0cef8205-ubuntu-font-family-0.83.zip -s >/tmp/ubu.zip
         - unzip /tmp/ubu.zip
         - mv ubuntu-font-family-0.83/ /usr/share/fonts/truetype/
