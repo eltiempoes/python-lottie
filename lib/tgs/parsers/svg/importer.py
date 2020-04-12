@@ -715,7 +715,7 @@ class SvgParser(SvgHandler):
     ## \todo Parse single font property, fallback family etc
     def _parse_text_style(self, style, font_style=None):
         if "font-family" in style:
-            font_style.query.family(style["font-family"])
+            font_style.query.family(style["font-family"].strip("'\""))
 
         if "font-style" in style:
             if style["font-style"] == "oblique":
@@ -762,21 +762,29 @@ class SvgParser(SvgHandler):
                 float(element.attrib["y"]),
             )
 
-        if element.text:
-            group.add_shape(font.FontShape(element.text, font_style)).refresh()
+        childpos = NVector(0, font_style.position.y)
 
-        childpos = NVector(0, 0)
+        if element.text:
+            fs = font.FontShape(element.text, font_style)
+            fs.refresh()
+            group.add_shape(fs)
+            childpos.x = fs.wrapped.next_x
+
         for child in element:
             if child.tag == self.qualified("svg", "tspan"):
-                fs = self._parseshape_text(child, group, parent_style, font_style.clone())
-                if "x" not in child.attrib:
-                    fs.transform.position.value.x += childpos.x
-                    fs.transform.position.value.y += childpos.y
+                child_style = font_style.clone()
+                child_style.position = childpos
+                fs = self._parseshape_text(child, group, parent_style, child_style)
+                childpos.x = fs.next_x
             if child.tail:
-                fs = font.FontShape(child.text, font_style)
+                child_style = font_style.clone()
+                child_style.position = childpos
+                fs = font.FontShape(child.tail, child_style)
                 fs.refresh()
                 group.add_shape(fs)
-            childpos.x = fs.bounding_box().x2
+                childpos.x = fs.wrapped.next_x
+
+        group.next_x = childpos.x
 
     def _parseshape_text(self, element, shape_parent, parent_style, font_style=None):
         group = objects.Group()

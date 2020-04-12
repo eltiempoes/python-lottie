@@ -2,6 +2,8 @@ import os
 import subprocess
 import fontTools.pens.basePen
 import fontTools.ttLib
+import fontTools.t1Lib
+from fontTools.pens.boundsPen import ControlBoundsPen
 import enum
 import math
 from xml.etree import ElementTree
@@ -73,7 +75,8 @@ class SystemFont:
 
     def add_file(self, styles, file):
         self.styles |= set(styles)
-        self.files[tuple(sorted(styles))] = file
+        key = self._key(styles)
+        self.files.setdefault(key, file)
 
     def filename(self, styles):
         return self.files[self._key(styles)]
@@ -314,19 +317,82 @@ def collect_kerning_pairs(font):
     return kerning_pairs
 
 
+class Font:
+    def __init__(self, wrapped):
+        self.wrapped = wrapped
+        if isinstance(self.wrapped, fontTools.ttLib.TTFont):
+            self.cmap = self.wrapped.getBestCmap() or {}
+        else:
+            self.cmap = {}
+
+        self.glyphset = self.wrapped.getGlyphSet()
+
+    @classmethod
+    def open(cls, filename):
+        try:
+            return cls(fontTools.ttLib.TTFont(filename))
+        except fontTools.ttLib.TTLibError:
+            f = fontTools.t1Lib.T1Font(filename)
+            f.parse()
+            return cls(f)
+
+    def getGlyphSet(self):
+        return self.wrapped.getGlyphSet()
+
+    def getBestCmap(self):
+        return {}
+
+    def glyph_name(self, codepoint):
+        from fontTools import agl  # Adobe Glyph List
+        if codepoint in agl.UV2AGL:
+            return agl.UV2AGL[codepoint]
+        elif codepoint <= 0xFFFF:
+            return "uni%04X" % codepoint
+        else:
+            return "u%X" % codepoint
+
+    def scale(self):
+        if isinstance(self.wrapped, fontTools.ttLib.TTFont):
+            return 1 / self.wrapped["head"].unitsPerEm
+        elif isinstance(self.wrapped, fontTools.t1Lib.T1Font):
+            return self.wrapped["FontMatrix"][0]
+
+    def yMax(self):
+        if isinstance(self.wrapped, fontTools.ttLib.TTFont):
+            return self.wrapped["head"].yMax
+        elif isinstance(self.wrapped, fontTools.t1Lib.T1Font):
+            return self.wrapped["FontBBox"][3]
+
+    def glyph(self, glyph_name):
+        if isinstance(self.wrapped, fontTools.ttLib.TTFont):
+            return self.glyphset[glyph_name]
+        elif isinstance(self.wrapped, fontTools.t1Lib.T1Font):
+            glyph = self.glyphset[glyph_name]
+            if not hasattr(glyph, "width"):
+                glyph.draw(ControlBoundsPen(self.glyphset))
+            glyph.lsb = 0
+            return glyph
+
+    def __contains__(self, key):
+        if isinstance(self.wrapped, fontTools.t1Lib.T1Font):
+            return key in self.wrapped.font
+        return key in self.wrapped
+
+    def __getitem__(self, key):
+        return self.wrapped[key]
+
+
 class FontRenderer:
     tab_width = 4
 
     def __init__(self, filename):
         self.filename = filename
-        self.font = fontTools.ttLib.TTFont(filename)
-        self.glyphset = self.font.getGlyphSet()
-        self.cmap = self.font.getBestCmap() or {}
+        self.font = Font.open(filename)
         self._kerning = None
 
     def glyph_beziers(self, name, offset=NVector(0, 0)):
-        pen = BezierPen(self.glyphset, offset)
-        self.glyphset[name].draw(pen)
+        pen = BezierPen(self.font.glyphset, offset)
+        self.font.glyphset[name].draw(pen)
         return pen.beziers
 
     def glyph_shapes(self, name, offset=NVector(0, 0)):
@@ -343,16 +409,16 @@ class FontRenderer:
         return group
 
     def glyph_name(self, ch):
-        return self.cmap.get(ord(ch)) or self.font._makeGlyphName(ord(ch))
+        return self.font.glyph_name(ord(ch))
 
     def scale(self, size):
-        return size / self.font["head"].unitsPerEm
+        return size * self.font.scale()
 
     def line_height(self, size):
-        return self.font["head"].yMax * self.scale(size)
+        return self.font.yMax() * self.scale(size)
 
     def ex(self, size):
-        return self.glyphset["x"].width * self.scale(size)
+        return self.font.glyph("x").width * self.scale(size)
 
     def render(self, text, size, pos=None, use_kerning=True, on_missing=None):
         """!
@@ -395,16 +461,16 @@ class FontRenderer:
                 continue
             elif ch == "\t":
                 chname = self.glyph_name(ch)
-                if chname in self.glyphset:
-                    width = self.glyphset[chname].width
+                if chname in self.font.glyphset:
+                    width = self.font.glyph(chname).width
                 else:
                     width = self.ex
                 pos.x += width * scale * self.tab_width
                 continue
 
             chname = self.glyph_name(ch)
-            if chname in self.glyphset:
-                glyphdata = self.glyphset[chname]
+            if chname in self.font.glyphset:
+                glyphdata = self.font.glyph(chname)
                 #next_x = pos.x + glyphdata.width * scale
                 pos.x += glyphdata.lsb * scale
                 glyph_shapes = self.glyph_shapes(chname, pos / scale)
@@ -518,7 +584,7 @@ class FontStyle:
         return group
 
     def clone(self):
-        return FontStyle(str(self._renderer.query), self.size, self.justify, self.position, self.use_kerning)
+        return FontStyle(str(self._renderer.query), self.size, self.justify, NVector(*self.position), self.use_kerning)
 
     @property
     def ex(self):
