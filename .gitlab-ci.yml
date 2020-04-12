@@ -8,6 +8,9 @@ default:
         - mv ubuntu-font-family-0.83/ /usr/share/fonts/truetype/
         - pip3 install coverage Pillow numpy scipy cairosvg pypotrace fonttools
 
+variables:
+    DEBIAN_FRONTEND: noninteractive
+
 stages:
     - test
     - build
