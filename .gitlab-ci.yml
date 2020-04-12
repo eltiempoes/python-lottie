@@ -2,12 +2,11 @@ default:
     image: ubuntu:latest
     before_script:
         - apt-get update -qq
-        - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make python3-opencv libagg-dev libpotrace-dev fonts-ubuntu pkg-config
-        - pip3 install coverage Pillow numpy scipy cairosvg pypotrace fonttools
+        - apt-get install -y -qq doxygen fonts-freefont-ttf graphviz python3-pip make python3-opencv libagg-dev fonts-ubuntu
+        - pip3 install coverage Pillow numpy scipy cairosvg fonttools
 
 variables:
     DEBIAN_FRONTEND: noninteractive
-    CYTHONIZE: 0
 
 stages:
     - test
