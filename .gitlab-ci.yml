@@ -1,6 +1,7 @@
 default:
     image: ubuntu:latest
     before_script:
+        - apt-get install -y -qq python3-pip
         - pip3 --version
         - locate cython
         - apt-get update -qq
