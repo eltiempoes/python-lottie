@@ -7,7 +7,7 @@ from ..objects import easing
 from ..objects import properties
 
 
-def shake(position_prop, x_radius, y_radius, start_time, end_time, n_frames):
+def shake(position_prop, x_radius, y_radius, start_time, end_time, n_frames, interp=easing.Linear()):
     if not isinstance(position_prop, list):
         position_prop = [position_prop]
 
@@ -24,10 +24,10 @@ def shake(position_prop, x_radius, y_radius, start_time, end_time, n_frames):
         for pp, start in zip(position_prop, startpoints):
             px = start[0] + x
             py = start[1] + y
-            pp.add_keyframe(start_time + i * frame_time, NVector(px, py))
+            pp.add_keyframe(start_time + i * frame_time, NVector(px, py), interp)
 
     for pp, start in zip(position_prop, startpoints):
-        pp.add_keyframe(end_time, start)
+        pp.add_keyframe(end_time, start, interp)
 
 
 def rot_shake(rotation_prop, angles, start_time, end_time, n_frames):
