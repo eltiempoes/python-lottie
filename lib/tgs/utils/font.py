@@ -225,10 +225,25 @@ class _SystemFontList:
         """
         out, returncode = self.cmd("fc-match", r"--format=%{family}\t%{style}", str(query))
         if returncode == 0:
-            fam, style = out.split("\t")
-            fam = fam.split(",")[0]
-            style = style.split(",")[0].split()
-            return self[fam][style]
+            return self._font_from_match(out)
+
+    def _font_from_match(self, out):
+        fam, style = out.split("\t")
+        fam = fam.split(",")[0]
+        style = style.split(",")[0].split()
+        return self[fam][style]
+
+    def all(self, query):
+        """!
+        Yields all the renderers matching a query
+        """
+        out, returncode = self.cmd("fc-match", "-s", r"--format=%{family}\t%{style}\n", str(query))
+        if returncode == 0:
+            for line in out.splitlines():
+                try:
+                    yield self._font_from_match(line)
+                except (fontTools.ttLib.TTLibError, fontTools.t1Lib.T1Error):
+                    pass
 
     def default(self):
         """!
@@ -330,11 +345,12 @@ class Font:
     @classmethod
     def open(cls, filename):
         try:
-            return cls(fontTools.ttLib.TTFont(filename))
+            f = fontTools.ttLib.TTFont(filename)
         except fontTools.ttLib.TTLibError:
             f = fontTools.t1Lib.T1Font(filename)
             f.parse()
-            return cls(f)
+
+        return cls(f)
 
     def getGlyphSet(self):
         return self.wrapped.getGlyphSet()
@@ -342,7 +358,8 @@ class Font:
     def getBestCmap(self):
         return {}
 
-    def glyph_name(self, codepoint):
+    @staticmethod
+    def glyph_name(codepoint):
         from fontTools import agl  # Adobe Glyph List
         if codepoint in agl.UV2AGL:
             return agl.UV2AGL[codepoint]
@@ -505,10 +522,12 @@ class FontRenderer:
 
 
 class FallbackFontRenderer:
-    def __init__(self, query):
+    def __init__(self, query, max_attempts=10):
         self.query = FontQuery(query)
         self._best = None
         self._bq = None
+        self._fallback = {}
+        self.max_attempts = max_attempts
 
     def line_height(self, size):
         return self.best.line_height(size)
@@ -527,13 +546,30 @@ class FallbackFontRenderer:
             self._bq = cq
         return self._best
 
+    def fallback_renderer(self, char):
+        if char in self._fallback:
+            return self._fallback[char]
+
+        name = Font.glyph_name(ord(char))
+        for i, font in enumerate(fonts.all(self.query.clone().char(char))):
+            # For some reason fontconfig sometimes returns a font that doesn't
+            # actually contain the glyph
+            if name in font.font.glyphset:
+                self._fallback[char] = font
+                return font
+
+            if i > self.max_attempts:
+                self._fallback[char] = None
+                return None
+
     def _on_missing(self, char, size, pos, group):
-        font = fonts.best(self.query.clone().char(char))
-        child = font.render(char, size, pos)
-        if len(child.shapes) == 2:
-            group.add_shape(child.shapes[0])
-        else:
-            group.add_shape(child)
+        font = self.fallback_renderer(char)
+        if font:
+            child = font.render(char, size, pos)
+            if len(child.shapes) == 2:
+                group.add_shape(child.shapes[0])
+            else:
+                group.add_shape(child)
 
     def render(self, text, size, pos=None, use_kerning=True):
         return self.best.render(text, size, pos, use_kerning, self._on_missing)
