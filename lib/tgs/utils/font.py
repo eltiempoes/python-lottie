@@ -515,7 +515,7 @@ class FallbackFontRenderer:
 
     def ex(self, size):
         best = self.best
-        if "x" not in self.best.glyphset:
+        if "x" not in self.best.font.glyphset:
             best = fonts.best(self.query.clone().char("x"))
         return best.ex(size)
 
