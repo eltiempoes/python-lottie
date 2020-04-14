@@ -590,7 +590,7 @@ class FallbackFontRenderer(FontRendererWrapperBase):
         if char in self._fallback:
             return self._fallback[char]
 
-        name = Font.glyph_name(ord(char))
+        name = Font.glyph_name(char)
         for i, font in enumerate(fonts.all(self.query.clone().char(char))):
             # For some reason fontconfig sometimes returns a font that doesn't
             # actually contain the glyph
