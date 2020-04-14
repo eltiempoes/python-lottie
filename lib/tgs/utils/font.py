@@ -363,6 +363,11 @@ class Font:
 
     @staticmethod
     def glyph_name(codepoint):
+        if isinstance(codepoint, str):
+            if len(codepoint) != 1:
+                return ""
+            codepoint = ord(codepoint)
+
         from fontTools import agl  # Adobe Glyph List
         if codepoint in agl.UV2AGL:
             return agl.UV2AGL[codepoint]
@@ -429,9 +434,7 @@ class FontRenderer:
         return group
 
     def glyph_name(self, ch):
-        if len(ch) > 1:
-            return ""
-        return self.font.glyph_name(ord(ch))
+        return self.font.glyph_name(ch)
 
     def scale(self, size):
         return size * self.font.scale()
