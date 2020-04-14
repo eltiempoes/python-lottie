@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import fontTools.pens.basePen
 import fontTools.ttLib
@@ -12,6 +13,8 @@ from ..objects.bezier import Bezier, BezierPoint
 from ..objects.shapes import Path, Group, Fill, Stroke
 from ..objects.text import TextJustify
 from ..objects.base import TgsProp, CustomObject
+from ..objects.layers import ShapeLayer
+from ..parsers.svg import parse_svg_file
 
 
 class BezierPen(fontTools.pens.basePen.BasePen):
@@ -426,6 +429,8 @@ class FontRenderer:
         return group
 
     def glyph_name(self, ch):
+        if len(ch) > 1:
+            return ""
         return self.font.glyph_name(ord(ch))
 
     def scale(self, size):
@@ -437,7 +442,7 @@ class FontRenderer:
     def ex(self, size):
         return self.font.glyph("x").width * self.scale(size)
 
-    def render(self, text, size, pos=None, use_kerning=True, on_missing=None):
+    def render(self, text, size, pos=None, use_kerning=True, on_missing=None, splitfunc=lambda x: x):
         """!
         Renders some text
 
@@ -468,7 +473,7 @@ class FontRenderer:
         line = Group()
         group.add_shape(line)
         #group.transform.scale.value = NVector(100, 100) * scale
-        for i, ch in enumerate(text):
+        for i, ch in enumerate(splitfunc(text)):
             if ch == "\n":
                 line.next_x = pos.x
                 pos.x = start_x
@@ -520,8 +525,37 @@ class FontRenderer:
     def __repr__(self):
         return "<FontRenderer %r>" % self.filename
 
+    def get_query(self):
+        return self.filename
 
-class FallbackFontRenderer:
+    def get_renderer(self):
+        return self
+
+
+class FontRendererWrapperBase:
+    def get_renderer(self):
+        raise NotImplementedError
+
+    def _on_missing(self, char, size, pos, group):
+        raise NotImplementedError
+
+    def _on_split(self, string):
+        return string
+
+    def line_height(self, size):
+        return self.get_renderer().line_height(size)
+
+    def ex(self, size):
+        return self.get_renderer().ex(size)
+
+    def render(self, text, size, pos=None, use_kerning=True):
+        return self.get_renderer().render(text, size, pos, use_kerning, self._on_missing, self._on_split)
+
+    def get_query(self):
+        raise NotImplementedError
+
+
+class FallbackFontRenderer(FontRendererWrapperBase):
     def __init__(self, query, max_attempts=10):
         self.query = FontQuery(query)
         self._best = None
@@ -529,8 +563,11 @@ class FallbackFontRenderer:
         self._fallback = {}
         self.max_attempts = max_attempts
 
-    def line_height(self, size):
-        return self.best.line_height(size)
+    def get_renderer(self):
+        return self.best
+
+    def get_query(self):
+        return self.query
 
     def ex(self, size):
         best = self.best
@@ -571,19 +608,91 @@ class FallbackFontRenderer:
             else:
                 group.add_shape(child)
 
-    def render(self, text, size, pos=None, use_kerning=True):
-        return self.best.render(text, size, pos, use_kerning, self._on_missing)
-
     def __repr__(self):
         return "<FallbackFontRenderer %s>" % self.query
 
 
+class EmojiFallbackWrapper(FontRendererWrapperBase):
+    _split = None
+
+    def __init__(self, wrapped, emoji_dir):
+        if not os.path.isdir(emoji_dir):
+            raise Exception("Not a valid directory: %s" % emoji_dir)
+        self.wrapped = wrapped
+        self.emoji_dir = emoji_dir
+        self._svgs = {}
+
+    def _get_svg(self, char):
+        if char in self._svgs:
+            return self._svgs[char]
+
+        basename = "-".join("%x" % ord(cp) for cp in char) + ".svg"
+        filename = os.path.join(self.emoji_dir, basename)
+        if not os.path.isfile(filename):
+            return None
+
+        svga = parse_svg_file(filename)
+        svgshape = Group()
+        svgshape.name = basename
+        for layer in svga.layers:
+            if isinstance(layer, ShapeLayer):
+                for shape in layer.shapes:
+                    svgshape.add_shape(shape)
+
+        self._svgs[char] = svgshape
+        svgshape._bbox = svgshape.bounding_box()
+        return svgshape
+
+    def _on_missing(self, char, size, pos, group):
+        #print("%x" % ord(char))
+        svgshape = self._get_svg(char)
+        if not svgshape:
+            if isinstance(self.wrapped, FontRendererWrapperBase):
+                self.wrapped._on_missing(char, size, pos, group)
+            return
+
+        target_height = self.line_height(size)
+        scale = target_height / svgshape._bbox.height
+        shape_group = Group()
+        shape_group = svgshape.clone()
+        shape_group.transform.scale.value *= scale
+        offset = NVector(
+            -svgshape._bbox.x1 + svgshape._bbox.width * 0.075,
+            -svgshape._bbox.y2 + svgshape._bbox.height * 0.1
+        )
+        shape_group.transform.position.value = pos + offset * scale
+        group.add_shape(shape_group)
+        pos.x += svgshape._bbox.width * scale
+
+    def get_renderer(self):
+        return self.wrapped.get_renderer()
+
+    def get_query(self):
+        return self.wrapped.get_query()
+
+    @staticmethod
+    def _get_splitter():
+        if EmojiFallbackWrapper._split is None:
+            try:
+                import grapheme
+                EmojiFallbackWrapper._split = grapheme.graphemes
+            except ImportError:
+                sys.stderr.write("Install `grapheme` for better Emoji support\n")
+                EmojiFallbackWrapper._split = lambda x: x
+        return EmojiFallbackWrapper._split
+
+    @staticmethod
+    def emoji_split(string):
+        return EmojiFallbackWrapper._get_splitter()(string)
+
+    def _on_split(self, string):
+        return self.emoji_split(string)
+
+
 class FontStyle:
-    def __init__(self, query, size, justify=TextJustify.Left, position=None, use_kerning=True):
-        if isinstance(query, str) and os.path.isfile(query):
-            self._renderer = FontRenderer(query)
-        else:
-            self._renderer = FallbackFontRenderer(query)
+    def __init__(self, query, size, justify=TextJustify.Left, position=None, use_kerning=True, emoji_svg=None):
+        self.emoji_svg = emoji_svg
+        self._set_query(query)
         self.size = size
         self.justify = justify
         self.position = position.clone() if position else NVector(0, 0)
@@ -595,11 +704,12 @@ class FontStyle:
         else:
             self._renderer = FallbackFontRenderer(query)
 
+        if self.emoji_svg:
+            self._renderer = EmojiFallbackWrapper(self._renderer, self.emoji_svg)
+
     @property
     def query(self):
-        if isinstance(self._renderer, FallbackFontRenderer):
-            return self._renderer.query
-        return self._renderer.filename
+        return self._renderer.get_query()
 
     @query.setter
     def query(self, value):

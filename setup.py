@@ -61,6 +61,7 @@ setuptools.setup(
         "PNG": ["cairosvg"],
         "Text": ["fonttools"],
         "Video output": ["opencv-python"],
+        "Advanced Emoji Replacement": ["grapheme"],
     },
     test_suite="test",
     project_urls={
