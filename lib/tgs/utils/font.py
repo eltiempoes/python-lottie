@@ -590,6 +590,9 @@ class FallbackFontRenderer(FontRendererWrapperBase):
         if char in self._fallback:
             return self._fallback[char]
 
+        if len(char) != 1:
+            return None
+
         name = Font.glyph_name(char)
         for i, font in enumerate(fonts.all(self.query.clone().char(char))):
             # For some reason fontconfig sometimes returns a font that doesn't
@@ -647,7 +650,6 @@ class EmojiFallbackWrapper(FontRendererWrapperBase):
         return svgshape
 
     def _on_missing(self, char, size, pos, group):
-        #print("%x" % ord(char))
         svgshape = self._get_svg(char)
         if not svgshape:
             if isinstance(self.wrapped, FontRendererWrapperBase):
