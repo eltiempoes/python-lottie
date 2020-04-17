@@ -14,7 +14,6 @@ from ..objects.shapes import Path, Group, Fill, Stroke
 from ..objects.text import TextJustify
 from ..objects.base import TgsProp, CustomObject
 from ..objects.layers import ShapeLayer
-from ..parsers.svg import parse_svg_file
 
 
 class BezierPen(fontTools.pens.basePen.BasePen):
@@ -629,6 +628,8 @@ class EmojiFallbackWrapper(FontRendererWrapperBase):
         self._svgs = {}
 
     def _get_svg(self, char):
+        from ..parsers.svg import parse_svg_file
+
         if char in self._svgs:
             return self._svgs[char]
 
