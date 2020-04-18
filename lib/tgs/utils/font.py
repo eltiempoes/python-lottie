@@ -456,7 +456,8 @@ class FontRenderer:
         - Font size
         - [in, out] Character position
         - Group shape
-        @param use_kerning Whether to honour kerning info from the font file
+        @param use_kerning  Whether to honour kerning info from the font file
+        @splitfunc          Callable that returns an iterable from text
 
         @returns a Group shape, augmented with some extra attributes:
         - line_height   Line height
