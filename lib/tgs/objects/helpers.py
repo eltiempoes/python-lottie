@@ -78,13 +78,13 @@ class Mask(TgsObject):
         TgsProp("dilate", "x", Value, False),
     ]
 
-    def __init__(self):
+    def __init__(self, bezier=None):
         ## Inverted Mask flag
         self.inverted = False
         ## Mask name. Used for expressions and effects.
         self.name = None
         ## Mask vertices
-        self.shape = ShapeProperty()
+        self.shape = ShapeProperty(bezier)
         ## Mask opacity.
         self.opacity = Value(100)
         ## Mask mode. Not all mask types are supported.

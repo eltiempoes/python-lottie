@@ -293,11 +293,11 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Spatial Bezier Interpolation     | 👍      | 👍               | 👍      |
 | Rove Across Time                 | ❔      | ❔               | ❔      |
 | **Masks**                        | **tgs** | **Telegram**     | **SVG** |
-| Mask Path                        | 👍      | 👍[^unsuported]  | ⛔️      |
-| Mask Opacity                     | 👍      | 👍[^unsuported]  | ⛔️      |
+| Mask Path                        | 👍      | 👍[^unsuported]  | 👍      |
+| Mask Opacity                     | 👍      | 👍[^unsuported]  | 👍      |
 | Add                              | 👍      | 👍[^unsuported]  | ⛔️      |
 | Subtract                         | 👍      | 👍[^unsuported]  | ⛔️      |
-| Intersect                        | 👍      | 👍[^unsuported]  | ⛔️      |
+| Intersect                        | 👍      | 👍[^unsuported]  | 👍      |
 | Lighten                          | 👍      | 👍[^unsuported]  | ⛔️      |
 | Darken                           | 👍      | 👍[^unsuported]  | ⛔️      |
 | Difference                       | 👍      | 👍[^unsuported]  | ⛔️      |

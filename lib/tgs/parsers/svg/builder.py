@@ -80,12 +80,45 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
         return self.svg
 
+    def _mask_to_def(self, mask):
+        svgmask = ElementTree.SubElement(self.defs, "mask")
+        mask_id = self.gen_id()
+        svgmask.attrib["id"] = mask_id
+        svgmask.attrib["mask-type"] = "alpha"
+        path = ElementTree.SubElement(svgmask, "path")
+        path.attrib["d"] = self._bezier_to_d(mask.shape.get_value(self.time))
+        path.attrib["fill"] = "#fff"
+        path.attrib["fill-opacity"] = str(mask.opacity.get_value(self.time) / 100)
+        return mask_id
+
+    def _on_masks(self, masks):
+        if len(masks) == 1:
+            return self._mask_to_def(masks[0])
+        mask_ids = list(map(self._mask_to_def, masks))
+        mask_def = ElementTree.SubElement(self.defs, "mask")
+        mask_id = self.gen_id()
+        mask_def.attrib["id"] = mask_id
+        g = mask_def
+        for mid in mask_ids:
+            g = ElementTree.SubElement(g, "g")
+            g.attrib["mask"] = "url(#%s)" % mid
+        full = ElementTree.SubElement(g, "rect")
+        full.attrib["fill"] = "#fff"
+        full.attrib["width"] = self.svg.attrib["width"]
+        full.attrib["height"] = self.svg.attrib["height"]
+        full.attrib["x"] = "0"
+        full.attrib["y"] = "0"
+        return mask_id
+
     def _on_layer(self, layer_builder, dom_parent):
         lot = layer_builder.lottie
         if (lot.in_point > self.time or lot.out_point < self.time) and dom_parent not in self.defs:
             return None
 
         g = self.group_from_lottie(lot, dom_parent, True)
+
+        if lot.masks:
+            g.attrib["mask"] = "url(#%s)" % self._on_masks(lot.masks)
 
         if isinstance(lot, objects.PreCompLayer):
             time = self.time
@@ -323,30 +356,35 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
                 continue
             if d:
                 d += "\n"
-            d += "M %s,%s " % tuple(bez.vertices[0].components[:2])
-            for i in range(1, len(bez.vertices)):
-                qfrom = bez.vertices[i-1]
-                h1 = bez.out_tangents[i-1] + qfrom
-                qto = bez.vertices[i]
-                h2 = bez.in_tangents[i] + qto
-                d += "C %s,%s %s,%s %s,%s " % (
-                    h1[0], h1[1],
-                    h2[0], h2[1],
-                    qto[0], qto[1],
-                )
-            if bez.closed:
-                qfrom = bez.vertices[-1]
-                h1 = bez.out_tangents[-1] + qfrom
-                qto = bez.vertices[0]
-                h2 = bez.in_tangents[0] + qto
-                d += "C %s,%s %s,%s %s,%s Z" % (
-                    h1[0], h1[1],
-                    h2[0], h2[1],
-                    qto[0], qto[1],
-                )
+            d += self._bezier_to_d(bez)
 
         path.attrib["d"] = d
         return path
+
+    def _bezier_to_d(self, bez):
+        d = "M %s,%s " % tuple(bez.vertices[0].components[:2])
+        for i in range(1, len(bez.vertices)):
+            qfrom = bez.vertices[i-1]
+            h1 = bez.out_tangents[i-1] + qfrom
+            qto = bez.vertices[i]
+            h2 = bez.in_tangents[i] + qto
+            d += "C %s,%s %s,%s %s,%s " % (
+                h1[0], h1[1],
+                h2[0], h2[1],
+                qto[0], qto[1],
+            )
+        if bez.closed:
+            qfrom = bez.vertices[-1]
+            h1 = bez.out_tangents[-1] + qfrom
+            qto = bez.vertices[0]
+            h2 = bez.in_tangents[0] + qto
+            d += "C %s,%s %s,%s %s,%s Z" % (
+                h1[0], h1[1],
+                h2[0], h2[1],
+                qto[0], qto[1],
+            )
+
+        return d
 
     def _on_shape_modifier(self, shape, shapegroup, out_parent):
         if isinstance(shape.lottie, objects.Repeater):

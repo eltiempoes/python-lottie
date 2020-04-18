@@ -679,8 +679,32 @@ class TransformShape(ShapeElement, Transform):
 
 
 ## \ingroup Lottie
+class Composite(TgsEnum):
+    Above = 1
+    Below = 2
+
+
+## \ingroup Lottie
+class RepeaterTransform(Transform):
+    _props = [
+        TgsProp("start_opacity", "so", Value, False),
+        TgsProp("end_opacity", "eo", Value, False),
+    ]
+
+    def __init__(self):
+        Transform.__init__(self)
+        self.start_opacity = Value(100)
+        self.end_opacity = Value(100)
+
+
+## \ingroup Lottie
+class Modifier(ShapeElement):
+    pass
+
+
+## \ingroup Lottie
 ## \todo Implement SVG/SIF Export
-class Trim(ShapeElement):
+class Trim(Modifier):
     """
     Trims shapes into a segment
     """
@@ -703,30 +727,6 @@ class Trim(ShapeElement):
         self.angle = Value(0)
         ## \todo?
         self.m = None
-
-
-## \ingroup Lottie
-class Composite(TgsEnum):
-    Above = 1
-    Below = 2
-
-
-## \ingroup Lottie
-class RepeaterTransform(Transform):
-    _props = [
-        TgsProp("start_opacity", "so", Value, False),
-        TgsProp("end_opacity", "eo", Value, False),
-    ]
-
-    def __init__(self):
-        Transform.__init__(self)
-        self.start_opacity = Value(100)
-        self.end_opacity = Value(100)
-
-
-## \ingroup Lottie
-class Modifier(ShapeElement):
-    pass
 
 
 ## \ingroup Lottie

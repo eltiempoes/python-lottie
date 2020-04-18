@@ -26,9 +26,9 @@ maskshape.position.value = Point(256, 256)
 #maskshape.size.value = Point(256, 256)
 maskbez = maskshape.to_bezier()
 
-mask = objects.Mask()
+mask = objects.Mask(maskbez.shape.value)
 an.layers[0].masks = [mask]
-mask.shape.value = maskbez.shape.value
+
 
 g = an.layers[0].add_shape(objects.Group())
 r = g.add_shape(objects.Rect())
