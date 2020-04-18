@@ -52,17 +52,12 @@ def get_parser(basename=None, path="/tmp", formats=["html"], verbosity=1):
 
 
 def run(animation, ns):
-    if ns.name == "-" and len(ns.formats) == 1:
-        file = sys.stdout.buffer if ns.formats[0] == "tgs" else sys.stdout
-        exporter = exporters.get_from_extension(ns.formats[0])
-        exporter.export(animation, absname, exporter.argparse_options(ns))
-    else:
-        for fmt in ns.formats:
-            absname = os.path.abspath(os.path.join(ns.path, ns.name + "." + fmt))
-            if ns.verbosity:
-                print("file://" + absname)
-            exporter = exporters.get_from_extension(fmt)
-            exporter.process(animation, absname, *exporter.argparse_options(ns))
+    for fmt in ns.formats:
+        absname = os.path.abspath(os.path.join(ns.path, ns.name + "." + fmt))
+        if ns.verbosity:
+            print("file://" + absname)
+        exporter = exporters.get_from_extension(fmt)
+        exporter.process(animation, absname, **exporter.argparse_options(ns))
 
 
 def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1, strip=float_strip):

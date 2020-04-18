@@ -152,6 +152,7 @@ Here is a list of features of the tgs python framework:
 * Importt/Export Synfig files
 * Export PNG/PDF/PostScript
 * Export GIF
+* Export Animated WebP
 * Export Video (MP4, AVI, WebM)
 * Manipulation of lottie objects
 * Simple animation presets (eg: shake, linear bounce)

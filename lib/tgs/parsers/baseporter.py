@@ -31,10 +31,12 @@ class ExtraOption:
     def __init__(self, name, **kwargs):
         self.name = name
         self.kwargs = kwargs
+        if "action" not in self.kwargs:
+            self.kwargs["metavar"] = self.name
 
     def add_argument(self, slug, parser):
         opt = "--%s-%s" % (slug, self.name.replace("_", "-"))
-        parser.add_argument(opt, metavar=self.name, **self.kwargs)
+        parser.add_argument(opt, **self.kwargs)
 
     def nsvar(self, slug):
         return "%s_%s" % (slug, self.name)
