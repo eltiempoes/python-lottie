@@ -52,10 +52,11 @@ class SifBuilder(restructure.AbstractBuilder):
         self.canvas.antialias = True
         return self.canvas
 
-    def _on_precomp(self, id, dom_parent):
+    def _on_precomp(self, id, dom_parent, layers):
         g = dom_parent.add_layer(api.GroupLayer())
         g.desc = id
-        return g
+        for layer_builder in layers:
+            self.process_layer(layer_builder, g)
 
     def _on_layer(self, layer_builder, dom_parent):
         layer = self.layer_from_lottie(api.GroupLayer, layer_builder.lottie, dom_parent)

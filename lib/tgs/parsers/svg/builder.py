@@ -32,6 +32,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         self.idc = 0
         self.name_mode = NameMode.Inkscape
         self.time = time
+        self._precomps = {}
 
     def gen_id(self, prefix="id"):
         #TODO should check if id_n already exists
@@ -87,8 +88,11 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         g = self.group_from_lottie(lot, dom_parent, True)
 
         if isinstance(lot, objects.PreCompLayer):
-            use = ElementTree.SubElement(g, "use")
-            use.attrib[self.qualified("xlink", "href")] = "#" + lot.reference_id
+            time = self.time
+            self.time += lot.start_time
+            for layer in self._precomps.get(lot.reference_id, []):
+                self.process_layer(layer, g)
+            self.time = time
         elif isinstance(lot, objects.NullLayer):
             g.attrib["opacity"] = "1"
 
@@ -102,10 +106,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
         return g
 
-    def _on_precomp(self, id, dom_parent):
-        g = ElementTree.SubElement(self.defs, "g")
-        g.attrib["id"] = id
-        return g
+    def _on_precomp(self, id, dom_parent, layers):
+        self._precomps[id] = layers
 
     def _get_value(self, prop, default=NVector(0, 0)):
         if prop:

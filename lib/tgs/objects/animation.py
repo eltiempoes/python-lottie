@@ -1,6 +1,6 @@
 from .base import TgsObject, TgsProp, PseudoBool, Index
 from .layers import Layer
-from .assets import Asset, Chars
+from .assets import Asset, Chars, Precomp
 from .text import FontList
 
 ##\defgroup Lottie Lottie
@@ -69,6 +69,12 @@ class Animation(TgsObject):
         ## Available fonts
         self.fonts = None
         self._index_gen = Index()
+
+    def precomp(self, name):
+        for ass in self.assets:
+            if isinstance(ass, Precomp) and ass.id == name:
+                return ass
+        return None
 
     def add_layer(self, layer):
         """!

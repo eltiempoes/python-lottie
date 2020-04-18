@@ -90,9 +90,7 @@ class AbstractBuilder:
 
         restructured = self.restructure_animation(animation, self.merge_paths)
         for id, layers in restructured.precomp.items():
-            precomp_parent = self._on_precomp(id, out_parent)
-            for layer_builder in layers:
-                self.process_layer(layer_builder, precomp_parent)
+            self._on_precomp(id, out_parent, layers)
 
         for layer_builder in restructured.layers:
             self.process_layer(layer_builder, out_parent)
@@ -100,7 +98,7 @@ class AbstractBuilder:
     def _on_layer(self, layer_builder, out_parent):
         raise NotImplementedError()
 
-    def _on_precomp(self, id, out_parent):
+    def _on_precomp(self, id, out_parent, layers):
         raise NotImplementedError()
 
     def process_layer(self, layer_builder, out_parent):

@@ -1,3 +1,6 @@
+## Unreleased
+ * Added support for precomposition on SVG / raster exporters
+
 ## 0.5.0 - 2020-04-18
  * Animated WebP support
  * Support for the new Synfig plugin system
