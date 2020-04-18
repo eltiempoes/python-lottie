@@ -200,41 +200,6 @@ The tgs file is the JSON described above compressed into a gzip,
 and renamed to .tgs
 
 
-#### Telegram: Unsupported features
-
-Telegram doesn't support everything in the Lottie format.
-https://core.telegram.org/animated_stickers lists some things that are unsupported
-but what is listed there isn't correct.
-
-There are several things marked as unsupported in telegram animated stickers that are actually supported:
-
-* Masks
-* Mattes (Works on desktop but not on Android)
-* Star Shapes
-* Gradient Strokes
-* Repeaters
-* Solids
-* Time Remapping (Works on desktop but not on Android)
-
-
-The following things are actually unsupported:
-
-* Layer Effects
-* Images
-* Skew transforms (this isn't listed in the unsupported features)
-* Texts
-* Animated layer transforms (not listed as unsupported)
-* Time Stretching
-
-
-Things marked as unsupported that I haven't tested:
-
-* Expressions
-* 3D Layers
-* Merge Paths
-* Auto-Oriented Layers
-
-
 License
 -------
 
@@ -279,93 +244,118 @@ Compare with http://airbnb.io/lottie/#/supported-features
 
  * 👍 Supported
  * ❔ Unknown / untested
- * ⚠️ Partially supported
- * ❓ Marked as unsupported but untested
  * ⛔️ Not supported
+ * **tgs** refers to this framework in general
+ * **Telegram** refers to features supported by telegram animated stickers
+ * **SVG** refers to the exported SVG images from this framework,
+ features supported here will also reflect on other formats (such as video, png, and similar)
 
 
-| **Shapes**                       | **tgs** | **Telegram** |
-|----------------------------------|----|----|
-| Shape                            | 👍 | 👍 |
-| Ellipse                          | 👍 | 👍 |
-| Rectangle                        | 👍 | 👍 |
-| Rounded Rectangle                | 👍 | 👍 |
-| Polystar                         | 👍 | ⚠️ |
-| Group                            | 👍 | 👍 |
-| Trim Path (individually)         | 👍 | ❔ |
-| Trim Path (simultaneously)       | 👍 | ❔ |
-| **Renderable**                   | **tgs** | **Telegram** |
-| Fill                             | 👍 | 👍 |
-| Stroke                           | 👍 | 👍 |
-| Radial Gradient                  | 👍 | 👍 |
-| Linear Gradient                  | 👍 | 👍 |
-| Gradient Stroke                  | 👍 | ⚠️ |
-| **Transforms**                   | **tgs** | **Telegram** |
-| Position                         | 👍 | 👍 |
-| Position (separated X/Y)         | 👍 | 👍 |
-| Scale                            | 👍 | 👍 |
-| Skew                             | 👍 | ⛔️ |
-| Rotation                         | 👍 | 👍 |
-| Anchor Point                     | 👍 | 👍 |
-| Opacity                          | 👍 | 👍 |
-| Parenting                        | 👍 | 👍 |
-| Auto Orient                      | ❔ | ❓ |
-| **Interpolation**                | **tgs** | **Telegram** |
-| Linear Interpolation             | 👍 | 👍 |
-| Bezier Interpolation             | 👍 | 👍 |
-| Hold Interpolation               | 👍 | 👍 |
-| Spatial Bezier Interpolation     | 👍 | 👍 |
-| Rove Across Time                 | ❔ | ❔ |
-| **Masks**                        | **tgs** | **Telegram** |
-| Mask Path                        | 👍 | ⚠️ |
-| Mask Opacity                     | 👍 | ⚠️ |
-| Add                              | 👍 | ⚠️ |
-| Subtract                         | 👍 | ⚠️ |
-| Intersect                        | 👍 | ⚠️ |
-| Lighten                          | 👍 | ⚠️ |
-| Darken                           | 👍 | ⚠️ |
-| Difference                       | 👍 | ⚠️ |
-| Expansion                        | 👍 | ⚠️ |
-| Feather                          | 👍 | ⚠️ |
-| **Mattes**                       | **tgs** | **Telegram** |
-| Alpha Matte                      | 👍 | ⚠️ |
-| Alpha Inverted Matte             | 👍 | ⚠️ |
-| Luma Matte                       | 👍 | ⚠️ |
-| Luma Inverted Matte              | 👍 | ⚠️ |
-| **Merge Paths**                  | **tgs** | **Telegram** |
-| Merge                            | ❔ | ❔ |
-| Add                              | ❔ | ❔ |
-| Subtract                         | ❔ | ❔ |
-| Intersect                        | ❔ | ❔ |
-| Exclude Intersection             | ❔ | ❔ |
-| **Layer Effects**                | **tgs** | **Telegram** |
-| Fill                             | 👍 | ⛔️ |
-| Stroke                           | 👍 | ⛔️ |
-| Tint                             | 👍 | ⛔️ |
-| Tritone                          | 👍 | ⛔️ |
-| Levels Individual Controls       | 👍 | ⛔️ |
-| **Text**                         | **tgs** | **Telegram** |
-| Glyphs                           | 👍 | ⛔️ |
-| Fonts                            | 👍 | ⛔️ |
-| Transform                        | 👍 | ⛔️ |
-| Fill                             | 👍 | ⛔️ |
-| Stroke                           | 👍 | ⛔️ |
-| Tracking                         | ❔ | ⛔️ |
-| Anchor point grouping            | ❔ | ⛔️ |
-| Text Path                        | ❔ | ⛔️ |
-| Per-character 3D                 | ❔ | ⛔️ |
-| Range selector (Units)           | ❔ | ⛔️ |
-| Range selector (Based on)        | ❔ | ⛔️ |
-| Range selector (Amount)          | ❔ | ⛔️ |
-| Range selector (Shape)           | ❔ | ⛔️ |
-| Range selector (Ease High)       | ❔ | ⛔️ |
-| Range selector (Ease Low)        | ❔ | ⛔️ |
-| Range selector (Randomize order) | ❔ | ⛔️ |
-| expression selector              | ❔ | ⛔️ |
-| **Other**                        | **tgs** | **Telegram** |
-| Expressions                      | ⛔️ | ❓ |
-| Images                           | 👍 | ⛔️ |
-| Precomps                         | 👍 | 👍 |
-| Time Stretch                     | ❔ | ⛔️ |
-| Time remap                       | 👍 | ⚠️ |
-| Markers                          | ❔ | ❔ |
+Telegram doesn't support everything in the Lottie format.
+https://core.telegram.org/animated_stickers lists some things that are unsupported
+but what is listed there isn't correct.
+
+There are several things marked as unsupported in telegram animated stickers that are actually supported.
+
+
+
+| **Shapes**                       | **tgs** | **Telegram**     | **SVG** |
+|----------------------------------|---------|------------------|---------|
+| Shape                            | 👍      | 👍               | 👍      |
+| Ellipse                          | 👍      | 👍               | 👍      |
+| Rectangle                        | 👍      | 👍               | 👍      |
+| Rounded Rectangle                | 👍      | 👍               | 👍      |
+| Polystar                         | 👍      | 👍[^unsuported]  | 👍      |
+| Group                            | 👍      | 👍               | 👍      |
+| Trim Path (individually)         | 👍      | 👍               | ⛔️      |
+| Trim Path (simultaneously)       | 👍      | 👍               | ⛔️      |
+| **Renderable**                   | **tgs** | **Telegram**     | **SVG** |
+| Fill                             | 👍      | 👍               | 👍      |
+| Stroke                           | 👍      | 👍               | 👍      |
+| Radial Gradient                  | 👍      | 👍               | 👍      |
+| Linear Gradient                  | 👍      | 👍               | 👍      |
+| Gradient Stroke                  | 👍      | 👍[^unsuported]  | 👍      |
+| **Transforms**                   | **tgs** | **Telegram**     | **SVG** |
+| Position                         | 👍      | 👍               | 👍      |
+| Position (separated X/Y)         | 👍      | 👍               | 👍      |
+| Scale                            | 👍      | 👍               | 👍      |
+| Skew                             | 👍      | ⛔️[^bug]         | 👍      |
+| Rotation                         | 👍      | 👍               | 👍      |
+| Anchor Point                     | 👍      | 👍               | 👍      |
+| Opacity                          | 👍      | 👍               | 👍      |
+| Parenting                        | 👍      | 👍               | 👍      |
+| Animated layer transforms        | 👍      | ⛔️[^bug]         | 👍      |
+| Auto Orient                      | ❔      | ⛔️[^untested]    | ❔      |
+| **Interpolation**                | **tgs** | **Telegram**     | **SVG** |
+| Linear Interpolation             | 👍      | 👍               | 👍      |
+| Bezier Interpolation             | 👍      | 👍               | 👍      |
+| Hold Interpolation               | 👍      | 👍               | 👍      |
+| Spatial Bezier Interpolation     | 👍      | 👍               | 👍      |
+| Rove Across Time                 | ❔      | ❔               | ❔      |
+| **Masks**                        | **tgs** | **Telegram**     | **SVG** |
+| Mask Path                        | 👍      | 👍[^unsuported]  | ⛔️      |
+| Mask Opacity                     | 👍      | 👍[^unsuported]  | ⛔️      |
+| Add                              | 👍      | 👍[^unsuported]  | ⛔️      |
+| Subtract                         | 👍      | 👍[^unsuported]  | ⛔️      |
+| Intersect                        | 👍      | 👍[^unsuported]  | ⛔️      |
+| Lighten                          | 👍      | 👍[^unsuported]  | ⛔️      |
+| Darken                           | 👍      | 👍[^unsuported]  | ⛔️      |
+| Difference                       | 👍      | 👍[^unsuported]  | ⛔️      |
+| Expansion                        | 👍      | 👍[^unsuported]  | ⛔️      |
+| Feather                          | 👍      | 👍[^unsuported]  | ⛔️      |
+| **Mattes**                       | **tgs** | **Telegram**     | **SVG** |
+| Alpha Matte                      | 👍      | ⛔️[^dok]         | ⛔️      |
+| Alpha Inverted Matte             | 👍      | ⛔️[^dok]         | ⛔️      |
+| Luma Matte                       | 👍      | ⛔️[^dok]         | ⛔️      |
+| Luma Inverted Matte              | 👍      | ⛔️[^dok]         | ⛔️      |
+| **Merge Paths**                  | **tgs** | **Telegram**     | **SVG** |
+| Merge                            | ❔      | ⛔️[^untested]    | ❔      |
+| Add                              | ❔      | ⛔️[^untested]    | ❔      |
+| Subtract                         | ❔      | ⛔️[^untested]    | ❔      |
+| Intersect                        | ❔      | ⛔️[^untested]    | ❔      |
+| Exclude Intersection             | ❔      | ⛔️[^untested]    | ❔      |
+| **Layer Effects**                | **tgs** | **Telegram**     | **SVG** |
+| Fill                             | 👍      | ⛔️               | ⛔️      |
+| Stroke                           | 👍      | ⛔️               | ⛔️      |
+| Tint                             | 👍      | ⛔️               | ⛔️      |
+| Tritone                          | 👍      | ⛔️               | ⛔️      |
+| Levels Individual Controls       | 👍      | ⛔️               | ⛔️      |
+| **Text** [^text]                 | **tgs** | **Telegram**     | **SVG** |
+| Glyphs                           | 👍      | ⛔️               | ⛔️      |
+| Fonts                            | 👍      | ⛔️               | ⛔️      |
+| Transform                        | 👍      | ⛔️               | ⛔️      |
+| Fill                             | 👍      | ⛔️               | ⛔️      |
+| Stroke                           | 👍      | ⛔️               | ⛔️      |
+| Tracking                         | ❔      | ⛔️               | ⛔️      |
+| Anchor point grouping            | ❔      | ⛔️               | ⛔️      |
+| Text Path                        | ❔      | ⛔️               | ⛔️      |
+| Per-character 3D                 | ❔      | ⛔️               | ⛔️      |
+| Range selector (Units)           | ❔      | ⛔️               | ⛔️      |
+| Range selector (Based on)        | ❔      | ⛔️               | ⛔️      |
+| Range selector (Amount)          | ❔      | ⛔️               | ⛔️      |
+| Range selector (Shape)           | ❔      | ⛔️               | ⛔️      |
+| Range selector (Ease High)       | ❔      | ⛔️               | ⛔️      |
+| Range selector (Ease Low)        | ❔      | ⛔️               | ⛔️      |
+| Range selector (Randomize order) | ❔      | ⛔️               | ⛔️      |
+| expression selector              | ❔      | ⛔️               | ⛔️      |
+| **Other**                        | **tgs** | **Telegram**     | **SVG** |
+| Expressions                      | ⛔️      | ⛔️[^untested]    | ⛔️      |
+| Images                           | 👍      | ⛔️               | ⛔️      |
+| Precomps                         | 👍      | 👍               | 👍      |
+| Time Stretch                     | ❔      | ⛔️               | ❔      |
+| Time remap                       | 👍      | ⛔️[^dok]         | ⛔️      |
+| Markers                          | ❔      | ❔               | ❔      |
+| 3D Layers                        | ❔      | ⛔️[^untested]    | ❔      |
+| Repeaters                        | 👍      | 👍[^unsuported]  | 👍      |
+| Solids                           | 👍      | 👍[^unsuported]  | ❔      |
+
+[^text]: Note that **tgs** offers an alternative to lottie text layers, and can render
+text as shapes, so that is supported everywhere
+
+[^untested]: Marked as unsuported but I haven't tested it
+
+[^bug]: Not listed as unsupported, maybe a bug?
+
+[^dok]: Works on telegram desktop
+
+[^unsuported]: Marked as unsupported
