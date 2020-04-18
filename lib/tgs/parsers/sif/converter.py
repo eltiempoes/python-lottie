@@ -454,12 +454,12 @@ class Converter:
     def _convert_gradient_stops(self, sif_gradient):
         stops = objects.GradientColors()
         if not self._animated(sif_gradient):
-            stops.set_sane_colors(self._flatten_gradient_colors(sif_gradient.value))
+            stops.set_stops(self._flatten_gradient_colors(sif_gradient.value))
             stops.count = len(sif_gradient.value)
         else:
             # TODO easing
             for kf in sif_gradient.keyframes:
-                stops.add_sane_keyframe(self._time(kf.time), self._flatten_gradient_colors(kf.value))
+                stops.add_keyframe(self._time(kf.time), self._flatten_gradient_colors(kf.value))
                 stops.count = len(kf.value)
 
         return stops

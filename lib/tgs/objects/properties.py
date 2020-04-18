@@ -315,7 +315,6 @@ class MultiDimensional(AnimatableMixin, TgsObject):
 
 
 ## \ingroup Lottie
-# \todo use a more convenient representation and convert to the weird array on import/export
 class GradientColors(TgsObject):
     """!
     Represents colors and offsets in a gradient
@@ -340,62 +339,56 @@ class GradientColors(TgsObject):
         TgsProp("count", "p", int),
     ]
 
-    def __init__(self, colors=[]):
+    def __init__(self, stops=[]):
         ## Animatable colors, as a vector containing [offset, r, g, b] values as a flat array
         self.colors = MultiDimensional(NVector())
         ## Number of colors
         self.count = 0
-        if colors:
-            self.set_colors(colors)
+        if stops:
+            self.set_stops(stops)
 
-    def set_colors(self, colors, keyframe=None):
-        flat = self._flatten_colors(colors)
-        if self.colors.animated and keyframe is not None:
-            if keyframe > 1:
-                self.colors.keyframes[keyframe-1].end = flat
-            self.colors.keyframes[keyframe].start = flat
-        else:
-            self.colors.clear_animation(flat)
-        self.count = len(colors)
+    @staticmethod
+    def color_to_stops(self, colors):
+        """
+        Converts a list of colors (NVector) to tuples (offset, color)
+        """
+        return [
+                (i / (len(colors)-1), color)
+                for i, color in enumerate(colors)
+        ]
 
-    def set_sane_colors(self, colors, keyframe=None):
+    def set_stops(self, stops, keyframe=None):
         """!
-        \param colors iterable of (offset, NVector) tuples
+        \param stops iterable of (offset, NVector) tuples
         \param keyframe keyframe index (or None if not animated)
         """
-        flat = self._flatten_sane_colors(colors)
+        flat = self._flatten_stops(stops)
         if self.colors.animated and keyframe is not None:
             if keyframe > 1:
                 self.colors.keyframes[keyframe-1].end = flat
             self.colors.keyframes[keyframe].start = flat
         else:
             self.colors.clear_animation(flat)
-        self.count = len(colors)
+        self.count = len(stops)
 
-    def _flatten_sane_colors(self, colors):
+    def _flatten_stops(self, stops):
         flattened_colors = NVector(*reduce(
             lambda a, b: a + b,
             (
                 [off] + color.components[:3]
-                for off, color in colors
+                for off, color in stops
             )
         ))
 
-        if any(len(c) > 3 for o, c in colors):
+        if any(len(c) > 3 for o, c in stops):
             flattened_colors.components += reduce(
                 lambda a, b: a + b,
                 (
                     [off] + [self._get_alpha(color)]
-                    for off, color in colors
+                    for off, color in stops
                 )
             )
         return flattened_colors
-
-    def _flatten_colors(self, colors):
-        return self._flatten_sane_colors(
-                (i / (len(colors)-1), color)
-                for i, color in enumerate(colors)
-        )
 
     def _get_alpha(self, color):
         if len(color) > 3:
@@ -433,25 +426,22 @@ class GradientColors(TgsObject):
             self._add_to_flattened(offset, color, self.colors.value.components)
         self.count += 1
 
-    def add_keyframe(self, time, colors=None, ease=easing.Linear()):
-        self.colors.add_keyframe(time, self._flatten_colors(colors) if colors else NVector(), ease)
-
-    def add_sane_keyframe(self, time, colors, ease=easing.Linear()):
+    def add_keyframe(self, time, stops, ease=easing.Linear()):
         """!
         \param time   Frame time
-        \param colors Iterable of (offset, NVector) tuples
+        \param stops  Iterable of (offset, NVector) tuples
         \param ease   Easing function
         """
-        self.colors.add_keyframe(time, self._flatten_sane_colors(colors), ease)
+        self.colors.add_keyframe(time, self._flatten_stops(stops), ease)
 
-    def get_sane_colors(self, keyframe=None):
+    def get_stops(self, keyframe=None):
         if keyframe is not None:
             colors = self.colors.keyframes[keyframe].start
         else:
             colors = self.colors.value
-        return self._sane_colors_from_flat(colors)
+        return self._stops_from_flat(colors)
 
-    def _sane_colors_from_flat(self, colors):
+    def _stops_from_flat(self, colors):
         if len(colors) == 4 * self.count:
             for i in range(self.count):
                 off = i * 4
@@ -462,8 +452,8 @@ class GradientColors(TgsObject):
                 aoff = self.count * 4 + i * 2 + 1
                 yield colors[off], NVector(colors[off+1], colors[off+2], colors[off+3], colors[aoff])
 
-    def sane_colors_at(self, time):
-        return self._sane_colors_from_flat(self.colors.get_value(time))
+    def stops_at(self, time):
+        return self._stops_from_flat(self.colors.get_value(time))
 
 
 ## \ingroup Lottie

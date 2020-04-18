@@ -20,7 +20,7 @@ layer = an.insert_layer(0, objects.ShapeLayer())
 r = layer.add_shape(objects.Rect())
 r.position.value = Point(256, 256)
 r.size.value = Point(512, 512)
-gf = layer.add_shape(objects.GradientFill([Color(1, 1, 1), Color(0, 0, 0)]))
+gf = layer.add_shape(objects.GradientFill([(0, Color(1, 1, 1)), (1, Color(0, 0, 0))]))
 gf.start_point.value = Point(256, 256)
 gf.end_point.value = Point(256, 64)
 
