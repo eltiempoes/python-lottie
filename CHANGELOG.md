@@ -18,28 +18,28 @@
  * More user friendly gradient manipulation
  * Refactored font rendering and fallback classes
 
-## v0.4.4 - 2020-03-31
+## 0.4.4 - 2020-03-31
  * Bug fixes
 
-## v0.4.3 - 2020-03-31
+## 0.4.3 - 2020-03-31
  * Bug fixes
 
-## v0.4.2 - 2020-03-31
+## 0.4.2 - 2020-03-31
  * Synfig importer improvements
  * SVG importer improvements
  * Refactored importers code
  * Color comparison script
 
-## v0.4.1 - 2020-03-26
+## 0.4.1 - 2020-03-26
  * Documentation / packaging fixes
 
-## v0.4.0 - 2020-03-26
+## 0.4.0 - 2020-03-26
  * Extended Telgram sticker validation
  * Synfig importer
  * New Synfig exporter
  * Fixed some lottie effects
 
-## v0.3.6 - 2020-01-19
+## 0.3.6 - 2020-01-19
  * Support for exporting layers as frames in Inkscape
  * Improved grouping on shapes from the text renderer
  * SVG importer improvements
@@ -48,13 +48,13 @@
  * Added easing support on 3D Rotation utility
  * Improved keyframe interpolation
 
-## v0.3.5 - 2019-10-27
+## 0.3.5 - 2019-10-27
  * SVG exporter improvements
  * Text rendering improvements
  * Improved lottie diff script
  * SVG groups as animation layers on import
 
-## v0.3.4 - 2019-09-09
+## 0.3.4 - 2019-09-09
  * SVG exporter improvements
  * Improved shape bounding box evaluation
  * Lottie object visitor functionality
@@ -65,22 +65,22 @@
  * Improved follow path animation utility
  * Color space management functionality
 
-## v0.3.3 - 2019-08-12
+## 0.3.3 - 2019-08-12
  * Support for SMIL animations in SVG importer
  * Blender addon: Bezier improvements
  * Blender addon: Grease pencil support
 
-## v0.3.2 - 2019-08-06
+## 0.3.2 - 2019-08-06
  * Blender addon
 
-## v0.3.1 - 2019-08-04
+## 0.3.1 - 2019-08-04
  * SVG exporter improvements
  * Telegram sticker sanitizer
  * Text renderer fallback font
  * Using the text renderer on imported SVG
  * System to define custom lottie objects
 
-## v0.3.0 - 2019-08-01
+## 0.3.0 - 2019-08-01
  * Added support for more layer effects
  * SVG parsing improvements
  * SVG exporter improvements
@@ -94,7 +94,7 @@
  * Video exporter
  * Text to bezier rendering
 
-## v0.2.0 - 2019-07-26
+## 0.2.0 - 2019-07-26
  * Added support for Lottie shape modifiers
  * Added support for layer masks
  * Added support for layer effects
