@@ -231,7 +231,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         id = self.set_id(dom, gradient, force=True)
         dom.attrib["gradientUnits"] = "userSpaceOnUse"
 
-        for off, color in gradient.colors.sane_colors_at(self.time):
+        for off, color in gradient.colors.stops_at(self.time):
             stop = ElementTree.SubElement(dom, "stop")
             stop.attrib["offset"] = "%s%%" % (off * 100)
             stop.attrib["stop-color"] = color_to_css(color[:3])
