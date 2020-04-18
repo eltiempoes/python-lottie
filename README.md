@@ -176,8 +176,12 @@ Here is a list of features of the tgs python framework:
 | AVI       | ⛔️        | ⛔️                | 👍        | 👍                |
 | WebM      | ⛔️        | ⛔️                | 👍        | 👍                |
 | HTML      | ⛔️        | ⛔️                | 👍        | 👍                |
+| Blender   | 👍[^blend]| 👍[^blend]        | ⛔️        | ⛔️                |
 
 [^frames]: Importing multiple images as frames
+
+[^blend]: Conversion available as a Blender addon
+
 
 Reverse Engineering
 -------------------

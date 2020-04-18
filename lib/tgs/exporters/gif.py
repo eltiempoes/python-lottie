@@ -46,7 +46,6 @@ def export_gif(animation, fp, dpi=96, skip_frames=5):
         frames.append(_png_gif_prepare(Image.open(file)))
     _log_frame("GIF")
 
-
     sys.stderr.write("GIF Writing to file...\n")
     duration = 1000 / animation.frame_rate
     frames[0].save(
