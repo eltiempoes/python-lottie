@@ -100,3 +100,32 @@ def export_webp(animation, fp, dpi=96, lossless=False, quality=80, method=0):
         quality=quality,
         method=method
     )
+
+
+@exporter("TIFF", ["tiff"])
+def export_tiff(animation, fp, dpi=96):
+    """
+    Export Animated PNG
+    """
+    start = int(animation.in_point)
+    end = int(animation.out_point)
+    frames = []
+    for i in range(start, end+1):
+        _log_frame("TIFF", i, end)
+        file = io.BytesIO()
+        export_png(animation, file, i, dpi)
+        file.seek(0)
+        frames.append(Image.open(file))
+    _log_frame("TIFF")
+
+    sys.stderr.write("TIFF Writing to file...\n")
+    duration = int(round(1000 / animation.frame_rate))
+    frames[0].save(
+        fp,
+        format='TIFF',
+        append_images=frames[1:],
+        save_all=True,
+        duration=duration,
+        loop=0,
+        dpi=(dpi, dpi),
+    )
