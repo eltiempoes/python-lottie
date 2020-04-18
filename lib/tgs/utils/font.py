@@ -92,7 +92,7 @@ class SystemFont:
         key = self._key(styles)
         if key in self._renderers:
             return self._renderers[key]
-        fr = FontRenderer(self.files[key])
+        fr = RawFontRenderer(self.files[key])
         self._renderers[key] = fr
         return fr
 
@@ -409,22 +409,26 @@ class Font:
 class FontRenderer:
     tab_width = 4
 
-    def __init__(self, filename):
-        self.filename = filename
-        self.font = Font.open(filename)
-        self._kerning = None
+    @property
+    def font(self):
+        raise NotImplementedError
 
-    def glyph_beziers(self, name, offset=NVector(0, 0)):
-        pen = BezierPen(self.font.glyphset, offset)
-        self.font.glyphset[name].draw(pen)
-        return pen.beziers
+    def get_query(self):
+        raise NotImplementedError
 
-    def glyph_shapes(self, name, offset=NVector(0, 0)):
-        beziers = self.glyph_beziers(name, offset)
-        return [
-            Path(bez)
-            for bez in beziers
-        ]
+    def kerning(self, c1, c2):
+        return 0
+
+    def text_to_chars(self, text):
+        return text
+
+    def _on_missing(self, char, size, pos, group):
+        """!
+        - Character as string
+        - Font size
+        - [in, out] Character position
+        - Group shape
+        """
 
     def glyph_group(self, name):
         group = Group()
@@ -444,28 +448,57 @@ class FontRenderer:
     def ex(self, size):
         return self.font.glyph("x").width * self.scale(size)
 
-    def render(self, text, size, pos=None, use_kerning=True, on_missing=None, splitfunc=lambda x: x):
+    def glyph_beziers(self, name, offset=NVector(0, 0)):
+        pen = BezierPen(self.font.glyphset, offset)
+        self.font.glyphset[name].draw(pen)
+        return pen.beziers
+
+    def glyph_shapes(self, name, offset=NVector(0, 0)):
+        beziers = self.glyph_beziers(name, offset)
+        return [
+            Path(bez)
+            for bez in beziers
+        ]
+
+    def _on_character(self, ch, size, pos, scale, line, use_kerning, chars, i):
+        chname = self.glyph_name(ch)
+        if chname in self.font.glyphset:
+            glyphdata = self.font.glyph(chname)
+            #next_x = pos.x + glyphdata.width * scale
+            pos.x += glyphdata.lsb * scale
+            glyph_shapes = self.glyph_shapes(chname, pos / scale)
+            glyph_shape_group = line.add_shape(Group()) if len(glyph_shapes) > 1 else line
+
+            for sh in glyph_shapes:
+                sh.shape.value.scale(scale)
+                glyph_shape_group.add_shape(sh)
+
+            if len(glyph_shapes) > 1:
+                glyph_shape_group.name = ch
+            elif len(glyph_shapes) == 1:
+                sh.name = ch
+
+            kerning = 0
+            if use_kerning and i < len(chars) - 1:
+                nextcname = chars[i+1]
+                kerning = self.kerning(chname, nextcname)
+            pos.x += (glyphdata.width - glyphdata.lsb + kerning) * scale
+            return True
+        return False
+
+    def render(self, text, size, pos=None, use_kerning=True):
         """!
         Renders some text
 
         @param text         String to render
         @param size         Font size (in pizels)
         @param[in,out] pos  Text position
-        @param on_missing   Callable on missing glyphs, called with:
-        - Character as string
-        - Font size
-        - [in, out] Character position
-        - Group shape
         @param use_kerning  Whether to honour kerning info from the font file
-        @splitfunc          Callable that returns an iterable from text
 
         @returns a Group shape, augmented with some extra attributes:
         - line_height   Line height
-
+        - next_x        X position of the next character
         """
-        if use_kerning and self._kerning is None:
-            self._kerning = collect_kerning_pairs(self.font)
-
         scale = self.scale(size)
         line_height = self.line_height(size)
         group = Group()
@@ -476,7 +509,8 @@ class FontRenderer:
         line = Group()
         group.add_shape(line)
         #group.transform.scale.value = NVector(100, 100) * scale
-        for i, ch in enumerate(splitfunc(text)):
+        chars = self.text_to_chars(text)
+        for i, ch in enumerate(chars):
             if ch == "\n":
                 line.next_x = pos.x
                 pos.x = start_x
@@ -493,36 +527,26 @@ class FontRenderer:
                 pos.x += width * scale * self.tab_width
                 continue
 
-            chname = self.glyph_name(ch)
-            if chname in self.font.glyphset:
-                glyphdata = self.font.glyph(chname)
-                #next_x = pos.x + glyphdata.width * scale
-                pos.x += glyphdata.lsb * scale
-                glyph_shapes = self.glyph_shapes(chname, pos / scale)
-                glyph_shape_group = line.add_shape(Group()) if len(glyph_shapes) > 1 else line
-
-                for sh in glyph_shapes:
-                    sh.shape.value.scale(scale)
-                    glyph_shape_group.add_shape(sh)
-
-                if len(glyph_shapes) > 1:
-                    glyph_shape_group.name = ch
-                elif len(glyph_shapes) == 1:
-                    sh.name = ch
-
-                kerning = 0
-                if use_kerning and i < len(text) - 1:
-                    nextcname = text[i+1]
-                    kerning = self.kerning(chname, nextcname)
-                pos.x += (glyphdata.width - glyphdata.lsb + kerning) * scale
-            elif on_missing:
-                on_missing(ch, size, pos, line)
+            self._on_character(ch, size, pos, scale, line, use_kerning, chars, i)
 
         group.line_height = line_height
         group.next_x = line.next_x = pos.x
         return group
 
+
+class RawFontRenderer(FontRenderer):
+    def __init__(self, filename):
+        self.filename = filename
+        self._font = Font.open(filename)
+        self._kerning = None
+
+    @property
+    def font(self):
+        return self._font
+
     def kerning(self, c1, c2):
+        if self._kerning is None:
+            self._kerning = collect_kerning_pairs(self.font)
         return self._kerning.get((c1, c2), 0)
 
     def __repr__(self):
@@ -531,34 +555,8 @@ class FontRenderer:
     def get_query(self):
         return self.filename
 
-    def get_renderer(self):
-        return self
 
-
-class FontRendererWrapperBase:
-    def get_renderer(self):
-        raise NotImplementedError
-
-    def _on_missing(self, char, size, pos, group):
-        raise NotImplementedError
-
-    def _on_split(self, string):
-        return string
-
-    def line_height(self, size):
-        return self.get_renderer().line_height(size)
-
-    def ex(self, size):
-        return self.get_renderer().ex(size)
-
-    def render(self, text, size, pos=None, use_kerning=True):
-        return self.get_renderer().render(text, size, pos, use_kerning, self._on_missing, self._on_split)
-
-    def get_query(self):
-        raise NotImplementedError
-
-
-class FallbackFontRenderer(FontRendererWrapperBase):
+class FallbackFontRenderer(FontRenderer):
     def __init__(self, query, max_attempts=10):
         self.query = FontQuery(query)
         self._best = None
@@ -566,15 +564,16 @@ class FallbackFontRenderer(FontRendererWrapperBase):
         self._fallback = {}
         self.max_attempts = max_attempts
 
-    def get_renderer(self):
-        return self.best
+    @property
+    def font(self):
+        return self.best.font
 
     def get_query(self):
         return self.query
 
     def ex(self, size):
         best = self.best
-        if "x" not in self.best.font.glyphset:
+        if "x" not in self.font.glyphset:
             best = fonts.best(self.query.clone().char("x"))
         return best.ex(size)
 
@@ -605,20 +604,25 @@ class FallbackFontRenderer(FontRendererWrapperBase):
                 self._fallback[char] = None
                 return None
 
-    def _on_missing(self, char, size, pos, group):
+    def _on_character(self, char, size, pos, scale, group, use_kerning, chars, i):
+        if self.best._on_character(char, size, pos, scale, group, use_kerning, chars, i):
+            return True
+
         font = self.fallback_renderer(char)
-        if font:
-            child = font.render(char, size, pos)
-            if len(child.shapes) == 2:
-                group.add_shape(child.shapes[0])
-            else:
-                group.add_shape(child)
+        if not font:
+            return False
+
+        child = font.render(char, size, pos)
+        if len(child.shapes) == 2:
+            group.add_shape(child.shapes[0])
+        else:
+            group.add_shape(child)
 
     def __repr__(self):
         return "<FallbackFontRenderer %s>" % self.query
 
 
-class EmojiFallbackWrapper(FontRendererWrapperBase):
+class EmojiRenderer(FontRenderer):
     _split = None
 
     def __init__(self, wrapped, emoji_dir):
@@ -627,6 +631,10 @@ class EmojiFallbackWrapper(FontRendererWrapperBase):
         self.wrapped = wrapped
         self.emoji_dir = emoji_dir
         self._svgs = {}
+
+    @property
+    def font(self):
+        return self.wrapped.font
 
     def _get_svg(self, char):
         from ..parsers.svg import parse_svg_file
@@ -637,6 +645,7 @@ class EmojiFallbackWrapper(FontRendererWrapperBase):
         basename = "-".join("%x" % ord(cp) for cp in char) + ".svg"
         filename = os.path.join(self.emoji_dir, basename)
         if not os.path.isfile(filename):
+            self._svgs[char] = None
             return None
 
         svga = parse_svg_file(filename)
@@ -651,49 +660,44 @@ class EmojiFallbackWrapper(FontRendererWrapperBase):
         svgshape._bbox = svgshape.bounding_box()
         return svgshape
 
-    def _on_missing(self, char, size, pos, group):
+    def _on_character(self, char, size, pos, scale, group, use_kerning, chars, i):
         svgshape = self._get_svg(char)
-        if not svgshape:
-            if isinstance(self.wrapped, FontRendererWrapperBase):
-                self.wrapped._on_missing(char, size, pos, group)
-            return
-
-        target_height = self.line_height(size)
-        scale = target_height / svgshape._bbox.height
-        shape_group = Group()
-        shape_group = svgshape.clone()
-        shape_group.transform.scale.value *= scale
-        offset = NVector(
-            -svgshape._bbox.x1 + svgshape._bbox.width * 0.075,
-            -svgshape._bbox.y2 + svgshape._bbox.height * 0.1
-        )
-        shape_group.transform.position.value = pos + offset * scale
-        group.add_shape(shape_group)
-        pos.x += svgshape._bbox.width * scale
-
-    def get_renderer(self):
-        return self.wrapped.get_renderer()
+        if svgshape:
+            target_height = self.line_height(size)
+            scale = target_height / svgshape._bbox.height
+            shape_group = Group()
+            shape_group = svgshape.clone()
+            shape_group.transform.scale.value *= scale
+            offset = NVector(
+                -svgshape._bbox.x1 + svgshape._bbox.width * 0.075,
+                -svgshape._bbox.y2 + svgshape._bbox.height * 0.1
+            )
+            shape_group.transform.position.value = pos + offset * scale
+            group.add_shape(shape_group)
+            pos.x += svgshape._bbox.width * scale
+            return True
+        return self.wrapped._on_character(char, size, pos, scale, group, use_kerning, chars, i)
 
     def get_query(self):
         return self.wrapped.get_query()
 
     @staticmethod
     def _get_splitter():
-        if EmojiFallbackWrapper._split is None:
+        if EmojiRenderer._split is None:
             try:
                 import grapheme
-                EmojiFallbackWrapper._split = grapheme.graphemes
+                EmojiRenderer._split = grapheme.graphemes
             except ImportError:
                 sys.stderr.write("Install `grapheme` for better Emoji support\n")
-                EmojiFallbackWrapper._split = lambda x: x
-        return EmojiFallbackWrapper._split
+                EmojiRenderer._split = lambda x: x
+        return EmojiRenderer._split
 
     @staticmethod
     def emoji_split(string):
-        return EmojiFallbackWrapper._get_splitter()(string)
+        return EmojiRenderer._get_splitter()(string)
 
-    def _on_split(self, string):
-        return self.emoji_split(string)
+    def text_to_chars(self, string):
+        return list(self.emoji_split(string))
 
 
 class FontStyle:
@@ -707,12 +711,12 @@ class FontStyle:
 
     def _set_query(self, query):
         if isinstance(query, str) and os.path.isfile(query):
-            self._renderer = FontRenderer(query)
+            self._renderer = RawFontRenderer(query)
         else:
             self._renderer = FallbackFontRenderer(query)
 
         if self.emoji_svg:
-            self._renderer = EmojiFallbackWrapper(self._renderer, self.emoji_svg)
+            self._renderer = EmojiRenderer(self._renderer, self.emoji_svg)
 
     @property
     def query(self):
