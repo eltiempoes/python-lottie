@@ -4,7 +4,8 @@ import os
 here = os.path.dirname(os.path.abspath(__file__))
 
 
-with open(os.path.join(here, "README.md"), "r") as fh:
+# Works fine everywhere without `encoding` except on giltab CI *shrugs*
+with open(os.path.join(here, "README.md"), "r", encoding='utf8') as fh:
     long_description = fh.read()
 
 
