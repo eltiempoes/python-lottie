@@ -145,15 +145,6 @@ Features
 Here is a list of features of the tgs python framework:
 
 * Loading compressed TGS and uncompressed lottie JSON
-* Importing SVG images
-* Importing raster images and convert them into vectors
-* Export lottie JSON or TGS
-* Export (non-animated) SVG
-* Importt/Export Synfig files
-* Export PNG/PDF/PostScript
-* Export GIF
-* Export Animated WebP
-* Export Video (MP4, AVI, WebM)
 * Manipulation of lottie objects
 * Simple animation presets (eg: shake, linear bounce)
 * Bezier path animations (eg: follow path, making paths appear and disappear)
@@ -164,6 +155,29 @@ Here is a list of features of the tgs python framework:
 * Pretty printing and comparison of lottie files
 * Rendering text as shapes
 
+
+## Supported Formats
+
+| Format    | Import    | Import Animated   | Export    | Export Animated   |
+|-----------|-----------|-------------------|-----------|-------------------|
+| lottie    | 👍        | 👍                | 👍        | 👍                |
+| tgs       | 👍        | 👍                | 👍        | 👍                |
+| SVG       | 👍        | 👍                | 👍        | ⛔️                |
+| SVGz      | 👍        | 👍                | 👍        | ⛔️                |
+| PNG       | 👍        | 👍[^frames]       | 👍        | ⛔️                |
+| Synfig    | 👍        | 👍                | 👍        | 👍                |
+| WebP      | 👍        | 👍                | 👍        | 👍                |
+| PostScript| ⛔️        | ⛔️                | 👍        | ⛔️                |
+| PDF       | ⛔️        | ⛔️                | 👍        | ⛔️                |
+| BMP       | 👍        | 👍[^frames]       | ⛔️        | ⛔️                |
+| GIF       | 👍        | 👍                | 👍        | 👍                |
+| TIFF      | 👍        | 👍                | 👍        | 👍                |
+| MP4       | ⛔️        | ⛔️                | 👍        | 👍                |
+| AVI       | ⛔️        | ⛔️                | 👍        | 👍                |
+| WebM      | ⛔️        | ⛔️                | 👍        | 👍                |
+| HTML      | ⛔️        | ⛔️                | 👍        | 👍                |
+
+[^frames]: Importing multiple images as frames
 
 Reverse Engineering
 -------------------
@@ -269,21 +283,30 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Group                            | 👍      | 👍               | 👍      |
 | Trim Path (individually)         | 👍      | 👍               | ⛔️      |
 | Trim Path (simultaneously)       | 👍      | 👍               | ⛔️      |
-| **Renderable**                   | **tgs** | **Telegram**     | **SVG** |
-| Fill                             | 👍      | 👍               | 👍      |
-| Stroke                           | 👍      | 👍               | 👍      |
+| **Fills**                        | **tgs** | **Telegram**     | **SVG** |
+| Color                            | 👍      | 👍               | 👍      |
+| Opacity                          | 👍      | 👍               | 👍      |
 | Radial Gradient                  | 👍      | 👍               | 👍      |
 | Linear Gradient                  | 👍      | 👍               | 👍      |
-| Gradient Stroke                  | 👍      | 👍[^unsuported]  | 👍      |
+| Fill Rule                        | ❔      | ❔               | ❔      |
+| **Strokes**                      | **tgs** | **Telegram**     | **SVG** |
+| Color                            | 👍      | 👍               | 👍      |
+| Opacity                          | 👍      | 👍               | 👍      |
+| Width                            | 👍      | 👍               | 👍      |
+| Line Cap                         | 👍      | 👍               | 👍      |
+| Line Join                        | 👍      | 👍               | 👍      |
+| Miter Limit                      | 👍      | 👍               | 👍      |
+| Dashes                           | 👍      | 👍               | 👍      |
+| Gradient                         | 👍      | 👍[^unsuported]  | 👍      |
 | **Transforms**                   | **tgs** | **Telegram**     | **SVG** |
 | Position                         | 👍      | 👍               | 👍      |
 | Position (separated X/Y)         | 👍      | 👍               | 👍      |
 | Scale                            | 👍      | 👍               | 👍      |
-| Skew                             | 👍      | ⛔️[^bug]         | 👍      |
 | Rotation                         | 👍      | 👍               | 👍      |
 | Anchor Point                     | 👍      | 👍               | 👍      |
 | Opacity                          | 👍      | 👍               | 👍      |
 | Parenting                        | 👍      | 👍               | 👍      |
+| Skew                             | 👍      | ⛔️[^bug]         | 👍      |
 | Animated layer transforms        | 👍      | ⛔️[^bug]         | 👍      |
 | Auto Orient                      | ❔      | ⛔️[^untested]    | ❔      |
 | **Interpolation**                | **tgs** | **Telegram**     | **SVG** |

@@ -10,7 +10,7 @@ except ImportError:
     raster = False
 
 
-@importer("Raster image", ["bmp", "png", "gif"], [
+@importer("Raster image", ["bmp", "png", "gif", "webp", "tiff"], [
     ExtraOption("n_colors", type=int, default=1, help="Number of colors to quantize"),
     ExtraOption("palette", type=parse_color, default=[], nargs="+", help="Custom palette"),
     ExtraOption(
@@ -21,9 +21,14 @@ except ImportError:
     ),
     ExtraOption("frame_delay", type=int, default=4, help="Number of frames to skip between images"),
     ExtraOption("framerate", type=int, default=60, help="Frames per second"),
+    ExtraOption("frame_files", nargs="+", default=[], help="Additional frames to import"),
     # TODO QuanzationMode for raster
 ])
-def import_raster(filenames, n_colors, palette, mode, frame_delay=1, framerate=60):
+def import_raster(filenames, n_colors, palette, mode, frame_delay=1, framerate=60, frame_files=[]):
+    if not isinstance(filenames, list):
+        filenames = [filenames]
+    filenames = filenames + frame_files
+
     if mode == "bezier":
         return raster_to_animation(
             filenames, n_colors, frame_delay,
