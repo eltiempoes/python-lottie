@@ -1,4 +1,8 @@
 ## Unreleased
+ * Implemented fill rule
+
+
+## 0.5.1 - 2020-04-19
  * Added support for precomposition on SVG exporter
  * SVG exporter improvements
  * Added TIFF importer/exporter

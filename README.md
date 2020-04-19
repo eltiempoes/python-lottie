@@ -292,7 +292,7 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Opacity                          | 👍      | 👍               | 👍      |
 | Radial Gradient                  | 👍      | 👍               | 👍      |
 | Linear Gradient                  | 👍      | 👍               | 👍      |
-| Fill Rule                        | ❔      | ❔               | ❔      |
+| Fill Rule                        | 👍      | 👍               | 👍      |
 | **Strokes**                      | **tgs** | **Telegram**     | **SVG** |
 | Color                            | 👍      | 👍               | 👍      |
 | Opacity                          | 👍      | 👍               | 👍      |
@@ -312,7 +312,7 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Parenting                        | 👍      | 👍               | 👍      |
 | Skew                             | 👍      | ⛔️[^bug]         | 👍      |
 | Animated layer transforms        | 👍      | ⛔️[^bug]         | 👍      |
-| Auto Orient                      | ❔      | ⛔️[^untested]    | ❔      |
+| Auto Orient                      | 👍      | ⛔️[^untested]    | ⛔️      |
 | **Interpolation**                | **tgs** | **Telegram**     | **SVG** |
 | Linear Interpolation             | 👍      | 👍               | 👍      |
 | Bezier Interpolation             | 👍      | 👍               | 👍      |

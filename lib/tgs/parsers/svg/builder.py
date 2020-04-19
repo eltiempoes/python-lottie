@@ -245,6 +245,9 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             else:
                 style["fill"] = color_to_css(group.fill.color.get_value(self.time))
 
+            if group.fill.fill_rule:
+                style["fill-rule"] = "evenodd" if group.fill.fill_rule == objects.FillRule.EvenOdd else "nonzero"
+
         if group.stroke:
             if isinstance(group.stroke, objects.GradientStroke):
                 style["stroke"] = "url(#%s)" % self.process_gradient(group.stroke)

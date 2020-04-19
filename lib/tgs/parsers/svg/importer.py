@@ -420,6 +420,10 @@ class SvgParser(SvgHandler):
                 opacity = color[3]
             opacity *= float(style.get("fill-opacity", 1))
             fill.opacity.value = opacity * 100
+
+            if style.get("fill-rule", "") == "evenodd":
+                fill.fill_rule = objects.FillRule.EvenOdd
+
             group.add_shape(fill)
 
     def _parseshape_use(self, element, shape_parent, parent_style):

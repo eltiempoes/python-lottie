@@ -491,6 +491,12 @@ class Group(ShapeElement):
 
 
 ## \ingroup Lottie
+class FillRule(TgsEnum):
+    NonZero = 1
+    EvenOdd = 2
+
+
+## \ingroup Lottie
 class Fill(ShapeElement):
     """!
     Solid fill color
@@ -498,7 +504,7 @@ class Fill(ShapeElement):
     _props = [
         TgsProp("opacity", "o", Value, False),
         TgsProp("color", "c", MultiDimensional, False),
-        TgsProp("r", "r", int, False),
+        TgsProp("fill_rule", "r", FillRule, False),
     ]
     ## %Shape type.
     type = "fl"
@@ -509,8 +515,8 @@ class Fill(ShapeElement):
         self.opacity = Value(100)
         ## Fill Color
         self.color = MultiDimensional(color or NVector(1, 1, 1))
-        ## \todo figure out?
-        self.r = None
+        ## Fill rule
+        self.fill_rule = None
 
 
 ## \ingroup Lottie
