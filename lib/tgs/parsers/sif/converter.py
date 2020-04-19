@@ -342,10 +342,10 @@ class Converter:
         for p in layer.bline.points:
             animatables += [
                 self._convert_vector(p.point),
-                self._convert_scalar(p.t1.radius),
-                self._convert_scalar(p.t1.theta),
-                self._convert_scalar(p.t2.radius),
-                self._convert_scalar(p.t2.theta)
+                self._convert_scalar(p.t1.radius) if hasattr(p.t1, "radius") else objects.Value(0),
+                self._convert_scalar(p.t1.theta) if hasattr(p.t1, "radius") else objects.Value(0),
+                self._convert_scalar(p.t2.radius) if hasattr(p.t2, "radius") else objects.Value(0),
+                self._convert_scalar(p.t2.theta) if hasattr(p.t2, "radius") else objects.Value(0)
             ]
         animated = any(x.animated for x in animatables)
         if not animated:

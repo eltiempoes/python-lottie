@@ -493,11 +493,11 @@ class SvgParser(SvgHandler):
 
     def _parseshape_rect(self, element, shape_parent, parent_style):
         rect = objects.Rect()
-        w = self._parse_unit(element.attrib["width"])
-        h = self._parse_unit(element.attrib["height"])
+        w = self._parse_unit(element.attrib.get("width", 0))
+        h = self._parse_unit(element.attrib.get("height", 0))
         rect.position.value = NVector(
-            self._parse_unit(element.attrib["x"]) + w / 2,
-            self._parse_unit(element.attrib["y"]) + h / 2
+            self._parse_unit(element.attrib.get("x", 0)) + w / 2,
+            self._parse_unit(element.attrib.get("y", 0)) + h / 2
         )
         rect.size.value = NVector(w, h)
         rx = self._parse_unit(element.attrib.get("rx", 0))
