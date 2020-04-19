@@ -1,5 +1,7 @@
 ## Unreleased
  * SVG exporter improvements
+ * SVG importer improvements
+ * Synfig importer improvements
  * Implemented fill rule
  * Partial support for text layers on SVG export
  * Support solid color layers on SVG export

@@ -318,7 +318,7 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Bezier Interpolation             | 👍      | 👍               | 👍      |
 | Hold Interpolation               | 👍      | 👍               | 👍      |
 | Spatial Bezier Interpolation     | 👍      | 👍               | 👍      |
-| Rove Across Time                 | ❔      | ❔               | ❔      |
+| Rove Across Time                 | ⛔️      | ⛔️[^untested]    | ⛔️      |
 | **Masks**                        | **tgs** | **Telegram**     | **SVG** |
 | Mask Path                        | 👍      | 👍[^unsuported]  | 👍      |
 | Mask Opacity                     | 👍      | 👍[^unsuported]  | 👍      |
@@ -353,26 +353,26 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Transform                        | 👍      | ⛔️               | ⛔️      |
 | Fill                             | 👍      | ⛔️               | 👍      |
 | Stroke                           | 👍      | ⛔️               | ⛔️      |
-| Tracking                         | ❔      | ⛔️               | ⛔️      |
-| Anchor point grouping            | ❔      | ⛔️               | ⛔️      |
-| Text Path                        | ❔      | ⛔️               | ⛔️      |
-| Per-character 3D                 | ❔      | ⛔️               | ⛔️      |
-| Range selector (Units)           | ❔      | ⛔️               | ⛔️      |
-| Range selector (Based on)        | ❔      | ⛔️               | ⛔️      |
-| Range selector (Amount)          | ❔      | ⛔️               | ⛔️      |
-| Range selector (Shape)           | ❔      | ⛔️               | ⛔️      |
-| Range selector (Ease High)       | ❔      | ⛔️               | ⛔️      |
-| Range selector (Ease Low)        | ❔      | ⛔️               | ⛔️      |
-| Range selector (Randomize order) | ❔      | ⛔️               | ⛔️      |
-| expression selector              | ❔      | ⛔️               | ⛔️      |
+| Tracking                         | ⛔️      | ⛔️               | ⛔️      |
+| Anchor point grouping            | ⛔️      | ⛔️               | ⛔️      |
+| Text Path                        | ⛔️      | ⛔️               | ⛔️      |
+| Per-character 3D                 | ⛔️      | ⛔️               | ⛔️      |
+| Range selector (Units)           | ⛔️      | ⛔️               | ⛔️      |
+| Range selector (Based on)        | ⛔️      | ⛔️               | ⛔️      |
+| Range selector (Amount)          | ⛔️      | ⛔️               | ⛔️      |
+| Range selector (Shape)           | ⛔️      | ⛔️               | ⛔️      |
+| Range selector (Ease High)       | ⛔️      | ⛔️               | ⛔️      |
+| Range selector (Ease Low)        | ⛔️      | ⛔️               | ⛔️      |
+| Range selector (Randomize order) | ⛔️      | ⛔️               | ⛔️      |
+| expression selector              | ⛔️      | ⛔️               | ⛔️      |
 | **Other**                        | **tgs** | **Telegram**     | **SVG** |
 | Expressions                      | ⛔️      | ⛔️[^untested]    | ⛔️      |
 | Images                           | 👍      | ⛔️               | 👍      |
 | Precomps                         | 👍      | 👍               | 👍      |
-| Time Stretch                     | ❔      | ⛔️               | ❔      |
+| Time Stretch                     | 👍      | ⛔️               | ⛔️      |
 | Time remap                       | 👍      | ⛔️[^dok]         | 👍      |
-| Markers                          | ❔      | ❔               | ❔      |
-| 3D Layers                        | ❔      | ⛔️[^untested]    | ❔      |
+| Markers                          | ⛔️      | ⛔️[^untested]    | ⛔️      |
+| 3D Layers                        | 👍      | ⛔️[^untested]    | ⛔️      |
 | Repeaters                        | 👍      | 👍[^unsuported]  | 👍      |
 | Solids                           | 👍      | 👍[^unsuported]  | 👍      |
 
