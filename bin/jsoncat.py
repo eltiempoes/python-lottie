@@ -29,5 +29,8 @@ parser.add_argument(
 
 if __name__ == "__main__":
     ns = parser.parse_args()
-    a = parse_tgs_json(ns.infile)
+    infile = ns.infile
+    if infile == "-":
+        infile = sys.stdin
+    a = parse_tgs_json(infile)
     json.dump(a, sys.stdout, indent=4, sort_keys=ns.sort)

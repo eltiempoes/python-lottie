@@ -18,6 +18,7 @@ an.assets.append(precomp)
 # Define stuff in the precomposition (a circle moving left to right)
 layer = objects.ShapeLayer()
 precomp.add_layer(layer)
+layer.out_point = 60
 
 circle = layer.add_shape(objects.Ellipse())
 circle.size.value = NVector(100, 100)

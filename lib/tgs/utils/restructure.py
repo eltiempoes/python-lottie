@@ -117,6 +117,11 @@ class AbstractBuilder:
         for c in layer_builder.children_post:
             self.process_layer(c, out_layer)
 
+        self._on_layer_end(out_layer)
+
+    def _on_layer_end(self, out_layer):
+        pass
+
     def shapegroup_process_child(self, shape, shapegroup, out_parent):
         if isinstance(shape, RestructuredShapeGroup):
             return self._on_shapegroup(shape, out_parent)

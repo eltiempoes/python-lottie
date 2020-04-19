@@ -370,7 +370,7 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Images                           | 👍      | ⛔️               | ⛔️      |
 | Precomps                         | 👍      | 👍               | 👍      |
 | Time Stretch                     | ❔      | ⛔️               | ❔      |
-| Time remap                       | 👍      | ⛔️[^dok]         | ⛔️      |
+| Time remap                       | 👍      | ⛔️[^dok]         | 👍      |
 | Markers                          | ❔      | ❔               | ❔      |
 | 3D Layers                        | ❔      | ⛔️[^untested]    | ❔      |
 | Repeaters                        | 👍      | 👍[^unsuported]  | 👍      |

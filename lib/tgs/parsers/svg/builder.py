@@ -13,6 +13,19 @@ except ImportError:
     has_font = False
 
 
+class PrecompTime:
+    def __init__(self, pcl: objects.PreCompLayer):
+        self.pcl = pcl
+
+    def get_time_offset(self, time, lot):
+        remap = time
+        if self.pcl.time_remapping:
+            remapf = self.pcl.time_remapping.get_value(time)
+            remap = lot.in_point * (1-remapf) + lot.out_point * remapf
+
+        return remap - self.pcl.start_time
+
+
 class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
     merge_paths = True
     namestart = (
@@ -31,8 +44,18 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         self.ids = set()
         self.idc = 0
         self.name_mode = NameMode.Inkscape
-        self.time = time
+        self.actual_time = time
+        self.precomp_times = []
         self._precomps = {}
+        self._current_layer = []
+
+    @property
+    def time(self):
+        time = self.actual_time
+        if self.precomp_times:
+            for pct in self.precomp_times:
+                time = pct.get_time_offset(time, self._current_layer[-1])
+        return time
 
     def gen_id(self, prefix="id"):
         #TODO should check if id_n already exists
@@ -78,6 +101,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             namedview.attrib["pagecolor"] = "#ffffff"
         self.svg.attrib["style"] = "fill: none; stroke: none"
 
+        self._current_layer = [animation]
         return self.svg
 
     def _mask_to_def(self, mask):
@@ -112,7 +136,10 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
     def _on_layer(self, layer_builder, dom_parent):
         lot = layer_builder.lottie
-        if (lot.in_point > self.time or lot.out_point < self.time) and dom_parent not in self.defs:
+        self._current_layer.append(lot)
+
+        if not self.precomp_times and (lot.in_point > self.time or lot.out_point < self.time):
+            self._current_layer.pop()
             return None
 
         g = self.group_from_lottie(lot, dom_parent, True)
@@ -121,11 +148,12 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             g.attrib["mask"] = "url(#%s)" % self._on_masks(lot.masks)
 
         if isinstance(lot, objects.PreCompLayer):
-            time = self.time
-            self.time += lot.start_time
+            self.precomp_times.append(PrecompTime(lot))
+
             for layer in self._precomps.get(lot.reference_id, []):
                 self.process_layer(layer, g)
-            self.time = time
+
+            self.precomp_times.pop()
         elif isinstance(lot, objects.NullLayer):
             g.attrib["opacity"] = "1"
 
@@ -138,6 +166,9 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             g.attrib["style"] += "display: none;"
 
         return g
+
+    def _on_layer_end(self, out_layer):
+        self._current_layer.pop()
 
     def _on_precomp(self, id, dom_parent, layers):
         self._precomps[id] = layers
