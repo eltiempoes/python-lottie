@@ -1,6 +1,7 @@
 from .base import TgsObject, TgsProp, TgsEnum
 from .properties import Value, MultiDimensional
 from ..nvector import NVector
+from .helpers import Transform
 
 
 ## \ingroup Lottie
@@ -26,17 +27,10 @@ class MaskedPath(TgsObject):
 
 ## \ingroup Lottie
 ## \ingroup LottieCheck
-class TextAnimatorDataProperty(TgsObject):
+class TextAnimatorDataProperty(Transform):
     _props = [
-        TgsProp("rotation", "r", Value),
         TgsProp("rx", "rx", Value),
         TgsProp("ry", "ry", Value),
-        TgsProp("skew", "sk", Value),
-        TgsProp("skew_axis", "sa", Value),
-        TgsProp("scale", "s", MultiDimensional),
-        TgsProp("anchor", "a", MultiDimensional),
-        TgsProp("opacity", "o", Value),
-        TgsProp("position", "p", MultiDimensional),
         TgsProp("stroke_width", "sw", Value),
         TgsProp("stroke_color", "sc", MultiDimensional),
         TgsProp("fill_color", "fc", MultiDimensional),
@@ -44,26 +38,15 @@ class TextAnimatorDataProperty(TgsObject):
         TgsProp("fs", "fs", Value),
         TgsProp("fb", "fb", Value),
         TgsProp("tracking", "t", Value),
+        TgsProp("scale", "s", MultiDimensional),
     ]
 
     def __init__(self):
-        ## Rotation Angle: z?
-        self.rotation = Value()
+        super().__init__()
         ## Angle?
         self.rx = Value()
         ## Angle?
         self.ry = Value()
-        ## Skew Angle
-        self.skew = Value()
-        ## Skew Axis
-        self.skew_axis = Value()
-        ## Scale 0-100?
-        self.scale = MultiDimensional()
-        self.anchor = MultiDimensional()
-        ## Opacity 0-100?
-        self.opacity = Value()
-        ## Position
-        self.position = MultiDimensional()
         ## Stroke width
         self.stroke_width = Value()
         ## Stroke color
@@ -154,6 +137,12 @@ class TextData(TgsObject):
     def __init__(self):
         self.keyframes = []
 
+    def get_value(self, time):
+        for kf in self.keyframes:
+            if kf.time >= time:
+                return kf.start
+        return None
+
 
 ## \ingroup Lottie
 class TextAnimatorData(TgsObject):
@@ -172,6 +161,9 @@ class TextAnimatorData(TgsObject):
 
     def add_keyframe(self, time, item):
         self.data.keyframes.append(TextDataKeyframe(time, item))
+
+    def get_value(self, time):
+        return self.data.get_value(time)
 
 
 ## \ingroup Lottie

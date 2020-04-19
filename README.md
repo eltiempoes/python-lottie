@@ -336,11 +336,11 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Luma Matte                       | 👍      | ⛔️[^dok]         | ⛔️      |
 | Luma Inverted Matte              | 👍      | ⛔️[^dok]         | ⛔️      |
 | **Merge Paths**                  | **tgs** | **Telegram**     | **SVG** |
-| Merge                            | ❔      | ⛔️[^untested]    | ❔      |
-| Add                              | ❔      | ⛔️[^untested]    | ❔      |
-| Subtract                         | ❔      | ⛔️[^untested]    | ❔      |
-| Intersect                        | ❔      | ⛔️[^untested]    | ❔      |
-| Exclude Intersection             | ❔      | ⛔️[^untested]    | ❔      |
+| Merge                            | ⛔️      | ⛔️[^untested]    | ⛔️      |
+| Add                              | ⛔️      | ⛔️[^untested]    | ⛔️      |
+| Subtract                         | ⛔️      | ⛔️[^untested]    | ⛔️      |
+| Intersect                        | ⛔️      | ⛔️[^untested]    | ⛔️      |
+| Exclude Intersection             | ⛔️      | ⛔️[^untested]    | ⛔️      |
 | **Layer Effects**                | **tgs** | **Telegram**     | **SVG** |
 | Fill                             | 👍      | ⛔️               | ⛔️      |
 | Stroke                           | 👍      | ⛔️               | ⛔️      |
@@ -351,7 +351,7 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Glyphs                           | 👍      | ⛔️               | ⛔️      |
 | Fonts                            | 👍      | ⛔️               | ⛔️      |
 | Transform                        | 👍      | ⛔️               | ⛔️      |
-| Fill                             | 👍      | ⛔️               | ⛔️      |
+| Fill                             | 👍      | ⛔️               | 👍      |
 | Stroke                           | 👍      | ⛔️               | ⛔️      |
 | Tracking                         | ❔      | ⛔️               | ⛔️      |
 | Anchor point grouping            | ❔      | ⛔️               | ⛔️      |
