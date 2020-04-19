@@ -41,10 +41,4 @@
       <description>[TGS] Lottie JSON (*.json)</description>
       <exec>tgs-exporter.py</exec>
    </importer>
-
-   <importer>
-      <extension>svg</extension>
-      <description>SVG... again! (*.svg)</description>
-      <exec>tgs-exporter.py</exec>
-   </importer>
 </plugin>
