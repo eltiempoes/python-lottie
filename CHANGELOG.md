@@ -1,6 +1,8 @@
 ## Unreleased
+ * SVG exporter improvements
  * Implemented fill rule
  * Partial support for text layers on SVG export
+ * Support solid color layers on SVG export
 
 
 ## 0.5.1 - 2020-04-19

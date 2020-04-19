@@ -374,7 +374,7 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Markers                          | ❔      | ❔               | ❔      |
 | 3D Layers                        | ❔      | ⛔️[^untested]    | ❔      |
 | Repeaters                        | 👍      | 👍[^unsuported]  | 👍      |
-| Solids                           | 👍      | 👍[^unsuported]  | ❔      |
+| Solids                           | 👍      | 👍[^unsuported]  | 👍      |
 
 [^text]: Note that **tgs** offers an alternative to lottie text layers, and can render
 text as shapes, so that is supported everywhere

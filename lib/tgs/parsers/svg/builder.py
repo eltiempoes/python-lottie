@@ -165,22 +165,13 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             use = ElementTree.SubElement(g, "use")
             use.attrib[self.qualified("xlink", "href")] = "#" + self._assets[lot.image_id]
         elif isinstance(lot, objects.TextLayer):
-            text = ElementTree.SubElement(g, "text")
-            doc = lot.data.get_value(self.time)
-            if doc:
-                text.attrib["font-family"] = doc.font_family
-                text.attrib["font-size"] = str(doc.font_size)
-                if doc.line_height:
-                    text.attrib["line-height"] = "%s%%" % doc.line_height
-                if doc.justify == objects.text.TextJustify.Left:
-                    text.attrib["text-align"] = "start"
-                elif doc.justify == objects.text.TextJustify.Center:
-                    text.attrib["text-align"] = "center"
-                elif doc.justify == objects.text.TextJustify.Right:
-                    text.attrib["text-align"] = "end"
+            self._on_text_layer(g, lot)
+        elif isinstance(lot, objects.SolidColorLayer):
+            rect = ElementTree.SubElement(g, "rect")
+            rect.attrib["width"] = str(lot.width)
+            rect.attrib["height"] = str(lot.height)
+            rect.attrib["fill"] = lot.color
 
-                text.attrib["fill"] = color_to_css(doc.color)
-                text.text = doc.text
 
         if not lot.name:
             g.attrib[self.qualified("inkscape", "label")] = lot.__class__.__name__
@@ -191,6 +182,24 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             g.attrib["style"] += "display: none;"
 
         return g
+
+    def _on_text_layer(self, g, lot):
+        text = ElementTree.SubElement(g, "text")
+        doc = lot.data.get_value(self.time)
+        if doc:
+            text.attrib["font-family"] = doc.font_family
+            text.attrib["font-size"] = str(doc.font_size)
+            if doc.line_height:
+                text.attrib["line-height"] = "%s%%" % doc.line_height
+            if doc.justify == objects.text.TextJustify.Left:
+                text.attrib["text-align"] = "start"
+            elif doc.justify == objects.text.TextJustify.Center:
+                text.attrib["text-align"] = "center"
+            elif doc.justify == objects.text.TextJustify.Right:
+                text.attrib["text-align"] = "end"
+
+            text.attrib["fill"] = color_to_css(doc.color)
+            text.text = doc.text
 
     def _on_layer_end(self, out_layer):
         self._current_layer.pop()
