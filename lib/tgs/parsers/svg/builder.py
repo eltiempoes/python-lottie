@@ -47,6 +47,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         self.actual_time = time
         self.precomp_times = []
         self._precomps = {}
+        self._assets = {}
         self._current_layer = []
 
     @property
@@ -64,6 +65,16 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         self.ids.add(id)
         return id
 
+    def set_clean_id(self, dom, n):
+        idn = n.replace(" ", "_")
+        if self.id_re.match(idn) and idn not in self.ids:
+            self.ids.add(idn)
+        else:
+            idn = self.gen_id(dom.tag)
+
+        dom.attrib["id"] = idn
+        return idn
+
     def set_id(self, dom, lottieobj, inkscape_qual=None, force=False):
         n = getattr(lottieobj, "name", None)
         if n is None or self.name_mode == NameMode.NoName:
@@ -73,16 +84,10 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
                 return id
             return None
 
-        idn = n.replace(" ", "_")
-        if self.id_re.match(idn) and idn not in self.ids:
-            self.ids.add(idn)
-        else:
-            idn = self.gen_id(dom.tag)
-
-        dom.attrib["id"] = idn
+        idn = self.set_clean_id(dom, n)
         if inkscape_qual:
             dom.attrib[inkscape_qual] = n
-        return n
+        return idn
 
     def _on_animation(self, animation: objects.Animation):
         self.svg.attrib["width"] = str(animation.width)
@@ -156,6 +161,9 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             self.precomp_times.pop()
         elif isinstance(lot, objects.NullLayer):
             g.attrib["opacity"] = "1"
+        elif isinstance(lot, objects.ImageLayer):
+            use = ElementTree.SubElement(g, "use")
+            use.attrib[self.qualified("xlink", "href")] = "#" + self._assets[lot.image_id]
 
         if not lot.name:
             g.attrib[self.qualified("inkscape", "label")] = lot.__class__.__name__
@@ -172,6 +180,15 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
     def _on_precomp(self, id, dom_parent, layers):
         self._precomps[id] = layers
+
+    def _on_asset(self, asset):
+        if isinstance(asset, objects.assets.Image):
+            img = ElementTree.SubElement(self.defs, "image")
+            xmlid = self.set_clean_id(img, asset.id)
+            self._assets[asset.id] = xmlid
+            img.attrib[self.qualified("xlink", "href")] = asset.image or asset.image_path
+            img.attrib["width"] = str(asset.width)
+            img.attrib["height"] = str(asset.height)
 
     def _get_value(self, prop, default=NVector(0, 0)):
         if prop:

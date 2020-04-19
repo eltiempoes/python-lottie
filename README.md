@@ -367,7 +367,7 @@ There are several things marked as unsupported in telegram animated stickers tha
 | expression selector              | ❔      | ⛔️               | ⛔️      |
 | **Other**                        | **tgs** | **Telegram**     | **SVG** |
 | Expressions                      | ⛔️      | ⛔️[^untested]    | ⛔️      |
-| Images                           | 👍      | ⛔️               | ⛔️      |
+| Images                           | 👍      | ⛔️               | 👍      |
 | Precomps                         | 👍      | 👍               | 👍      |
 | Time Stretch                     | ❔      | ⛔️               | ❔      |
 | Time remap                       | 👍      | ⛔️[^dok]         | 👍      |

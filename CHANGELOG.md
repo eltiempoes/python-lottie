@@ -1,10 +1,11 @@
 ## Unreleased
- * Added support for precomposition on SVG / raster exporters
+ * Added support for precomposition on SVG exporter
  * SVG exporter improvements
  * Added TIFF importer/exporter
  * Implemented Masks on SVG export
  * Added WebP importer
  * Improved loading frames from raster files
+ * Added support for image layers on SVG exporter
 
 ## 0.5.0 - 2020-04-18
  * Animated WebP support
