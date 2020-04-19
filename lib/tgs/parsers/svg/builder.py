@@ -59,9 +59,11 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         return time
 
     def gen_id(self, prefix="id"):
-        #TODO should check if id_n already exists
-        self.idc += 1
-        id = "%s_%s" % (prefix, self.idc)
+        while True:
+            self.idc += 1
+            id = "%s_%s" % (prefix, self.idc)
+            if id not in self.ids:
+                break
         self.ids.add(id)
         return id
 
