@@ -285,8 +285,8 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Rounded Rectangle                | 👍      | 👍               | 👍      |
 | Polystar                         | 👍      | 👍[^unsuported]  | 👍      |
 | Group                            | 👍      | 👍               | 👍      |
-| Trim Path (individually)         | 👍      | 👍               | ⛔️      |
-| Trim Path (simultaneously)       | 👍      | 👍               | ⛔️      |
+| Trim Path (individually)         | 👍      | 👍               | 👍      |
+| Trim Path (simultaneously)       | 👍      | 👍               | 👍      |
 | **Fills**                        | **tgs** | **Telegram**     | **SVG** |
 | Color                            | 👍      | 👍               | 👍      |
 | Opacity                          | 👍      | 👍               | 👍      |

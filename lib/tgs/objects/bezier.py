@@ -261,8 +261,13 @@ class Bezier(TgsObject):
         \param t2   A value between 0 and 1, percentage along the length of the curve
         \returns Bezier object that correspond to the segment between \p t1 and \p t2
         """
+        if self.closed and self.vertices and self.vertices[-1] != self.vertices[0]:
+            copy = self.clone()
+            copy.add_point(self.vertices[0])
+            copy.closed = False
+            return copy.segment(t1, t2)
         if t1 > t2:
-            [t1, t2] = [t2, t1]
+            t1, t2 = t2, t1
         elif t1 == t2:
             seg = Bezier()
             p = self.point_at(t1)

@@ -29,10 +29,10 @@ star.outer_radius.value = 50
 star.position.value = Point(256, 256)
 
 trim = layer.add_shape(objects.Trim())
-trim.angle.add_keyframe(0, 0)
-trim.angle.add_keyframe(last_frame, 360)
+#trim.angle.add_keyframe(0, 0)
+#trim.angle.add_keyframe(last_frame, 360)
 trim.start.value = 0
-trim.end.value = 50
+trim.end.value = 25
 
 stroke = group.add_shape(objects.Stroke(Color(1, 1, 0), 10))
 
