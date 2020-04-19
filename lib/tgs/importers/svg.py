@@ -1,5 +1,5 @@
 from .base import importer
-from ..parsers.baseporter import ExtraOption ## fff
+from ..parsers.baseporter import ExtraOption
 from ..parsers.svg import parse_svg_file
 from ..parsers.tgs import open_maybe_gzipped
 

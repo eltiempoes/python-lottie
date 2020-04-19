@@ -14,7 +14,9 @@ def _get_parser(caller, basename, path, formats, verbosity):
     if basename is None:
         basename = os.path.splitext(os.path.basename(caller.__file__))[0]
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        conflict_handler='resolve'
+    )
 
     parser.add_argument(
         "--name",

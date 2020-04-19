@@ -167,6 +167,7 @@ Here is a list of features of the tgs python framework:
 | PNG       | 👍        | 👍[^frames]       | 👍        | ⛔️                |
 | Synfig    | 👍        | 👍                | 👍        | 👍                |
 | WebP      | 👍        | 👍                | 👍        | 👍                |
+| dotLottie | 👍        | 👍                | 👍        | 👍                |
 | PostScript| ⛔️        | ⛔️                | 👍        | ⛔️                |
 | PDF       | ⛔️        | ⛔️                | 👍        | ⛔️                |
 | BMP       | 👍        | 👍[^frames]       | ⛔️        | ⛔️                |

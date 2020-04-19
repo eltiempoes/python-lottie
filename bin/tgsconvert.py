@@ -30,6 +30,7 @@ Supported formats:
 parser = argparse.ArgumentParser(
     description=desc,
     formatter_class=argparse.RawDescriptionHelpFormatter,
+    conflict_handler='resolve'
 )
 
 group = importers.set_options(parser)

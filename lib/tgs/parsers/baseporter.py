@@ -1,5 +1,6 @@
 import os
 import pkgutil
+import argparse
 import importlib
 
 
@@ -21,7 +22,7 @@ class Baseporter:
     def argparse_options(self, ns):
         o_options = {}
         for opt in self.extra_options:
-            o_options[opt.name] = getattr(ns, opt.nsvar(self.slug))
+            o_options[opt.dest] = getattr(ns, opt.nsvar(self.slug))
         for opt in self.generic_options:
             o_options[opt] = getattr(ns, opt)
         return o_options
@@ -33,13 +34,14 @@ class ExtraOption:
         self.kwargs = kwargs
         if "action" not in self.kwargs:
             self.kwargs["metavar"] = self.name
+        self.dest = kwargs.pop("dest", name)
 
     def add_argument(self, slug, parser):
-        opt = "--%s-%s" % (slug, self.name.replace("_", "-"))
+        opt = "--%s-%s" % (slug, self.dest.replace("_", "-"))
         parser.add_argument(opt, **self.kwargs)
 
     def nsvar(self, slug):
-        return "%s_%s" % (slug, self.name)
+        return "%s_%s" % (slug, self.dest)
 
 
 def _add_options(parser, ie, object):
