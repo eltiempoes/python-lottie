@@ -118,7 +118,6 @@ class Chars(TgsObject):
 
 
 ## \ingroup Lottie
-## \ingroup LottieCheck
 class Precomp(Asset):
     _props = [
         TgsProp("id", "id", str, False),

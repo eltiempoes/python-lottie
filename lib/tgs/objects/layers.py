@@ -194,7 +194,6 @@ class ImageLayer(Layer):
 
 
 ## \ingroup Lottie
-## \ingroup LottieCheck
 class PreCompLayer(Layer):
     _props = [
         TgsProp("reference_id", "refId", str, False),
