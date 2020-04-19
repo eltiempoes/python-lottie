@@ -23,10 +23,11 @@ star.inner_radius.value = 40
 star.outer_radius.value = 100
 star.position.value = Point(256, 256)
 
-star = group.add_shape(objects.Star())
+star = objects.Star()
 star.inner_radius.value = 20
 star.outer_radius.value = 50
 star.position.value = Point(256, 256)
+group.add_shape(star)
 
 trim = layer.add_shape(objects.Trim())
 #trim.angle.add_keyframe(0, 0)

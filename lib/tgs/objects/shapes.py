@@ -308,7 +308,7 @@ class Star(Shape):
         r2 = self.outer_radius.get_value(time)
         rot = -(self.rotation.get_value(time)) * math.pi / 180 + math.pi
         p = self.points.get_value(time)
-        halfd = math.pi / p
+        halfd = -math.pi / p
 
         for i in range(int(p)):
             main_angle = rot + i * halfd * 2
