@@ -24,11 +24,11 @@ class TransformMatrix:
 
     def __getitem__(self, key):
         row, col = key
-        return self._mat[row*3+col]
+        return self._mat[row*4+col]
 
     def __setitem__(self, key, value):
         row, col = key
-        self._mat[row*3+col] = self.scalar(value)
+        self._mat[row*4+col] = self.scalar(value)
 
     @property
     def a(self):
@@ -40,19 +40,19 @@ class TransformMatrix:
 
     @property
     def b(self):
-        return self[1, 0]
+        return self[0, 1]
 
     @b.setter
     def b(self, v):
-        self[1, 0] = self.scalar(v)
+        self[0, 1] = self.scalar(v)
 
     @property
     def c(self):
-        return self[0, 1]
+        return self[1, 0]
 
     @c.setter
     def c(self, v):
-        self[0, 1] = self.scalar(v)
+        self[1, 0] = self.scalar(v)
 
     @property
     def d(self):
@@ -64,19 +64,19 @@ class TransformMatrix:
 
     @property
     def tx(self):
-        return self[0, 2]
+        return self[3, 0]
 
     @tx.setter
     def tx(self, v):
-        self[0, 2] = self.scalar(v)
+        self[3, 0] = self.scalar(v)
 
     @property
     def ty(self):
-        return self[1, 2]
+        return self[3, 1]
 
     @ty.setter
     def ty(self, v):
-        self[1, 2] = self.scalar(v)
+        self[3, 1] = self.scalar(v)
 
     def __str__(self):
         return str(self._mat)
@@ -105,39 +105,49 @@ class TransformMatrix:
         self *= m
         return self
 
+    def skew_from_axis(self, ax, angle):
+        self.rotate(angle)
+        m = TransformMatrix()
+        m.c = math.tan(ax)
+        self *= m
+        self.rotate(-angle)
+        return self
+
     def row(self, i):
-        return NVector(self[i, 0], self[i, 1], self[i, 2])
+        return NVector(self[i, 0], self[i, 1], self[i, 2], self[i, 3])
 
     def column(self, i):
-        return NVector(self[0, i], self[1, i], self[2, i])
+        return NVector(self[0, i], self[1, i], self[2, i], self[3, i])
 
     def to_identity(self):
         self._mat = [
-            1., 0., 0.,
-            0., 1., 0.,
-            0., 0., 1.,
+            1., 0., 0., 0.,
+            0., 1., 0., 0.,
+            0., 0., 1., 0.,
+            0., 0., 0., 1.,
         ]
 
     def apply(self, vector):
-        vector3 = NVector(vector.x, vector.y, 1)
+        vector3 = NVector(vector.x, vector.y, 0, 1)
         return NVector(
-            self.row(0).dot(vector3),
-            self.row(1).dot(vector3),
+            self.column(0).dot(vector3),
+            self.column(1).dot(vector3),
         )
 
     @classmethod
     def rotation(cls, radians):
         m = cls()
         m.a = math.cos(radians)
-        m.b = math.sin(radians)
-        m.c = -math.sin(radians)
+        m.b = -math.sin(radians)
+        m.c = math.sin(radians)
         m.d = math.cos(radians)
+
         return m
 
     def __mul__(self, other):
         m = TransformMatrix()
-        for row in range(3):
-            for col in range(3):
+        for row in range(4):
+            for col in range(4):
                 m[row, col] = self.row(row).dot(other.column(col))
         return m
 
@@ -169,14 +179,14 @@ class TransformMatrix:
         delta = a * d - b * c
         if a != 0 or b != 0:
             r = math.hypot(a, b)
-            dest_trans["angle"] = _sign(b) * math.acos(a/r)
+            dest_trans["angle"] = - _sign(b) * math.acos(a/r)
             sx = r
             sy = delta / r
             dest_trans["skew_axis"] = 0
             sm = 1
         else:
             r = math.hypot(c, d)
-            dest_trans["angle"] = math.pi / 2 - _sign(d) * math.acos(c / r)
+            dest_trans["angle"] = math.pi / 2 + _sign(d) * math.acos(c / r)
             sx = delta / r
             sy = r
             dest_trans["skew_axis"] = math.pi / 2
@@ -188,4 +198,9 @@ class TransformMatrix:
         dest_trans["skew_angle"] = skew
 
         return dest_trans
+
+    def to_css_2d(self):
+        return "matrix(%s, %s, %s, %s, %s, %s)" % (
+            self.a, self.b, self.c, self.d, self.tx, self.ty
+        )
 

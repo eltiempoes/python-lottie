@@ -6,6 +6,7 @@ from .handler import SvgHandler, NameMode
 from ... import objects
 from ...nvector import NVector
 from ...utils import restructure
+from ...utils.transform import TransformMatrix
 try:
     from ...utils import font
     has_font = True
@@ -174,7 +175,6 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             rect.attrib["height"] = str(lot.height)
             rect.attrib["fill"] = lot.color
 
-
         if not lot.name:
             g.attrib[self.qualified("inkscape", "label")] = lot.__class__.__name__
         if layer_builder.shapegroup:
@@ -232,37 +232,34 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
     def set_transform(self, dom, transform):
         trans = []
-        pos = self._get_value(transform.position)
+        mat = TransformMatrix()
+
         anchor = self._get_value(transform.anchor_point)
-        pos -= anchor
-        if pos[0] != 0 or pos[1] != 0:
-            trans.append("translate(%s, %s)" % (pos.components[0], pos.components[1]))
+        mat.translate(-anchor.x, -anchor.y)
 
         scale = self._get_value(transform.scale, NVector(100, 100))
-        if scale[0] != 100 or scale[1] != 100:
-            scale /= 100
-            trans.append("scale(%s, %s)" % (scale.components[0], scale.components[1]))
+        mat.scale(scale.x / 100, scale.y / 100)
 
-        rot = self._get_value(transform.rotation, 0)
-        if rot != 0:
-            trans.append("rotate(%s, %s, %s)" % (rot, anchor[0], anchor[1]))
+        skew = self._get_value(transform.skew, 0) * math.pi / 180
+        if skew != 0:
+            axis = self._get_value(transform.skew_axis, 0) * math.pi / 180
+            mat.skew_from_axis(-skew, axis)
+
+        rot = self._get_value(transform.rotation, 0) * math.pi / 180
+        if rot:
+            mat.rotate(-rot)
+
+        # TODO auto orient
+
+        pos = self._get_value(transform.position)
+        mat.translate(pos.x, pos.y)
+
+        dom.attrib["transform"] = mat.to_css_2d()
 
         if transform.opacity is not None:
             op = transform.opacity.get_value(self.time)
             if op != 100:
                 dom.attrib["opacity"] = str(op/100)
-
-        skew = self._get_value(transform.skew, 0)
-        if skew != 0:
-            axis = self._get_value(transform.skew_axis, 0) * math.pi / 180
-            skx = skew * math.cos(axis)
-            sky = skew * math.sin(axis)
-            # TODO looks like skew moves things around in svg
-            trans.append("skewX(%s)" % skx)
-            trans.append("skewY(%s)" % sky)
-
-        if trans:
-            dom.attrib["transform"] = " ".join(trans)
 
     def group_to_style(self, group):
         style = {}

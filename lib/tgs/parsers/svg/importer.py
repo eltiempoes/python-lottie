@@ -322,7 +322,7 @@ class SvgParser(SvgHandler):
             dest_trans.skew_axis.value = math.degrees(trans["skew_axis"])
             dest_trans.skew.value = -math.degrees(trans["skew_angle"])
             dest_trans.position.value += trans["translation"]
-            dest_trans.rotation.value += math.degrees(trans["angle"])
+            dest_trans.rotation.value -= math.degrees(trans["angle"])
             dest_trans.scale.value *= trans["scale"]
 
     def parse_style(self, element, parent_style):
