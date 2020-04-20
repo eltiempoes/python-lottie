@@ -7,6 +7,7 @@
  * Support solid color layers on SVG export
  * Partial support for trim paths on SVG export
  * Added support for dotLottie
+ * Fixed raster animation output of trimmed paths
 
 
 ## 0.5.1 - 2020-04-19

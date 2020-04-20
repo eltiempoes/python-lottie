@@ -6,6 +6,7 @@ import numpy
 from PIL import Image
 
 from .cairo import export_png
+from .gif import _log_frame
 from .base import exporter
 from ..parsers.baseporter import ExtraOption
 
@@ -13,8 +14,8 @@ from ..parsers.baseporter import ExtraOption
 ## \see http://www.fourcc.org/codecs.php
 formats4cc = {
     "avi": cv2.VideoWriter_fourcc(*"XVID"),
-    #"mp4": cv2.VideoWriter_fourcc(*'MP4V'),
-    "mp4": cv2.VideoWriter_fourcc(*'X264'),
+    "mp4": cv2.VideoWriter_fourcc(*'MP4V'),
+    #"mp4": cv2.VideoWriter_fourcc(*'X264'),
     "webm": cv2.VideoWriter_fourcc(*'VP80'),
 }
 
@@ -32,9 +33,11 @@ def export_video(animation, fp, format=None):
     video = cv2.VideoWriter(fp, fmt, animation.frame_rate, (animation.width, animation.height))
 
     for i in range(start, end+1):
+        _log_frame(format, i, end)
         file = io.BytesIO()
         export_png(animation, file, i)
         file.seek(0)
         video.write(cv2.cvtColor(numpy.array(Image.open(file)), cv2.COLOR_RGB2BGR))
 
+    _log_frame(format)
     video.release()
