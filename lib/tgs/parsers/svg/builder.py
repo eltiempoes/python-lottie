@@ -179,6 +179,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             g.attrib[self.qualified("inkscape", "label")] = lot.__class__.__name__
         if layer_builder.shapegroup:
             g.attrib["style"] = self.group_to_style(layer_builder.shapegroup)
+            self._split_stroke(layer_builder.shapegroup, g, dom_parent)
         if lot.hidden:
             g.attrib.setdefault("style", "")
             g.attrib["style"] += "display: none;"
@@ -261,18 +262,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             if op != 100:
                 dom.attrib["opacity"] = str(op/100)
 
-    def group_to_style(self, group):
+    def _get_group_stroke(self, group):
         style = {}
-        if group.fill:
-            style["fill-opacity"] = group.fill.opacity.get_value(self.time) / 100
-            if isinstance(group.fill, objects.GradientFill):
-                style["fill"] = "url(#%s)" % self.process_gradient(group.fill)
-            else:
-                style["fill"] = color_to_css(group.fill.color.get_value(self.time))
-
-            if group.fill.fill_rule:
-                style["fill-rule"] = "evenodd" if group.fill.fill_rule == objects.FillRule.EvenOdd else "nonzero"
-
         if group.stroke:
             if isinstance(group.stroke, objects.GradientStroke):
                 style["stroke"] = "url(#%s)" % self.process_gradient(group.stroke)
@@ -311,11 +302,51 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
                             last = 0
                         last_mode = dash.type
                 style["stroke-dasharray"] = " ".join(dasharray)
+        return style
 
+    def _style_to_css(self, style):
         return ";".join(map(
             lambda x: ":".join(map(str, x)),
             style.items()
         ))
+
+    def _split_stroke(self, group, fill_layer, out_parent):
+        if not group.stroke:# or group.stroke_above:
+            return
+
+        style = self._get_group_stroke(group)
+        if style.get("stroke-width", 0) <= 0 or style["stroke-opacity"] <= 0:
+            return
+
+        use = ElementTree.Element("use")
+        for i, e in enumerate(out_parent):
+            if e is fill_layer:
+                if group.stroke_above:
+                    i += 1
+                out_parent.insert(i, use)
+                break
+        else:
+            return
+
+        use.attrib[self.qualified("xlink", "href")] = "#" + fill_layer.attrib["id"]
+        use.attrib["style"] = self._style_to_css(style)
+
+    def group_to_style(self, group):
+        style = {}
+        if group.fill:
+            style["fill-opacity"] = group.fill.opacity.get_value(self.time) / 100
+            if isinstance(group.fill, objects.GradientFill):
+                style["fill"] = "url(#%s)" % self.process_gradient(group.fill)
+            else:
+                style["fill"] = color_to_css(group.fill.color.get_value(self.time))
+
+            if group.fill.fill_rule:
+                style["fill-rule"] = "evenodd" if group.fill.fill_rule == objects.FillRule.EvenOdd else "nonzero"
+
+        #if group.stroke_above:
+            #style.update(self._get_group_stroke(group))
+
+        return self._style_to_css(style)
 
     def process_gradient(self, gradient):
         spos = gradient.start_point.get_value(self.time)
@@ -365,11 +396,13 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             path = self.build_path(group.paths.paths, dom_parent)
             self.set_id(path, group.paths.paths[0], force=True)
             path.attrib["style"] = self.group_to_style(group)
+            self._split_stroke(group, path, dom_parent)
             self.set_transform(path, group.lottie.transform)
             return
 
         g = self.group_from_lottie(group.lottie, dom_parent, group.layer)
         g.attrib["style"] = self.group_to_style(group)
+        self._split_stroke(group, g, dom_parent)
         self.shapegroup_process_children(group, g)
         return g
 
@@ -377,6 +410,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         path = self.build_path(shape.paths, out_parent)
         self.set_id(path, shape.paths[0])
         path.attrib["style"] = self.group_to_style(shapegroup)
+        #self._split_stroke(shapegroup, path, out_parent)
         return path
 
     def _on_shape(self, shape, shapegroup, out_parent):
@@ -396,6 +430,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if "style" not in svgshape.attrib:
             svgshape.attrib["style"] = ""
         svgshape.attrib["style"] += self.group_to_style(shapegroup)
+        #self._split_stroke(shapegroup, svgshape, out_parent)
+
         if shape.hidden:
             svgshape.attrib["style"] += "display: none;"
         return svgshape

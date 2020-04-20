@@ -22,6 +22,7 @@ class RestructuredShapeGroup:
         self.stroke = None
         self.layer = False
         self.paths = None
+        self.stroke_above = False
 
     def empty(self):
         return not self.children
@@ -182,6 +183,8 @@ class AbstractBuilder:
         elif isinstance(shape, objects.BaseStroke):
             if not shape_group.stroke or shape_group.stroke.width.get_value(0) < shape.width.get_value(0):
                 shape_group.stroke = shape
+                if not shape_group.fill:
+                    shape_group.stroke_above = True
         elif isinstance(shape, (objects.Path)):
             if merge_paths:
                 if not shape_group.paths:

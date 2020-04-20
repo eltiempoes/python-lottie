@@ -1,6 +1,6 @@
 :loop
 /## Unreleased/n
-/##/{p;n;b yes;}
+/##/{p;n;b yes}
 n
 b loop
 : yes

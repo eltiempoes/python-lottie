@@ -35,7 +35,7 @@ rrect.position.value = Point(110, 220)
 rrect.rounded.value = 30
 
 fill = layer.add_shape(objects.Fill(Color(1, 1, 0)))
-stroke = layer.add_shape(objects.Stroke(Color(0, 0, 0), 5))
+stroke = layer.add_shape(objects.Stroke(Color(0, 0, 0), 25))
 
 
 script.script_main(an)
