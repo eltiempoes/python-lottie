@@ -12,11 +12,13 @@ sys.path.append(os.path.join(
 from tgs.utils.linediff import difflines
 from tgs.objects import Animation
 from tgs.parsers.tgs import parse_tgs
+from tgs import __version__
 
 
 parser = argparse.ArgumentParser(
     description="Shows a side-by-side diff of the human-readable rendition of two tgs / lottie files",
 )
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)
 parser.add_argument(
     "file1",
     help="Left file"

@@ -8,12 +8,14 @@ sys.path.append(os.path.join(
     "lib"
 ))
 from tgs.exporters.tgs_validator import TgsValidator, Severity
+from tgs import __version__
 
 
 parser = argparse.ArgumentParser(
     description="Checks a lottie or tgs file to see if it's compatible with telegram stickers",
     formatter_class=argparse.RawTextHelpFormatter
 )
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)
 parser.add_argument(
     "infile",
     help="Input file"

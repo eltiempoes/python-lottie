@@ -11,10 +11,12 @@ sys.path.append(os.path.join(
 from tgs.exporters import prettyprint, prettyprint_summary
 from tgs.objects import Animation
 from tgs.parsers.tgs import parse_tgs
+from tgs import __version__
 
 parser = argparse.ArgumentParser(
     description="Pretty prints a tgs / lottie file with more readable annotations (useful to debug / diff lottie files)"
 )
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)
 parser.add_argument(
     "infile",
     help="Input file"

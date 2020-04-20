@@ -11,6 +11,7 @@ sys.path.append(os.path.join(
 from tgs.exporters import exporters
 from tgs.importers import importers
 from tgs.utils.stripper import float_strip, heavy_strip
+from tgs import __version__
 
 
 desc = """Converts between multiple formats
@@ -32,6 +33,7 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter,
     conflict_handler='resolve'
 )
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)
 
 group = importers.set_options(parser)
 group.add_argument(

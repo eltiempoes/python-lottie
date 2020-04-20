@@ -9,10 +9,12 @@ sys.path.append(os.path.join(
     "lib"
 ))
 from tgs.utils.font import fonts
+from tgs import __version__
 
 parser = argparse.ArgumentParser(
     description="List available fonts",
 )
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)
 parser.add_argument(
     "fonts",
     default=[],

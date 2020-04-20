@@ -10,6 +10,7 @@ sys.path.append(os.path.join(
 ))
 from tgs.parsers.svg.importer import parse_color
 from tgs import NVector
+from tgs import __version__
 
 
 def _parse_color(color):
@@ -26,6 +27,7 @@ def _parse_color(color):
 parser = argparse.ArgumentParser(
     description="Converts a CSS color into a normalized array, as used in lottie"
 )
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)
 parser.add_argument(
     "color",
     help="Color to inspect (in one of the CSS color formats)"
