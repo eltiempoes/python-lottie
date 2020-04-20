@@ -417,7 +417,7 @@ class Path(Shape):
         return bb
 
     def to_bezier(self):
-        return self
+        return self.clone()
 
 
 ## \ingroup Lottie

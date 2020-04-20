@@ -83,6 +83,7 @@ def export_webp(animation, fp, dpi=96, lossless=False, quality=80, method=0):
         export_png(animation, file, i, dpi)
         file.seek(0)
         frames.append(Image.open(file))
+
     _log_frame("WebP")
 
     sys.stderr.write("WebP Writing to file...\n")

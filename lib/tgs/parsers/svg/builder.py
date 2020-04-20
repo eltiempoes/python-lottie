@@ -560,7 +560,6 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             shape = callback(shape, *args)
             return self._on_shape(shape, shapegroup, out_parent)
 
-
     def _custom_object_supported(self, shape):
         if has_font and isinstance(shape, font.FontShape):
             return True
