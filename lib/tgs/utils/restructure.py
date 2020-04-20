@@ -177,9 +177,11 @@ class AbstractBuilder:
 
     def restructure_shapegroup(self, shape, shape_group, merge_paths):
         if isinstance(shape, (objects.Fill, objects.GradientFill)):
-            shape_group.fill = shape
+            if not shape_group.fill:
+                shape_group.fill = shape
         elif isinstance(shape, objects.BaseStroke):
-            shape_group.stroke = shape
+            if not shape_group.stroke or shape_group.stroke.width.get_value(0) < shape.width.get_value(0):
+                shape_group.stroke = shape
         elif isinstance(shape, (objects.Path)):
             if merge_paths:
                 if not shape_group.paths:
