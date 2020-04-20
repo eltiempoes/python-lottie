@@ -41,7 +41,6 @@ setuptools.setup(
     scripts=[
         os.path.join("bin", "raster2tgs.py"),
         os.path.join("bin", "raster_palette.py"),
-        os.path.join("bin", "tgs2svg.py"),
         os.path.join("bin", "tgscat.py"),
         os.path.join("bin", "tgscheck.py"),
         os.path.join("bin", "tgsconvert.py"),
