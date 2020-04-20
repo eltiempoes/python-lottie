@@ -1,4 +1,6 @@
 ## Unreleased
+
+## 0.5.2 - 2020-04-20
  * SVG exporter improvements
  * SVG importer improvements
  * Synfig importer improvements
