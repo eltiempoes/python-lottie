@@ -1,15 +1,14 @@
 PYTHON=python3
 SETUP=setup.py
-PACKAGE_NAME:=$(shell $(PYTHON) $(SETUP) --name)
 VERSION_SUF:=$(shell git rev-parse --short HEAD)
 VERSION_BASE:=$(shell cat version)
-VERSION=$(VERSION_BASE)$(if $(VERSION_SUF),+dev$(VERSION_SUF),)
+VERSION:=$(VERSION_BASE)$(if $(VERSION_SUF),+dev$(VERSION_SUF),)
 SRC:=$(shell find lib -type f -name '*.py') lib/tgs/version.py
 OBJECTS:=$(shell find lib/tgs/objects -type f -name '*.py')
 SCRIPTS:=$(wildcard bin/*.py)
 VERSION_IN_FILE=$(shell cat .version_full)
-
 $(if $(VERSION_IN_FILE) != $(VERSION), $(shell echo '$(VERSION)' > .version_full))
+PACKAGE_NAME:=$(shell $(PYTHON) $(SETUP) --name)
 
 .SUFFIXES:
 
