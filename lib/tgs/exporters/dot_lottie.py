@@ -5,6 +5,7 @@ import zipfile
 from .base import exporter
 from ..parsers.baseporter import ExtraOption
 from ..parsers.tgs import parse_tgs
+from tgs import __version__
 
 
 @exporter("dotLottie Archive", ["lottie"], [
@@ -31,7 +32,7 @@ def export_dotlottie(animation, file, id=None, append=False, revision=None, auth
                     files[name] = zf.read(name)
     else:
         meta = {
-            "generator": "Python tgs",
+            "generator": "Python tgs " + __version__,
             "version": 1.0,
             "revision": 1,
             "author": "",

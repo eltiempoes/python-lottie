@@ -11,3 +11,5 @@ docs/dox/scripts.dox
 docs/dox/downloads.dox
 docs/Doxyfile
 twemoji/
+.version_full
+lib/tgs/version.py

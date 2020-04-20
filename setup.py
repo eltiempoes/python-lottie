@@ -22,9 +22,13 @@ def find_packages(root="tgs"):
     return paks
 
 
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".version_full")) as vf:
+    version = vf.read().strip()
+
+
 setuptools.setup(
     name="tgs",
-    version=os.environ.get("VERSION_OVERRIDE", "0.5.1"),
+    version=version,
     author="Mattia Basaglia",
     author_email="mattia.basaglia@gmail.com",
     description="A framework to work with lottie / tgs files",
@@ -72,4 +76,5 @@ setuptools.setup(
         "Coverage": "http://mattia.basaglia.gitlab.io/tgs/coverage/",
         "Downloads": "http://mattia.basaglia.gitlab.io/tgs/downloads.html",
     },
+    data_files=[(".", [".version_full"])],
 )

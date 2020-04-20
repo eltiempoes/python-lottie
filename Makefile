@@ -2,15 +2,18 @@ PYTHON=python3
 SETUP=setup.py
 PACKAGE_NAME:=$(shell $(PYTHON) $(SETUP) --name)
 VERSION_SUF:=$(shell git rev-parse --short HEAD)
-VERSION_BASE:=$(shell $(PYTHON) $(SETUP) --version)
+VERSION_BASE:=$(shell cat version)
 VERSION=$(VERSION_BASE)$(if $(VERSION_SUF),+dev$(VERSION_SUF),)
-SRC:=$(shell find lib -type f -name '*.py')
+SRC:=$(shell find lib -type f -name '*.py') lib/tgs/version.py
 OBJECTS:=$(shell find lib/tgs/objects -type f -name '*.py')
 SCRIPTS:=$(wildcard bin/*.py)
+VERSION_IN_FILE=$(shell cat .version_full)
+
+$(if $(VERSION_IN_FILE) != $(VERSION), $(shell echo '$(VERSION)' > .version_full))
 
 .SUFFIXES:
 
-.PHONY: all upload docs clean_pyc pypi blender inkscape release dist distclean synfig
+.PHONY: all upload docs clean_pyc pypi blender inkscape release dist distclean synfig version next_version
 
 
 all: pypi blender inkscape synfig
@@ -24,7 +27,7 @@ release:
 	make all upload VERSION_SUF=
 
 dist/$(PACKAGE_NAME)-$(VERSION).tar.gz: $(SETUP) $(SRC) $(SCRIPTS)
-	VERSION_OVERRIDE="$(VERSION)" $(PYTHON) $(SETUP) sdist
+	$(PYTHON) $(SETUP) sdist
 
 upload: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
 	$(PYTHON) -m twine upload dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
@@ -68,7 +71,7 @@ clean_pyc:
 dist/$(PACKAGE_NAME)-blender-$(VERSION).zip: $(wildcard addons/blender/tgs_io/*.py) $(SRC)
 	cd addons/blender && find -L -name '*.py' | xargs zip --filesync ../../$@
 
-dist/$(PACKAGE_NAME)-synfig-$(VERSION).zip: $(wildcard addons/synfig/*)
+dist/$(PACKAGE_NAME)-synfig-$(VERSION).zip: $(wildcard addons/synfig/*) $(SRC)
 	cd addons/synfig && find -L -type f -not -name "*.pyc" | xargs zip --filesync ../../$@
 
 pypi: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
@@ -78,3 +81,13 @@ inkscape: dist/$(PACKAGE_NAME)-inkscape-$(VERSION).zip
 blender: dist/$(PACKAGE_NAME)-blender-$(VERSION).zip
 
 synfig: dist/$(PACKAGE_NAME)-synfig-$(VERSION).zip
+
+lib/tgs/version.py: .version_full
+	echo '__version__ = "$(VERSION)"' > $@
+
+version: lib/tgs/version.py
+	$(PYTHON) $(SETUP) --version
+
+next_version: VERSION = $(shell echo 'x = "$(VERSION_BASE)".split("."); x[-1] = str(int(x[-1]) + 1); print(".".join(x))' | python)
+next_version:
+	echo $(VERSION) >version
