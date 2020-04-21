@@ -195,6 +195,12 @@ class OffsetKeyframe(Keyframe):
             return end
         if ratio == 0:
             return self.start
+        if self.in_tan and self.out_tan:
+            bezier = Bezier()
+            bezier.add_point(self.start, NVector(0, 0), self.out_tan)
+            bezier.add_point(self.end, self.in_tan, NVector(0, 0))
+            return bezier.point_at(ratio)
+
         lerpv = self.lerp_factor(ratio)
         return self.start.lerp(end, lerpv)
 
