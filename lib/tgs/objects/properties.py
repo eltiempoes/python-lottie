@@ -198,11 +198,21 @@ class OffsetKeyframe(Keyframe):
         if self.in_tan and self.out_tan:
             bezier = Bezier()
             bezier.add_point(self.start, NVector(0, 0), self.out_tan)
-            bezier.add_point(self.end, self.in_tan, NVector(0, 0))
+            bezier.add_point(end, self.in_tan, NVector(0, 0))
             return bezier.point_at(ratio)
 
         lerpv = self.lerp_factor(ratio)
         return self.start.lerp(end, lerpv)
+
+    def interpolated_tangent_angle(self, ratio, next_start=None):
+        end = next_start if self.end is None else self.end
+        if end is None or not self.in_tan or not self.out_tan:
+            return 0
+
+        bezier = Bezier()
+        bezier.add_point(self.start, NVector(0, 0), self.out_tan)
+        bezier.add_point(end, self.in_tan, NVector(0, 0))
+        return bezier.tangent_angle_at(ratio)
 
     def __repr__(self):
         return "<%s.%s %s %s%s>" % (
@@ -259,8 +269,8 @@ class AnimatableMixin:
             value,
             None,
             interp,
-             *args,
-             **kwargs
+            *args,
+            **kwargs
         ))
 
     def get_value(self, time=0):
@@ -273,6 +283,9 @@ class AnimatableMixin:
         if not self.keyframes:
             return None
 
+        return self._get_value_helper(time)[0]
+
+    def _get_value_helper(self, time):
         val = self.keyframes[0].start
         for i in range(len(self.keyframes)):
             k = self.keyframes[i]
@@ -282,15 +295,18 @@ class AnimatableMixin:
 
                 kp = self.keyframes[i-1] if i > 0 else None
                 if kp:
+                    t = (time - kp.time) / (k.time - kp.time)
                     end = kp.end
                     if end is None:
                         end = val
                     if end is not None:
-                        val = kp.interpolated_value((time - kp.time) / (k.time - kp.time), end)
-                break
+                        val = kp.interpolated_value(t, end)
+                    return val, end, kp, t
+                return val, None, None, None
             if k.end is not None:
                 val = k.end
-        return val
+        return val, None, None, None
+
 
     def to_dict(self):
         d = super().to_dict()
@@ -320,6 +336,23 @@ class MultiDimensional(AnimatableMixin, TgsObject):
         TgsProp("animated", "a", PseudoBool, False),
         TgsProp("keyframes", "k", OffsetKeyframe, True, lambda l: l.get("a", None)),
     ]
+
+    def get_tangent_angle(self, time=0):
+        """!
+        @brief Returns the value tangent angle of the property at the given frame/time
+        """
+        if not self.keyframes or len(self.keyframes) < 2:
+            return 0
+
+        val, end, kp, t = self._get_value_helper(time)
+        if kp:
+            return kp.interpolated_tangent_angle(t, end)
+
+        if self.keyframes[0].time >= time:
+            end = self.keyframes[0].end if self.keyframes[0].end is not None else self.keyframes[1].start
+            return self.keyframes[0].interpolated_tangent_angle(0, end)
+
+        return 0
 
 
 ## \ingroup Lottie

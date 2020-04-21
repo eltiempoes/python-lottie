@@ -304,7 +304,7 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Opacity                          | 👍      | 👍               | 👍      |
 | Parenting                        | 👍      | 👍               | 👍      |
 | Skew                             | 👍      | ⛔️[^bug]         | 👍      |
-| Auto Orient                      | 👍      | 👍[^unsuported]  | ⛔️      |
+| Auto Orient                      | 👍      | 👍[^unsuported]  | 👍      |
 | **Interpolation**                | **tgs** | **Telegram**     | **SVG** |
 | Linear Interpolation             | 👍      | 👍               | 👍      |
 | Bezier Interpolation             | 👍      | 👍               | 👍      |

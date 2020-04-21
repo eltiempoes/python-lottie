@@ -231,7 +231,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             return v.clone()
         return v
 
-    def set_transform(self, dom, transform):
+    def set_transform(self, dom, transform, auto_orient=False):
         trans = []
         mat = TransformMatrix()
 
@@ -250,7 +250,10 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if rot:
             mat.rotate(-rot)
 
-        # TODO auto orient
+        if auto_orient:
+            if transform.position and transform.position.animated:
+                ao_angle = transform.position.get_tangent_angle(self.time)
+                mat.rotate(-ao_angle)
 
         pos = self._get_value(transform.position)
         mat.translate(pos.x, pos.y)
@@ -394,7 +397,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if layer and self.name_mode == NameMode.Inkscape:
             g.attrib[self.qualified("inkscape", "groupmode")] = "layer"
         self.set_id(g, lottie, self.qualified("inkscape", "label"), force=True)
-        self.set_transform(g, lottie.transform)
+        self.set_transform(g, lottie.transform, lottie.auto_orient if layer else False)
         return g
 
     def _on_shapegroup(self, group, dom_parent):
