@@ -4,8 +4,8 @@
 n
 b loop
 : yes
+p
 n
 /##/q
-p
 b yes
 

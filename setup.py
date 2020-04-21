@@ -23,7 +23,7 @@ def find_packages(root="tgs"):
 
 
 vfdir = os.path.dirname(os.path.abspath(__file__))
-if not os.path.isfile(vfdir):
+if not os.path.isfile(os.path.join(vfdir, ".version_full")):
     with open(os.path.join(vfdir, "version")) as vf:
         version = vf.read().strip() + "+src"
     with open(os.path.join(vfdir, ".version_full"), "w") as vf:
