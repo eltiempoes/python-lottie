@@ -91,7 +91,9 @@ class TransformMatrix:
         self *= m
         return self
 
-    def translate(self, x, y):
+    def translate(self, x, y=None):
+        if y is None:
+            x, y = x
         m = TransformMatrix()
         m.tx = x
         m.ty = y
@@ -105,12 +107,12 @@ class TransformMatrix:
         self *= m
         return self
 
-    def skew_from_axis(self, ax, angle):
-        self.rotate(angle)
+    def skew_from_axis(self, skew, axis):
+        self.rotate(axis)
         m = TransformMatrix()
-        m.c = math.tan(ax)
+        m.c = math.tan(skew)
         self *= m
-        self.rotate(-angle)
+        self.rotate(-axis)
         return self
 
     def row(self, i):
@@ -183,18 +185,16 @@ class TransformMatrix:
             sx = r
             sy = delta / r
             dest_trans["skew_axis"] = 0
-            sm = 1
         else:
             r = math.hypot(c, d)
             dest_trans["angle"] = math.pi / 2 + _sign(d) * math.acos(c / r)
             sx = delta / r
             sy = r
             dest_trans["skew_axis"] = math.pi / 2
-            sm = -1
 
         dest_trans["scale"] = NVector(sx, sy)
 
-        skew = sm * math.atan2(a * c + b * d, r * r)
+        skew = math.atan2((a * c + b * d), r * r)
         dest_trans["skew_angle"] = skew
 
         return dest_trans

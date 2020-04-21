@@ -215,7 +215,11 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             img = ElementTree.SubElement(self.defs, "image")
             xmlid = self.set_clean_id(img, asset.id)
             self._assets[asset.id] = xmlid
-            img.attrib[self.qualified("xlink", "href")] = asset.image or asset.image_path
+            if asset.embedded:
+                url = asset.image
+            else:
+                url = asset.image_path + asset.image
+            img.attrib[self.qualified("xlink", "href")] = url
             img.attrib["width"] = str(asset.width)
             img.attrib["height"] = str(asset.height)
 

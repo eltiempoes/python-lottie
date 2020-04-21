@@ -170,8 +170,8 @@ class OffsetKeyframe(Keyframe):
     _props = [
         TgsProp("start", "s", NVector, False),
         TgsProp("end", "e", NVector, False),
-        TgsProp("in_tan", "ti", NVector, True),
-        TgsProp("out_tan", "to", NVector, True),
+        TgsProp("in_tan", "ti", NVector, False),
+        TgsProp("out_tan", "to", NVector, False),
     ]
 
     def __init__(self, time=0, start=None, end=None, easing_function=None, in_tan=None, out_tan=None):

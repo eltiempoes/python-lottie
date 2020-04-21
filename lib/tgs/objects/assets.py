@@ -52,6 +52,7 @@ class Image(Asset):
         from io import BytesIO
         import base64
         import os
+        self.image_path = ""
         im = Image.open(file)
         self.width, self.height = im.size
         output = BytesIO()
