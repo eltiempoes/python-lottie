@@ -337,12 +337,12 @@ class Ellipse(Shape):
     ## %Shape type.
     type = "el"
 
-    def __init__(self):
+    def __init__(self, position=None, size=None):
         Shape.__init__(self)
         ## Ellipse's position
-        self.position = MultiDimensional(NVector(0, 0))
+        self.position = MultiDimensional(position or NVector(0, 0))
         ## Ellipse's size
-        self.size = MultiDimensional(NVector(0, 0))
+        self.size = MultiDimensional(size or NVector(0, 0))
 
     def bounding_box(self, time=0):
         pos = self.position.get_value(time)

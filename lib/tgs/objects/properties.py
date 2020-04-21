@@ -174,16 +174,16 @@ class OffsetKeyframe(Keyframe):
         TgsProp("out_tan", "to", NVector, True),
     ]
 
-    def __init__(self, time=0, start=None, end=None, easing_function=None):
+    def __init__(self, time=0, start=None, end=None, easing_function=None, in_tan=None, out_tan=None):
         Keyframe.__init__(self, time, easing_function)
         ## Start value of keyframe segment.
         self.start = start
         ## End value of keyframe segment.
         self.end = end
         ## In Spatial Tangent. Only for spatial properties. (for bezier smoothing on position)
-        self.in_tan = None
+        self.in_tan = in_tan
         ## Out Spatial Tangent. Only for spatial properties. (for bezier smoothing on position)
-        self.out_tan = None
+        self.out_tan = out_tan
 
     def interpolated_value(self, ratio, next_start=None):
         end = next_start if self.end is None else self.end
@@ -229,7 +229,7 @@ class AnimatableMixin:
         self.animated = False
         self.keyframes = None
 
-    def add_keyframe(self, time, value, interp=easing.Linear()):
+    def add_keyframe(self, time, value, interp=easing.Linear(), *args, **kwargs):
         """!
         \param time     The time this keyframe appears in
         \param value    The value the property should have at \p time
@@ -252,7 +252,9 @@ class AnimatableMixin:
             time,
             value,
             None,
-            interp
+            interp,
+             *args,
+             **kwargs
         ))
 
     def get_value(self, time=0):
