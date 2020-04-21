@@ -560,43 +560,45 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
     def build_trim_path(self, shape, child, shapegroup, out_parent):
         start = shape.start.get_value(self.time) / 100
         end = shape.end.get_value(self.time) / 100
+        offset = shape.offset.get_value(self.time) / 360
 
-        return self._modifier_process(child, shapegroup, out_parent, self._build_trim_path_shape, start, end)
+        return self._modifier_process(child, shapegroup, out_parent, self._build_trim_path_shape, start+offset, end+offset)
 
     def _modifier_process(self, child, shapegroup, out_parent, callback, *args):
-        self._modifier_process_child(child, shapegroup, out_parent, callback, *args)
-        return self.shapegroup_process_child(child, shapegroup, out_parent)
+        children = self._modifier_process_child(child, shapegroup, out_parent, callback, *args)
+        return [self.shapegroup_process_child(ch, shapegroup, out_parent) for ch in children]
 
     def _build_trim_path_shape(self, shape, start, end):
         if not isinstance(shape, objects.Shape):
-            return shape
+            return [shape]
         path = shape.to_bezier()
-        bezier = path.shape.get_value(self.time).segment(start, end)
-        path.shape.clear_animation(bezier)
-        return path
+        bezier = path.shape.get_value(self.time)
+        if end > 1:
+            bez1 = bezier.segment(start, 1)
+            bez2 = bezier.segment(0, end-1)
+            return [objects.Path(bez1), objects.Path(bez2)]
+        else:
+            seg = bezier.segment(start, end)
+            return [objects.Path(seg)]
 
     def _modifier_process_children(self, shapegroup, out_parent, callback, *args):
         children = []
         for shape in shapegroup.children:
-            children.append(self._modifier_process_child(shape, shapegroup, out_parent, callback, *args))
+            children.extend(self._modifier_process_child(shape, shapegroup, out_parent, callback, *args))
         shapegroup.children = children
 
     def _modifier_process_child(self, shape, shapegroup, out_parent, callback, *args):
         if isinstance(shape, restructure.RestructuredShapeGroup):
             self._modifier_process_children(shape, out_parent, callback, *args)
-            #return self._on_shapegroup(shape, out_parent)
+            return [shape]
         elif isinstance(shape, restructure.RestructuredPathMerger):
-            shape.paths = [
-                callback(p, *args)
-                for p in shape.paths
-            ]
-            #return self._on_merged_path(shape, shapegroup, out_parent)
-        #elif isinstance(shape, restructure.RestructuredModifier):
-            #return self._on_shape_modifier(shape, shapegroup, out_parent)
+            paths = []
+            for p in shape.paths:
+                paths.extend(callback(p, *args))
+            shape.paths = paths
+            return [shape]
         else:
-            shape = callback(shape, *args)
-            #return self._on_shape(shape, shapegroup, out_parent)
-        return shape
+            return callback(shape, *args)
 
     def _custom_object_supported(self, shape):
         if has_font and isinstance(shape, font.FontShape):

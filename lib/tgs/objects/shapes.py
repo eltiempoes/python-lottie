@@ -717,7 +717,7 @@ class Trim(Modifier):
     _props = [
         TgsProp("start", "s", Value, False),
         TgsProp("end", "e", Value, False),
-        TgsProp("angle", "o", Value, False),
+        TgsProp("offset", "o", Value, False),
         TgsProp("m", "m", int, False),
     ]
     ## %Shape type.
@@ -729,8 +729,8 @@ class Trim(Modifier):
         self.start = Value(0)
         ## End of the segment, as a percentage
         self.end = Value(100)
-        ## Angle where to start
-        self.angle = Value(0)
+        ## start/end offset, as an angle (0, 360)
+        self.offset = Value(0)
         ## \todo?
         self.m = None
 

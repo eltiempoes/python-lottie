@@ -224,7 +224,16 @@ class Bezier(TgsObject):
         return i, split1, split2
 
     def _split_segment(self, t, cub):
-        quad = self._solve_bezier_step(t, cub)
+        if len(cub) == 2:
+            k = self._solve_bezier_step(t, cub)[0]
+            split1 = [cub[0], NVector(0, 0), NVector(0, 0), k]
+            split2 = [k, NVector(0, 0), NVector(0, 0), cub[-1]]
+            return split1, split2
+
+        if len(cub) == 3:
+            quad = cub
+        else:
+            quad = self._solve_bezier_step(t, cub)
         lin = self._solve_bezier_step(t, quad)
         k = self._solve_bezier_step(t, lin)[0]
         split1 = [cub[0], quad[0]-cub[0], lin[0]-k, k]
@@ -343,10 +352,10 @@ class Bezier(TgsObject):
         v2 = self.vertices[i+1].clone()
         points = [v1]
         t1 = self.out_tangents[i].clone()
-        if optimize or t1.length != 0:
+        if not optimize or t1.length != 0:
             points.append(t1+v1)
         t2 = self.in_tangents[i+1].clone()
-        if optimize or t1.length != 0:
+        if not optimize or t1.length != 0:
             points.append(t2+v2)
         points.append(v2)
         return points
