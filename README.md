@@ -19,14 +19,6 @@ Scripts
 
   Shows a side-by-side diff of the human-readable rendition of two tgs / lottie files
 
-* `bin/tgs2svg.py`
-
-  Extracts a frame as SVG from a lottie/tgs file, has a couple more options than `bin/tgsconvert.py`
-
-* `bin/raster2tgs.py`
-
-  Converts a sequence of raster images into a lottie/tgs file, has a couple more options than `bin/tgsconvert.py`
-
 * `bin/raster_palette.py`
 
   Shows the palette of a raster image, to use with `bin/raster2tgs.py`

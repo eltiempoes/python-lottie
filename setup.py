@@ -44,7 +44,6 @@ setuptools.setup(
     license="GNU Affero General Public License v3 or later (AGPLv3+)",
     packages=find_packages(),
     scripts=[
-        os.path.join("bin", "raster2tgs.py"),
         os.path.join("bin", "raster_palette.py"),
         os.path.join("bin", "tgscat.py"),
         os.path.join("bin", "tgscheck.py"),
