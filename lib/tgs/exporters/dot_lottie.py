@@ -6,6 +6,7 @@ from .base import exporter
 from ..parsers.baseporter import ExtraOption
 from ..parsers.tgs import parse_tgs
 from tgs import __version__
+from ..objects import assets
 
 
 @exporter("dotLottie Archive", ["lottie"], [
@@ -16,9 +17,10 @@ from tgs import __version__
     ExtraOption("speed", help="Playback speed", type=float, default=1),
     ExtraOption("theme_color", help="Theme color", type=str, default="#ffffff"),
     ExtraOption("no_loop", help="Disable Looping", action="store_false", dest="loop"),
+    ExtraOption("no_pack", help="Don't auto-pack images", action="store_false", dest="pack_images"),
 ], slug="dotlottie")
 def export_dotlottie(animation, file, id=None, append=False, revision=None, author=None,
-                     speed=1.0, theme_color="#ffffff", loop=True):
+                     speed=1.0, theme_color="#ffffff", loop=True, pack_images=True):
 
     files = {}
 
@@ -59,6 +61,25 @@ def export_dotlottie(animation, file, id=None, append=False, revision=None, auth
         "themeColor": theme_color,
         "loop": loop,
     })
+
+    if pack_images and animation.assets:
+        animation = animation.clone()
+        image_no = 0
+        for asset in animation.assets:
+            if isinstance(asset, assets.Image):
+                ext, data = asset.image_data()
+                if not ext:
+                    continue
+                pathname = "images/"
+                while True:
+                    basename = "image_%s.%s" % (image_no, ext)
+                    image_no += 1
+                    if pathname+basename not in files:
+                        break
+                files[pathname+basename] = data
+                asset.image_path = pathname
+                asset.image = basename
+                asset.embedded = False
 
     files["manifest.json"] = json.dumps(meta)
     files["animations/%s.json" % id] = json.dumps(animation.to_dict())

@@ -1,3 +1,6 @@
+import os
+import re
+import base64
 import mimetypes
 from .base import TgsObject, TgsProp, PseudoBool, Index
 from .layers import Layer
@@ -61,8 +64,6 @@ class Image(Asset):
         """
         from PIL import Image
         from io import BytesIO
-        import base64
-        import os
         self.image_path = ""
         im = Image.open(file)
         if format is None:
@@ -83,6 +84,25 @@ class Image(Asset):
             else:
                 self.id = "image_%s" % id(self)
         return self
+
+    def image_data(self):
+        """
+        Returns a tuple (format, data) with the contents of the image
+
+        `format` is a string like "png", and `data` is just raw binary data.
+
+        If it's impossible to fetch this info, returns (None, None)
+        """
+        if self.embedded:
+            m = re.match("data:[^/]+/([^;,]+);base64,(.*)", self.image)
+            if m:
+                return m.group(1), base64.b64decode(m.group(2))
+            return None, None
+        path = self.image_path + self.image
+        if os.path.isfile(path):
+            with open(path, "rb") as imgfile:
+                return os.path.splitext(path)[1][1:], imgfile.read()
+        return None, None
 
 
 ## \ingroup Lottie
