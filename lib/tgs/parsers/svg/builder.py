@@ -507,9 +507,6 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             svgshape = self.build_trim_path(shape.lottie, shape.child, shapegroup, out_parent)
         else:
             return self.shapegroup_process_child(shape.child, shapegroup, out_parent)
-        if svgshape:
-            self.set_id(svgshape, shape, force=True)
-            svgshape.attrib["style"] = self.group_to_style(shapegroup)
         return svgshape
 
     def build_repeater(self, shape, child, shapegroup, out_parent):
@@ -550,7 +547,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
     def build_rouded_corners(self, shape, child, shapegroup, out_parent):
         round_amount = shape.radius.get_value(self.time)
-        return self._modifier_process_child(child, shapegroup, out_parent, self._build_rouded_corners_shape, round_amount)
+        return self._modifier_process(child, shapegroup, out_parent, self._build_rouded_corners_shape, round_amount)
 
     def _build_rouded_corners_shape(self, shape, round_amount):
         if not isinstance(shape, objects.Shape):
@@ -564,7 +561,11 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         start = shape.start.get_value(self.time) / 100
         end = shape.end.get_value(self.time) / 100
 
-        return self._modifier_process_child(child, shapegroup, out_parent, self._build_trim_path_shape, start, end)
+        return self._modifier_process(child, shapegroup, out_parent, self._build_trim_path_shape, start, end)
+
+    def _modifier_process(self, child, shapegroup, out_parent, callback, *args):
+        self._modifier_process_child(child, shapegroup, out_parent, callback, *args)
+        return self.shapegroup_process_child(child, shapegroup, out_parent)
 
     def _build_trim_path_shape(self, shape, start, end):
         if not isinstance(shape, objects.Shape):
@@ -583,18 +584,19 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
     def _modifier_process_child(self, shape, shapegroup, out_parent, callback, *args):
         if isinstance(shape, restructure.RestructuredShapeGroup):
             self._modifier_process_children(shape, out_parent, callback, *args)
-            return self._on_shapegroup(shape, out_parent)
+            #return self._on_shapegroup(shape, out_parent)
         elif isinstance(shape, restructure.RestructuredPathMerger):
             shape.paths = [
                 callback(p, *args)
                 for p in shape.paths
             ]
-            return self._on_merged_path(shape, shapegroup, out_parent)
+            #return self._on_merged_path(shape, shapegroup, out_parent)
         #elif isinstance(shape, restructure.RestructuredModifier):
             #return self._on_shape_modifier(shape, shapegroup, out_parent)
         else:
             shape = callback(shape, *args)
-            return self._on_shape(shape, shapegroup, out_parent)
+            #return self._on_shape(shape, shapegroup, out_parent)
+        return shape
 
     def _custom_object_supported(self, shape):
         if has_font and isinstance(shape, font.FontShape):
