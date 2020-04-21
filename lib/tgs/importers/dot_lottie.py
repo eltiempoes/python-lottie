@@ -1,4 +1,3 @@
-import os
 import json
 import zipfile
 
@@ -29,5 +28,5 @@ def import_dotlottie(file, id=None):
                         fname = asset.image_path + asset.image
                         if fname in zf.namelist():
                             with zf.open(fname) as imgfile:
-                                asset.load(imgfile, os.path.splitext(fname)[1][1:])
+                                asset.load(imgfile)
             return an

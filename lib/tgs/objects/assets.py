@@ -1,3 +1,4 @@
+import mimetypes
 from .base import TgsObject, TgsProp, PseudoBool, Index
 from .layers import Layer
 from .shapes import ShapeElement
@@ -28,6 +29,16 @@ class Image(Asset):
         TgsProp("image_path", "u", str, False),
         TgsProp("embedded", "e", PseudoBool, False),
     ]
+
+    @staticmethod
+    def guess_mime(file):
+        if isinstance(file, str):
+            filename = file
+        elif hasattr(file, "name"):
+            filename = file.name
+        else:
+            return "application/octet-stream"
+        return mimetypes.guess_type(filename)
 
     def __init__(self, id=""):
         ## Image Height

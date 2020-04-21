@@ -560,7 +560,7 @@ class GradientFill(ShapeElement, Gradient):
     """
     _props = [
         TgsProp("opacity", "o", Value, False),
-        TgsProp("r", "r", int, False),
+        TgsProp("fill_rule", "r", FillRule, False),
     ]
     ## %Shape type.
     type = "gf"
@@ -570,8 +570,8 @@ class GradientFill(ShapeElement, Gradient):
         Gradient.__init__(self, colors)
         ## Fill Opacity
         self.opacity = Value(100)
-        ## \todo figure out?
-        self.r = None
+        ## Fill rule
+        self.fill_rule = None
 
 
 ## \ingroup Lottie
