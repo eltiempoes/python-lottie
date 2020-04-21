@@ -318,18 +318,27 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if style.get("stroke-width", 0) <= 0 or style["stroke-opacity"] <= 0:
             return
 
+        g = ElementTree.Element("g")
+        self.set_clean_id(g, "stroke")
         use = ElementTree.Element("use")
         for i, e in enumerate(out_parent):
             if e is fill_layer:
-                if group.stroke_above:
-                    i += 1
-                out_parent.insert(i, use)
+                out_parent.insert(i, g)
+                out_parent.remove(fill_layer)
                 break
         else:
             return
 
+        if group.stroke_above:
+            g.append(fill_layer)
+            g.append(use)
+        else:
+            g.append(use)
+            g.append(fill_layer)
+
         use.attrib[self.qualified("xlink", "href")] = "#" + fill_layer.attrib["id"]
         use.attrib["style"] = self._style_to_css(style)
+        return g
 
     def group_to_style(self, group):
         style = {}
@@ -396,15 +405,13 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             path = self.build_path(group.paths.paths, dom_parent)
             self.set_id(path, group.paths.paths[0], force=True)
             path.attrib["style"] = self.group_to_style(group)
-            self._split_stroke(group, path, dom_parent)
             self.set_transform(path, group.lottie.transform)
-            return
+            return self._split_stroke(group, path, dom_parent)
 
         g = self.group_from_lottie(group.lottie, dom_parent, group.layer)
         g.attrib["style"] = self.group_to_style(group)
-        self._split_stroke(group, g, dom_parent)
         self.shapegroup_process_children(group, g)
-        return g
+        return self._split_stroke(group, g, dom_parent)
 
     def _on_merged_path(self, shape, shapegroup, out_parent):
         path = self.build_path(shape.paths, out_parent)
@@ -521,6 +528,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         out_parent.remove(original)
 
         g = ElementTree.SubElement(out_parent, "g")
+        self.set_clean_id(g, "repeater")
 
         for copy in range(ncopies-1):
             use = ElementTree.SubElement(g, "use")
@@ -551,18 +559,20 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
     def _build_rouded_corners_shape(self, shape, round_amount):
         if not isinstance(shape, objects.Shape):
-            return shape
+            return [shape]
         path = sh.to_bezier()
         bezier = path.shape.get_value(self.time).rounded(round_amount)
         path.shape.clear_animation(bezier)
-        return path
+        return [path]
 
     def build_trim_path(self, shape, child, shapegroup, out_parent):
-        start = shape.start.get_value(self.time) / 100
-        end = shape.end.get_value(self.time) / 100
-        offset = shape.offset.get_value(self.time) / 360
+        start = max(0, min(1, shape.start.get_value(self.time) / 100))
+        end = max(0, min(1, shape.end.get_value(self.time) / 100))
+        offset = shape.offset.get_value(self.time) / 360 % 1
 
-        return self._modifier_process(child, shapegroup, out_parent, self._build_trim_path_shape, start+offset, end+offset)
+        return self._modifier_process(
+            child, shapegroup, out_parent, self._build_trim_path_shape, start+offset, end+offset
+        )
 
     def _modifier_process(self, child, shapegroup, out_parent, callback, *args):
         children = self._modifier_process_child(child, shapegroup, out_parent, callback, *args)
