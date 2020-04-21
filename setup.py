@@ -26,6 +26,8 @@ vfdir = os.path.dirname(os.path.abspath(__file__))
 if not os.path.isfile(vfdir):
     with open(os.path.join(vfdir, "version")) as vf:
         version = vf.read().strip() + "+src"
+    with open(os.path.join(vfdir, ".version_full", "w")) as vf:
+        vf.write(version)
 else:
     with open(os.path.join(vfdir, ".version_full")) as vf:
         version = vf.read().strip()
