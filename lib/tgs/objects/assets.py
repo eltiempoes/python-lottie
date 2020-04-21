@@ -54,7 +54,7 @@ class Image(Asset):
         ## Image data is stored as a data: url
         self.embedded = False
 
-    def load(self, file, format="png"):
+    def load(self, file, format=None):
         """!
         \param file     Filename or file object to load
         \param format   Format to store the image data as
@@ -65,6 +65,8 @@ class Image(Asset):
         import os
         self.image_path = ""
         im = Image.open(file)
+        if format is None:
+            format = im.format.lower()
         self.width, self.height = im.size
         output = BytesIO()
         im.save(output, format=format)
