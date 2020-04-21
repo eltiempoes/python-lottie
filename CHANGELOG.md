@@ -1,6 +1,7 @@
-## Unreleased
+## 0.5.3 - 2020-04-21
  * Improved input options for tgsconvert
  * SVG exporter improvements
+ * Fixed some packaging issue
 
 ## 0.5.2 - 2020-04-20
  * SVG exporter improvements
