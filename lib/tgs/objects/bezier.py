@@ -465,3 +465,15 @@ class Bezier(TgsObject):
                 out.append(v.lerp(o, t))
 
         return bez
+
+    def rough_length(self):
+        if len(self.vertices) < 2:
+            return 0
+        last = self.vertices[0]
+        length = 0
+        for v in self.vertices[1:]:
+            length += (v-last).length
+            last = v
+        if self.closed:
+            length += (last-self.vertices[0]).length
+        return length

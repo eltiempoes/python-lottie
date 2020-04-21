@@ -570,17 +570,65 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         end = max(0, min(1, shape.end.get_value(self.time) / 100))
         offset = shape.offset.get_value(self.time) / 360 % 1
 
+        multidata = {}
+        length = 0
+
+        if shape.multiple == objects.TrimMultipleShapes.Individually:
+            for visishape in reversed(list(self._modifier_foreach_shape(child))):
+                bez = visishape.to_bezier().shape.get_value(self.time)
+                local_length = bez.rough_length()
+                multidata[visishape] = (bez, length, local_length)
+                length += local_length
+
         return self._modifier_process(
-            child, shapegroup, out_parent, self._build_trim_path_shape, start+offset, end+offset
+            child, shapegroup, out_parent, self._build_trim_path_shape,
+            start+offset, end+offset, multidata, length
         )
+
+    def _modifier_foreach_shape(self, shape):
+        if isinstance(shape, restructure.RestructuredShapeGroup):
+            for child in shape.children:
+                for chsh in self._modifier_foreach_shape(child):
+                    yield chsh
+        elif isinstance(shape, restructure.RestructuredPathMerger):
+            for p in shape.paths:
+                yield p
+        elif isinstance(shape, objects.Shape):
+            yield shape
 
     def _modifier_process(self, child, shapegroup, out_parent, callback, *args):
         children = self._modifier_process_child(child, shapegroup, out_parent, callback, *args)
         return [self.shapegroup_process_child(ch, shapegroup, out_parent) for ch in children]
 
-    def _build_trim_path_shape(self, shape, start, end):
+    def _trim_offlocal(self, t, local_start, local_length, total_length):
+        gt = (t * total_length - local_start) / local_length
+        return max(0, min(1, gt))
+
+    def _build_trim_path_shape(self, shape, start, end, multidata, total_length):
         if not isinstance(shape, objects.Shape):
             return [shape]
+
+        if multidata:
+            bezier, local_start, local_length = multidata[shape]
+            if end > 1:
+                lstart = self._trim_offlocal(start, local_start, local_length, total_length)
+                lend = self._trim_offlocal(end-1, local_start, local_length, total_length)
+                out = []
+                if lstart < 1:
+                    out.append(objects.Path(bezier.segment(lstart, 1)))
+                if lend > 0:
+                    out.append(objects.Path(bezier.segment(0, lend)))
+                return out
+
+            lstart = self._trim_offlocal(start, local_start, local_length, total_length)
+            lend = self._trim_offlocal(end, local_start, local_length, total_length)
+            if lend <= 0 or lstart >= 1:
+                return []
+            if lstart <= 0 and lend >= 1:
+                return [objects.Path(bezier)]
+            seg = bezier.segment(lstart, lend)
+            return [objects.Path(seg)]
+
         path = shape.to_bezier()
         bezier = path.shape.get_value(self.time)
         if end > 1:
@@ -606,7 +654,9 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             for p in shape.paths:
                 paths.extend(callback(p, *args))
             shape.paths = paths
-            return [shape]
+            if paths:
+                return [shape]
+            return []
         else:
             return callback(shape, *args)
 

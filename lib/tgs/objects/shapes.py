@@ -709,7 +709,13 @@ class Modifier(ShapeElement):
 
 
 ## \ingroup Lottie
-## \todo Implement SVG/SIF Export
+class TrimMultipleShapes(TgsEnum):
+    Simultaneously = 1
+    Individually = 2
+
+
+## \ingroup Lottie
+## \todo Implement SIF Export
 class Trim(Modifier):
     """
     Trims shapes into a segment
@@ -718,7 +724,7 @@ class Trim(Modifier):
         TgsProp("start", "s", Value, False),
         TgsProp("end", "e", Value, False),
         TgsProp("offset", "o", Value, False),
-        TgsProp("m", "m", int, False),
+        TgsProp("multiple", "m", TrimMultipleShapes, False),
     ]
     ## %Shape type.
     type = "tm"
@@ -732,7 +738,7 @@ class Trim(Modifier):
         ## start/end offset, as an angle (0, 360)
         self.offset = Value(0)
         ## \todo?
-        self.m = None
+        self.multiple = None
 
 
 ## \ingroup Lottie
