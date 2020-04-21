@@ -37,8 +37,8 @@ class ExtraOption:
         self.dest = kwargs.pop("dest", name)
 
     def add_argument(self, slug, parser):
-        opt = "--%s-%s" % (slug, self.dest.replace("_", "-"))
-        parser.add_argument(opt, **self.kwargs)
+        opt = "--%s-%s" % (slug, self.name.replace("_", "-"))
+        parser.add_argument(opt, dest=self.nsvar(slug), **self.kwargs)
 
     def nsvar(self, slug):
         return "%s_%s" % (slug, self.dest)
