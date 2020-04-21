@@ -1,6 +1,7 @@
 ## Unreleased
  * Implemented rendering of smooth spatial keyframes
  * Implemented rendering of auto-orient layers
+ * Automatically embed images from dotLottie archives
 
 ## 0.5.3 - 2020-04-21
  * Improved input options for tgsconvert
