@@ -22,8 +22,13 @@ def find_packages(root="tgs"):
     return paks
 
 
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".version_full")) as vf:
-    version = vf.read().strip()
+vfdir = os.path.dirname(os.path.abspath(__file__))
+if not os.path.isfile(vfdir):
+    with open(os.path.join(vfdir, "version")) as vf:
+        version = vf.read().strip() + "+src"
+else:
+    with open(os.path.join(vfdir, ".version_full")) as vf:
+        version = vf.read().strip()
 
 
 setuptools.setup(

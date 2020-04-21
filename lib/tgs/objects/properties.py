@@ -170,8 +170,8 @@ class OffsetKeyframe(Keyframe):
     _props = [
         TgsProp("start", "s", NVector, False),
         TgsProp("end", "e", NVector, False),
-        TgsProp("in_tan", "ti", float, True),
-        TgsProp("out_tan", "to", float, True),
+        TgsProp("in_tan", "ti", NVector, True),
+        TgsProp("out_tan", "to", NVector, True),
     ]
 
     def __init__(self, time=0, start=None, end=None, easing_function=None):
@@ -180,9 +180,9 @@ class OffsetKeyframe(Keyframe):
         self.start = start
         ## End value of keyframe segment.
         self.end = end
-        ## In Spatial Tangent. Only for spatial properties. Array of numbers.
+        ## In Spatial Tangent. Only for spatial properties. (for bezier smoothing on position)
         self.in_tan = None
-        ## Out Spatial Tangent. Only for spatial properties. Array of numbers.
+        ## Out Spatial Tangent. Only for spatial properties. (for bezier smoothing on position)
         self.out_tan = None
 
     def interpolated_value(self, ratio, next_start=None):

@@ -43,7 +43,7 @@ trim.offset.add_keyframe(0, 0)
 trim.offset.add_keyframe(last_frame, 360)
 trim.start.value = 0
 trim.end.value = 50
-trim.multiple = objects.TrimMultipleShapes.Individually
+#trim.multiple = objects.TrimMultipleShapes.Individually
 
 stroke = group.add_shape(objects.Stroke(Color(1, 1, 0), 10))
 
