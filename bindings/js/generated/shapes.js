@@ -1,4 +1,4 @@
-import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';
+import { value_to_lottie, value_from_lottie, LottieObject } from '../base.js';
 import { ShapeProperty, Value, MultiDimensional, GradientColors } from './properties.js';
 import { Transform } from './helpers.js';
 
@@ -108,7 +108,7 @@ export class RepeaterTransform extends Transform
 /*!
     Base class for all elements of ShapeLayer and Group
 */
-export class ShapeElement extends TgsObject
+export class ShapeElement extends LottieObject
 {
     hidden;
     name;
@@ -420,7 +420,7 @@ export class Fill extends ShapeElement
 
 /*
 */
-export class Gradient extends TgsObject
+export class Gradient extends LottieObject
 {
     start_point;
     end_point;
@@ -1066,7 +1066,7 @@ export class Star extends Shape
 
 /*
 */
-export class StrokeDash extends TgsObject
+export class StrokeDash extends LottieObject
 {
     name;
     type;
@@ -1107,7 +1107,7 @@ export class StrokeDash extends TgsObject
 
 /*
 */
-export class BaseStroke extends TgsObject
+export class BaseStroke extends LottieObject
 {
     line_cap;
     line_join;

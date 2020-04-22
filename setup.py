@@ -9,7 +9,7 @@ with open(os.path.join(here, "README.md"), "r", encoding='utf8') as fh:
     long_description = fh.read()
 
 
-def find_packages(root="tgs"):
+def find_packages(root="lottie"):
     absroot = os.path.join(here, "lib", root)
     paks = [root]
     for sub in os.listdir(absroot):
@@ -34,31 +34,31 @@ else:
 
 
 setuptools.setup(
-    name="tgs",
+    name="lottie",
     version=version,
     author="Mattia Basaglia",
     author_email="mattia.basaglia@gmail.com",
-    description="A framework to work with lottie / tgs files",
+    description="A framework to work with lottie files and telegram animated stickers (tgs)",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://gitlab.com/mattia.basaglia/tgs/",
+    url="https://gitlab.com/mattia.basaglia/python-lottie/",
     package_dir={'': 'lib'},
     license="GNU Affero General Public License v3 or later (AGPLv3+)",
     packages=find_packages(),
     scripts=[
         os.path.join("bin", "raster_palette.py"),
-        os.path.join("bin", "tgscat.py"),
-        os.path.join("bin", "tgscheck.py"),
-        os.path.join("bin", "tgsconvert.py"),
-        os.path.join("bin", "tgsdiff.py"),
-        os.path.join("bin", "tgsfonts.py"),
-        os.path.join("bin", "tgsprintcolor.py"),
+        os.path.join("bin", "lottie_cat.py"),
+        os.path.join("bin", "lottie_check.py"),
+        os.path.join("bin", "lottie_convert.py"),
+        os.path.join("bin", "lottie_diff.py"),
+        os.path.join("bin", "lottie_fonts.py"),
+        os.path.join("bin", "lottie_printcolor.py"),
     ],
     keywords="telegram stickers tgs lottie svg animation",
     # https://pypi.org/classifiers/
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
         "Operating System :: OS Independent",
         "Topic :: Multimedia :: Graphics",
@@ -75,11 +75,11 @@ setuptools.setup(
     },
     test_suite="test",
     project_urls={
-        "Code": "https://gitlab.com/mattia.basaglia/tgs/",
-        "Documentation": "http://mattia.basaglia.gitlab.io/tgs/index.html",
+        "Code": "https://gitlab.com/mattia.basaglia/python-lottie/",
+        "Documentation": "http://mattia.basaglia.gitlab.io/python-lottie/index.html",
         "Chat": "https://t.me/tgs_stuff",
-        "Coverage": "http://mattia.basaglia.gitlab.io/tgs/coverage/",
-        "Downloads": "http://mattia.basaglia.gitlab.io/tgs/downloads.html",
+        "Coverage": "http://mattia.basaglia.gitlab.io/python-lottie/coverage/",
+        "Downloads": "http://mattia.basaglia.gitlab.io/python-lottie/downloads.html",
     },
     data_files=[(".", [".version_full"])],
 )

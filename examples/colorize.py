@@ -6,10 +6,10 @@ sys.path.insert(0, os.path.join(
     "lib"
 ))
 import math
-from tgs.utils import script
-from tgs import objects
-from tgs.parsers.svg import parse_svg_file
-from tgs.utils.color import ManagedColor
+from lottie.utils import script
+from lottie import objects
+from lottie.parsers.svg import parse_svg_file
+from lottie.utils.color import ManagedColor
 
 last_frame = 60
 an = parse_svg_file(os.path.join(

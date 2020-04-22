@@ -7,8 +7,8 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "lib"
 ))
-import tgs.objects
-from tgs.objects.base import TgsEnum, TgsObject, PseudoList
+import lottie.objects
+from lottie.objects.base import LottieEnum, LottieObject, PseudoList
 
 
 def title(word, char="-"):
@@ -38,16 +38,16 @@ def extract_type(prop):
     return name
 
 
-for _, modname, _ in pkgutil.iter_modules(tgs.objects.__path__):
+for _, modname, _ in pkgutil.iter_modules(lottie.objects.__path__):
     if modname == "base":
         continue
 
-    module = importlib.import_module("tgs.objects." + modname)
+    module = importlib.import_module("lottie.objects." + modname)
     title(modname, "=")
 
     for clsname, cls in inspect.getmembers(module):
         if inspect.isclass(cls):
-            if issubclass(cls, TgsObject) and cls != TgsObject:
+            if issubclass(cls, LottieObject) and cls != LottieObject:
                 title(clsname)
                 for prop in cls._props:
                     lowtitle(prop.lottie)
@@ -55,7 +55,7 @@ for _, modname, _ in pkgutil.iter_modules(tgs.objects.__path__):
                     list_item("Type: " + extract_type(prop))
                     print("")
                 print("\n")
-            elif issubclass(cls, TgsEnum) and cls != TgsEnum:
+            elif issubclass(cls, LottieEnum) and cls != LottieEnum:
                 title(clsname)
                 for name, val in cls.__members__.items():
                     list_item("%s = %s" % (val.value, name))

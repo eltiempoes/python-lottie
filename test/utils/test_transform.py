@@ -1,6 +1,6 @@
 import math
 from .. import base
-from tgs.utils.transform import TransformMatrix, NVector
+from lottie.utils.transform import TransformMatrix, NVector
 
 
 class TestTransform(base.TestCase):

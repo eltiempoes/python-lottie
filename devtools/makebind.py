@@ -10,10 +10,10 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-import tgs.objects
-from tgs.objects.base import TgsEnum, TgsObject, PseudoList, Tgs, PseudoBool
-from tgs.objects.properties import Value, MultiDimensional
-from tgs import NVector
+import lottie.objects
+from lottie.objects.base import LottieEnum, LottieObject, PseudoList, LottieBase, PseudoBool
+from lottie.objects.properties import Value, MultiDimensional
+from lottie import NVector
 
 
 class LanguageBind:
@@ -155,7 +155,7 @@ class LanguageBind:
     def convert_value(self, value):
         if value is None:
             return self._on_value_null()
-        if isinstance(value, TgsEnum):
+        if isinstance(value, LottieEnum):
             return self._on_value_enum(value)
         if isinstance(value, bool):
             return self._on_value_bool(value)
@@ -167,7 +167,7 @@ class LanguageBind:
             return self._on_value_list(value)
         if isinstance(value, (Value, MultiDimensional)):
             return self._on_value_object(value, [self.convert_value(value.value)])
-        if isinstance(value, TgsObject):
+        if isinstance(value, LottieObject):
             return self._on_value_object(value, [])
         if isinstance(value, NVector):
             return self._on_value_nvector(value)
@@ -188,7 +188,7 @@ class JsBind(LanguageBind):
     def _on_module_start(self, name):
         self.all[name] = []
         self.all_current = self.all[name]
-        self.wl("import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';")
+        self.wl("import { value_to_lottie, value_from_lottie, LottieObject } from '../base.js';")
 
     def _on_module_dependencies(self, depdict):
         for module, values in depdict.items():
@@ -223,7 +223,7 @@ class JsBind(LanguageBind):
         self.wl("{", 1)
         self.wl("super();", 2)
 
-        if issubclass(self.current_class, tgs.objects.Layer) or issubclass(self.current_class, tgs.objects.ShapeElement):
+        if issubclass(self.current_class, lottie.objects.Layer) or issubclass(self.current_class, lottie.objects.ShapeElement):
             if self.current_class.type:
                 self.wl("this.type = %r;" % self.current_class.type, 2)
                 skip.add("type")
@@ -375,7 +375,7 @@ class PhpBind(LanguageBind):
         self.wl("}", 1)
 
     def _on_enum_open(self, name, docs):
-        self._on_class_open(name, docs, [TgsEnum])
+        self._on_class_open(name, docs, [LottieEnum])
 
     def _on_enum_value(self, name, value):
         self.wl("const %s = %s;" % (name, value), 1)
@@ -410,7 +410,7 @@ class ClassWrapper:
             self._apply_dep(base)
 
     def _apply_dep(self, dep):
-        if not isinstance(dep, type) or not issubclass(dep, Tgs):
+        if not isinstance(dep, type) or not issubclass(dep, LottieBase):
             return
         if dep.__module__ != self.cls.__module__:
             self.external_deps.add(dep)
@@ -478,19 +478,19 @@ bind = binds[ns.language](ns.output)
 
 bind.global_start()
 
-for _, modname, _ in pkgutil.iter_modules(tgs.objects.__path__):
+for _, modname, _ in pkgutil.iter_modules(lottie.objects.__path__):
     if modname == "base":
         continue
 
-    full_modname = "tgs.objects." + modname
+    full_modname = "lottie.objects." + modname
     module = importlib.import_module(full_modname)
 
     bind.module_start(modname)
     classes = []
 
     for clsname, cls in inspect.getmembers(module):
-        if inspect.isclass(cls) and issubclass(cls, Tgs) and cls.__module__ == full_modname:
-            if issubclass(cls, TgsEnum):
+        if inspect.isclass(cls) and issubclass(cls, LottieBase) and cls.__module__ == full_modname:
+            if issubclass(cls, LottieEnum):
                 classes.append(EnumWrapper(cls))
             else:
                 classes.append(ObjectWrapper(cls))

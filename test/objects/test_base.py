@@ -1,29 +1,29 @@
 from unittest import mock
 from ..base import TestCase
-from tgs.objects import base
-from tgs import NVector
-from tgs.objects.shapes import Rect
+from lottie.objects import base
+from lottie import NVector
+from lottie.objects.shapes import Rect
 
 
-class TestEnum(base.TgsEnum):
+class TestEnum(base.LottieEnum):
     Foo = 1
     Bar = 2
 
 
-class TestTgs(TestCase):
+class TestLottieBase(TestCase):
     def test_unimplemented(self):
-        tgs = base.Tgs()
-        self.assertRaises(NotImplementedError, tgs.to_dict)
-        self.assertRaises(NotImplementedError, tgs.load, {})
+        lottie = base.LottieBase()
+        self.assertRaises(NotImplementedError, lottie.to_dict)
+        self.assertRaises(NotImplementedError, lottie.load, {})
 
     def test_enum(self):
-        self.assertIsInstance(TestEnum.Foo, base.Tgs)
+        self.assertIsInstance(TestEnum.Foo, base.LottieBase)
         self.assertIsInstance(TestEnum.Foo.to_dict(), int)
         self.assertEqual(TestEnum.Foo.to_dict(), 1)
         self.assertEqual(TestEnum.load(2), TestEnum.Bar)
 
 
-class TestTgsConverter(TestCase):
+class TestLottieValueConverter(TestCase):
     def test_p2l(self):
         self.assertIsInstance(base.PseudoBool.py_to_lottie(True), int)
         self.assertEqual(base.PseudoBool.py_to_lottie(True), 1)
@@ -36,26 +36,26 @@ class TestTgsConverter(TestCase):
         self.assertEqual(base.PseudoBool.__name__, base.PseudoBool.name)
 
 
-class TestTgsProp(TestCase):
+class TestLottieProp(TestCase):
     def test_get(self):
-        prop = base.TgsProp("foo", "f")
+        prop = base.LottieProp("foo", "f")
         obj = mock.MagicMock()
         self.assertEqual(obj.foo, prop.get(obj))
 
     def test_set(self):
-        prop = base.TgsProp("foo", "f")
+        prop = base.LottieProp("foo", "f")
         obj = mock.MagicMock()
         prop.set(obj, 123)
         self.assertEqual(obj.foo, 123)
 
-    def test_load_scalar_tgs(self):
-        prop = base.TgsProp("foo", "f", TestEnum)
+    def test_load_scalar_lottie(self):
+        prop = base.LottieProp("foo", "f", TestEnum)
         v = prop._load_scalar(1)
         self.assertIsInstance(v, TestEnum)
         self.assertEqual(v, TestEnum.Foo)
 
     def test_load_scalar_type_same(self):
-        prop = base.TgsProp("foo", "f", mock.MagicMock)
+        prop = base.LottieProp("foo", "f", mock.MagicMock)
         sv = mock.MagicMock()
         v = prop._load_scalar(sv)
         self.assertIsInstance(v, mock.MagicMock)
@@ -63,25 +63,25 @@ class TestTgsProp(TestCase):
         self.assertIs(v, sv)
 
     def test_load_scalar_type_convert(self):
-        prop = base.TgsProp("foo", "f", float)
+        prop = base.LottieProp("foo", "f", float)
         v = prop._load_scalar(1)
         self.assertIsInstance(v, float)
         self.assertEqual(v, 1.0)
 
     def test_load_scalar_converter(self):
-        prop = base.TgsProp("foo", "f", base.PseudoBool)
+        prop = base.LottieProp("foo", "f", base.PseudoBool)
         v = prop._load_scalar(1)
         self.assertIsInstance(v, bool)
         self.assertEqual(v, True)
 
     def test_load_scalar_nvector(self):
-        prop = base.TgsProp("foo", "f", NVector)
+        prop = base.LottieProp("foo", "f", NVector)
         v = prop._load_scalar([1,2,3])
         self.assertIsInstance(v, NVector)
         self.assertEqual(v, NVector(1, 2, 3))
 
     def test_load_nolist(self):
-        prop = base.TgsProp("foo", "f", mock.MagicMock)
+        prop = base.LottieProp("foo", "f", mock.MagicMock)
         sv = mock.MagicMock()
         v = prop.load(sv)
         self.assertIsInstance(v, mock.MagicMock)
@@ -89,7 +89,7 @@ class TestTgsProp(TestCase):
         self.assertIs(v, sv)
 
     def test_load_pseudolist_scalar(self):
-        prop = base.TgsProp("foo", "f", mock.MagicMock, base.PseudoList)
+        prop = base.LottieProp("foo", "f", mock.MagicMock, base.PseudoList)
         sv = mock.MagicMock()
         v = prop.load(sv)
         self.assertIsInstance(v, mock.MagicMock)
@@ -97,7 +97,7 @@ class TestTgsProp(TestCase):
         self.assertIs(v, sv)
 
     def test_load_pseudolist_list(self):
-        prop = base.TgsProp("foo", "f", mock.MagicMock, base.PseudoList)
+        prop = base.LottieProp("foo", "f", mock.MagicMock, base.PseudoList)
         sv = mock.MagicMock()
         v = prop.load([sv])
         self.assertIsInstance(v, mock.MagicMock)
@@ -105,64 +105,64 @@ class TestTgsProp(TestCase):
         self.assertIs(v, sv)
 
     def test_load_list(self):
-        prop = base.TgsProp("foo", "f", mock.MagicMock, True)
+        prop = base.LottieProp("foo", "f", mock.MagicMock, True)
         sv = [mock.MagicMock(), mock.MagicMock(), mock.MagicMock()]
         v = prop.load(sv)
         self.assertIsInstance(v, list)
         self.assertEqual(v, sv)
 
-    def test_basic_to_dict_tgs(self):
-        prop = base.TgsProp("foo", "f", TestEnum)
+    def test_basic_to_dict_enum(self):
+        prop = base.LottieProp("foo", "f", TestEnum)
         v = prop._basic_to_dict(TestEnum.Foo)
         self.assertIsInstance(v, int)
         self.assertEqual(v, 1)
 
     def test_basic_to_dict_nvector(self):
-        prop = base.TgsProp("foo", "f", NVector)
+        prop = base.LottieProp("foo", "f", NVector)
         v = prop._basic_to_dict(NVector(1, 2, 3))
         self.assertIsInstance(v, list)
         self.assertEqual(v, [1, 2, 3])
 
     def test_basic_to_dict_list(self):
-        prop = base.TgsProp("foo", "f", TestEnum)
+        prop = base.LottieProp("foo", "f", TestEnum)
         v = prop._basic_to_dict([TestEnum.Foo, TestEnum.Bar])
         self.assertIsInstance(v, list)
         self.assertEqual(v, [1, 2])
 
     def test_basic_to_dict_simple(self):
-        prop = base.TgsProp("foo", "f", int)
+        prop = base.LottieProp("foo", "f", int)
         v = prop._basic_to_dict(2)
         self.assertIsInstance(v, int)
         self.assertEqual(v, 2)
 
     def test_basic_to_dict_float_int(self):
-        prop = base.TgsProp("foo", "f", float)
+        prop = base.LottieProp("foo", "f", float)
         v = prop._basic_to_dict(2.0)
         self.assertIsInstance(v, int)
         self.assertEqual(v, 2)
 
     # TODO test stripper
     #def test_basic_to_dict_float_round(self):
-        #prop = base.TgsProp("foo", "f", float)
+        #prop = base.LottieProp("foo", "f", float)
         #v = prop._basic_to_dict(0.3333333)
         #self.assertIsInstance(v, float)
         #self.assertEqual(v, 0.333)
 
     def test_basic_to_dict_unknown(self):
-        prop = base.TgsProp("foo", "f", mock.MagicMock)
+        prop = base.LottieProp("foo", "f", mock.MagicMock)
         self.assertRaises(Exception, prop._basic_to_dict, mock.MagicMock)
 
     def test_repr(self):
-        prop = base.TgsProp("foo", "bar")
+        prop = base.LottieProp("foo", "bar")
         self.assertIn("foo", repr(prop))
         self.assertIn("bar", repr(prop))
 
 
-class MockObject(base.TgsObject):
+class MockObject(base.LottieObject):
     _props = [
-        base.TgsProp("foo", "f", None, True),
-        base.TgsProp("bar", "b"),
-        base.TgsProp("name", "nm", str),
+        base.LottieProp("foo", "f", None, True),
+        base.LottieProp("bar", "b"),
+        base.LottieProp("name", "nm", str),
     ]
 
     def __init__(self, foo=None, bar=None, name=None):
@@ -176,11 +176,11 @@ MockObject._props[0].type = MockObject
 
 class Derived(MockObject):
     _props = [
-        base.TgsProp("awoo", "ft", int)
+        base.LottieProp("awoo", "ft", int)
     ]
 
 
-class TestTgsObject(TestCase):
+class TestLottieObject(TestCase):
     def test_to_dict(self):
         obj = MockObject([MockObject([], 456)], 123)
         self.assertDictEqual(obj.to_dict(), {"f": [{"f": [], "b": 456}], "b": 123})
@@ -210,13 +210,13 @@ class TestTgsObject(TestCase):
         self.assertDictEqual(obj.to_dict(), {"f": [], "b": 123, "ft": 621})
 
 
-class MyTgs(base.CustomObject):
-    wrapped_tgs = Rect
+class MyLottie(base.CustomObject):
+    wrapped_lottie = Rect
     _props = [
-        base.TgsProp("p1", "p1", NVector),
-        base.TgsProp("p2", "p2", NVector),
+        base.LottieProp("p1", "p1", NVector),
+        base.LottieProp("p2", "p2", NVector),
     ]
-    fullname = "%s.%s" % (__name__, "MyTgs")
+    fullname = "%s.%s" % (__name__, "MyLottie")
 
     def __init__(self, p1=None, p2=None):
         super().__init__()
@@ -232,7 +232,7 @@ class MyTgs(base.CustomObject):
 
 class TestCustomObject(TestCase):
     def test_to_dict(self):
-        obj = MyTgs(NVector(10, 20), NVector(20, 30))
+        obj = MyLottie(NVector(10, 20), NVector(20, 30))
         obj.refresh()
 
         self.assertDictEqual(
@@ -243,7 +243,7 @@ class TestCustomObject(TestCase):
                 "p": {"a": 0, "k": [15, 25]},
                 "s": {"a": 0, "k": [10, 10]},
                 "r": {"a": 0, "k": 0},
-                "__pyclass": MyTgs.fullname,
+                "__pyclass": MyLottie.fullname,
                 "p1": [10, 20],
                 "p2": [20, 30],
             }
@@ -256,11 +256,11 @@ class TestCustomObject(TestCase):
             "p": {"a": 0, "k": [15, 25]},
             "s": {"a": 0, "k": [10, 10]},
             "r": {"a": 0, "k": 0},
-            "__pyclass": MyTgs.fullname,
+            "__pyclass": MyLottie.fullname,
             "p1": [10, 20],
             "p2": [20, 30],
         })
-        self.assertIsInstance(obj, MyTgs)
+        self.assertIsInstance(obj, MyLottie)
         self.assertEqual(obj.p1, NVector(10, 20))
         self.assertEqual(obj.p2, NVector(20, 30))
         self.assertEqual(obj.wrapped.position.value, NVector(15, 25))
@@ -272,7 +272,7 @@ class TestCustomObject(TestCase):
             "p": {"a": 0, "k": [115, 125]},
             "s": {"a": 0, "k": [110, 110]},
             "r": {"a": 0, "k": 0},
-            "__pyclass": MyTgs.fullname,
+            "__pyclass": MyLottie.fullname,
             "p1": [10, 20],
             "p2": [20, 30],
         }

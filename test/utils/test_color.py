@@ -1,6 +1,6 @@
 from .. import base
-from tgs import NVector
-from tgs.utils.color import ColorMode, ManagedColor
+from lottie import NVector
+from lottie.utils.color import ColorMode, ManagedColor
 
 
 class ConvertTestCase(base.TestCase):

@@ -12,8 +12,8 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs.objects.animation import Animation
-from tgs.exporters.core import HtmlOutput
+from lottie.objects.animation import Animation
+from lottie.exporters.core import HtmlOutput
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 example_path = os.path.join(root, "examples")

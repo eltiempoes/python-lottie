@@ -1,5 +1,5 @@
 import sys
-from tgs.utils.color import ColorMode, ManagedColor
+from lottie.utils.color import ColorMode, ManagedColor
 
 colors = {
     "RGB": [

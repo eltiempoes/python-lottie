@@ -1,6 +1,6 @@
 import { Vector } from './vector.js'
 
-export class TgsObject
+export class LottieObject
 {
     to_lottie()
     {
@@ -15,7 +15,7 @@ export function value_from_lottie(x)
 
 export function value_to_lottie(x)
 {
-    if ( x instanceof TgsObject )
+    if ( x instanceof LottieObject )
         return x.to_lottie();
     if ( x instanceof Array )
         return x.map(value_to_lottie);

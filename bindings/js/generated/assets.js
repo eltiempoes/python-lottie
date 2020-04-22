@@ -1,10 +1,10 @@
-import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';
+import { value_to_lottie, value_from_lottie, LottieObject } from '../base.js';
 import { Layer } from './layers.js';
 import { ShapeElement } from './shapes.js';
 
 /*
 */
-export class Asset extends TgsObject
+export class Asset extends LottieObject
 {
 
     constructor()
@@ -28,7 +28,7 @@ export class Asset extends TgsObject
 /*!
     Character shapes
 */
-export class CharacterData extends TgsObject
+export class CharacterData extends LottieObject
 {
     shapes;
 
@@ -58,7 +58,7 @@ export class CharacterData extends TgsObject
 /*!
     Defines character shapes to avoid loading system fonts
 */
-export class Chars extends TgsObject
+export class Chars extends LottieObject
 {
     character;
     font_family;

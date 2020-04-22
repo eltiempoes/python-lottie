@@ -1,9 +1,9 @@
-import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';
+import { value_to_lottie, value_from_lottie, LottieObject } from '../base.js';
 import { Value, MultiDimensional } from './properties.js';
 
 /*
 */
-export class Font extends TgsObject
+export class Font extends LottieObject
 {
     ascent;
     font_family;
@@ -50,7 +50,7 @@ export class Font extends TgsObject
 
 /*
 */
-export class FontList extends TgsObject
+export class FontList extends LottieObject
 {
     list;
 
@@ -79,7 +79,7 @@ export class FontList extends TgsObject
 
 /*
 */
-export class MaskedPath extends TgsObject
+export class MaskedPath extends LottieObject
 {
     mask;
     f;
@@ -126,7 +126,7 @@ export class MaskedPath extends TgsObject
 
 /*
 */
-export class TextAnimatorDataProperty extends TgsObject
+export class TextAnimatorDataProperty extends LottieObject
 {
     rotation;
     rx;
@@ -252,7 +252,7 @@ export const TextJustify = Object.freeze({
 });
 /*
 */
-export class TextMoreOptions extends TgsObject
+export class TextMoreOptions extends LottieObject
 {
     alignment;
     g;
@@ -288,7 +288,7 @@ export class TextMoreOptions extends TgsObject
 /*!
     @see http://docs.aenhancers.com/other/textdocument/
 */
-export class TextDocument extends TgsObject
+export class TextDocument extends LottieObject
 {
     font_family;
     color;
@@ -353,7 +353,7 @@ export class TextDocument extends TgsObject
 
 /*
 */
-export class TextDataKeyframe extends TgsObject
+export class TextDataKeyframe extends LottieObject
 {
     start;
     time;
@@ -388,7 +388,7 @@ export class TextDataKeyframe extends TgsObject
 
 /*
 */
-export class TextData extends TgsObject
+export class TextData extends LottieObject
 {
     keyframes;
 
@@ -417,7 +417,7 @@ export class TextData extends TgsObject
 
 /*
 */
-export class TextAnimatorData extends TgsObject
+export class TextAnimatorData extends LottieObject
 {
     properties;
     data;

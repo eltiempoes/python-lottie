@@ -1,9 +1,9 @@
-import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';
+import { value_to_lottie, value_from_lottie, LottieObject } from '../base.js';
 
 /*!
     Single bezier curve
 */
-export class Bezier extends TgsObject
+export class Bezier extends LottieObject
 {
     closed;
     in_tangents;

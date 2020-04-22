@@ -1,4 +1,4 @@
-import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';
+import { value_to_lottie, value_from_lottie, LottieObject } from '../base.js';
 import { ShapeProperty, Value, MultiDimensional } from './properties.js';
 
 /*!
@@ -18,7 +18,7 @@ export const MaskMode = Object.freeze({
 /*!
     Layer transform
 */
-export class Transform extends TgsObject
+export class Transform extends LottieObject
 {
     anchor_point;
     position;
@@ -83,7 +83,7 @@ export class Transform extends TgsObject
 
 /*
 */
-export class Mask extends TgsObject
+export class Mask extends LottieObject
 {
     inverted;
     name;

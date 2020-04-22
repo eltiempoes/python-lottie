@@ -1,10 +1,10 @@
-import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';
+import { value_to_lottie, value_from_lottie, LottieObject } from '../base.js';
 import { KeyframeBezierHandle } from './easing.js';
 import { Bezier } from './bezier.js';
 
 /*
 */
-export class Keyframe extends TgsObject
+export class Keyframe extends LottieObject
 {
     time;
     in_value;
@@ -194,7 +194,7 @@ export class ShapePropKeyframe extends Keyframe
 /*!
     An animatable property that holds a Bezier
 */
-export class ShapeProperty extends TgsObject
+export class ShapeProperty extends LottieObject
 {
     value;
     property_index;
@@ -242,7 +242,7 @@ export class ShapeProperty extends TgsObject
 /*!
     An animatable property that holds a float
 */
-export class Value extends TgsObject
+export class Value extends LottieObject
 {
     value;
     property_index;
@@ -290,7 +290,7 @@ export class Value extends TgsObject
 /*!
     An animatable property that holds a NVector
 */
-export class MultiDimensional extends TgsObject
+export class MultiDimensional extends LottieObject
 {
     value;
     property_index;
@@ -338,7 +338,7 @@ export class MultiDimensional extends TgsObject
 /*!
     Represents colors and offsets in a gradient
 */
-export class GradientColors extends TgsObject
+export class GradientColors extends LottieObject
 {
     colors;
     count;

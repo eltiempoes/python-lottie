@@ -3,8 +3,8 @@ SETUP=setup.py
 VERSION_SUF:=$(shell git rev-parse --short HEAD)
 VERSION_BASE:=$(shell cat version)
 VERSION:=$(VERSION_BASE)$(if $(VERSION_SUF),+dev$(VERSION_SUF),)
-SRC:=$(shell find lib -type f -name '*.py') lib/tgs/version.py
-OBJECTS:=$(shell find lib/tgs/objects -type f -name '*.py')
+SRC:=$(shell find lib -type f -name '*.py') lib/lottie/version.py
+OBJECTS:=$(shell find lib/lottie/objects -type f -name '*.py')
 SCRIPTS:=$(wildcard bin/*.py)
 VERSION_IN_FILE=$(shell cat .version_full)
 $(if $(VERSION_IN_FILE) != $(VERSION), $(shell echo '$(VERSION)' > .version_full))
@@ -67,7 +67,7 @@ clean_pyc:
 	find lib -name '__pycache__' -exec rm -rf {} \;
 
 
-dist/$(PACKAGE_NAME)-blender-$(VERSION).zip: $(wildcard addons/blender/tgs_io/*.py) $(SRC)
+dist/$(PACKAGE_NAME)-blender-$(VERSION).zip: $(wildcard addons/blender/lottie_io/*.py) $(SRC)
 	cd addons/blender && find -L -name '*.py' | xargs zip --filesync ../../$@
 
 dist/$(PACKAGE_NAME)-synfig-$(VERSION).zip: $(wildcard addons/synfig/*) $(SRC)
@@ -81,10 +81,10 @@ blender: dist/$(PACKAGE_NAME)-blender-$(VERSION).zip
 
 synfig: dist/$(PACKAGE_NAME)-synfig-$(VERSION).zip
 
-lib/tgs/version.py: .version_full
+lib/lottie/version.py: .version_full
 	echo '__version__ = "$(VERSION)"' > $@
 
-version: lib/tgs/version.py
+version: lib/lottie/version.py
 	$(PYTHON) $(SETUP) --version
 
 next_version: VERSION = $(shell echo 'x = "$(VERSION_BASE)".split("."); x[-1] = str(int(x[-1]) + 1); print(".".join(x))' | python)

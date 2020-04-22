@@ -6,10 +6,10 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs.utils import script
-from tgs import objects
-from tgs.objects import easing
-from tgs import Point, Color, Size
+from lottie.utils import script
+from lottie import objects
+from lottie.objects import easing
+from lottie import Point, Color, Size
 
 an = objects.Animation(180)
 

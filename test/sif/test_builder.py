@@ -1,7 +1,7 @@
 import math
-from tgs.parsers.sif import api, builder, ast
-from tgs import objects
-from tgs.nvector import NVector, Color
+from lottie.parsers.sif import api, builder, ast
+from lottie import objects
+from lottie.nvector import NVector, Color
 from .. import base
 
 
@@ -23,7 +23,7 @@ class TestSifBuilder(base.TestCase):
         self.assertEqual(sif.name, lot.name)
 
     def _visualize_test(self, lot):
-        from tgs.exporters.core import export_embedded_html
+        from lottie.exporters.core import export_embedded_html
         export_embedded_html(lot, "/tmp/testout.html")
         sif = builder.to_sif(lot)
         with open("/tmp/testout.sif", "w") as sifile:

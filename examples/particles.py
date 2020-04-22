@@ -8,11 +8,11 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs.utils import script
-from tgs import objects
-from tgs.objects import easing
-from tgs import Point, Color, Size, PolarVector
-from tgs.utils import animation as anutils
+from lottie.utils import script
+from lottie import objects
+from lottie.objects import easing
+from lottie import Point, Color, Size, PolarVector
+from lottie.utils import animation as anutils
 
 
 last_frame = 120

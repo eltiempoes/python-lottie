@@ -5,9 +5,9 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs.utils import script
-from tgs import objects, NVector
-from tgs import Color, Point
+from lottie.utils import script
+from lottie import objects, NVector
+from lottie import Color, Point
 
 
 an = objects.Animation(59)

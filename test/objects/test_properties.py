@@ -1,6 +1,6 @@
 from .. import base
-from tgs import objects
-from tgs.nvector import NVector
+from lottie import objects
+from lottie.nvector import NVector
 
 
 class TestMultiDimensional(base.TestCase):

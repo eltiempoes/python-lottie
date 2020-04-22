@@ -8,10 +8,10 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs.parsers.svg.importer import parse_color
-from tgs.parsers.svg.svgdata import color_table
-from tgs import NVector
-from tgs.utils.color import ColorMode, ManagedColor
+from lottie.parsers.svg.importer import parse_color
+from lottie.parsers.svg.svgdata import color_table
+from lottie import NVector
+from lottie.utils.color import ColorMode, ManagedColor
 
 
 class ColorCompare:

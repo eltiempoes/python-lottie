@@ -1,3 +1,8 @@
+## Unreleased
+ * Made scripts prefer the correct library version when running from source
+ * Renamed the project to Lottie
+
+
 ## 0.5.4 - 2020-04-22
  * Implemented rendering of smooth spatial keyframes
  * Implemented rendering of auto-orient layers

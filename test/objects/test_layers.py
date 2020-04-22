@@ -1,5 +1,5 @@
 from .. import base
-from tgs import objects
+from lottie import objects
 from .test_helpers import TestTransform
 
 

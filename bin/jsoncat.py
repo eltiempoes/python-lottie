@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(
     "lib"
 ))
 
-from tgs.parsers.tgs import parse_tgs_json
+from lottie.parsers.tgs import parse_tgs_json
 
 
 parser = argparse.ArgumentParser(

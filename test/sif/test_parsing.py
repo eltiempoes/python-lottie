@@ -1,8 +1,8 @@
 import os
 import math
 
-from tgs.parsers.sif import api, ast
-from tgs.nvector import NVector, PolarVector
+from lottie.parsers.sif import api, ast
+from lottie.nvector import NVector, PolarVector
 from .. import base
 
 

@@ -1,9 +1,9 @@
-import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';
+import { value_to_lottie, value_from_lottie, LottieObject } from '../base.js';
 
 /*!
     Bezier handle for keyframe interpolation
 */
-export class KeyframeBezierHandle extends TgsObject
+export class KeyframeBezierHandle extends LottieObject
 {
     x;
     y;

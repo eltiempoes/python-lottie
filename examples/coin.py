@@ -6,11 +6,11 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs.utils import script
-from tgs import objects
-from tgs.utils import animation as anutils
-from tgs import Color, Point
-from tgs.objects import easing
+from lottie.utils import script
+from lottie import objects
+from lottie.utils import animation as anutils
+from lottie import Color, Point
+from lottie.objects import easing
 
 
 rot_time = 45

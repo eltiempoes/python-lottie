@@ -11,7 +11,7 @@ class TestCase(unittest.TestCase):
     maxDiff = None
 
     def assert_nvector_equal(self, a, b, places=None, msg=None, delta=None):
-        from tgs import NVector
+        from lottie import NVector
         self.assertIsInstance(a, NVector)
         self.assertIsInstance(b, NVector)
 

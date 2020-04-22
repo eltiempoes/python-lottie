@@ -9,8 +9,8 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-import tgs.objects
-from tgs.objects.base import TgsEnum, TgsObject, PseudoList, Tgs
+import lottie.objects
+from lottie.objects.base import LottieEnum, LottieObject, PseudoList, LottieBase
 
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -67,18 +67,18 @@ Python class: \ref {1}::{0} "{0}"
     )
 
 
-for _, modname, _ in pkgutil.iter_modules(tgs.objects.__path__):
+for _, modname, _ in pkgutil.iter_modules(lottie.objects.__path__):
     if modname == "base":
         continue
 
-    full_modname = "tgs.objects." + modname
+    full_modname = "lottie.objects." + modname
     module = importlib.import_module(full_modname)
 
     classes = []
 
     for clsname, cls in inspect.getmembers(module):
         if inspect.isclass(cls):
-            if issubclass(cls, Tgs) and cls not in {TgsObject, TgsEnum} and cls.__module__ == full_modname:
+            if issubclass(cls, LottieBase) and cls not in {LottieObject, LottieEnum} and cls.__module__ == full_modname:
                 type_modules[clsname] = full_modname.replace(".", "::")
                 classes.append(cls)
 
@@ -135,7 +135,7 @@ with open(dox_classdoc, "w") as out_classdoc, open(dox_summary, "w") as out_summ
     for module in modules:
         for cls in module.classes:
             clsname = cls.__name__
-            if issubclass(cls, TgsObject):
+            if issubclass(cls, LottieObject):
                 props = getattr(cls, "_props", None)
                 class_summary(cls)
                 sub = cls.__subclasses__()
@@ -153,7 +153,7 @@ with open(dox_classdoc, "w") as out_classdoc, open(dox_summary, "w") as out_summ
 
                     proptable(out_summary, cls, module, extract_type_summary)
                 out_summary.write("\n\n")
-            elif issubclass(cls, TgsEnum):
+            elif issubclass(cls, LottieEnum):
                 class_summary(cls)
                 out_summary.write("Lottie Value|Name|Description| Attribute\n")
                 out_summary.write("------------|----|-----------|---------\n")

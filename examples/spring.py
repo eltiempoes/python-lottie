@@ -5,10 +5,10 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs.utils import script
-from tgs import objects
-from tgs.utils.animation import spring_pull
-from tgs import Point, Color
+from lottie.utils import script
+from lottie import objects
+from lottie.utils.animation import spring_pull
+from lottie import Point, Color
 
 
 an = objects.Animation(100)

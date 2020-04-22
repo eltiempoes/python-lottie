@@ -9,8 +9,8 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs.utils.linediff import difflines_str
-from tgs.parsers.tgs import parse_tgs_json
+from lottie.utils.linediff import difflines_str
+from lottie.parsers.tgs import parse_tgs_json
 
 
 parser = argparse.ArgumentParser(

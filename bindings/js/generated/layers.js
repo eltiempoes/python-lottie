@@ -1,4 +1,4 @@
-import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';
+import { value_to_lottie, value_from_lottie, LottieObject } from '../base.js';
 import { Mask, Transform } from './helpers.js';
 import { ShapeElement } from './shapes.js';
 import { Value } from './properties.js';
@@ -36,7 +36,7 @@ export const MatteMode = Object.freeze({
 });
 /*
 */
-export class Layer extends TgsObject
+export class Layer extends LottieObject
 {
     threedimensional;
     hidden;

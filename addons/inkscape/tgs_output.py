@@ -35,7 +35,7 @@ if __name__ == "__main__":
         default=1
     )
     parser.add_argument(
-        "--tgspath",
+        "--lottiepath",
         help="Additional path to add to sys.path",
         default=""
     )
@@ -47,11 +47,11 @@ if __name__ == "__main__":
         default=0
     )
     ns, _ = parser.parse_known_args()
-    if ns.tgspath:
-        sys.path.insert(0, ns.tgspath)
-    import tgs
-    animation = tgs.parsers.svg.importer.parse_svg_file(ns.infile, ns.layer_frames, ns.frames, ns.fps)
+    if ns.lottiepath:
+        sys.path.insert(0, ns.lottiepath)
+    import lottie
+    animation = lottie.parsers.svg.importer.parse_svg_file(ns.infile, ns.layer_frames, ns.frames, ns.fps)
     if ns.format == "lottie":
-        tgs.exporters.export_lottie(animation, sys.stdout, ns.pretty)
+        lottie.exporters.export_lottie(animation, sys.stdout, ns.pretty)
     else:
-        tgs.exporters.export_tgs(animation, sys.stdout.buffer)
+        lottie.exporters.export_tgs(animation, sys.stdout.buffer)

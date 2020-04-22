@@ -1,5 +1,5 @@
 from .. import base
-from tgs import objects, NVector
+from lottie import objects, NVector
 from .test_helpers import TestTransform
 
 

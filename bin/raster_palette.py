@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from tgs import __version__
+from lottie import __version__
 
 parser = argparse.ArgumentParser(
     description="Shows the palette of a raster image"
@@ -25,7 +25,7 @@ parser.add_argument(
 )
 
 if __name__ == "__main__":
-    from tgs.parsers.raster import RasterImage
+    from lottie.parsers.raster import RasterImage
     ns = parser.parse_args()
 
     raster = RasterImage.open(ns.infile)

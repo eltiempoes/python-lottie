@@ -1,10 +1,10 @@
-import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';
+import { value_to_lottie, value_from_lottie, LottieObject } from '../base.js';
 import { Value, MultiDimensional } from './properties.js';
 
 /*!
     Value for an effect
 */
-export class EffectValue extends TgsObject
+export class EffectValue extends LottieObject
 {
     effect_index;
     name;
@@ -375,7 +375,7 @@ export class EffectValueSlider extends EffectValue
 /*!
     Layer effect
 */
-export class Effect extends TgsObject
+export class Effect extends LottieObject
 {
     effect_index;
     name;

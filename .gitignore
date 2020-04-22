@@ -1,6 +1,6 @@
 MANIFEST
 dist/
-tgs.egg-info
+lottie.egg-info
 .coverage
 htmlcov/
 docs/html
@@ -12,4 +12,4 @@ docs/dox/downloads.dox
 docs/Doxyfile
 twemoji/
 .version_full
-lib/tgs/version.py
+lib/lottie/version.py

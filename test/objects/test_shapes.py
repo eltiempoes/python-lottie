@@ -1,5 +1,5 @@
 from .. import base
-from tgs import objects
+from lottie import objects
 
 
 class TestBoundingBox(base.TestCase):

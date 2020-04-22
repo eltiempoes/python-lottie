@@ -17,13 +17,13 @@ if __name__ == "__main__":
         default=0
     )
     parser.add_argument(
-        "--tgspath",
+        "--lottiepath",
         help="Additional path to add to sys.path",
         default=""
     )
     ns, _ = parser.parse_known_args()
-    if ns.tgspath:
-        sys.path.insert(0, ns.tgspath)
-    import tgs
-    animation = tgs.parsers.tgs.parse_tgs(ns.file)
-    tgs.exporters.export_svg(animation, sys.stdout, ns.frame, True)
+    if ns.lottiepath:
+        sys.path.insert(0, ns.lottiepath)
+    import lottie
+    animation = lottie.parsers.tgs.parse_tgs(ns.file)
+    lottie.exporters.export_svg(animation, sys.stdout, ns.frame, True)

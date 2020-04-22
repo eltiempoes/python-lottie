@@ -1,4 +1,4 @@
-import { value_to_lottie, value_from_lottie, TgsObject } from '../base.js';
+import { value_to_lottie, value_from_lottie, LottieObject } from '../base.js';
 import { Chars, Asset } from './assets.js';
 import { FontList } from './text.js';
 import { Layer } from './layers.js';
@@ -9,7 +9,7 @@ import { Layer } from './layers.js';
     @see http://docs.aenhancers.com/items/compitem/
     @todo rename to Composition?
 */
-export class Animation extends TgsObject
+export class Animation extends LottieObject
 {
     tgs;
     version;
