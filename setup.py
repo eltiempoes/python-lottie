@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import setuptools
 import os
+import setuptools
+from functools import reduce
 here = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -32,6 +33,16 @@ else:
     with open(os.path.join(vfdir, ".version_full")) as vf:
         version = vf.read().strip()
 
+extras_require = {
+    "trace": ["pillow", "pypotrace>=0.2", "numpy", "scipy"],
+    "images": ["pillow"],
+    "PNG": ["cairosvg"],
+    "GIF": ["cairosvg", "pillow"],
+    "text": ["fonttools"],
+    "video": ["opencv-python", "pillow", "numpy"],
+    "emoji": ["grapheme"],
+}
+extras_require["all"] = list(reduce(lambda a, b: a|b, map(set, extras_require.values())))
 
 setuptools.setup(
     name="lottie",
@@ -65,14 +76,7 @@ setuptools.setup(
     ],
     zip_safe=True,
     python_requires=">=3",
-    extras_require={
-        "Vectorization": ["pillow", "pypotrace>=0.2", "numpy", "scipy"],
-        "Load image": ["pillow"],
-        "PNG": ["cairosvg"],
-        "Text": ["fonttools"],
-        "Video output": ["opencv-python"],
-        "Advanced Emoji Replacement": ["grapheme"],
-    },
+    extras_require=extras_require,
     test_suite="test",
     project_urls={
         "Code": "https://gitlab.com/mattia.basaglia/python-lottie/",

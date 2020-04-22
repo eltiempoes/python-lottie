@@ -122,13 +122,39 @@ Python 3.
 
 ### Optional Requirements
 
-* `coverage`                            To show unit test coverage, used optionally by `test.sh`
-* `pillow`, `pypotrace>=0.2`, `numpy`, `scipy` To convert raster images into vectors
-* `pillow`                              To load image assets
-* `cairosvg`                            To export PNG / PDF / PS
-* `cairosvg`, `pillow`                  To export GIF
-* `cairosvg`, `numpy`, Python OpenCV 2  To export video
-* `fonttools`                           To render text as shapes
+In order to provide lean installations, this framework doesn't have dependencies
+for its core functionality.
+
+To add support for extra formats or advanced functionality, you can install
+additional packages.
+
+These requirements are declared as extra in the Pypi package,
+follows a table listing dependencies and features
+
+
+| Packages                                      | Extra | Feature                                                   |
+|-----------------------------------------------|-------|-----------------------------------------------------------|
+| `pillow`                                      | images| To load image assets                                      |
+| `cairosvg`                                    | PNG   | To export PNG / PDF / PS                                  |
+| `cairosvg`, `pillow`                          | GIF   | To export GIF and animated WebP                           |
+| `fonttools`                                   | text  | To render text as shapes                                  |
+| `grapheme`                                    | emoji | Adding emoji support to text rendering                    |
+| `cairosvg`, `numpy`, Python OpenCV 2          | video | To export video                                           |
+| `pillow`, `pypotrace>=0.2`, `numpy`, `scipy`  | trace | To convert raster images into vectors                     |
+| `coverage`                                    |       | To show unit test coverage, used optionally by `test.sh`  |
+
+
+If intalling from pip, you can install optional requirements like so:
+
+    pip install lottie[GIF]
+
+The above example will ensure `cairosvg` and `pillow` are installed.
+For more details see https://pip.pypa.io/en/latest/reference/pip_install/#examples.
+
+For convenience, an additional extra requirements is defined,
+so you can install all dependencies at once:
+
+    pip install lottie[all]
 
 
 Features
