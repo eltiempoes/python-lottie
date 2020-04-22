@@ -1,10 +1,11 @@
-## Unreleased
+## 0.5.4 - 2020-04-22
  * Implemented rendering of smooth spatial keyframes
  * Implemented rendering of auto-orient layers
  * Automatically embed images from dotLottie archives
  * SVG exporter improvements
  * Automatic image packaging in dotLottie exporter
  * Improved api for managing layer parenting
+ * Fixed lottie parsing regression
 
 ## 0.5.3 - 2020-04-21
  * Improved input options for tgsconvert

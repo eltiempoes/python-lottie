@@ -54,7 +54,7 @@ build_tags:
     script:
         - curl https://raw.githubusercontent.com/inetprocess/gitlab-release/master/gitlab-release >gitlab-release
         - make VERSION=${CI_COMMIT_REF_NAME#v}
-        - pip3 install requests
+        - pip3 install requests twine
         - python3 gitlab-release -m "`sed -n -f devtools/latest_changes.sed CHANGELOG.md`" dist/*
         - make upload VERSION=${CI_COMMIT_REF_NAME#v}
     artifacts:
