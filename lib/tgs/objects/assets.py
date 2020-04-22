@@ -5,6 +5,7 @@ import mimetypes
 from .base import TgsObject, TgsProp, PseudoBool, Index
 from .layers import Layer
 from .shapes import ShapeElement
+from .composition import Composition
 
 
 ## \ingroup Lottie
@@ -152,38 +153,22 @@ class Chars(TgsObject):
 
 
 ## \ingroup Lottie
-class Precomp(Asset):
+class Precomp(Asset, Composition):
     _props = [
         TgsProp("id", "id", str, False),
-        TgsProp("layers", "layers", Layer, True),
     ]
 
     def __init__(self, id="", animation=None):
+        super().__init__()
         ## Precomp ID
         self.id = id
-        ## List of Precomp Layers
-        self.layers = []
-        self._index_gen = Index()
         self.animation = animation
+        if animation:
+            self.animation.assets.append(self)
 
-    def add_layer(self, layer):
-        """!
-        @brief Appends a layer to the animation
-        \see insert_layer
-        """
-        return self.insert_layer(len(self.layers), layer)
-
-    def insert_layer(self, index, layer):
-        """!
-        @brief Inserts a layer to the animation
-        @note Layers added first will be rendered on top of later layers
-        """
-        self.layers.insert(index, layer)
-        if layer.index is None:
-            layer.index = next(self._index_gen)
+    def _on_prepare_layer(self, layer):
         if self.animation:
             self.animation.prepare_layer(layer)
-        return layer
 
     def set_timing(self, outpoint, inpoint=0, override=True):
         for layer in layers:

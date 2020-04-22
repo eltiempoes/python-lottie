@@ -52,7 +52,7 @@ def prettyprint_summary(tgs_object, out=sys.stdout, indent="   ", _i=""):
         if name:
             out.write(" %r" % name)
         if isinstance(tgs_object, Layer):
-            out.write(" %s -> %s" % (tgs_object.index, tgs_object.parent))
+            out.write(" %s -> %s" % (tgs_object.index, tgs_object.parent_index))
         out.write('\n')
         _i += indent
         for k in tgs_object._props:

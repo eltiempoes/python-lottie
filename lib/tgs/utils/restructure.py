@@ -170,8 +170,8 @@ class AbstractBuilder:
         top_layers = []
         for layer in flat_layers:
             layer.structured = True
-            if layer.lottie.parent is not None:
-                layers[layer.lottie.parent].add(layer)
+            if layer.lottie.parent_index is not None:
+                layers[layer.lottie.parent_index].add(layer)
             else:
                 top_layers.insert(0, layer)
         return top_layers

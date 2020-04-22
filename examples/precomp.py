@@ -13,7 +13,6 @@ from tgs import NVector, Color
 an = objects.Animation(80)
 
 precomp = objects.Precomp("myid", an)
-an.assets.append(precomp)
 
 # Define stuff in the precomposition (a circle moving left to right)
 layer = objects.ShapeLayer()

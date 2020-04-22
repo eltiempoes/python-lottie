@@ -43,7 +43,7 @@ class Layer(TgsObject):
         TgsProp("hidden", "hd", bool, False),
         TgsProp("type", "ty", int, False),
         TgsProp("name", "nm", str, False),
-        TgsProp("parent", "parent", int, False),
+        TgsProp("parent_index", "parent", int, False),
 
         TgsProp("stretch", "sr", float, False),
         TgsProp("transform", "ks", Transform, False),
@@ -105,13 +105,46 @@ class Layer(TgsObject):
         ## Layer Time Stretching
         self.stretch = 1
         ## Layer Parent. Uses ind of parent.
-        self.parent = None
+        self.parent_index = None
         ## List of Masks
         self.masks = None
         ## Blend Mode
         self.blend_mode = BlendMode.Normal
         ## Matte mode, the layer will inherit the transparency from the layer above
         self.matte_mode = None
+        ## Composition owning the layer, set by add_layer
+        self.composition = None
+
+    def add_child(self, layer):
+        if not self.composition or self.index is None:
+            raise Exception("Must set composition / index first")
+        self._child_inout_auto(layer)
+        self.composition.add_layer(layer)
+        layer.parent_index = self.index
+        return layer
+
+    def _child_inout_auto(self, layer):
+        if layer.in_point is None:
+            layer.in_point = self.in_point
+        if layer.out_point is None:
+            layer.out_point = self.out_point
+
+    @property
+    def parent(self):
+        if self.parent_index is None:
+            return None
+        return self.composition.layer(self.parent_index)
+
+    @parent.setter
+    def parent(self, layer):
+        self.parent_index = layer.index
+        layer._child_inout_auto(self)
+
+    @property
+    def children(self):
+        for layer in self.composition.layers:
+            if layer.parent_index == self.index:
+                yield layer
 
     @classmethod
     def _load_get_class(cls, lottiedict):

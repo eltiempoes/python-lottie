@@ -4,6 +4,7 @@
  * Automatically embed images from dotLottie archives
  * SVG exporter improvements
  * Automatic image packaging in dotLottie exporter
+ * Improved api for managing layer parenting
 
 ## 0.5.3 - 2020-04-21
  * Improved input options for tgsconvert

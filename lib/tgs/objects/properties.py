@@ -247,9 +247,11 @@ class AnimatableMixin:
 
     def add_keyframe(self, time, value, interp=easing.Linear(), *args, **kwargs):
         """!
-        \param time     The time this keyframe appears in
-        \param value    The value the property should have at \p time
-        \param interp   The easing callable used to update the tangents of the previous keyframe
+        @param time     The time this keyframe appears in
+        @param value    The value the property should have at \p time
+        @param interp   The easing callable used to update the tangents of the previous keyframe
+        @param args     Extra arguments to pass the keyframe constructor
+        @param kwargs   Extra arguments to pass the keyframe constructor
         @note Always call add_keyframe with increasing \p time value
         """
         if not self.animated:
