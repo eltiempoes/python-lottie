@@ -44,7 +44,7 @@ setuptools.setup(
     url="https://gitlab.com/mattia.basaglia/python-lottie/",
     package_dir={'': 'lib'},
     license="GNU Affero General Public License v3 or later (AGPLv3+)",
-    packages=find_packages(),
+    packages=find_packages() + find_packages("tgs"),
     scripts=[
         os.path.join("bin", "raster_palette.py"),
         os.path.join("bin", "lottie_cat.py"),

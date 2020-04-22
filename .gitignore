@@ -1,6 +1,7 @@
 MANIFEST
 dist/
 lottie.egg-info
+tgs.egg-info
 .coverage
 htmlcov/
 docs/html
