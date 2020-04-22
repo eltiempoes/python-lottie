@@ -47,7 +47,7 @@ class TgsValidator(ObjectVisitor):
         if severity.value >= self.severity.value and not expr:
             self.errors.append(TgsError(message, target, severity))
 
-    def check_file(self, filename):
+    def check_file_size(self, filename):
         size_k = os.path.getsize(filename) / 1024
         self._check(
             size_k <= 64,
@@ -55,6 +55,9 @@ class TgsValidator(ObjectVisitor):
             filename,
             Severity.Error
         )
+
+    def check_file(self, filename):
+        self.check_file_size(filename)
         try:
             self(parse_tgs(filename))
         except json.decoder.JSONDecodeError as e:

@@ -81,6 +81,8 @@ group.add_argument(
 
 if __name__ == "__main__":
     ns = parser.parse_args()
+    if ns.infile == "-" and not ns.input_format:
+        parser.print_help()
 
     infile = ns.infile
     importer = None
@@ -126,6 +128,4 @@ if __name__ == "__main__":
         float_strip(an)
     elif ns.optimize >= 2:
         heavy_strip(an)
-    if ns.sanitize:
-        an.tgs_sanitize()
     exporter.process(an, outfile, **o_options)

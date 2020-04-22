@@ -4,48 +4,134 @@ Python Lottie
 A Python framework to work with Lottie files and Telegram animated stickers.
 
 
+Quick start
+-----------
+
+This section describes some common things you might want to do without having
+to read the whole README
+
+### Installation
+
+    pip install lottie
+
+### Converting into images
+
+This package provide the script `lottie_convert.py`, it's precise location
+depends on how you installed python-lottie.
+
+For PNG, GIF, and Webp you have to install `cairosvg` and `pillow`.
+
+To render a still image:
+
+    lottie_convert.py input_file.json output_file.png --frame 30
+
+
+To render an animated image (GIF or WebP):
+
+    lottie_convert.py input_file.json output_file.webp
+
+
+A list of supported formats is described in the section "Supported Formats" below.
+
+
+### Turning GIF and such into animations
+
+The lottie format is for vector graphics, this means converting raster images
+usually doesn't work too well.
+
+That said, python-lottie does support a few different algorithms to import
+raster images, the process is a bit slow for larger images but use it with caution.
+
+To use the potrace vectorization library, install the extras tagged as "trace".
+
+Once set up, just invoke `lottie_convert.py`
+
+    lottie_convert.py input_file.gif output_file.json
+
+
+### Converting Telegram animated stickers (tgs)
+
+This format is natively supported by python lottie, but telegram doesn't
+support all of the features supported by lottie
+(see the section labeled "Supported After Effects Features" for details).
+
+When converting from tgs, nothing special is needed as it's handled as a lottie animation.
+
+    lottie_convert.py AnimatedSticker.tgs output_file.webp
+
+But when converting into animated stickers, you might end up with a file that
+Telegram doesn't recognize. To help with this, by default `lottie_convert.py`
+will scale the animation to be the right size and framerate.
+It will also print out any warnings related to unsupported features.
+Everything else works like any other conversion:
+
+    lottie_convert.py input_file.json output_file.tgs
+
+If you want to see the same warnings for an existing tgs file use `tgs_check.py`
+
+    tgs_check.py AnimatedSticker.tgs
+
+
+### Creating animations from scratch
+
+See the examples at http://mattia.basaglia.gitlab.io/python-lottie/examples.html
+and read the available lottie objects at http://mattia.basaglia.gitlab.io/python-lottie/group__Lottie.html#details
+
+
+Features
+--------
+
+Here is a list of features of the lottie python framework:
+
+* Loading compressed TGS and uncompressed lottie JSON
+* Manipulation of lottie objects
+* Simple animation presets (eg: shake, linear bounce)
+* Bezier path animations (eg: follow path, making paths appear and disappear)
+* Wave distortion animation (eg: for flags)
+* Pseudo-3D rotations
+* Animation easing functions
+* Inverse Kinematic solver
+* Pretty printing and comparison of lottie files
+* Rendering text as shapes
+
+
+## Supported Formats
+
+| Format    | Import    | Import Animated   | Export    | Export Animated   |
+|-----------|-----------|-------------------|-----------|-------------------|
+| lottie    | 👍        | 👍                | 👍        | 👍                |
+| tgs       | 👍        | 👍                | 👍        | 👍                |
+| SVG       | 👍        | 👍                | 👍        | ⛔️                |
+| SVGz      | 👍        | 👍                | 👍        | ⛔️                |
+| PNG       | 👍        | 👍[^frames]       | 👍        | ⛔️                |
+| Synfig    | 👍        | 👍                | 👍        | 👍                |
+| WebP      | 👍        | 👍                | 👍        | 👍                |
+| dotLottie | 👍        | 👍                | 👍        | 👍                |
+| PostScript| ⛔️        | ⛔️                | 👍        | ⛔️                |
+| PDF       | ⛔️        | ⛔️                | 👍        | ⛔️                |
+| BMP       | 👍        | 👍[^frames]       | ⛔️        | ⛔️                |
+| GIF       | 👍        | 👍                | 👍        | 👍                |
+| TIFF      | 👍        | 👍                | 👍        | 👍                |
+| MP4       | ⛔️        | ⛔️                | 👍        | 👍                |
+| AVI       | ⛔️        | ⛔️                | 👍        | 👍                |
+| WebM      | ⛔️        | ⛔️                | 👍        | 👍                |
+| HTML      | ⛔️        | ⛔️                | 👍        | 👍                |
+| Blender   | 👍[^blend]| 👍[^blend]        | ⛔️        | ⛔️                |
+
+[^frames]: Importing multiple images as frames
+
+[^blend]: Conversion available as a Blender addon
+
+
+
 Scripts
 -------
 
-* `bin/lottie_convert.py`
+python-lottie provides several scripts to convert or manage lottie animations.
+For full documentation see http://mattia.basaglia.gitlab.io/python-lottie/scripts.html
 
-  Script that can convert between several formats passing through lottie (see table under Supported Formats)
+The main one is `lottie_convert.py`, which can be used to convert between the supported formats
 
-* `bin/lottie_cat.py`
-
-  Prints the given lottie file into a human-readable format
-
-* `bin/lottie_diff.py`
-
-  Shows a side-by-side diff of the human-readable rendition of two lottie files
-
-* `bin/raster_palette.py`
-
-  Shows the palette of a raster image, to use with `bin/lottie_convert.py`
-
-* `bin/lottie_color.py`
-
-  Converts a CSS color into a normalized array, as used in lottie
-
-* `bin/jsoncat.py`
-
-  Pretty prints a JSON file (useful to debug / diff lottie files)
-
-* `bin/jsondiff.py`
-
-  Pretty prints two JSON files side by side, highlighting differences (useful to debug / diff lottie files)
-
-* `bin/lottie_cat.py`
-
-  Pretty prints a lottie file with more readable annotations (useful to debug / diff lottie files)
-
-* `bin/lottie_diff.py`
-
-  Pretty prints two lottie files side by side, highlighting differences (useful to debug / diff lottie files)
-
-* `bin/tgs_check.py`
-
-  Checks a lottie or tgs file to see if it's compatible with telegram stickers
 
 
 Installation
@@ -155,51 +241,6 @@ For convenience, an additional extra requirements is defined,
 so you can install all dependencies at once:
 
     pip install lottie[all]
-
-
-Features
---------
-
-Here is a list of features of the lottie python framework:
-
-* Loading compressed TGS and uncompressed lottie JSON
-* Manipulation of lottie objects
-* Simple animation presets (eg: shake, linear bounce)
-* Bezier path animations (eg: follow path, making paths appear and disappear)
-* Wave distortion animation (eg: for flags)
-* Pseudo-3D rotations
-* Animation easing functions
-* Inverse Kinematic solver
-* Pretty printing and comparison of lottie files
-* Rendering text as shapes
-
-
-## Supported Formats
-
-| Format    | Import    | Import Animated   | Export    | Export Animated   |
-|-----------|-----------|-------------------|-----------|-------------------|
-| lottie    | 👍        | 👍                | 👍        | 👍                |
-| tgs       | 👍        | 👍                | 👍        | 👍                |
-| SVG       | 👍        | 👍                | 👍        | ⛔️                |
-| SVGz      | 👍        | 👍                | 👍        | ⛔️                |
-| PNG       | 👍        | 👍[^frames]       | 👍        | ⛔️                |
-| Synfig    | 👍        | 👍                | 👍        | 👍                |
-| WebP      | 👍        | 👍                | 👍        | 👍                |
-| dotLottie | 👍        | 👍                | 👍        | 👍                |
-| PostScript| ⛔️        | ⛔️                | 👍        | ⛔️                |
-| PDF       | ⛔️        | ⛔️                | 👍        | ⛔️                |
-| BMP       | 👍        | 👍[^frames]       | ⛔️        | ⛔️                |
-| GIF       | 👍        | 👍                | 👍        | 👍                |
-| TIFF      | 👍        | 👍                | 👍        | 👍                |
-| MP4       | ⛔️        | ⛔️                | 👍        | 👍                |
-| AVI       | ⛔️        | ⛔️                | 👍        | 👍                |
-| WebM      | ⛔️        | ⛔️                | 👍        | 👍                |
-| HTML      | ⛔️        | ⛔️                | 👍        | 👍                |
-| Blender   | 👍[^blend]| 👍[^blend]        | ⛔️        | ⛔️                |
-
-[^frames]: Importing multiple images as frames
-
-[^blend]: Conversion available as a Blender addon
 
 
 Telegram Animated Stickers

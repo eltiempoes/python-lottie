@@ -1,9 +1,12 @@
+import sys
 import json
 import gzip
 import codecs
 
 from .base import exporter
 from ..utils.file import open_file
+from ..parsers.baseporter import ExtraOption
+from .tgs_validator import TgsValidator
 
 
 @exporter("Lottie JSON", ["json"], [], {"pretty"}, "lottie")
@@ -15,10 +18,23 @@ def export_lottie(animation, file, pretty=False):
         json.dump(animation.to_dict(), fp, **kw)
 
 
-@exporter("Telegram Animated Sticker", ["tgs"])
-def export_tgs(animation, file):
+@exporter("Telegram Animated Sticker", ["tgs"], [
+    ExtraOption("no_sanitize", help="Disable Sticker fit", action="store_false", dest="sanitize"),
+    ExtraOption("no_validate", help="Disable feature validation", action="store_false", dest="validate"),
+])
+def export_tgs(animation, file, sanitize=False, validate=False):
+    if sanitize:
+        animation.tgs_sanitize()
+
     with gzip.open(file, "wb") as gzfile:
         export_lottie(animation, codecs.getwriter('utf-8')(gzfile))
+
+    if validate:
+        validator = TgsValidator()
+        validator(animation)
+        validator.check_file_size(file)
+        if validator.errors:
+            sys.stdout.write("\n".join(map(str, validator.errors))+"\n")
 
 
 class HtmlOutput:
