@@ -48,7 +48,7 @@ if __name__ == "__main__":
     )
     ns, _ = parser.parse_known_args()
     if ns.tgspath:
-        sys.path.append(ns.tgspath)
+        sys.path.insert(0, ns.tgspath)
     import tgs
     animation = tgs.parsers.svg.importer.parse_svg_file(ns.infile, ns.layer_frames, ns.frames, ns.fps)
     if ns.format == "lottie":

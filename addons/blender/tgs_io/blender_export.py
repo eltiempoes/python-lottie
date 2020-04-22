@@ -3,7 +3,7 @@ import sys
 import math
 from dataclasses import dataclass
 
-sys.path.append(os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(__file__))
 import tgs
 from tgs import NVector
 

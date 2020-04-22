@@ -2,7 +2,7 @@ import os
 import sys
 import argparse
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import tgs
 from tgs.exporters.tgs_validator import TgsValidator, Severity
