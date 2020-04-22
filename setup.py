@@ -48,7 +48,7 @@ setuptools.setup(
     scripts=[
         os.path.join("bin", "raster_palette.py"),
         os.path.join("bin", "lottie_cat.py"),
-        os.path.join("bin", "lottie_check.py"),
+        os.path.join("bin", "tgs_check.py"),
         os.path.join("bin", "lottie_convert.py"),
         os.path.join("bin", "lottie_diff.py"),
         os.path.join("bin", "lottie_fonts.py"),

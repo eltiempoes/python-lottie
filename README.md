@@ -1,29 +1,29 @@
-Telegram Animated Stickers Tools
-================================
+Python Lottie
+=============
 
-A Python framework to work with Telegram animated stickers.
+A Python framework to work with Lottie files and Telegram animated stickers.
 
 
 Scripts
 -------
 
-* `bin/tgsconvert.py`
+* `bin/lottie_convert.py`
 
-  Script that can convert between several formats, including lottie / TGS
+  Script that can convert between several formats passing through lottie (see table under Supported Formats)
 
-* `bin/tgscat.py`
+* `bin/lottie_cat.py`
 
-  Prints the given tgs / lottie file into a human-readable format
+  Prints the given lottie file into a human-readable format
 
-* `bin/tgsdiff.py`
+* `bin/lottie_diff.py`
 
-  Shows a side-by-side diff of the human-readable rendition of two tgs / lottie files
+  Shows a side-by-side diff of the human-readable rendition of two lottie files
 
 * `bin/raster_palette.py`
 
-  Shows the palette of a raster image, to use with `bin/raster2tgs.py`
+  Shows the palette of a raster image, to use with `bin/lottie_convert.py`
 
-* `bin/tgscolor.py`
+* `bin/lottie_color.py`
 
   Converts a CSS color into a normalized array, as used in lottie
 
@@ -35,15 +35,15 @@ Scripts
 
   Pretty prints two JSON files side by side, highlighting differences (useful to debug / diff lottie files)
 
-* `bin/tgscat.py`
+* `bin/lottie_cat.py`
 
-  Pretty prints a tgs / lottie file with more readable annotations (useful to debug / diff lottie files)
+  Pretty prints a lottie file with more readable annotations (useful to debug / diff lottie files)
 
-* `bin/tgsdiff.py`
+* `bin/lottie_diff.py`
 
-  Pretty prints two tgs / lottie files side by side, highlighting differences (useful to debug / diff lottie files)
+  Pretty prints two lottie files side by side, highlighting differences (useful to debug / diff lottie files)
 
-* `bin/tgscheck.py`
+* `bin/tgs_check.py`
 
   Checks a lottie or tgs file to see if it's compatible with telegram stickers
 
@@ -57,9 +57,9 @@ Installation
 There's a Synfig studio plugin to export telegram stickers.
 To install, just copy (or symlink) ./addons/synfig/tgs-exporter
 into the synfig plugin directory.
-You might have to copy ./lib/tgs in there as well.
+You might have to copy ./lib/lottie in there as well.
 
-You can download a zipfile from http://mattia.basaglia.gitlab.io/tgs/downloads.html
+You can download a zipfile from http://mattia.basaglia.gitlab.io/python-lottie/downloads.html
 
 
 ### Inkscape
@@ -74,12 +74,12 @@ Inkscape: Edit > Preferences... > System > User extensions
 Note that the extensions require Python 3.
 If they are run with a python 2 interpreter, they will try to run themselves using `python3`.
 
-They also need the tgs framework to be in the python path, otherwise you can manually
+They also need the lottie framework to be in the python path, otherwise you can manually
 set the path on the import/export dialogues.
 
 See also https://inkscape.org/~mattia.basaglia/%E2%98%85tgslottie-importexport
 
-You can download a zipfile from http://mattia.basaglia.gitlab.io/tgs/downloads.html
+You can download a zipfile from http://mattia.basaglia.gitlab.io/python-lottie/downloads.html
 
 
 ### Blender
@@ -96,18 +96,18 @@ paths through the Blender Python console:
 
 You can also install the addon from Blender using the zipfile created by `make`.
 
-You can download a zipfile from http://mattia.basaglia.gitlab.io/tgs/downloads.html
+You can download a zipfile from http://mattia.basaglia.gitlab.io/python-lottie/downloads.html
 
 
 ### Pip
 
 You can install from pypi:
 
-    pip install tgs
+    pip install lottie
 
 from git:
 
-    pip install git+https://gitlab.com/mattia.basaglia/tgs.git@master
+    pip install git+https://gitlab.com/mattia.basaglia/python-lottie.git@master
 
 for the source directory:
 
@@ -134,7 +134,7 @@ Python 3.
 Features
 --------
 
-Here is a list of features of the tgs python framework:
+Here is a list of features of the lottie python framework:
 
 * Loading compressed TGS and uncompressed lottie JSON
 * Manipulation of lottie objects
@@ -176,14 +176,14 @@ Here is a list of features of the tgs python framework:
 [^blend]: Conversion available as a Blender addon
 
 
-Reverse Engineering
--------------------
+Telegram Animated Stickers
+--------------------------
 
 I had to reverse engineer the format because Telegram couldn't be bothered
 providing the specs.
 
 A TGS file is a gzip compressed JSON, the JSON data is described here:
-https://mattia.basaglia.gitlab.io/tgs/group__Lottie.html#lottie_json
+https://mattia.basaglia.gitlab.io/python-lottie/group__Lottie.html#lottie_json
 
 ### Making your own exporters converters
 
@@ -194,7 +194,7 @@ If you can get the source image into lottie format, that's 90% of the work done.
 I've created Python classes based the format schema and after effects documentation, which
 output the correct json. Eg:
 
-    foo = tgs.Animation()
+    foo = lottie.Animation()
     # ...
     json.dump(foo.to_dict(), output_file)
 
@@ -228,11 +228,11 @@ Links
 
 ### Documentation
 
-http://mattia.basaglia.gitlab.io/tgs/index.html
+http://mattia.basaglia.gitlab.io/python-lottie/index.html
 
 ### Code
 
-https://gitlab.com/mattia.basaglia/tgs/
+https://gitlab.com/mattia.basaglia/python-lottie/
 
 ### Chat
 
@@ -240,7 +240,7 @@ https://t.me/tgs_stuff
 
 ### Download
 
-https://gitlab.com/mattia.basaglia/tgs/-/jobs/artifacts/master/download?job=build
+http://mattia.basaglia.gitlab.io/python-lottie/downloads.html
 
 Here you can download packages for pip, blender, and inkscape before they are released.
 These packages always have the latest features but they might be unstable.
@@ -256,7 +256,7 @@ Compare with http://airbnb.io/lottie/#/supported-features
  * 👍 Supported
  * ❔ Unknown / untested
  * ⛔️ Not supported
- * **tgs** refers to this framework in general
+ * **python-lottie** refers to this framework in general
  * **Telegram** refers to features supported by telegram animated stickers
  * **SVG** refers to the exported SVG images from this framework,
  features supported here will also reflect on other formats (such as video, png, and similar)
@@ -270,105 +270,105 @@ There are several things marked as unsupported in telegram animated stickers tha
 
 
 
-| **Shapes**                       | **tgs** | **Telegram**     | **SVG** |
-|----------------------------------|---------|------------------|---------|
-| Shape                            | 👍      | 👍               | 👍      |
-| Ellipse                          | 👍      | 👍               | 👍      |
-| Rectangle                        | 👍      | 👍               | 👍      |
-| Rounded Rectangle                | 👍      | 👍               | 👍      |
-| Polystar                         | 👍      | 👍[^unsuported]  | 👍      |
-| Group                            | 👍      | 👍               | 👍      |
-| Trim Path (individually)         | 👍      | 👍               | 👍      |
-| Trim Path (simultaneously)       | 👍      | 👍               | 👍      |
-| **Fills**                        | **tgs** | **Telegram**     | **SVG** |
-| Color                            | 👍      | 👍               | 👍      |
-| Opacity                          | 👍      | 👍               | 👍      |
-| Radial Gradient                  | 👍      | 👍               | 👍      |
-| Linear Gradient                  | 👍      | 👍               | 👍      |
-| Fill Rule                        | 👍      | 👍               | 👍      |
-| **Strokes**                      | **tgs** | **Telegram**     | **SVG** |
-| Color                            | 👍      | 👍               | 👍      |
-| Opacity                          | 👍      | 👍               | 👍      |
-| Width                            | 👍      | 👍               | 👍      |
-| Line Cap                         | 👍      | 👍               | 👍      |
-| Line Join                        | 👍      | 👍               | 👍      |
-| Miter Limit                      | 👍      | 👍               | 👍      |
-| Dashes                           | 👍      | 👍               | 👍      |
-| Gradient                         | 👍      | 👍[^unsuported]  | 👍      |
-| **Transforms**                   | **tgs** | **Telegram**     | **SVG** |
-| Position                         | 👍      | 👍               | 👍      |
-| Position (separated X/Y)         | 👍      | 👍               | 👍      |
-| Scale                            | 👍      | 👍               | 👍      |
-| Rotation                         | 👍      | 👍               | 👍      |
-| Anchor Point                     | 👍      | 👍               | 👍      |
-| Opacity                          | 👍      | 👍               | 👍      |
-| Parenting                        | 👍      | 👍               | 👍      |
-| Skew                             | 👍      | ⛔️[^bug]         | 👍      |
-| Auto Orient                      | 👍      | 👍[^unsuported]  | 👍      |
-| **Interpolation**                | **tgs** | **Telegram**     | **SVG** |
-| Linear Interpolation             | 👍      | 👍               | 👍      |
-| Bezier Interpolation             | 👍      | 👍               | 👍      |
-| Hold Interpolation               | 👍      | 👍               | 👍      |
-| Spatial Bezier Interpolation     | 👍      | 👍               | 👍      |
-| Rove Across Time                 | ⛔️      | ⛔️[^untested]    | ⛔️      |
-| **Masks**                        | **tgs** | **Telegram**     | **SVG** |
-| Mask Path                        | 👍      | 👍[^unsuported]  | 👍      |
-| Mask Opacity                     | 👍      | 👍[^unsuported]  | 👍      |
-| Add                              | 👍      | 👍[^unsuported]  | ⛔️      |
-| Subtract                         | 👍      | 👍[^unsuported]  | ⛔️      |
-| Intersect                        | 👍      | 👍[^unsuported]  | 👍      |
-| Lighten                          | 👍      | 👍[^unsuported]  | ⛔️      |
-| Darken                           | 👍      | 👍[^unsuported]  | ⛔️      |
-| Difference                       | 👍      | 👍[^unsuported]  | ⛔️      |
-| Expansion                        | 👍      | 👍[^unsuported]  | ⛔️      |
-| Feather                          | 👍      | 👍[^unsuported]  | ⛔️      |
-| **Mattes**                       | **tgs** | **Telegram**     | **SVG** |
-| Alpha Matte                      | 👍      | ⛔️[^dok]         | ⛔️      |
-| Alpha Inverted Matte             | 👍      | ⛔️[^dok]         | ⛔️      |
-| Luma Matte                       | 👍      | ⛔️[^dok]         | ⛔️      |
-| Luma Inverted Matte              | 👍      | ⛔️[^dok]         | ⛔️      |
-| **Merge Paths**                  | **tgs** | **Telegram**     | **SVG** |
-| Merge                            | ⛔️      | ⛔️[^untested]    | ⛔️      |
-| Add                              | ⛔️      | ⛔️[^untested]    | ⛔️      |
-| Subtract                         | ⛔️      | ⛔️[^untested]    | ⛔️      |
-| Intersect                        | ⛔️      | ⛔️[^untested]    | ⛔️      |
-| Exclude Intersection             | ⛔️      | ⛔️[^untested]    | ⛔️      |
-| **Layer Effects**                | **tgs** | **Telegram**     | **SVG** |
-| Fill                             | 👍      | ⛔️               | ⛔️      |
-| Stroke                           | 👍      | ⛔️               | ⛔️      |
-| Tint                             | 👍      | ⛔️               | ⛔️      |
-| Tritone                          | 👍      | ⛔️               | ⛔️      |
-| Levels Individual Controls       | 👍      | ⛔️               | ⛔️      |
-| **Text** [^text]                 | **tgs** | **Telegram**     | **SVG** |
-| Glyphs                           | 👍      | ⛔️               | ⛔️      |
-| Fonts                            | 👍      | ⛔️               | ⛔️      |
-| Transform                        | 👍      | ⛔️               | ⛔️      |
-| Fill                             | 👍      | ⛔️               | 👍      |
-| Stroke                           | 👍      | ⛔️               | ⛔️      |
-| Tracking                         | ⛔️      | ⛔️               | ⛔️      |
-| Anchor point grouping            | ⛔️      | ⛔️               | ⛔️      |
-| Text Path                        | ⛔️      | ⛔️               | ⛔️      |
-| Per-character 3D                 | ⛔️      | ⛔️               | ⛔️      |
-| Range selector (Units)           | ⛔️      | ⛔️               | ⛔️      |
-| Range selector (Based on)        | ⛔️      | ⛔️               | ⛔️      |
-| Range selector (Amount)          | ⛔️      | ⛔️               | ⛔️      |
-| Range selector (Shape)           | ⛔️      | ⛔️               | ⛔️      |
-| Range selector (Ease High)       | ⛔️      | ⛔️               | ⛔️      |
-| Range selector (Ease Low)        | ⛔️      | ⛔️               | ⛔️      |
-| Range selector (Randomize order) | ⛔️      | ⛔️               | ⛔️      |
-| expression selector              | ⛔️      | ⛔️               | ⛔️      |
-| **Other**                        | **tgs** | **Telegram**     | **SVG** |
-| Expressions                      | ⛔️      | ⛔️[^untested]    | ⛔️      |
-| Images                           | 👍      | ⛔️               | 👍      |
-| Precomps                         | 👍      | 👍               | 👍      |
-| Time Stretch                     | 👍      | ⛔️               | ⛔️      |
-| Time remap                       | 👍      | ⛔️[^dok]         | 👍      |
-| Markers                          | ⛔️      | ⛔️[^untested]    | ⛔️      |
-| 3D Layers                        | 👍      | ⛔️[^untested]    | ⛔️      |
-| Repeaters                        | 👍      | 👍[^unsuported]  | 👍      |
-| Solids                           | 👍      | 👍[^unsuported]  | 👍      |
+| **Shapes**                       | **python-lottie** | **Telegram**     | **SVG** |
+|----------------------------------|-------------------|------------------|---------|
+| Shape                            | 👍                | 👍               | 👍      |
+| Ellipse                          | 👍                | 👍               | 👍      |
+| Rectangle                        | 👍                | 👍               | 👍      |
+| Rounded Rectangle                | 👍                | 👍               | 👍      |
+| Polystar                         | 👍                | 👍[^unsuported]  | 👍      |
+| Group                            | 👍                | 👍               | 👍      |
+| Trim Path (individually)         | 👍                | 👍               | 👍      |
+| Trim Path (simultaneously)       | 👍                | 👍               | 👍      |
+| **Fills**                        | **python-lottie** | **Telegram**     | **SVG** |
+| Color                            | 👍                | 👍               | 👍      |
+| Opacity                          | 👍                | 👍               | 👍      |
+| Radial Gradient                  | 👍                | 👍               | 👍      |
+| Linear Gradient                  | 👍                | 👍               | 👍      |
+| Fill Rule                        | 👍                | 👍               | 👍      |
+| **Strokes**                      | **python-lottie** | **Telegram**     | **SVG** |
+| Color                            | 👍                | 👍               | 👍      |
+| Opacity                          | 👍                | 👍               | 👍      |
+| Width                            | 👍                | 👍               | 👍      |
+| Line Cap                         | 👍                | 👍               | 👍      |
+| Line Join                        | 👍                | 👍               | 👍      |
+| Miter Limit                      | 👍                | 👍               | 👍      |
+| Dashes                           | 👍                | 👍               | 👍      |
+| Gradient                         | 👍                | 👍[^unsuported]  | 👍      |
+| **Transforms**                   | **python-lottie** | **Telegram**     | **SVG** |
+| Position                         | 👍                | 👍               | 👍      |
+| Position (separated X/Y)         | 👍                | 👍               | 👍      |
+| Scale                            | 👍                | 👍               | 👍      |
+| Rotation                         | 👍                | 👍               | 👍      |
+| Anchor Point                     | 👍                | 👍               | 👍      |
+| Opacity                          | 👍                | 👍               | 👍      |
+| Parenting                        | 👍                | 👍               | 👍      |
+| Skew                             | 👍                | ⛔️[^bug]         | 👍      |
+| Auto Orient                      | 👍                | 👍[^unsuported]  | 👍      |
+| **Interpolation**                | **python-lottie** | **Telegram**     | **SVG** |
+| Linear Interpolation             | 👍                | 👍               | 👍      |
+| Bezier Interpolation             | 👍                | 👍               | 👍      |
+| Hold Interpolation               | 👍                | 👍               | 👍      |
+| Spatial Bezier Interpolation     | 👍                | 👍               | 👍      |
+| Rove Across Time                 | ⛔️                | ⛔️[^untested]    | ⛔️      |
+| **Masks**                        | **python-lottie** | **Telegram**     | **SVG** |
+| Mask Path                        | 👍                | 👍[^unsuported]  | 👍      |
+| Mask Opacity                     | 👍                | 👍[^unsuported]  | 👍      |
+| Add                              | 👍                | 👍[^unsuported]  | ⛔️      |
+| Subtract                         | 👍                | 👍[^unsuported]  | ⛔️      |
+| Intersect                        | 👍                | 👍[^unsuported]  | 👍      |
+| Lighten                          | 👍                | 👍[^unsuported]  | ⛔️      |
+| Darken                           | 👍                | 👍[^unsuported]  | ⛔️      |
+| Difference                       | 👍                | 👍[^unsuported]  | ⛔️      |
+| Expansion                        | 👍                | 👍[^unsuported]  | ⛔️      |
+| Feather                          | 👍                | 👍[^unsuported]  | ⛔️      |
+| **Mattes**                       | **python-lottie** | **Telegram**     | **SVG** |
+| Alpha Matte                      | 👍                | ⛔️[^dok]         | ⛔️      |
+| Alpha Inverted Matte             | 👍                | ⛔️[^dok]         | ⛔️      |
+| Luma Matte                       | 👍                | ⛔️[^dok]         | ⛔️      |
+| Luma Inverted Matte              | 👍                | ⛔️[^dok]         | ⛔️      |
+| **Merge Paths**                  | **python-lottie** | **Telegram**     | **SVG** |
+| Merge                            | ⛔️                | ⛔️[^untested]    | ⛔️      |
+| Add                              | ⛔️                | ⛔️[^untested]    | ⛔️      |
+| Subtract                         | ⛔️                | ⛔️[^untested]    | ⛔️      |
+| Intersect                        | ⛔️                | ⛔️[^untested]    | ⛔️      |
+| Exclude Intersection             | ⛔️                | ⛔️[^untested]    | ⛔️      |
+| **Layer Effects**                | **python-lottie** | **Telegram**     | **SVG** |
+| Fill                             | 👍                | ⛔️               | ⛔️      |
+| Stroke                           | 👍                | ⛔️               | ⛔️      |
+| Tint                             | 👍                | ⛔️               | ⛔️      |
+| Tritone                          | 👍                | ⛔️               | ⛔️      |
+| Levels Individual Controls       | 👍                | ⛔️               | ⛔️      |
+| **Text** [^text]                 | **python-lottie** | **Telegram**     | **SVG** |
+| Glyphs                           | 👍                | ⛔️               | ⛔️      |
+| Fonts                            | 👍                | ⛔️               | ⛔️      |
+| Transform                        | 👍                | ⛔️               | ⛔️      |
+| Fill                             | 👍                | ⛔️               | 👍      |
+| Stroke                           | 👍                | ⛔️               | ⛔️      |
+| Tracking                         | ⛔️                | ⛔️               | ⛔️      |
+| Anchor point grouping            | ⛔️                | ⛔️               | ⛔️      |
+| Text Path                        | ⛔️                | ⛔️               | ⛔️      |
+| Per-character 3D                 | ⛔️                | ⛔️               | ⛔️      |
+| Range selector (Units)           | ⛔️                | ⛔️               | ⛔️      |
+| Range selector (Based on)        | ⛔️                | ⛔️               | ⛔️      |
+| Range selector (Amount)          | ⛔️                | ⛔️               | ⛔️      |
+| Range selector (Shape)           | ⛔️                | ⛔️               | ⛔️      |
+| Range selector (Ease High)       | ⛔️                | ⛔️               | ⛔️      |
+| Range selector (Ease Low)        | ⛔️                | ⛔️               | ⛔️      |
+| Range selector (Randomize order) | ⛔️                | ⛔️               | ⛔️      |
+| expression selector              | ⛔️                | ⛔️               | ⛔️      |
+| **Other**                        | **python-lottie** | **Telegram**     | **SVG** |
+| Expressions                      | ⛔️                | ⛔️[^untested]    | ⛔️      |
+| Images                           | 👍                | ⛔️               | 👍      |
+| Precomps                         | 👍                | 👍               | 👍      |
+| Time Stretch                     | 👍                | ⛔️               | ⛔️      |
+| Time remap                       | 👍                | ⛔️[^dok]         | 👍      |
+| Markers                          | ⛔️                | ⛔️[^untested]    | ⛔️      |
+| 3D Layers                        | 👍                | ⛔️[^untested]    | ⛔️      |
+| Repeaters                        | 👍                | 👍[^unsuported]  | 👍      |
+| Solids                           | 👍                | 👍[^unsuported]  | 👍      |
 
-[^text]: Note that **tgs** offers an alternative to lottie text layers, and can render
+[^text]: Note that **python-lottie** offers an alternative to lottie text layers, and can render
 text as shapes, so that is supported everywhere
 
 [^untested]: Marked as unsuported but I haven't tested it
