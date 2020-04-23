@@ -523,7 +523,7 @@ class FontRenderer:
                 if chname in self.font.glyphset:
                     width = self.font.glyph(chname).width
                 else:
-                    width = self.ex
+                    width = self.ex(size)
                 pos.x += width * scale * self.tab_width
                 continue
 
