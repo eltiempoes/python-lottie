@@ -283,6 +283,7 @@ class LottieObject(LottieBase, metaclass=LottieObjectMeta):
         Find all child objects that match a predicate
         @param type         Type (or tuple of types) of the objects to match
         @param predicate    Function that returns true on the objects to find
+        @param include_self Whether should counsider `self` for a potential match
         """
 
         if isinstance(self, type) and include_self:

@@ -32,7 +32,7 @@ class Image(Asset):
         LottieProp("id", "id", str, False),
         LottieProp("image", "p", str, False),
         LottieProp("image_path", "u", str, False),
-        LottieProp("embedded", "e", PseudoBool, False),
+        LottieProp("is_embedded", "e", PseudoBool, False),
     ]
 
     @staticmethod
@@ -57,7 +57,7 @@ class Image(Asset):
         ## Image path
         self.image_path = ""
         ## Image data is stored as a data: url
-        self.embedded = False
+        self.is_embedded = False
 
     def load(self, file, format=None):
         """!
@@ -83,7 +83,7 @@ class Image(Asset):
             format,
             base64.b64encode(output.getvalue()).decode("ascii")
         )
-        self.embedded = True
+        self.is_embedded = True
         return self
 
     def _id_from_file(self, file):
@@ -125,7 +125,7 @@ class Image(Asset):
 
         If it's impossible to fetch this info, returns (None, None)
         """
-        if self.embedded:
+        if self.is_embedded:
             m = re.match("data:[^/]+/([^;,]+);base64,(.*)", self.image)
             if m:
                 return m.group(1), base64.b64decode(m.group(2))

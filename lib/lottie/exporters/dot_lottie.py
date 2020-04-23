@@ -79,7 +79,7 @@ def export_dotlottie(animation, file, id=None, append=False, revision=None, auth
                 files[pathname+basename] = data
                 asset.image_path = pathname
                 asset.image = basename
-                asset.embedded = False
+                asset.is_embedded = False
 
     files["manifest.json"] = json.dumps(meta)
     files["animations/%s.json" % id] = json.dumps(animation.to_dict())

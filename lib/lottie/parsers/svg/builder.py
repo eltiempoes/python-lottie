@@ -215,7 +215,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             img = ElementTree.SubElement(self.defs, "image")
             xmlid = self.set_clean_id(img, asset.id)
             self._assets[asset.id] = xmlid
-            if asset.embedded:
+            if asset.is_embedded:
                 url = asset.image
             else:
                 url = asset.image_path + asset.image

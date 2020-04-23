@@ -24,7 +24,7 @@ def import_dotlottie(file, id=None):
             an = Animation.load(json.load(animfile))
             if an.assets:
                 for asset in an.assets:
-                    if isinstance(asset, assets.Image) and not asset.embedded:
+                    if isinstance(asset, assets.Image) and not asset.is_embedded:
                         fname = asset.image_path + asset.image
                         if fname in zf.namelist():
                             with zf.open(fname) as imgfile:
