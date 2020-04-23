@@ -448,22 +448,20 @@ class Group(ShapeElement):
         bb = BoundingBox()
         for v in self.shapes:
             bb.expand(v.bounding_box(time))
-        s = self.transform.scale.get_value(time) / 100
-        a = self.transform.anchor_point.get_value(time)
-        p = self.transform.position.get_value(time) - a
-        r = self.transform.rotation.get_value(time) * math.pi / 180
+
         if not bb.isnull():
-            bb.x1 = bb.x1 * s.x + p.x
-            bb.y1 = bb.y1 * s.y + p.y
-            bb.x2 = bb.x2 * s.x + p.x
-            bb.y2 = bb.y2 * s.y + p.y
-            if r:
-                bbc = bb.center()
-                bbs = bb.size() / 2
-                relc = bbc - a
-                r += relc.polar_angle
-                bbc = a + NVector(math.cos(r), math.sin(r)) * relc.length
-                bb = BoundingBox(bbc.x - bbs.x, bbc.y - bbs.y, bbc.x + bbs.x, bbc.y + bbs.y)
+            mat = self.transform.to_matrix(time)
+            points = [
+                mat.apply(NVector(bb.x1, bb.y1)),
+                mat.apply(NVector(bb.x1, bb.y2)),
+                mat.apply(NVector(bb.x2, bb.y2)),
+                mat.apply(NVector(bb.x2, bb.y1)),
+            ]
+            x1 = min(p.x for p in points)
+            x2 = max(p.x for p in points)
+            y1 = min(p.y for p in points)
+            y2 = max(p.y for p in points)
+            return BoundingBox(x1, y1, x2, y2)
         return bb
 
     def add_shape(self, shape):

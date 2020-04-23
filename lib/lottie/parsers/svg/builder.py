@@ -237,31 +237,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
     def set_transform(self, dom, transform, auto_orient=False):
         trans = []
-        mat = TransformMatrix()
-
-        anchor = self._get_value(transform.anchor_point)
-        mat.translate(-anchor.x, -anchor.y)
-
-        scale = self._get_value(transform.scale, NVector(100, 100))
-        mat.scale(scale.x / 100, scale.y / 100)
-
-        skew = self._get_value(transform.skew, 0) * math.pi / 180
-        if skew != 0:
-            axis = self._get_value(transform.skew_axis, 0) * math.pi / 180
-            mat.skew_from_axis(-skew, axis)
-
-        rot = self._get_value(transform.rotation, 0) * math.pi / 180
-        if rot:
-            mat.rotate(-rot)
-
-        if auto_orient:
-            if transform.position and transform.position.animated:
-                ao_angle = transform.position.get_tangent_angle(self.time)
-                mat.rotate(-ao_angle)
-
-        pos = self._get_value(transform.position)
-        mat.translate(pos.x, pos.y)
-
+        mat = transform.to_matrix(auto_orient)
         dom.attrib["transform"] = mat.to_css_2d()
 
         if transform.opacity is not None:

@@ -1,3 +1,4 @@
+import math
 from .base import LottieObject, LottieProp, LottieEnum
 from .properties import MultiDimensional, Value, NVector, ShapeProperty
 
@@ -46,6 +47,35 @@ class Transform(LottieObject):
         ## Transform Skew Axis.
         ## An angle, if 0 skews on the X axis, if 90 skews on the Y axis
         self.skew_axis = Value(0)
+
+    def to_matrix(self, time, auto_orient=False):
+        from ..utils.transform import TransformMatrix
+        mat = TransformMatrix()
+
+        anchor = self.anchor_point.get_value(time) if self.anchor_point else NVector(0, 0)
+        mat.translate(-anchor.x, -anchor.y)
+
+        scale = self.scale.get_value(time) if self.scale else NVector(100, 100)
+        mat.scale(scale.x / 100, scale.y / 100)
+
+        skew = self.skew.get_value(time) * math.pi / 180 if self.skew else 0
+        if skew != 0:
+            axis = self.skew_axis.get_value(time) * math.pi / 180 if self.skew_axis else 0
+            mat.skew_from_axis(-skew, axis)
+
+        rot = self.rotation.get_value(time) * math.pi / 180 if self.rotation else 0
+        if rot:
+            mat.rotate(-rot)
+
+        if auto_orient:
+            if self.position and self.position.animated:
+                ao_angle = self.position.get_tangent_angle(time)
+                mat.rotate(-ao_angle)
+
+        pos = self.position.get_value(time) if self.position else NVector(0, 0)
+        mat.translate(pos.x, pos.y)
+
+        return mat
 
 
 ## \ingroup Lottie
