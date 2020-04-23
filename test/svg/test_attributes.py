@@ -1,8 +1,12 @@
+import math
 from xml.etree import ElementTree
 from unittest.mock import MagicMock
+
 from .. import base
 from lottie.parsers.svg.importer import SvgParser, parse_color
 from lottie import NVector
+from lottie import objects
+from lottie.utils.transform import TransformMatrix
 
 
 class TestUnit(base.TestCase):
@@ -366,3 +370,193 @@ class TestStyle(base.TestCase):
         self.assertTrue(object.hidden)
         parser.apply_visibility({"fill": "red", "visibility": "hidden"}, object)
         self.assertTrue(object.hidden)
+
+
+class TestParseTransform(base.TestCase):
+    def assert_transform(self, transf, **kwargs):
+        for k, v in kwargs.items():
+            tv = getattr(transf, k).value
+            if isinstance(v, NVector):
+                self.assert_nvector_equal(tv, v)
+            else:
+                self.assertEqual(tv, v)
+
+    def test_inkscape_center(self):
+        parser = SvgParser()
+        element = ElementTree.Element("g")
+        group = objects.Rect(NVector(100, 200), NVector(300, 400))
+        dest_transform = objects.Transform()
+
+        element.attrib[parser.qualified("inkscape", "transform-center-x")] = 0
+        element.attrib[parser.qualified("inkscape", "transform-center-y")] = 0
+        parser.parse_transform(element, group, dest_transform)
+        self.assert_transform(
+            dest_transform,
+            anchor_point=NVector(100, 200),
+            position=NVector(100, 200),
+            scale=NVector(100, 100),
+            rotation=0,
+            skew_axis=0,
+            skew=0,
+        )
+
+        element.attrib[parser.qualified("inkscape", "transform-center-x")] = 20
+        element.attrib[parser.qualified("inkscape", "transform-center-y")] = -30
+        parser.parse_transform(element, group, dest_transform)
+        self.assert_transform(
+            dest_transform,
+            anchor_point=NVector(120, 230),
+            position=NVector(120, 230),
+            scale=NVector(100, 100),
+            rotation=0,
+            skew_axis=0,
+            skew=0,
+        )
+
+    def test_translate(self):
+        parser = SvgParser()
+        element = ElementTree.Element("g")
+        group = objects.Rect(NVector(100, 200), NVector(300, 400))
+        dest_transform = objects.Transform()
+
+        element.attrib["transform"] = "translate(12, 34)"
+        parser.parse_transform(element, group, dest_transform)
+        self.assert_transform(
+            dest_transform,
+            anchor_point=NVector(0, 0),
+            position=NVector(12, 34),
+            scale=NVector(100, 100),
+            rotation=0,
+            skew_axis=0,
+            skew=0,
+        )
+
+    def test_translate_multi(self):
+        parser = SvgParser()
+        element = ElementTree.Element("g")
+        group = objects.Rect(NVector(100, 200), NVector(300, 400))
+        dest_transform = objects.Transform()
+
+        element.attrib["transform"] = "translate(12, 34) translate(500, 600)"
+        parser.parse_transform(element, group, dest_transform)
+        self.assert_transform(
+            dest_transform,
+            anchor_point=NVector(0, 0),
+            position=NVector(512, 634),
+            scale=NVector(100, 100),
+            rotation=0,
+            skew_axis=0,
+            skew=0,
+        )
+
+    def test_rotate(self):
+        parser = SvgParser()
+        element = ElementTree.Element("g")
+        group = objects.Rect(NVector(100, 200), NVector(300, 400))
+        dest_transform = objects.Transform()
+
+        element.attrib["transform"] = "rotate(45)"
+        parser.parse_transform(element, group, dest_transform)
+        self.assert_transform(
+            dest_transform,
+            anchor_point=NVector(0, 0),
+            position=NVector(0, 0),
+            scale=NVector(100, 100),
+            rotation=45,
+            skew_axis=0,
+            skew=0,
+        )
+
+    def test_rotate_around(self):
+        parser = SvgParser()
+        element = ElementTree.Element("g")
+        group = objects.Rect(NVector(100, 200), NVector(300, 400))
+        dest_transform = objects.Transform()
+
+        element.attrib["transform"] = "rotate(45, 12, 34)"
+        parser.parse_transform(element, group, dest_transform)
+        self.assert_transform(
+            dest_transform,
+            anchor_point=NVector(12, 34),
+            position=NVector(12, 34),
+            scale=NVector(100, 100),
+            rotation=45,
+            skew_axis=0,
+            skew=0,
+        )
+
+    def test_scale_1(self):
+        parser = SvgParser()
+        element = ElementTree.Element("g")
+        group = objects.Rect(NVector(100, 200), NVector(300, 400))
+        dest_transform = objects.Transform()
+
+        element.attrib["transform"] = "scale(0.7)"
+        parser.parse_transform(element, group, dest_transform)
+        self.assert_transform(
+            dest_transform,
+            anchor_point=NVector(0, 0),
+            position=NVector(0, 0),
+            scale=NVector(70, 70),
+            rotation=0,
+            skew_axis=0,
+            skew=0,
+        )
+
+    def test_scale_2(self):
+        parser = SvgParser()
+        element = ElementTree.Element("g")
+        group = objects.Rect(NVector(100, 200), NVector(300, 400))
+        dest_transform = objects.Transform()
+
+        element.attrib["transform"] = "scale(0.7, 0.5)"
+        parser.parse_transform(element, group, dest_transform)
+        self.assert_transform(
+            dest_transform,
+            anchor_point=NVector(0, 0),
+            position=NVector(0, 0),
+            scale=NVector(70, 50),
+            rotation=0,
+            skew_axis=0,
+            skew=0,
+        )
+
+    def test_multi_trans(self):
+        parser = SvgParser()
+        element = ElementTree.Element("g")
+        group = objects.Rect(NVector(100, 200), NVector(300, 400))
+        dest_transform = objects.Transform()
+
+        element.attrib["transform"] = "scale(0.7, 0.5) rotate(45) translate(12, 34)"
+        parser.parse_transform(element, group, dest_transform)
+        self.assert_transform(
+            dest_transform,
+            anchor_point=NVector(0, 0),
+            position=NVector(12, 34),
+            scale=NVector(70, 50),
+            rotation=45,
+            skew_axis=0,
+            skew=0,
+        )
+
+    def test_matrix(self):
+        parser = SvgParser()
+        element = ElementTree.Element("g")
+        group = objects.Rect(NVector(100, 200), NVector(300, 400))
+        dest_transform = objects.Transform()
+
+        m = TransformMatrix()
+        m.scale(0.7, 0.5)
+        m.rotate(-math.pi/4)
+        m.translate(12, 34)
+        element.attrib["transform"] = m.to_css_2d()
+        parser.parse_transform(element, group, dest_transform)
+        self.assert_transform(
+            dest_transform,
+            anchor_point=NVector(0, 0),
+            position=NVector(12, 34),
+            scale=NVector(70, 50),
+            rotation=45,
+            skew_axis=0,
+            skew=0,
+        )
