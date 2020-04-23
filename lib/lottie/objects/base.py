@@ -278,14 +278,14 @@ class LottieObject(LottieBase, metaclass=LottieObjectMeta):
                         return found
         return None
 
-    def find_all(self, type, predicate=None):
+    def find_all(self, type, predicate=None, include_self=True):
         """!
         Find all child objects that match a predicate
         @param type         Type (or tuple of types) of the objects to match
         @param predicate    Function that returns true on the objects to find
         """
 
-        if isinstance(self, type):
+        if isinstance(self, type) and include_self:
             if not predicate or predicate(self):
                 yield self
 
@@ -293,11 +293,11 @@ class LottieObject(LottieBase, metaclass=LottieObjectMeta):
             v = prop.get(self)
 
             if isinstance(v, LottieObject):
-                for found in v.find_all(type, predicate):
+                for found in v.find_all(type, predicate, True):
                     yield found
             elif isinstance(v, list) and object and isinstance(v[0], LottieObject):
                 for child in v:
-                    for found in child.find_all(type, predicate):
+                    for found in child.find_all(type, predicate, True):
                         yield found
 
 
