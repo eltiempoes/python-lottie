@@ -1,7 +1,7 @@
 from .base import LottieObject, LottieProp, PseudoBool, LottieEnum
 from .effects import Effect
 from .helpers import Transform, Mask
-from .shapes import ShapeElement
+from .shapes import ShapeElement, ShapeContainer
 from .text import TextAnimatorData
 from .properties import Value
 
@@ -158,6 +158,21 @@ class Layer(LottieObject):
     def __repr__(self):
         return "<%s %s %s>" % (type(self).__name__, self.index, self.name)
 
+    def find_all(self, type=ShapeElement, predicate=None, recursive=True):
+        """!
+        Returns all the child shapes matching a predicate
+        """
+        results = []
+        for e in self.children:
+            include = isinstance(e, type)
+            if predicate and include:
+                include = predicate(e)
+            if include:
+                results.append(e)
+            if recursive:
+                results += e.find_all(type, predicate, recursive)
+        return results
+
 
 ## \ingroup Lottie
 class NullLayer(Layer):
@@ -186,7 +201,7 @@ class TextLayer(Layer):
 
 
 ## \ingroup Lottie
-class ShapeLayer(Layer):
+class ShapeLayer(Layer, ShapeContainer):
     """!
     Layer containing ShapeElement objects
     """
@@ -201,13 +216,8 @@ class ShapeLayer(Layer):
         ## Shape list of items
         self.shapes = [] # ShapeElement
 
-    def add_shape(self, shape):
-        self.shapes.append(shape)
-        return shape
-
-    def insert_shape(self, index, shape):
-        self.shapes.insert(index, shape)
-        return shape
+    def find_all(self, type=ShapeElement, predicate=None, recursive=True):
+        return Layer.find_all(self, type, predicate, recursive) + ShapeContainer.find_all(self, type, predicate, recursive)
 
 
 ## \ingroup Lottie

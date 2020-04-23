@@ -420,8 +420,33 @@ class Path(Shape):
         return self.clone()
 
 
+class ShapeContainer:
+    def add_shape(self, shape):
+        self.shapes.insert(-1, shape)
+        return shape
+
+    def insert_shape(self, index, shape):
+        self.shapes.insert(index, shape)
+        return shape
+
+    def find_all(self, type=ShapeElement, predicate=None, recursive=True):
+        """!
+        Returns all the child shapes matching a predicate
+        """
+        results = []
+        for e in self.shapes:
+            include = isinstance(e, type)
+            if predicate and include:
+                include = predicate(e)
+            if include:
+                results.append(e)
+            if recursive and isinstance(e, Group):
+                results += e.find_all(type, predicate, recursive)
+        return results
+
+
 ## \ingroup Lottie
-class Group(ShapeElement):
+class Group(ShapeElement, ShapeContainer):
     """!
     ShapeElement that can contain other shapes
     @note Shapes inside the same group will create "holes" in other shapes
@@ -439,14 +464,6 @@ class Group(ShapeElement):
         self.number_of_properties = None
         ## Group list of items
         self.shapes = [TransformShape()]
-
-    def add_shape(self, shape):
-        self.shapes.insert(-1, shape)
-        return shape
-
-    def insert_shape(self, index, shape):
-        self.shapes.insert(index, shape)
-        return shape
 
     @property
     def transform(self):
@@ -473,21 +490,6 @@ class Group(ShapeElement):
                 bbc = a + NVector(math.cos(r), math.sin(r)) * relc.length
                 bb = BoundingBox(bbc.x - bbs.x, bbc.y - bbs.y, bbc.x + bbs.x, bbc.y + bbs.y)
         return bb
-
-    def find_all(self, type=ShapeElement, predicate=None, recursive=True):
-        """!
-        Returns all the child shapes matching a predicate
-        """
-        results = []
-        for e in self.shapes:
-            include = isinstance(e, type)
-            if predicate and include:
-                include = predicate(e)
-            if include:
-                results.append(e)
-            if recursive and isinstance(e, Group):
-                results += e.find_all(type, predicate, recursive)
-        return results
 
 
 ## \ingroup Lottie
