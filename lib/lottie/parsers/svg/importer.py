@@ -235,6 +235,51 @@ class SvgParser(SvgHandler):
             return element.attrib.get("id")
         return None
 
+    def parse_etree(self, etree, layer_frames=0, *args, **kwargs):
+        animation = objects.Animation(*args, **kwargs)
+        self.animation = animation
+        self.max_time = 0
+        self.document = etree
+
+        svg = etree.getroot()
+
+        self.dpi = float(svg.attrib.get(self.qualified("inkscape", "export-xdpi"), 96))
+
+        if "width" in svg.attrib and "height" in svg.attrib:
+            animation.width = int(round(self._parse_unit(svg.attrib["width"])))
+            animation.height = int(round(self._parse_unit(svg.attrib["height"])))
+        else:
+            _, _, animation.width, animation.height = map(int, svg.attrib["viewBox"].split(" "))
+        animation.name = self._get_name(svg, self.qualified("sodipodi", "docname"))
+
+        if layer_frames:
+            for frame in svg:
+                if self.unqualified(frame.tag) == "g":
+                    layer = objects.ShapeLayer()
+                    layer.in_point = self.max_time
+                    animation.add_layer(layer)
+                    self._parseshape_g(frame, layer, {})
+                    self.max_time += layer_frames
+                    layer.out_point = self.max_time
+            animation.out_point = self.max_time
+        else:
+            layer = objects.ShapeLayer()
+            animation.add_layer(layer)
+            self.parse_children(svg, layer, {})
+            if self.max_time:
+                animation.out_point = self.max_time
+                for layer in animation.layers:
+                    layer.out_point = self.max_time
+
+        if "viewBox" in svg.attrib:
+            vbx, vby, vbw, vbh = map(float, svg.attrib["viewBox"].split())
+            if vbx != 0 or vby != 0 or vbw != animation.width or vbh != animation.height:
+                for layer in animation.layers:
+                    layer.transform.position.value = -NVector(vbx, vby)
+                    layer.transform.scale.value = NVector(animation.width / vbw, animation.height / vbh) * 100
+
+        return animation
+
     def _parse_unit(self, value):
         if not isinstance(value, str):
             return value
@@ -243,6 +288,18 @@ class SvgParser(SvgHandler):
         cmin = 2.54
         if value.endswith("px"):
             value = value[:-2]
+        elif value.endswith("vw"):
+            value = value[:-2]
+            mult = self.animation.width * 0.01
+        elif value.endswith("vh"):
+            value = value[:-2]
+            mult = self.animation.height * 0.01
+        elif value.endswith("vmin"):
+            value = value[:-4]
+            mult = min(self.animation.width, self.animation.height) * 0.01
+        elif value.endswith("vmax"):
+            value = value[:-4]
+            mult = max(self.animation.width, self.animation.height) * 0.01
         elif value.endswith("in"):
             value = value[:-2]
             mult = self.dpi
@@ -258,6 +315,9 @@ class SvgParser(SvgHandler):
         elif value.endswith("mm"):
             value = value[:-2]
             mult = self.dpi / cmin / 10
+        elif value.endswith("Q"):
+            value = value[:-1]
+            mult = self.dpi / cmin / 40
 
         return float(value) * mult
 
@@ -579,51 +639,6 @@ class SvgParser(SvgHandler):
                 self.defs.items[element.attrib["id"]] = out
             return out
         return None
-
-    def parse_etree(self, etree, layer_frames=0, *args, **kwargs):
-        animation = objects.Animation(*args, **kwargs)
-        self.animation = animation
-        self.max_time = 0
-        self.document = etree
-
-        svg = etree.getroot()
-
-        self.dpi = float(svg.attrib.get(self.qualified("inkscape", "export-xdpi"), 96))
-
-        if "width" in svg.attrib and "height" in svg.attrib:
-            animation.width = int(round(self._parse_unit(svg.attrib["width"])))
-            animation.height = int(round(self._parse_unit(svg.attrib["height"])))
-        else:
-            _, _, animation.width, animation.height = map(int, svg.attrib["viewBox"].split(" "))
-        animation.name = self._get_name(svg, self.qualified("sodipodi", "docname"))
-
-        if layer_frames:
-            for frame in svg:
-                if self.unqualified(frame.tag) == "g":
-                    layer = objects.ShapeLayer()
-                    layer.in_point = self.max_time
-                    animation.add_layer(layer)
-                    self._parseshape_g(frame, layer, {})
-                    self.max_time += layer_frames
-                    layer.out_point = self.max_time
-            animation.out_point = self.max_time
-        else:
-            layer = objects.ShapeLayer()
-            animation.add_layer(layer)
-            self.parse_children(svg, layer, {})
-            if self.max_time:
-                animation.out_point = self.max_time
-                for layer in animation.layers:
-                    layer.out_point = self.max_time
-
-        if "viewBox" in svg.attrib:
-            vbx, vby, vbw, vbh = map(float, svg.attrib["viewBox"].split())
-            if vbx != 0 or vby != 0 or vbw != animation.width or vbh != animation.height:
-                for layer in animation.layers:
-                    layer.transform.position.value = -NVector(vbx, vby)
-                    layer.transform.scale.value = NVector(animation.width / vbw, animation.height / vbh) * 100
-
-        return animation
 
     def _parse_defs(self, element):
         self.parse_children(element, self.defs, {})

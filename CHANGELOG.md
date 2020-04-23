@@ -1,3 +1,7 @@
+## Unreleased
+ * Made scripts more user friendly
+ * SVG importer improvements
+
 ## 0.6.0
  * Made scripts prefer the correct library version when running from source
  * Renamed the project to Lottie
