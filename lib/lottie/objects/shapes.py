@@ -422,7 +422,7 @@ class Path(Shape):
 
 class ShapeContainer:
     def add_shape(self, shape):
-        self.shapes.insert(-1, shape)
+        self.shapes.append(shape)
         return shape
 
     def insert_shape(self, index, shape):
@@ -491,6 +491,9 @@ class Group(ShapeElement, ShapeContainer):
                 bb = BoundingBox(bbc.x - bbs.x, bbc.y - bbs.y, bbc.x + bbs.x, bbc.y + bbs.y)
         return bb
 
+    def add_shape(self, shape):
+        self.shapes.insert(-1, shape)
+        return shape
 
 ## \ingroup Lottie
 class FillRule(LottieEnum):
