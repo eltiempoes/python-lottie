@@ -19,14 +19,14 @@ except ImportError:
     ExtraOption(
         "mode",
         default="embed",
-        choices=["external", "embed", "pixel", "polygon"] + (["bezier"] if raster else []),
+        choices=["external", "embed", "pixel", "polygon"] + (["trace"] if raster else []),
         help="Vectorization mode:\n" +
         " * external : load images as linked assets\n" +
         " * embed    : load images as embedded assets\n" +
         " * pixel    : Vectorize the image into rectangles\n" +
         " * polygon  : Vectorize the image into polygonal shapes\n" +
         "              Looks the same as pixel, but a single shape per color\n" +
-        " * bexier   : (if available) Use potrace to vectorize\n"
+        " * trace    : (if available) Use potrace to vectorize\n"
     ),
     ExtraOption("frame_delay", type=int, default=4, help="Number of frames to skip between images"),
     ExtraOption("framerate", type=int, default=60, help="Frames per second"),
@@ -55,7 +55,7 @@ def import_raster(filenames, n_colors, palette, mode, frame_delay=1,
         return raster_to_embedded_assets(filenames, frame_delay, framerate, embed_format)
     elif mode == "external":
         return raster_to_linked_assets(filenames, frame_delay, framerate)
-    elif mode == "bezier":
+    elif mode == "trace":
         from ..parsers.raster import QuanzationMode
         # TODO QuanzationMode for raster
         cm = QuanzationMode.Nearest if ns.color_mode == "nearest" else QuanzationMode.Exact

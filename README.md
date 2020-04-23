@@ -44,10 +44,17 @@ raster images, the process is a bit slow for larger images but use it with cauti
 
 To use the potrace vectorization library, install the extras tagged as "trace".
 
-Once set up, just invoke `lottie_convert.py`
+Once set up, just invoke `lottie_convert.py` using the vectorization algorithm
+
+    lottie_convert.py input_file.gif output_file.json --bmp-mode trace
+
+For pixel art, you can use the `pizel` algorithm, which doesn't require potrace
+
+    lottie_convert.py input_file.gif output_file.json --bmp-mode pixel
+
+If you are ok with keeping raster images as such, you can use the default mode
 
     lottie_convert.py input_file.gif output_file.json
-
 
 ### Converting Telegram animated stickers (tgs)
 

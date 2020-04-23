@@ -76,7 +76,10 @@ group.add_argument(
     default=1,
     type=int,
     choices=[0, 1, 2],
-    help="Optimize the animation parameter: 0 no optimization, 1 truncate floats, 2 truncate floats and names",
+    help="Optimize the animation parameter:\n" +
+         " * 0 no optimization\n" +
+         " * 1 truncate floats\n" +
+         " * 2 truncate floats and names"
 )
 
 if __name__ == "__main__":

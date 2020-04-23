@@ -62,7 +62,10 @@ def export_gif(animation, fp, dpi=96, skip_frames=5):
 
 @exporter("WebP", ["webp"], [
     ExtraOption("lossless", action="store_true", help="If present, use lossless compression"),
-    ExtraOption("quality", type=int, default=80, help="Compression effort between 0 and 100, for lossy 0 gives the smalles size, for lossless 0 gives the largest file"),
+    ExtraOption("quality", type=int, default=80,
+                help="Compression effort between 0 and 100\n" +
+                     "for lossy 0 gives the smalles size\n" +
+                     "for lossless 0 gives the largest file"),
     ExtraOption("method", type=int, default=0, help="Quality/speed trade-off (0=fast, 6=slower-better)"),
 ])
 def export_webp(animation, fp, dpi=96, lossless=False, quality=80, method=0):
