@@ -259,8 +259,8 @@ class LottieObject(LottieBase, metaclass=LottieObjectMeta):
 
     def find(self, search, propname="name"):
         """!
-        \param search   The value of the property to search
-        \param propname The name of the property used to search
+        @param search   The value of the property to search
+        @param propname The name of the property used to search
         @brief Recursively searches for child objects with a matching property
         """
         if getattr(self, propname, None) == search:
@@ -277,6 +277,29 @@ class LottieObject(LottieBase, metaclass=LottieObjectMeta):
                     if found:
                         return found
         return None
+
+    def find_all(self, type, predicate=None):
+        """!
+        Find all child objects that match a predicate
+        @param type         Type (or tuple of types) of the objects to match
+        @param predicate    Function that returns true on the objects to find
+        """
+
+        if isinstance(self, type):
+            if not predicate or predicate(self):
+                yield self
+
+        for prop in self._props:
+            v = prop.get(self)
+
+            if isinstance(v, LottieObject):
+                for found in v.find_all(type, predicate):
+                    yield found
+            elif isinstance(v, list) and object and isinstance(v[0], LottieObject):
+                for child in v:
+                    for found in child.find_all(type, predicate):
+                        yield found
+
 
     def clone(self):
         obj = self.__class__()

@@ -420,33 +420,8 @@ class Path(Shape):
         return self.clone()
 
 
-class ShapeContainer:
-    def add_shape(self, shape):
-        self.shapes.append(shape)
-        return shape
-
-    def insert_shape(self, index, shape):
-        self.shapes.insert(index, shape)
-        return shape
-
-    def find_all(self, type=ShapeElement, predicate=None, recursive=True):
-        """!
-        Returns all the child shapes matching a predicate
-        """
-        results = []
-        for e in self.shapes:
-            include = isinstance(e, type)
-            if predicate and include:
-                include = predicate(e)
-            if include:
-                results.append(e)
-            if recursive and isinstance(e, Group):
-                results += e.find_all(type, predicate, recursive)
-        return results
-
-
 ## \ingroup Lottie
-class Group(ShapeElement, ShapeContainer):
+class Group(ShapeElement):
     """!
     ShapeElement that can contain other shapes
     @note Shapes inside the same group will create "holes" in other shapes
@@ -494,6 +469,11 @@ class Group(ShapeElement, ShapeContainer):
     def add_shape(self, shape):
         self.shapes.insert(-1, shape)
         return shape
+
+    def insert_shape(self, index, shape):
+        self.shapes.insert(index, shape)
+        return shape
+
 
 ## \ingroup Lottie
 class FillRule(LottieEnum):
