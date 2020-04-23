@@ -1,5 +1,6 @@
 import re
 import math
+import colorsys
 from xml.etree import ElementTree
 from ... import objects
 from ...nvector import NVector
@@ -14,32 +15,6 @@ except ImportError:
     has_font = False
 
 nocolor = {"none"}
-
-
-def hsl_to_rgb(h, s, l):
-    if l < 0.5:
-        m2 = l * (s + 1)
-    else:
-        m2 = l + s - l * s
-    m1 = l*2 - m2
-    r = hue_to_rgb(m1, m2, h+1/3)
-    g = hue_to_rgb(m1, m2, h)
-    b = hue_to_rgb(m1, m2, h-1/3)
-    return [r, g, b]
-
-
-def hue_to_rgb(m1, m2, h):
-    if h < 0:
-        h += 1
-    elif h > 1:
-        h -= 1
-    if h*6 < 1:
-        return m1+(m2-m1)*h*6
-    elif h*2 < 1:
-        return m2
-    elif h*3 < 2:
-        return m1+(m2-m1)*(2/3-h)*6
-    return m1
 
 
 class SvgGradientCoord:
@@ -155,6 +130,11 @@ class SvgRadialGradient(SvgGradient):
 
 
 def parse_color(color, current_color=NVector(0, 0, 0, 1)):
+    """!
+    Parses CSS colors
+
+    @see https://www.w3.org/wiki/CSS/Properties/color
+    """
     # #fff
     if re.match(r"^#[0-9a-fA-F]{6}$", color):
         return NVector(int(color[1:3], 16) / 0xff, int(color[3:5], 16) / 0xff, int(color[5:7], 16) / 0xff, 1)
@@ -174,7 +154,7 @@ def parse_color(color, current_color=NVector(0, 0, 0, 1)):
     if match:
         return NVector(int(match[1])/100, int(match[2])/100, int(match[3])/100, 1)
     # rgba(60%, 30%, 20%, 0.7)
-    match = re.match(r"^rgb\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
+    match = re.match(r"^rgba\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
     if match:
         return NVector(int(match[1])/100, int(match[2])/100, int(match[3])/100, float(match[4]))
     # transparent
@@ -183,11 +163,11 @@ def parse_color(color, current_color=NVector(0, 0, 0, 1)):
     # hsl(60, 30%, 20%)
     match = re.match(r"^hsl\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*\)$", color)
     if match:
-        return NVector(*(hsl_to_rgb(int(match[1])/360, int(match[2])/100, int(match[3])/100) + [1]))
+        return NVector(*(colorsys.hls_to_rgb(int(match[1])/360, int(match[3])/100, int(match[2])/100) + (1,)))
     # hsla(60, 30%, 20%, 0.7)
-    match = re.match(r"^hsl\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
+    match = re.match(r"^hsla\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
     if match:
-        return NVector(*(hsl_to_rgb(int(match[1])/360, int(match[2])/100, int(match[3])/100) + [float(match[4])]))
+        return NVector(*(colorsys.hls_to_rgb(int(match[1])/360, int(match[3])/100, int(match[2])/100) + (float(match[4]),)))
     # currentColor
     if color in {"currentColor", "inherit"}:
         return current_color
