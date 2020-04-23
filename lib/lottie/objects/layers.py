@@ -211,8 +211,7 @@ class ShapeLayer(Layer):
 
 
 ## \ingroup Lottie
-## \todo SVG/SIF I/O
-## \todo importers for raster images without vectorization
+## \todo SIF I/O
 class ImageLayer(Layer):
     _props = [
         LottieProp("image_id", "refId", str, False),

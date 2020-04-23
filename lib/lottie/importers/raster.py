@@ -1,6 +1,9 @@
 from .base import importer
 from ..parsers.baseporter import ExtraOption
-from ..parsers.pixel import pixel_to_animation_paths, pixel_to_animation
+from ..parsers.pixel import (
+    pixel_to_animation_paths, pixel_to_animation,
+    raster_to_embedded_assets, raster_to_linked_assets
+)
 from ..parsers.svg.importer import parse_color
 
 try:
@@ -15,9 +18,15 @@ except ImportError:
     ExtraOption("palette", type=parse_color, default=[], nargs="+", help="Custom palette"),
     ExtraOption(
         "mode",
-        default="pixel",
-        choices=["pixel", "polygon"] + (["bezier"] if raster else []),
-        help="Vectorization mode"
+        default="embed",
+        choices=["external", "embed", "pixel", "polygon"] + (["bezier"] if raster else []),
+        help="Vectorization mode:\n" +
+        " * external : load images as linked assets\n" +
+        " * embed    : load images as embedded assets\n" +
+        " * pixel    : Vectorize the image into rectangles\n" +
+        " * polygon  : Vectorize the image into polygonal shapes\n" +
+        "              Looks the same as pixel, but a single shape per color\n" +
+        " * bexier   : (if available) Use potrace to vectorize\n"
     ),
     ExtraOption("frame_delay", type=int, default=4, help="Number of frames to skip between images"),
     ExtraOption("framerate", type=int, default=60, help="Frames per second"),
@@ -26,17 +35,27 @@ except ImportError:
         "color_mode",
         default="nearest",
         choices=["nearest", "exact"],
-        help="How to quantize colors." +
-             "nearest will map each color to the most similar in the palette." +
-             " exact will only match exact colors"
+        help="How to quantize colors.\n" +
+             " * nearest    will map each color to the most similar in the palette\n" +
+             " * exact      will only match exact colors"
+    ),
+    ExtraOption(
+        "embed_format",
+        default=None,
+        help="Format to store images internally when using `embed` mode"
     ),
 ])
-def import_raster(filenames, n_colors, palette, mode, frame_delay=1, framerate=60, frame_files=[], color_mode="nearest"):
+def import_raster(filenames, n_colors, palette, mode, frame_delay=1,
+                  framerate=60, frame_files=[], color_mode="nearest", embed_format=None):
     if not isinstance(filenames, list):
         filenames = [filenames]
     filenames = filenames + frame_files
 
-    if mode == "bezier":
+    if mode == "embed":
+        return raster_to_embedded_assets(filenames, frame_delay, framerate, embed_format)
+    elif mode == "external":
+        return raster_to_linked_assets(filenames, frame_delay, framerate)
+    elif mode == "bezier":
         from ..parsers.raster import QuanzationMode
         # TODO QuanzationMode for raster
         cm = QuanzationMode.Nearest if ns.color_mode == "nearest" else QuanzationMode.Exact

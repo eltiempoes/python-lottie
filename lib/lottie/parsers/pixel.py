@@ -205,11 +205,41 @@ def _vectorizing_func(filenames, frame_delay, framerate, callback):
             raster.seek = lambda x: None
         for frame in range(raster.n_frames):
             raster.seek(frame)
-            callback(animation, raster.convert("RGBA"), nframes + frame)
+            callback(animation, raster, nframes + frame)
         nframes += raster.n_frames
 
     animation.out_point = frame_delay * nframes
-    animation._nframes = nframes
+    #animation._nframes = nframes
+
+    return animation
+
+
+def raster_to_embedded_assets(filenames, frame_delay=1, framerate=60, embed_format=None):
+    """!
+    @brief Loads external assets
+    """
+    def callback(animation, raster, frame):
+        asset = objects.assets.Image.embedded(raster, embed_format)
+        animation.assets.append(asset)
+        layer = animation.add_layer(objects.ImageLayer(asset.id))
+        layer.in_point = frame * frame_delay
+        layer.out_point = layer.in_point + frame_delay
+
+    return _vectorizing_func(filenames, frame_delay, framerate, callback)
+
+
+def raster_to_linked_assets(filenames, frame_delay=1, framerate=60):
+    """!
+    @brief Loads external assets
+    """
+    animation = objects.Animation(frame_delay * len(filenames), framerate)
+
+    for frame, filename in enumerate(filenames):
+        asset = objects.assets.Image.linked(filename)
+        animation.assets.append(asset)
+        layer = animation.add_layer(objects.ImageLayer(asset.id))
+        layer.in_point = frame * frame_delay
+        layer.out_point = layer.in_point + frame_delay
 
     return animation
 
@@ -219,7 +249,7 @@ def pixel_to_animation(filenames, frame_delay=1, framerate=60):
     @brief Converts pixel art to vector
     """
     def callback(animation, raster, frame):
-        layer = pixel_add_layer_rects(animation, raster)
+        layer = pixel_add_layer_rects(animation, raster.convert("RGBA"))
         layer.in_point = frame * frame_delay
         layer.out_point = layer.in_point + frame_delay
 
@@ -235,7 +265,7 @@ def pixel_to_animation_paths(filenames, frame_delay=1, framerate=60):
     Mostly useful when you want to add your own animations to the loaded image
     """
     def callback(animation, raster, frame):
-        layer = pixel_add_layer_paths(animation, raster)
+        layer = pixel_add_layer_paths(animation, raster.convert("RGBA"))
         layer.in_point = frame * frame_delay
         layer.out_point = layer.in_point + frame_delay
 

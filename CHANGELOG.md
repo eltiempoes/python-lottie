@@ -1,6 +1,8 @@
 ## Unreleased
  * Made scripts more user friendly
  * SVG importer improvements
+ * Fixed bounding box calculations on rotated groups
+ * Importers for raster images without vectorization
 
 ## 0.6.0
  * Made scripts prefer the correct library version when running from source

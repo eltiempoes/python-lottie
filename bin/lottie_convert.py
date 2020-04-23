@@ -30,7 +30,7 @@ Supported formats:
 
 parser = argparse.ArgumentParser(
     description=desc,
-    formatter_class=argparse.RawDescriptionHelpFormatter,
+    formatter_class=argparse.RawTextHelpFormatter,
     conflict_handler='resolve'
 )
 parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)

@@ -2,6 +2,7 @@ import os
 import re
 import base64
 import mimetypes
+from io import BytesIO
 from .base import LottieObject, LottieProp, PseudoBool, Index
 from .layers import Layer
 from .shapes import ShapeElement
@@ -60,31 +61,61 @@ class Image(Asset):
 
     def load(self, file, format=None):
         """!
-        \param file     Filename or file object to load
+        \param file     Filename, file object, or PIL.Image.Image to load
         \param format   Format to store the image data as
         """
         from PIL import Image
-        from io import BytesIO
+
+        if not isinstance(file, Image.Image):
+            image = Image.open(file)
+        else:
+            image = file
+
+        self._id_from_file(file)
+
         self.image_path = ""
-        im = Image.open(file)
         if format is None:
-            format = im.format.lower()
-        self.width, self.height = im.size
+            format = (image.format or "png").lower()
+        self.width, self.height = image.size
         output = BytesIO()
-        im.save(output, format=format)
+        image.save(output, format=format)
         self.image = "data:image/%s;base64,%s" % (
             format,
             base64.b64encode(output.getvalue()).decode("ascii")
         )
         self.embedded = True
+        return self
+
+    def _id_from_file(self, file):
         if not self.id:
             if isinstance(file, str):
                 self.id = os.path.basename(file)
             elif hasattr(file, "name"):
                 self.id = os.path.basename(file.name)
+            elif hasattr(file, "filename"):
+                self.id = os.path.basename(file.filename)
             else:
                 self.id = "image_%s" % id(self)
-        return self
+
+    @classmethod
+    def embedded(cls, image, format=None):
+        """!
+        Create an object from an image file
+        """
+        lottie_image = cls()
+        return lottie_image.load(image, format)
+
+    @classmethod
+    def linked(cls, filename):
+        from PIL import Image
+        image = Image.open(filename)
+        lottie_image = cls()
+        lottie_image._id_from_file(filename)
+        lottie_image.image_path, lottie_image.image = os.path.split(filename)
+        lottie_image.image_path += "/"
+        lottie_image.width = image.width
+        lottie_image.height = image.height
+        return lottie_image
 
     def image_data(self):
         """

@@ -295,7 +295,7 @@ class LottieObject(LottieBase, metaclass=LottieObjectMeta):
             if isinstance(v, LottieObject):
                 for found in v.find_all(type, predicate, True):
                     yield found
-            elif isinstance(v, list) and object and isinstance(v[0], LottieObject):
+            elif isinstance(v, list) and v and isinstance(v[0], LottieObject):
                 for child in v:
                     for found in child.find_all(type, predicate, True):
                         yield found
