@@ -3,8 +3,9 @@
  * SVG importer improvements
  * Fixed bounding box calculations on rotated groups
  * Importers for raster images without vectorization
+ * SVG exporter improvements
 
-## 0.6.0
+## 0.6.0 - 2020-04-22
  * Made scripts prefer the correct library version when running from source
  * Renamed the project to Lottie
  * Renamed most of the code that referenced Tgs

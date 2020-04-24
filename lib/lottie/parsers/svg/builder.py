@@ -377,7 +377,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if layer and self.name_mode == NameMode.Inkscape:
             g.attrib[self.qualified("inkscape", "groupmode")] = "layer"
         self.set_id(g, lottie, self.qualified("inkscape", "label"), force=True)
-        self.set_transform(g, lottie.transform, lottie.auto_orient if layer else False)
+        self.set_transform(g, lottie.transform, getattr(lottie, "auto_orient", False))
         return g
 
     def _on_shapegroup(self, group, dom_parent):
