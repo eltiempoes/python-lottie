@@ -163,8 +163,8 @@ class DoxyHelpFormatter(argparse.HelpFormatter):
 with open(doxfile, "w") as outf:
     outf.write(r"""
 /**
-    \page scripts Scripts
-    \brief Script files
+\page scripts Scripts
+\brief Script files
 
 |Script|Description|
 |---|---|
