@@ -301,6 +301,11 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if style.get("stroke-width", 0) <= 0 or style["stroke-opacity"] <= 0:
             return
 
+        if group.stroke_above:
+            fill_layer.attrib.setdefault("style", "")
+            fill_layer.attrib["style"] += self._style_to_css(style)
+            return fill_layer
+
         g = ElementTree.Element("g")
         self.set_clean_id(g, "stroke")
         use = ElementTree.Element("use")
@@ -312,12 +317,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         else:
             return
 
-        if group.stroke_above:
-            g.append(fill_layer)
-            g.append(use)
-        else:
-            g.append(use)
-            g.append(fill_layer)
+        g.append(use)
+        g.append(fill_layer)
 
         use.attrib[self.qualified("xlink", "href")] = "#" + fill_layer.attrib["id"]
         use.attrib["style"] = self._style_to_css(style)
