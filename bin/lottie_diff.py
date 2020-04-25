@@ -18,7 +18,7 @@ from lottie import __version__
 parser = argparse.ArgumentParser(
     description="Shows a side-by-side diff of the human-readable rendition of two tgs / lottie files",
 )
-parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - python-lottie " + __version__)
 parser.add_argument(
     "file1",
     help="Left file"

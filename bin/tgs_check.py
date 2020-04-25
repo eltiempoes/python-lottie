@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(
     description="Checks a lottie or tgs file to see if it's compatible with telegram stickers",
     formatter_class=argparse.RawTextHelpFormatter
 )
-parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - python-lottie " + __version__)
 parser.add_argument(
     "infile",
     help="Input file"

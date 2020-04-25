@@ -16,7 +16,7 @@ from lottie import __version__
 parser = argparse.ArgumentParser(
     description="Pretty prints a tgs / lottie file with more readable annotations (useful to debug / diff lottie files)"
 )
-parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - python-lottie " + __version__)
 parser.add_argument(
     "infile",
     help="Input file"

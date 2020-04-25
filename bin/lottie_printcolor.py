@@ -27,7 +27,7 @@ def _parse_color(color):
 parser = argparse.ArgumentParser(
     description="Converts a CSS color into a normalized array, as used in lottie"
 )
-parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - python-lottie " + __version__)
 parser.add_argument(
     "color",
     help="Color to inspect (in one of the CSS color formats)"

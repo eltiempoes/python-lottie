@@ -12,7 +12,7 @@ from lottie import __version__
 parser = argparse.ArgumentParser(
     description="Shows the palette of a raster image"
 )
-parser.add_argument("--version", "-v", action="version", version="%(prog)s - tgs " + __version__)
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - python-lottie " + __version__)
 parser.add_argument(
     "infile",
     help="Input file"

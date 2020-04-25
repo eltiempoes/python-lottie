@@ -3,6 +3,7 @@
 import os
 import sys
 import signal
+import argparse
 from io import StringIO
 
 from PySide2 import QtCore, QtWidgets, QtGui, QtSvg
@@ -13,6 +14,7 @@ sys.path.insert(0, os.path.join(
 ))
 from lottie.importers.core import import_tgs
 from lottie.exporters.svg import export_svg
+from lottie import __version__
 
 
 class LottieViewerWindow(QtWidgets.QMainWindow):
@@ -20,6 +22,7 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.animation = None
         self._frame_cache = {}
+        self.setWindowTitle("Lottie Viewer")
 
         central_widget = QtWidgets.QWidget()
         self.setCentralWidget(central_widget)
@@ -79,6 +82,7 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         self.animation = animation
         self.display.setFixedSize(self.animation.width, self.animation.height)
         self._update_frame()
+        self.setWindowTitle("Lottie Viewer - %s" % os.path.basename(file_name))
 
     def _update_frame(self):
         if not self.animation:
@@ -96,12 +100,26 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         self.display.load(rendered)
 
 
+parser = argparse.ArgumentParser(description="GUI viewer for lottie Animations")
+parser.add_argument(
+    "file",
+    help="File to open",
+    default=None,
+    nargs="?"
+)
+parser.add_argument("--version", "-v", action="version", version="%(prog)s - python-lottie " + __version__)
+
 if __name__ == "__main__":
+    ns = parser.parse_args()
+
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+
     app = QtWidgets.QApplication([])
 
     window = LottieViewerWindow()
     window.resize(800, 600)
+    if ns.file:
+        window.open_file(ns.file)
     window.show()
 
     sys.exit(app.exec_())
