@@ -42,7 +42,7 @@ extras_require = {
     "video": ["opencv-python", "pillow", "numpy"],
     "emoji": ["grapheme"],
 }
-extras_require["all"] = list(reduce(lambda a, b: a|b, map(set, extras_require.values())))
+extras_require["all"] = list(reduce(lambda a, b: a | b, map(set, extras_require.values())))
 
 setuptools.setup(
     name="lottie",
@@ -55,7 +55,7 @@ setuptools.setup(
     url="https://gitlab.com/mattia.basaglia/python-lottie/",
     package_dir={'': 'lib'},
     license="GNU Affero General Public License v3 or later (AGPLv3+)",
-    packages=find_packages() + find_packages("tgs"),
+    packages=find_packages(),
     scripts=[
         os.path.join("bin", "raster_palette.py"),
         os.path.join("bin", "lottie_cat.py"),
