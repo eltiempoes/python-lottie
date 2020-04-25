@@ -58,12 +58,12 @@ class Transform(LottieObject):
         scale = self.scale.get_value(time) if self.scale else NVector(100, 100)
         mat.scale(scale.x / 100, scale.y / 100)
 
-        skew = self.skew.get_value(time) * math.pi / 180 if self.skew else 0
+        skew = (self.skew.get_value(time) * math.pi / 180) if self.skew else 0
         if skew != 0:
-            axis = self.skew_axis.get_value(time) * math.pi / 180 if self.skew_axis else 0
+            axis = (self.skew_axis.get_value(time) * math.pi / 180) if self.skew_axis else 0
             mat.skew_from_axis(-skew, axis)
 
-        rot = self.rotation.get_value(time) * math.pi / 180 if self.rotation else 0
+        rot = (self.rotation.get_value(time) * math.pi / 180) if self.rotation else 0
         if rot:
             mat.rotate(-rot)
 

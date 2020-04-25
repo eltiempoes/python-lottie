@@ -237,7 +237,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
 
     def set_transform(self, dom, transform, auto_orient=False):
         trans = []
-        mat = transform.to_matrix(auto_orient)
+        mat = transform.to_matrix(self.time, auto_orient)
         dom.attrib["transform"] = mat.to_css_2d()
 
         if transform.opacity is not None:
@@ -302,7 +302,10 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             return
 
         if group.stroke_above:
-            fill_layer.attrib.setdefault("style", "")
+            if "style" in fill_layer.attrib:
+                fill_layer.attrib["style"] += ";"
+            else:
+                fill_layer.attrib["style"] = ""
             fill_layer.attrib["style"] += self._style_to_css(style)
             return fill_layer
 
