@@ -1,4 +1,6 @@
 ## Unreleased
+
+## 0.6.1 - 2020-04-25
  * Made scripts more user friendly
  * SVG importer improvements
  * Fixed bounding box calculations on rotated groups
