@@ -16,3 +16,6 @@ numpy
 
 # GUI scripts
 PySide2
+
+# Testing
+coverage
