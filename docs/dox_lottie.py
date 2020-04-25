@@ -105,7 +105,7 @@ def proptable(out, cls, module, mode):
             )
 
         out.write(
-            "{lottie} | {type} | \\copybrief {fqn} {extra} | \\ref {fqn} \"{name}\" \n"
+            "{lottie} | {type} | \\copybrief {fqn} {extra} &nbsp; | \\ref {fqn} \"{name}\" \n"
             .format(
                 lottie=prop.lottie,
                 type=type,
@@ -121,8 +121,8 @@ os.makedirs(doxpath, exist_ok=True)
 with open(dox_classdoc, "w") as out_classdoc, open(dox_summary, "w") as out_summary:
     out_classdoc.write("/**\n")
     out_summary.write("""/**
-        \\page lottie_json Lottie JSON Format
-        \\ingroup Lottie
+\\page lottie_json Lottie JSON Format
+\\ingroup Lottie
     """)
 
     out_summary.write("""\n\\section lottie_index Index\n""")
@@ -159,7 +159,7 @@ with open(dox_classdoc, "w") as out_classdoc, open(dox_summary, "w") as out_summ
                 out_summary.write("------------|----|-----------|---------\n")
                 for name, val in cls.__members__.items():
                     fqn = "%s::%s::%s" % (module.fullname.replace(".", "::"), clsname, name)
-                    out_summary.write("{value} | {name} | \\copybrief {fqn} | \\ref {fqn} \"{name}\"\n".format(
+                    out_summary.write("{value} | {name} | \\copybrief {fqn} &nbsp; | \\ref {fqn} \"{name}\"\n".format(
                         value=val.value,
                         name=name,
                         fqn=fqn,
