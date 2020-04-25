@@ -30,6 +30,16 @@ class Composition(LottieObject):
         """
         return self.insert_layer(len(self.layers), layer)
 
+    @classmethod
+    def load(cls, lottiedict):
+        obj = super().load(lottiedict)
+        obj._fixup()
+        return obj
+
+    def _fixup(self):
+        for layer in self.layers:
+            layer.composition = self
+
     def insert_layer(self, index, layer: Layer):
         """!
         @brief Inserts a layer to the composition

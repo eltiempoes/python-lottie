@@ -101,3 +101,10 @@ class Animation(Composition):
             self.frame_rate = 30
         else:
             self.frame_rate = 60
+
+    def _fixup(self):
+        super()._fixup()
+        for ass in self.assets:
+            if isinstance(ass, Precomp):
+                ass.animation = self
+                ass._fixup()

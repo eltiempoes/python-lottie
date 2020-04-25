@@ -18,6 +18,7 @@ from lottie.exporters.base import exporters
 from lottie.importers.base import importers
 from lottie.parsers.baseporter import IoProgressReporter, ExtraOption
 from lottie import __version__
+from lottie import objects
 
 
 class GuiProgressReporter(IoProgressReporter):
@@ -189,6 +190,63 @@ class ExportThread(QtCore.QThread):
         IoProgressReporter.instance.cleanup()
 
 
+def lottie_theme_icon(lottie_object):
+    if isinstance(lottie_object, objects.Animation):
+        return "tool-animator"
+
+    if isinstance(lottie_object, objects.Precomp):
+        return "folder"
+
+    if isinstance(lottie_object, objects.ShapeLayer):
+        return "shapes"
+    if isinstance(lottie_object, objects.TextLayer):
+        return "draw-text"
+    if isinstance(lottie_object, objects.PreCompLayer):
+        return "emblem-symbolic-link"
+
+    if isinstance(lottie_object, (objects.Rect, objects.SolidColorLayer)):
+        return "draw-rectangle"
+    if isinstance(lottie_object, objects.Ellipse):
+        return "draw-ellipse"
+    if isinstance(lottie_object, objects.Star):
+        return "draw-star"
+    if isinstance(lottie_object, objects.Path):
+        return "draw-bezier-curves"
+    if isinstance(lottie_object, (objects.Fill, objects.GradientFill)):
+        return "format-fill-color"
+    if isinstance(lottie_object, (objects.Stroke, objects.GradientStroke)):
+        return "format-stroke-color"
+    if isinstance(lottie_object, objects.Transform):
+        return "transform-scale"
+    if isinstance(lottie_object, objects.Group):
+        return "object-group"
+
+    return None
+
+
+
+def lottie_to_tree(tree_parent, lottie_object):
+    item = QtWidgets.QTreeWidgetItem(tree_parent)
+    item.setText(0, getattr(lottie_object, "name", "") or type(lottie_object).__name__)
+
+    icon = lottie_theme_icon(lottie_object)
+    if icon:
+        item.setIcon(0, QtGui.QIcon.fromTheme(icon))
+
+    if isinstance(lottie_object, objects.Composition):
+        for layer in lottie_object.layers:
+            lottie_to_tree(item, layer)
+    if isinstance(lottie_object, objects.Animation):
+        for layer in lottie_object.assets:
+            lottie_to_tree(item, layer)
+    if isinstance(lottie_object, objects.Layer):
+        for layer in lottie_object.children:
+            lottie_to_tree(item, layer)
+    if isinstance(lottie_object, (objects.ShapeLayer, objects.Group)):
+        for layer in lottie_object.shapes:
+            lottie_to_tree(item, layer)
+
+
 class LottieViewerWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -203,11 +261,17 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         self.layout = QtWidgets.QVBoxLayout()
         central_widget.setLayout(self.layout)
 
-        self.display = QtSvg.QSvgWidget()
-        self.display.setFixedSize(512, 512)
         layout_display = QtWidgets.QHBoxLayout()
-        layout_display.addWidget(self.display)
         self.layout.addLayout(layout_display)
+
+        self.tree_widget = QtWidgets.QTreeWidget()
+        layout_display.addWidget(self.tree_widget)
+        self.tree_widget.setColumnCount(1)
+        self.tree_widget.setHeaderLabels(["Name"])
+
+        self.display = QtSvg.QSvgWidget()
+        layout_display.addWidget(self.display)
+        self.display.setFixedSize(512, 512)
         self.display.setAutoFillBackground(True)
         palette = self.display.palette()
         palette.setBrush(
@@ -312,6 +376,7 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         self.slider.setValue(animation.in_point)
         self.animation = animation
         self.display.setFixedSize(self.animation.width, self.animation.height)
+        lottie_to_tree(self.tree_widget, animation)
         self._update_frame()
         self.setWindowTitle("Lottie Viewer - %s" % os.path.basename(file_name))
         self.dirname = os.path.dirname(file_name)
@@ -332,7 +397,7 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         rendered = file.getvalue().encode("utf-8")
         self._frame_cache[frame] = rendered
         self.label_cahed.setText("%d%% Frames Rendered" % (
-            len(self._frame_cache) / (self.animation.out_point - self.animation.in_point) * 100
+            len(self._frame_cache) / ((self.animation.out_point+1) - self.animation.in_point) * 100
         ))
         return rendered
 
