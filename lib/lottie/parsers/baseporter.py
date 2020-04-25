@@ -1,3 +1,4 @@
+import sys
 import os
 import pkgutil
 import argparse
@@ -110,3 +111,20 @@ class Loader:
             self._registry[porter.slug] = porter
             return callback
         return decorator
+
+
+class IoProgressReporter:
+    def report_progress(self, title, value, total):
+        sys.stderr.write("\r%s %s/%s" % (title, value, total))
+        sys.stderr.flush()
+
+    def report_message(self, message):
+        sys.stderr.write(message + "\n")
+        sys.stderr.flush()
+
+
+IoProgressReporter.instance = IoProgressReporter()
+
+
+def io_progress():
+    return IoProgressReporter.instance

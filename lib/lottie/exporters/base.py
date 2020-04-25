@@ -1,4 +1,4 @@
-from ..parsers.baseporter import Baseporter, Loader
+from ..parsers.baseporter import Baseporter, Loader, ExtraOption, io_progress
 
 
 class ExporterLoader(Loader):

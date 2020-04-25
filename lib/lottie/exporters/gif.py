@@ -1,10 +1,9 @@
 import io
-import sys
 from PIL import Image
 from PIL import features
 
 from .cairo import export_png
-from .base import exporter
+from .base import exporter, io_progress
 from ..parsers.baseporter import ExtraOption
 
 
@@ -20,10 +19,9 @@ def _png_gif_prepare(image):
 
 def _log_frame(fmt, frame_no=None, end=None):
     if frame_no is None:
-        sys.stderr.write("\r%s frame rendering completed\n" % (fmt))
+        io_progress().report_message("%s frame rendering completed" % (fmt))
     else:
-        sys.stderr.write("\r%s rendering frame %s/%s" % (fmt, frame_no, end))
-    sys.stderr.flush()
+        io_progress().report_progress("%s rendering frame" % fmt, frame_no, end)
 
 
 @exporter("GIF", ["gif"], [
@@ -46,7 +44,7 @@ def export_gif(animation, fp, dpi=96, skip_frames=5):
         frames.append(_png_gif_prepare(Image.open(file)))
     _log_frame("GIF")
 
-    sys.stderr.write("GIF Writing to file...\n")
+    io_progress().report_message("GIF Writing to file...")
     duration = 1000 / animation.frame_rate
     frames[0].save(
         fp,
@@ -89,7 +87,7 @@ def export_webp(animation, fp, dpi=96, lossless=False, quality=80, method=0):
 
     _log_frame("WebP")
 
-    sys.stderr.write("WebP Writing to file...\n")
+    io_progress().report_message("WebP Writing to file...")
     duration = int(round(1000 / animation.frame_rate))
     frames[0].save(
         fp,
@@ -121,7 +119,7 @@ def export_tiff(animation, fp, dpi=96):
         frames.append(Image.open(file))
     _log_frame("TIFF")
 
-    sys.stderr.write("TIFF Writing to file...\n")
+    io_progress().report_message("TIFF Writing to file...")
     duration = int(round(1000 / animation.frame_rate))
     frames[0].save(
         fp,
