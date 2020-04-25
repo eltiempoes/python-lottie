@@ -249,6 +249,12 @@ so you can install all dependencies at once:
 
     pip install lottie[all]
 
+If you are using python-lottie from source you can run
+
+    pip install -r requirements.txt
+
+Which will install all the requirements (except for pypotrace, as that package has some issues)
+
 
 Telegram Animated Stickers
 --------------------------
