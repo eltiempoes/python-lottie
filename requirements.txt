@@ -13,3 +13,6 @@ grapheme
 # Video exporters
 opencv-python
 numpy
+
+# GUI scripts
+PySide2

@@ -4,6 +4,7 @@
  * Fixed bounding box calculations on rotated groups
  * Importers for raster images without vectorization
  * SVG exporter improvements
+ * Experimental GUI viewer
 
 ## 0.6.0 - 2020-04-22
  * Made scripts prefer the correct library version when running from source
