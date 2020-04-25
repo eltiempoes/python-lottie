@@ -13,9 +13,9 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from lottie.importers.core import import_tgs
 from lottie.exporters.svg import export_svg
 from lottie.exporters.base import exporters
+from lottie.importers.base import importers
 from lottie.parsers.baseporter import IoProgressReporter, ExtraOption
 from lottie import __version__
 
@@ -32,6 +32,7 @@ class GuiProgressReporter(IoProgressReporter):
         with self.lock:
             dialog = QtWidgets.QProgressDialog(parent)
             dialog.setCancelButton(None)
+            dialog.setWindowModality(QtGui.Qt.ApplicationModal)
             self.dialogs[self.id] = dialog
         return self.id
 
@@ -68,26 +69,23 @@ class GuiProgressReporter(IoProgressReporter):
             self.dialogs.pop(self.threads.pop(id)).hide()
 
 
-class GuiExporter:
-    def __init__(self, exporter):
-        self.exporter = exporter
-        self.file_filter = "%s (%s)" % (exporter.name, " ".join("*.%s" % e for e in exporter.extensions))
+class GuiBasePorter:
+    def __init__(self, porter):
+        self.porter = porter
+        self.file_filter = "%s (%s)" % (porter.name, " ".join("*.%s" % e for e in porter.extensions))
         self._dialog = None
         self.widgets = {}
 
     def _build_dialog(self):
         self._dialog = QtWidgets.QDialog()
-        self._dialog.setWindowTitle("Export to %s" % self.exporter.name)
+        self._dialog.setWindowTitle("Export to %s" % self.porter.name)
         layout = QtWidgets.QFormLayout()
         self._dialog.setLayout(layout)
 
-        for go in self.exporter.generic_options:
-            if go == "pretty":
-                self._add_option(layout, ExtraOption("pretty", action="store_true", help="Pretty print"))
-            if go == "frame":
-                self._add_option(layout, ExtraOption("frame", type=int, help="Frame to extract"))
+        for go in self.porter.generic_options:
+            self._generic_option(layout, go)
 
-        for option in self.exporter.extra_options:
+        for option in self.porter.extra_options:
             self._add_option(layout, option)
 
         button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
@@ -140,7 +138,7 @@ class GuiExporter:
 
     @property
     def needs_dialog(self):
-        return self.exporter.generic_options or self.exporter.extra_options
+        return self.porter.generic_options or self.porter.extra_options
 
     @property
     def dialog(self):
@@ -153,6 +151,27 @@ class GuiExporter:
             name: getter()
             for name, getter in self.widgets.items()
         }
+
+    def _generic_option(self, layout, go):
+        pass
+
+
+class GuiExporter(GuiBasePorter):
+    def _generic_option(self, layout, go):
+        if go == "pretty":
+            self._add_option(layout, ExtraOption("pretty", action="store_true", help="Pretty print"))
+        if go == "frame":
+            self._add_option(layout, ExtraOption("frame", type=int, help="Frame to extract"))
+
+    @property
+    def exporter(self):
+        return self.porter
+
+
+class GuiImporter(GuiBasePorter):
+    @property
+    def importer(self):
+        return self.porter
 
 
 class ExportThread(QtCore.QThread):
@@ -168,9 +187,6 @@ class ExportThread(QtCore.QThread):
         IoProgressReporter.instance.setup("Export to %s" % self.exporter.name, self.id)
         self.exporter.process(self.animation, self.file_name, **self.options)
         IoProgressReporter.instance.cleanup()
-
-
-gui_eporters = list(map(GuiExporter, exporters))
 
 
 class LottieViewerWindow(QtWidgets.QMainWindow):
@@ -235,20 +251,27 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         menu.addAction(action)
 
     def dialog_open_file(self):
+        filters = ";;".join(ge.file_filter for ge in gui_importers)
         file_name, filter = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Open Animation", self.dirname, "Lottie (*.json *.tgs)"
+            self, "Open Animation", self.dirname, filters
         )
+        for importer in gui_importers:
+            if importer.file_filter == filter:
+                break
+        else:
+            return
+
         if file_name:
-            self.open_file(file_name)
+            self.open_file(file_name, importer)
 
     def dialog_save_as(self):
-        filters = ";;".join(ge.file_filter for ge in gui_eporters)
+        filters = ";;".join(ge.file_filter for ge in gui_exporters)
         file_name, filter = QtWidgets.QFileDialog.getSaveFileName(self, "Save Animation", self.dirname, filters)
 
         if not file_name:
             return
 
-        for exporter in gui_eporters:
+        for exporter in gui_exporters:
             if exporter.file_filter == filter:
                 break
         else:
@@ -271,11 +294,17 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         thread.start()
         self._fu_gc.append(thread)
 
-    def open_file(self, file_name):
+    def open_file(self, file_name, importer):
+        if importer.needs_dialog:
+            importer.dialog.setParent(self)
+            importer.dialog.setWindowFlags(QtGui.Qt.Dialog)
+            if importer.dialog.exec_() != QtWidgets.QDialog.DialogCode.Accepted:
+                return
+
         self.stop()
         self.animation = None
         self._frame_cache = {}
-        animation = import_tgs(file_name)
+        animation = importer.importer.process(file_name, **importer.get_options())
         self.slider.setMinimum(animation.in_point)
         self.slider.setMaximum(animation.out_point)
         self.slider_spin.setMinimum(animation.in_point)
@@ -336,6 +365,9 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
             self.stop()
 
 
+gui_exporters = list(map(GuiExporter, exporters))
+gui_importers = list(map(GuiImporter, importers))
+
 parser = argparse.ArgumentParser(description="GUI viewer for lottie Animations")
 parser.add_argument(
     "file",
@@ -356,9 +388,13 @@ if __name__ == "__main__":
 
     window = LottieViewerWindow()
     window.resize(800, 600)
-    if ns.file:
-        window.open_file(ns.file)
     window.show()
+    if ns.file:
+        importer = importers.get_from_filename(ns.file)
+        for gip in gui_importers:
+            if gip.importer is importer:
+                break
+        window.open_file(ns.file, gip)
 
     sys.exit(app.exec_())
 
