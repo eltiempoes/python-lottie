@@ -137,7 +137,9 @@ Scripts
 python-lottie provides several scripts to convert or manage lottie animations.
 For full documentation see http://mattia.basaglia.gitlab.io/python-lottie/scripts.html
 
-The main one is `lottie_convert.py`, which can be used to convert between the supported formats
+The main one is `lottie_convert.py`, which can be used to convert between the supported formats.
+
+There is also the script `lottie_gui.py` which provides a graphical interface for lottie playback.
 
 
 
@@ -234,6 +236,7 @@ follows a table listing dependencies and features
 | `grapheme`                                    | emoji | Adding emoji support to text rendering                    |
 | `cairosvg`, `numpy`, Python OpenCV 2          | video | To export video                                           |
 | `pillow`, `pypotrace>=0.2`, `numpy`, `scipy`  | trace | To convert raster images into vectors                     |
+| `PySide2`                                     | GUI   | Grafical user interface utilities                         |
 | `coverage`                                    |       | To show unit test coverage, used optionally by `test.sh`  |
 
 
