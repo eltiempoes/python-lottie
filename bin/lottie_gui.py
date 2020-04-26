@@ -224,7 +224,6 @@ def lottie_theme_icon(lottie_object):
     return None
 
 
-
 def lottie_to_tree(tree_parent, lottie_object):
     item = QtWidgets.QTreeWidgetItem(tree_parent)
     item.setText(0, getattr(lottie_object, "name", "") or type(lottie_object).__name__)
@@ -297,9 +296,15 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
 
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
-        self._make_action(file_menu, "&Open...", "document-open", QtGui.QKeySequence.Open, self.dialog_open_file)
-        self._make_action(file_menu, "Save &As..", "document-save-as", QtGui.QKeySequence.SaveAs, self.dialog_save_as)
-        self._make_action(file_menu, "&Quit", "application-exit", QtGui.QKeySequence.Quit, self.close)
+        file_toolbar = self.addToolBar("File")
+        ks = QtGui.QKeySequence
+        for action in [
+            ("&Open...",    "document-open",    ks.Open,    self.dialog_open_file),
+            ("Save &As...", "document-save-as", ks.SaveAs,  self.dialog_save_as),
+            ("&Refresh",    "view-refresh",     ks.Refresh, self.reload_document),
+            ("&Quit",       "application-exit", ks.Quit,    self.close),
+        ]:
+            self._make_action(file_menu, file_toolbar, *action)
 
         self.label_cahed = QtWidgets.QLabel()
         self.statusBar().addPermanentWidget(self.label_cahed)
@@ -308,11 +313,12 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         self.timer.timeout.connect(self._next_frame)
         self.stop()
 
-    def _make_action(self, menu, name, theme, key_sequence, trigger):
+    def _make_action(self, menu, toolbar, name, theme, key_sequence, trigger):
         action = QtWidgets.QAction(QtGui.QIcon.fromTheme(theme), name, self)
         action.setShortcut(key_sequence)
         action.triggered.connect(trigger)
         menu.addAction(action)
+        toolbar.addAction(action)
 
     def dialog_open_file(self):
         filters = ";;".join(ge.file_filter for ge in gui_importers)
@@ -358,17 +364,19 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         thread.start()
         self._fu_gc.append(thread)
 
-    def open_file(self, file_name, importer):
-        if importer.needs_dialog:
-            importer.dialog.setParent(self)
-            importer.dialog.setWindowFlags(QtGui.Qt.Dialog)
-            if importer.dialog.exec_() != QtWidgets.QDialog.DialogCode.Accepted:
-                return
+    def open_file(self, file_name, importer, options=None):
+        if options is None:
+            if importer.needs_dialog:
+                importer.dialog.setParent(self)
+                importer.dialog.setWindowFlags(QtGui.Qt.Dialog)
+                if importer.dialog.exec_() != QtWidgets.QDialog.DialogCode.Accepted:
+                    return
+            options = importer.get_options()
 
         self.stop()
         self.animation = None
         self._frame_cache = {}
-        animation = importer.importer.process(file_name, **importer.get_options())
+        animation = importer.importer.process(file_name, **options)
         self.slider.setMinimum(animation.in_point)
         self.slider.setMaximum(animation.out_point)
         self.slider_spin.setMinimum(animation.in_point)
@@ -376,10 +384,18 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         self.slider.setValue(animation.in_point)
         self.animation = animation
         self.display.setFixedSize(self.animation.width, self.animation.height)
+        self.tree_widget.clear()
         lottie_to_tree(self.tree_widget, animation)
         self._update_frame()
         self.setWindowTitle("Lottie Viewer - %s" % os.path.basename(file_name))
         self.dirname = os.path.dirname(file_name)
+        self.importer = importer
+        self.importer_options = options
+        self.filename = file_name
+
+    def reload_document(self):
+        if self.animation:
+            self.open_file(self.filename, self.importer, self.importer_options)
 
     def _update_frame(self):
         if not self.animation:
