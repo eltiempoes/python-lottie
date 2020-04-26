@@ -260,40 +260,6 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         self.layout = QtWidgets.QVBoxLayout()
         central_widget.setLayout(self.layout)
 
-        layout_display = QtWidgets.QHBoxLayout()
-        self.layout.addLayout(layout_display)
-
-        self.tree_widget = QtWidgets.QTreeWidget()
-        layout_display.addWidget(self.tree_widget)
-        self.tree_widget.setColumnCount(1)
-        self.tree_widget.setHeaderLabels(["Name"])
-
-        self.display = QtSvg.QSvgWidget()
-        layout_display.addWidget(self.display)
-        self.display.setFixedSize(512, 512)
-        self.display.setAutoFillBackground(True)
-        palette = self.display.palette()
-        palette.setBrush(
-            self.display.backgroundRole(),
-            QtGui.QBrush(QtGui.QColor(255, 255, 255))
-            #QtGui.QBrush(QtGui.QColor(128, 128, 128), QtCore.Qt.Dense7Pattern)
-        )
-        self.display.setPalette(palette)
-
-        self.layout_slider = QtWidgets.QHBoxLayout()
-        self.button_play = QtWidgets.QPushButton()
-        self.button_play.setCheckable(True)
-        self.button_play.toggled.connect(self.play_toggle)
-        self.layout_slider.addWidget(self.button_play)
-        self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
-        self.layout_slider.addWidget(self.slider)
-        self.slider_spin = QtWidgets.QSpinBox()
-        self.layout_slider.addWidget(self.slider_spin)
-        self.layout.addLayout(self.layout_slider)
-        self.slider.valueChanged.connect(self.slider_spin.setValue)
-        self.slider_spin.valueChanged.connect(self.slider.setValue)
-        self.slider_spin.valueChanged.connect(self._update_frame)
-
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
         file_toolbar = self.addToolBar("File")
@@ -306,12 +272,58 @@ class LottieViewerWindow(QtWidgets.QMainWindow):
         ]:
             self._make_action(file_menu, file_toolbar, *action)
 
+        self.view_menu = menu.addMenu("&View")
+
+        self.tree_widget = QtWidgets.QTreeWidget()
+        self.tree_widget.setColumnCount(1)
+        self.tree_widget.setHeaderLabels(["Name"])
+        self._dock("Tree", self.tree_widget, QtCore.Qt.LeftDockWidgetArea, QtCore.Qt.RightDockWidgetArea)
+
+        layout_display = QtWidgets.QHBoxLayout()
+        self.layout.addLayout(layout_display)
+        self.display = QtSvg.QSvgWidget()
+        layout_display.addWidget(self.display)
+        self.display.setFixedSize(512, 512)
+        self.display.setAutoFillBackground(True)
+        palette = self.display.palette()
+        palette.setBrush(
+            self.display.backgroundRole(),
+            QtGui.QBrush(QtGui.QColor(255, 255, 255))
+            #QtGui.QBrush(QtGui.QColor(128, 128, 128), QtCore.Qt.Dense7Pattern)
+        )
+        self.display.setPalette(palette)
+
+        self.widget_time = QtWidgets.QWidget()
+        layout_slider = QtWidgets.QHBoxLayout()
+        layout_slider.setContentsMargins(0, 0, 0, 0)
+        self.widget_time.setLayout(layout_slider)
+        self.button_play = QtWidgets.QPushButton()
+        self.button_play.setCheckable(True)
+        self.button_play.toggled.connect(self.play_toggle)
+        layout_slider.addWidget(self.button_play)
+        self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        layout_slider.addWidget(self.slider)
+        self.slider_spin = QtWidgets.QSpinBox()
+        layout_slider.addWidget(self.slider_spin)
+        self.slider.valueChanged.connect(self.slider_spin.setValue)
+        self.slider_spin.valueChanged.connect(self.slider.setValue)
+        self.slider_spin.valueChanged.connect(self._update_frame)
+        self._dock("Timeline", self.widget_time, QtCore.Qt.BottomDockWidgetArea, QtCore.Qt.TopDockWidgetArea)
+
         self.label_cahed = QtWidgets.QLabel()
         self.statusBar().addPermanentWidget(self.label_cahed)
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self._next_frame)
         self.stop()
+
+    def _dock(self, name, widget, start_area, other_areas):
+        dock = QtWidgets.QDockWidget(name, self)
+        dock.setAllowedAreas(start_area | other_areas)
+        self.addDockWidget(start_area, dock)
+        dock.setWidget(widget)
+        self.view_menu.addAction(dock.toggleViewAction())
+        return dock
 
     def _make_action(self, menu, toolbar, name, theme, key_sequence, trigger):
         action = QtWidgets.QAction(QtGui.QIcon.fromTheme(theme), name, self)
