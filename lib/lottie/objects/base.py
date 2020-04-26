@@ -301,13 +301,15 @@ class LottieObject(LottieBase, metaclass=LottieObjectMeta):
                     for found in child.find_all(type, predicate, True):
                         yield found
 
-
     def clone(self):
         obj = self.__class__()
         for prop in self._props:
             v = prop.get(self)
             prop.set(obj, prop.clone_value(v))
         return obj
+
+    def __str__(self):
+        return type(self).__name__
 
 
 class Index:

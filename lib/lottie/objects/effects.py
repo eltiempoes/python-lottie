@@ -40,6 +40,9 @@ class EffectValue(LottieObject):
             }
         return EffectValue._classses[lottiedict["ty"]]
 
+    def __str__(self):
+        return self.name or super().__str__()
+
 
 ## \ingroup Lottie
 class Effect(LottieObject):
@@ -102,6 +105,9 @@ class Effect(LottieObject):
             if name == key:
                 return self.effects[i].value
         return super().__getattr__(key)
+
+    def __str__(self):
+        return self.name or super().__str__()
 
 
 ## \ingroup Lottie

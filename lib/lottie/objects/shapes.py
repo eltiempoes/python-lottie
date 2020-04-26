@@ -117,6 +117,9 @@ class ShapeElement(LottieObject):
                 dict[sc.type] = sc
             sc._load_sub(dict)
 
+    def __str__(self):
+        return self.name or super().__str__()
+
 
 ## \ingroup Lottie
 class Shape(ShapeElement):
@@ -590,6 +593,9 @@ class StrokeDash(LottieObject):
         self.name = type.name.lower()
         self.type = type
         self.length = Value(length)
+
+    def __str__(self):
+        return self.name or super().__str__()
 
 
 ## \ingroup Lottie

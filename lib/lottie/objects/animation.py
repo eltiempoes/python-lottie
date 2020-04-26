@@ -108,3 +108,6 @@ class Animation(Composition):
             if isinstance(ass, Precomp):
                 ass.animation = self
                 ass._fixup()
+
+    def __str__(self):
+        return self.name or super().__str__()

@@ -6,8 +6,9 @@ import signal
 import argparse
 from io import StringIO
 
-from PySide2 import QtCore, QtGui, QtSvg
+from PySide2 import QtGui, QtSvg
 from PySide2.QtWidgets import *
+from PySide2.QtCore import *
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -54,9 +55,10 @@ class LottieViewerWindow(QMainWindow):
         self.view_menu = menu.addMenu("&View")
 
         self.tree_widget = QTreeWidget()
-        self.tree_widget.setColumnCount(1)
-        self.tree_widget.setHeaderLabels(["Name"])
-        self._dock("Tree", self.tree_widget, QtCore.Qt.LeftDockWidgetArea, QtCore.Qt.RightDockWidgetArea)
+        self.tree_widget.setColumnCount(2)
+        self.tree_widget.setHeaderLabels(["Property", "Value"])
+        self.tree_widget.header().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.dock_tree = self._dock("Tree", self.tree_widget, Qt.LeftDockWidgetArea, Qt.RightDockWidgetArea)
 
         layout_display = QHBoxLayout()
         self.layout.addLayout(layout_display)
@@ -68,22 +70,27 @@ class LottieViewerWindow(QMainWindow):
         palette.setBrush(
             self.display.backgroundRole(),
             QtGui.QBrush(QtGui.QColor(255, 255, 255))
-            #QtGui.QBrush(QtGui.QColor(128, 128, 128), QtCore.Qt.Dense7Pattern)
+            #QtGui.QBrush(QtGui.QColor(128, 128, 128), Qt.Dense7Pattern)
         )
         self.display.setPalette(palette)
 
         self.widget_time = gui.timeline_widget.TimelineWidget()
         self.widget_time.frame_changed.connect(self._update_frame)
         self.widget_time.setEnabled(False)
-        self._dock("Timeline", self.widget_time, QtCore.Qt.BottomDockWidgetArea, QtCore.Qt.TopDockWidgetArea)
+        self._dock("Timeline", self.widget_time, Qt.BottomDockWidgetArea, Qt.TopDockWidgetArea)
 
         self.label_cahed = QLabel()
         self.statusBar().addPermanentWidget(self.label_cahed)
 
-        self.fs_watcher = QtCore.QFileSystemWatcher()
+        self.fs_watcher = QFileSystemWatcher()
         self.fs_watcher.fileChanged.connect(self.maybe_reload)
 
         self.filename = ""
+
+    def resizeEvent(self, ev):
+        super().resizeEvent(ev)
+        w = ev.size().width()
+        self.resizeDocks([self.dock_tree], [w], Qt.Horizontal)
 
     def _dock(self, name, widget, start_area, other_areas):
         dock = QDockWidget(name, self)
@@ -215,7 +222,7 @@ if __name__ == "__main__":
     gui.import_export.GuiProgressReporter.set_global()
 
     window = LottieViewerWindow()
-    window.resize(800, 600)
+    window.resize(1024, 800)
     window.show()
     if ns.file:
         importer = importers.get_from_filename(ns.file)

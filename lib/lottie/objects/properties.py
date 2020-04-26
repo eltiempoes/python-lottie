@@ -151,6 +151,9 @@ class Keyframe(LottieObject):
     def lerp_factor(self, ratio):
         return KeyframeBezier.from_keyframe(self).y_at_x(ratio)
 
+    def __str__(self):
+        return "%s %s" % (self.time, self.start)
+
 
 ## \ingroup Lottie
 class OffsetKeyframe(Keyframe):
@@ -309,7 +312,6 @@ class AnimatableMixin:
                 val = k.end
         return val, None, None, None
 
-
     def to_dict(self):
         d = super().to_dict()
         if self.animated:
@@ -324,6 +326,11 @@ class AnimatableMixin:
         else:
             val = self.value
         return "<%s.%s %s>" % (type(self).__module__, type(self).__name__, val)
+
+    def __str__(self):
+        if self.animated:
+            return "animated"
+        return str(self.value)
 
 
 ## \ingroup Lottie

@@ -163,6 +163,12 @@ class Layer(LottieObject):
     def __repr__(self):
         return "<%s %s %s>" % (type(self).__name__, self.index, self.name)
 
+    def __str__(self):
+        return "%s %s" % (
+            self.name or super().__str__(),
+            self.index if self.index is not None else ""
+        )
+
 
 ## \ingroup Lottie
 class NullLayer(Layer):

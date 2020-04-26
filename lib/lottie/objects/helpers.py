@@ -120,3 +120,6 @@ class Mask(LottieObject):
         ## Mask mode. Not all mask types are supported.
         self.mode = MaskMode.Intersect
         self.dilate = Value(0)
+
+    def __str__(self):
+        return self.name or super().__str__()

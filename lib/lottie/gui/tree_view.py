@@ -38,22 +38,36 @@ def lottie_theme_icon(lottie_object):
 
 
 def lottie_to_tree(tree_parent, lottie_object):
-    item = QtWidgets.QTreeWidgetItem(tree_parent)
-    item.setText(0, getattr(lottie_object, "name", "") or type(lottie_object).__name__)
+    prop_to_tree(tree_parent, None, lottie_object)
+
+
+def lottie_object_to_tree(item, lottie_object, textcol):
+    text = str(lottie_object)
+    if text != type(lottie_object).__name__ or textcol == 0:
+        item.setText(textcol, text)
 
     icon = lottie_theme_icon(lottie_object)
     if icon:
         item.setIcon(0, QtGui.QIcon.fromTheme(icon))
 
-    if isinstance(lottie_object, objects.Composition):
-        for layer in lottie_object.layers:
-            lottie_to_tree(item, layer)
-    if isinstance(lottie_object, objects.Animation):
-        for layer in lottie_object.assets:
-            lottie_to_tree(item, layer)
-    if isinstance(lottie_object, objects.Layer):
-        for layer in lottie_object.children:
-            lottie_to_tree(item, layer)
-    if isinstance(lottie_object, (objects.ShapeLayer, objects.Group)):
-        for layer in lottie_object.shapes:
-            lottie_to_tree(item, layer)
+    for prop in lottie_object._props:
+        prop_to_tree(item, prop.name, prop.get(lottie_object))
+
+
+def prop_to_tree(tree_parent, propname, propval):
+    item = QtWidgets.QTreeWidgetItem(tree_parent)
+
+    first_column = 0
+    if propname:
+        item.setText(0, propname)
+        first_column = 1
+
+    if isinstance(propval, objects.LottieObject):
+        lottie_object_to_tree(item, propval, first_column)
+    elif isinstance(propval, list):
+        for subval in propval:
+            prop_to_tree(item, type(subval).__name__, subval)
+    elif propval is None:
+        item.setText(first_column, "")
+    else:
+        item.setText(first_column, str(propval))
