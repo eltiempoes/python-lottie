@@ -38,11 +38,16 @@ def _get_parser(caller, basename, path, formats, verbosity):
         metavar="format"
     )
     parser.add_argument(
-        "--verbosity", "-v",
+        "--verbosity",
         type=int,
         default=int(verbosity)
     )
-
+    from .. import __version__
+    parser.add_argument(
+        "--version", "-v",
+        action="version",
+        version="%(prog)s - python-lottie script " + __version__
+    )
     exporters.set_options(parser)
 
     return parser
@@ -55,11 +60,15 @@ def get_parser(basename=None, path="/tmp", formats=["html"], verbosity=1):
 
 def run(animation, ns):
     for fmt in ns.formats:
-        absname = os.path.abspath(os.path.join(ns.path, ns.name + "." + fmt))
-        if ns.verbosity:
-            print("file://" + absname)
+        if ns.path == "" and ns.name == "-":
+            outfile = sys.stdout
+        else:
+            absname = os.path.abspath(os.path.join(ns.path, ns.name + "." + fmt))
+            if ns.verbosity:
+                sys.stderr.write("file://%s\n" % absname)
+            outfile = absname
         exporter = exporters.get_from_extension(fmt)
-        exporter.process(animation, absname, **exporter.argparse_options(ns))
+        exporter.process(animation, outfile, **exporter.argparse_options(ns))
 
 
 def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosity=1, strip=float_strip):
