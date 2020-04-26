@@ -1,4 +1,5 @@
-from PySide2 import QtWidgets, QtGui
+from PySide2 import QtWidgets
+from PySide2.QtGui import *
 
 from .. import objects
 
@@ -41,17 +42,21 @@ def lottie_to_tree(tree_parent, lottie_object):
     prop_to_tree(tree_parent, None, lottie_object)
 
 
-def lottie_object_to_tree(item, lottie_object, textcol):
-    text = str(lottie_object)
-    if text != type(lottie_object).__name__ or textcol == 0:
-        item.setText(textcol, text)
+def lottie_object_to_tree(item, lottie_object, propname, textcol):
+    if propname == "color" and isinstance(lottie_object, objects.MultiDimensional) and not lottie_object.animated:
+        item.setBackground(textcol, QBrush(QColor.fromRgbF(*lottie_object.value)))
+    else:
+        text = str(lottie_object)
+        if text != propname or textcol == 0:
+            item.setText(textcol, text)
 
     icon = lottie_theme_icon(lottie_object)
     if icon:
-        item.setIcon(0, QtGui.QIcon.fromTheme(icon))
+        item.setIcon(0, QIcon.fromTheme(icon))
 
     for prop in lottie_object._props:
-        prop_to_tree(item, prop.name, prop.get(lottie_object))
+        propitem = prop_to_tree(item, prop.name, prop.get(lottie_object))
+        propitem.setToolTip(0, prop.lottie)
 
 
 def prop_to_tree(tree_parent, propname, propval):
@@ -63,11 +68,16 @@ def prop_to_tree(tree_parent, propname, propval):
         first_column = 1
 
     if isinstance(propval, objects.LottieObject):
-        lottie_object_to_tree(item, propval, first_column)
+        lottie_object_to_tree(item, propval, propname, first_column)
     elif isinstance(propval, list):
         for subval in propval:
             prop_to_tree(item, type(subval).__name__, subval)
     elif propval is None:
         item.setText(first_column, "")
+    elif isinstance(propval, bool):
+        item.setCheckState(first_column, Qt.Checked if propval else Qt.Unchecked)
+        item.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
     else:
         item.setText(first_column, str(propval))
+
+    return item
