@@ -17,7 +17,6 @@ sys.path.insert(0, os.path.join(
 from lottie import gui
 from lottie import __version__
 from lottie.exporters.svg import export_svg
-from lottie.importers.base import importers
 
 
 class LottieViewerWindow(QMainWindow):
@@ -225,12 +224,7 @@ if __name__ == "__main__":
     window.resize(1024, 800)
     window.show()
     if ns.file:
-        importer = importers.get_from_filename(ns.file)
-        for gip in gui.import_export.gui_importers:
-            if gip.importer is importer:
-                break
-        window.open_file(ns.file, gip)
+        importer = gui.import_export.gui_importer_from_filename(ns.file)
+        window.open_file(ns.file, importer)
 
     sys.exit(app.exec_())
-
-

@@ -1,4 +1,5 @@
 import threading
+from functools import reduce
 from PySide2 import QtCore, QtWidgets, QtGui
 
 from ..exporters.base import exporters
@@ -193,14 +194,21 @@ gui_importers = list(map(GuiImporter, importers))
 
 
 def get_open_filename(parent, title, dirname):
-    filters = ";;".join(ge.file_filter for ge in gui_importers)
+    extensions = reduce(lambda a, b: a | b, (set(gi.importer.extensions) for gi in gui_importers))
+    all_files = "All Supported Files (%s)" % " ".join("*.%s" % ex for ex in extensions)
+    filters = all_files + ";;" + ";;".join(ge.file_filter for ge in gui_importers)
     file_name, filter = QtWidgets.QFileDialog.getOpenFileName(
         parent, title, dirname, filters
     )
     if file_name:
-        for importer in gui_importers:
-            if importer.file_filter == filter:
+        if filter == all_files:
+            importer = gui_importer_from_filename(file_name)
+            if importer:
                 return file_name, importer
+        else:
+            for importer in gui_importers:
+                if importer.file_filter == filter:
+                    return file_name, importer
 
     return None, None
 
@@ -223,3 +231,11 @@ def start_export(parent, exporter, animation, file_name, options):
     thread = ExportThread(parent, exporter, animation, file_name, options)
     thread.start()
     return thread
+
+
+def gui_importer_from_filename(filename):
+    importer = importers.get_from_filename(filename)
+    for gip in gui_importers:
+        if gip.importer is importer:
+            return gip
+    return None
