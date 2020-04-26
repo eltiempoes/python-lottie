@@ -1,3 +1,4 @@
+import warnings
 from .base import LottieObject, LottieProp, PseudoBool, LottieEnum
 from .effects import Effect
 from .helpers import Transform, Mask
@@ -153,7 +154,11 @@ class Layer(LottieObject):
                 sc.type: sc
                 for sc in Layer.__subclasses__()
             }
-        return Layer._classses[lottiedict["ty"]]
+        type_id = lottiedict["ty"]
+        if type_id not in Layer._classses:
+            warnings.warn("Unknown layer type: %s" % type_id)
+            return Layer
+        return Layer._classses[type_id]
 
     def __repr__(self):
         return "<%s %s %s>" % (type(self).__name__, self.index, self.name)
