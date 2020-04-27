@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
+import io
 import os
 import sys
 import signal
 import argparse
-from io import StringIO
 
 from PySide2 import QtGui, QtSvg
 from PySide2.QtWidgets import *
@@ -17,6 +17,8 @@ sys.path.insert(0, os.path.join(
 from lottie import gui
 from lottie import __version__
 from lottie.exporters.svg import export_svg
+from lottie.exporters.core import export_tgs
+from lottie.exporters.tgs_validator import TgsValidator
 
 
 class LottieViewerWindow(QMainWindow):
@@ -44,6 +46,7 @@ class LottieViewerWindow(QMainWindow):
                 ("Save &As...", "document-save-as", ks.SaveAs,  self.dialog_save_as),
                 ("&Refresh",    "document-revert",  ks.Refresh, self.reload_document),
                 ("A&uto Refresh", "view-refresh",   None,       None),
+                ("&Validate TGS", "document-edit-verify", None, self.tgs_check),
                 ("&Quit",       "application-exit", ks.Quit,    self.close),
             ]
         ]
@@ -188,7 +191,7 @@ class LottieViewerWindow(QMainWindow):
         if frame in self._frame_cache:
             return self._frame_cache[frame]
 
-        file = StringIO()
+        file = io.StringIO()
         export_svg(self.animation, file, frame)
         rendered = file.getvalue().encode("utf-8")
         self._frame_cache[frame] = rendered
@@ -200,6 +203,30 @@ class LottieViewerWindow(QMainWindow):
     def maybe_reload(self, filename):
         if filename == self.filename and self.action_auto_refresh.isChecked():
             self.open_file(self.filename, self.importer, self.importer_options)
+
+    def tgs_check(self):
+        if not self.animation:
+            return
+
+        validator = TgsValidator()
+        validator(self.animation)
+        bio = io.BytesIO()
+        export_tgs(self.animation, bio, False, False)
+        validator.check_size(len(bio.getvalue()), "exported")
+        if validator.errors:
+            QMessageBox.warning(
+                self,
+                "TGS Validation Issues",
+                "\n".join(map(str, validator.errors))+"\n",
+                QMessageBox.Ok
+            )
+        else:
+            QMessageBox.information(
+                self,
+                "TGS Validation Issues",
+                "No issues found",
+                QMessageBox.Ok
+            )
 
 
 parser = argparse.ArgumentParser(description="GUI viewer for lottie Animations")

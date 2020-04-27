@@ -48,7 +48,10 @@ class TgsValidator(ObjectVisitor):
             self.errors.append(TgsError(message, target, severity))
 
     def check_file_size(self, filename):
-        size_k = os.path.getsize(filename) / 1024
+        return self.check_size(os.path.getsize(filename))
+
+    def check_size(self, bytes, filename="file"):
+        size_k = bytes / 1024
         self._check(
             size_k <= 64,
             "Invalid size (%.1fk), should be less than 64k" % size_k,
