@@ -41,7 +41,7 @@ extras_require = {
     "text": ["fonttools"],
     "video": ["opencv-python", "pillow", "numpy"],
     "emoji": ["grapheme"],
-    "GUI": ["PySide2"],
+    "GUI": ["QScintilla"],
 }
 extras_require["all"] = list(reduce(lambda a, b: a | b, map(set, extras_require.values())))
 

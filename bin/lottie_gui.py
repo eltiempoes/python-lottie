@@ -3,18 +3,22 @@
 import io
 import os
 import sys
+import json
 import signal
 import argparse
 
-from PySide2 import QtGui, QtSvg
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
+from PyQt5 import QtSvg
+from PyQt5.Qsci import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
-from lottie import gui
+from lottie import gui, objects
 from lottie import __version__
 from lottie.exporters.svg import export_svg
 from lottie.exporters.core import export_tgs
@@ -38,7 +42,7 @@ class LottieViewerWindow(QMainWindow):
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
         file_toolbar = self.addToolBar("File")
-        ks = QtGui.QKeySequence
+        ks = QKeySequence
         file_actions = [
             self._make_action(file_menu, file_toolbar, *action)
             for action in [
@@ -60,7 +64,7 @@ class LottieViewerWindow(QMainWindow):
         self.tree_widget.setColumnCount(2)
         self.tree_widget.setHeaderLabels(["Property", "Value"])
         self.tree_widget.header().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.dock_tree = self._dock("Tree", self.tree_widget, Qt.LeftDockWidgetArea, Qt.RightDockWidgetArea)
+        self.dock_tree = self._dock("Properties", self.tree_widget, Qt.LeftDockWidgetArea, Qt.RightDockWidgetArea)
 
         layout_display = QHBoxLayout()
         self.layout.addLayout(layout_display)
@@ -71,8 +75,8 @@ class LottieViewerWindow(QMainWindow):
         palette = self.display.palette()
         palette.setBrush(
             self.display.backgroundRole(),
-            QtGui.QBrush(QtGui.QColor(255, 255, 255))
-            #QtGui.QBrush(QtGui.QColor(128, 128, 128), Qt.Dense7Pattern)
+            QBrush(QColor(255, 255, 255))
+            #QBrush(QColor(128, 128, 128), Qt.Dense7Pattern)
         )
         self.display.setPalette(palette)
 
@@ -80,6 +84,21 @@ class LottieViewerWindow(QMainWindow):
         self.widget_time.frame_changed.connect(self._update_frame)
         self.widget_time.setEnabled(False)
         self._dock("Timeline", self.widget_time, Qt.BottomDockWidgetArea, Qt.TopDockWidgetArea)
+
+        self._init_editor()
+        code_menu = menu.addMenu("&Code")
+        code_toolbar = self.addToolBar("Code")
+        toggle_action = self.dock_json.toggleViewAction()
+        toggle_action.setIcon(QIcon.fromTheme("document-edit"))
+        code_toolbar.addAction(toggle_action)
+
+        for action in [
+            ("&Apply",      "dialog-ok-apply",  None,       self.apply_json),
+        ]:
+            self._make_action(code_menu, code_toolbar, *action)
+
+        self._old_load = objects.Animation.load
+        objects.Animation.load = self._new_load
 
         self.label_cahed = QLabel()
         self.statusBar().addPermanentWidget(self.label_cahed)
@@ -89,10 +108,43 @@ class LottieViewerWindow(QMainWindow):
 
         self.filename = ""
 
+    def _init_editor(self):
+        self.edit_json = QsciScintilla()
+        self.edit_json.setUtf8(True)
+        self.edit_json.setIndentationGuides(True)
+        self.edit_json.setIndentationsUseTabs(False)
+        self.edit_json.setTabWidth(4)
+        self.edit_json.setTabIndents(True)
+        self.edit_json.setAutoIndent(True)
+        self.edit_json.setMarginType(0, QsciScintilla.NumberMargin)
+        self.edit_json.setMarginWidth(0, "0000")
+        self.edit_json.setFolding(QsciScintilla.BoxedTreeFoldStyle)
+        lexer = QsciLexerJSON()
+        font = QFont("monospace", 10)
+        font.setStyleHint(QFont.Monospace)
+        lexer.setDefaultFont(font)
+        self.edit_json.setFont(font)
+        self.edit_json.setLexer(lexer)
+        self.dock_json = self._dock("Json", self.edit_json, Qt.RightDockWidgetArea, Qt.LeftDockWidgetArea)
+        self.dock_json.hide()
+
+    def _new_load(self, json_dict):
+        self.edit_json.setText(json.dumps(json_dict, indent=" "*4))
+        return self._old_load(json_dict)
+
     def resizeEvent(self, ev):
         super().resizeEvent(ev)
         w = ev.size().width()
-        self.resizeDocks([self.dock_tree], [w], Qt.Horizontal)
+        docks = []
+
+        if self.dock_tree.isVisible():
+            docks.append(self.dock_tree)
+
+        if self.dock_json.isVisible():
+            docks.append(self.dock_json)
+
+        if docks:
+            self.resizeDocks(docks, [w] * len(docks), Qt.Horizontal)
 
     def _dock(self, name, widget, start_area, other_areas):
         dock = QDockWidget(name, self)
@@ -103,7 +155,7 @@ class LottieViewerWindow(QMainWindow):
         return dock
 
     def _make_action(self, menu, toolbar, name, theme, key_sequence, trigger):
-        action = QAction(QtGui.QIcon.fromTheme(theme), name, self)
+        action = QAction(QIcon.fromTheme(theme), name, self)
         if key_sequence:
             action.setShortcut(key_sequence)
         if trigger:
@@ -139,18 +191,23 @@ class LottieViewerWindow(QMainWindow):
         self._fu_gc.append(thread)
 
     def close_file(self):
+        self._clear()
+        self.setWindowTitle("Lottie Viewer")
+        if self.filename:
+            self.fs_watcher.removePath(self.filename)
+
+        self.importer = None
+        self.importer_options = None
+        self.filename = ""
+        self.edit_json.setText("")
+
+    def _clear(self):
         self.widget_time.stop()
         self.animation = None
         self.widget_time.setEnabled(False)
         self.widget_time.stop()
         self._frame_cache = {}
         self.tree_widget.clear()
-        self.setWindowTitle("Lottie Viewer")
-        if self.filename:
-            self.fs_watcher.removePath(self.filename)
-        self.importer = None
-        self.importer_options = None
-        self.filename = ""
 
     def open_file(self, file_name, importer, options=None):
         if options is None:
@@ -160,7 +217,15 @@ class LottieViewerWindow(QMainWindow):
 
         self.close_file()
         animation = importer.importer.process(file_name, **options)
-        self.fs_watcher
+        self._open_animation(animation)
+        self.setWindowTitle("Lottie Viewer - %s" % os.path.basename(file_name))
+        self.dirname = os.path.dirname(file_name)
+        self.importer = importer
+        self.importer_options = options
+        self.filename = file_name
+        self.fs_watcher.addPath(self.filename)
+
+    def _open_animation(self, animation):
         self.widget_time.set_min_max(animation.in_point, animation.out_point)
         self.widget_time.set_frame(animation.in_point)
         self.widget_time.fps = animation.frame_rate
@@ -168,12 +233,6 @@ class LottieViewerWindow(QMainWindow):
         self.display.setFixedSize(self.animation.width, self.animation.height)
         gui.tree_view.lottie_to_tree(self.tree_widget, animation)
         self._update_frame()
-        self.setWindowTitle("Lottie Viewer - %s" % os.path.basename(file_name))
-        self.dirname = os.path.dirname(file_name)
-        self.importer = importer
-        self.importer_options = options
-        self.filename = file_name
-        self.fs_watcher.addPath(self.filename)
         self.widget_time.setEnabled(True)
 
     def reload_document(self):
@@ -227,6 +286,11 @@ class LottieViewerWindow(QMainWindow):
                 "No issues found",
                 QMessageBox.Ok
             )
+
+    def apply_json(self):
+        animation = objects.Animation.load(json.loads(self.edit_json.text()))
+        self._clear()
+        self._open_animation(animation)
 
 
 parser = argparse.ArgumentParser(description="GUI viewer for lottie Animations")

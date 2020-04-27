@@ -1,6 +1,6 @@
 import threading
 from functools import reduce
-from PySide2 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtWidgets, QtGui
 
 from ..exporters.base import exporters
 from ..importers.base import importers

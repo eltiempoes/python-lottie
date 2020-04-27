@@ -15,7 +15,8 @@ opencv-python
 numpy
 
 # GUI scripts
-PySide2
+PyQt5
+QScintilla
 
 # Testing
 coverage

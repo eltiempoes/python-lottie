@@ -1,6 +1,8 @@
-from PySide2.QtGui import QIcon
-from PySide2.QtCore import Qt, Slot, Signal, QTimer
-from PySide2.QtWidgets import *
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import pyqtSignal as Signal
+from PyQt5.QtCore import pyqtSlot as Slot
+from PyQt5.QtWidgets import *
 
 
 class TimelineWidget(QWidget):

@@ -1,5 +1,6 @@
-from PySide2 import QtWidgets
-from PySide2.QtGui import *
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import *
+from PyQt5.QtCore import Qt
 
 from .. import objects
 
@@ -75,8 +76,8 @@ def prop_to_tree(tree_parent, propname, propval):
     elif propval is None:
         item.setText(first_column, "")
     elif isinstance(propval, bool):
-        item.setCheckState(first_column, Qt.Checked if propval else Qt.Unchecked)
-        item.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
+        item.setCheckState(first_column, Qt.CheckState.Checked if propval else Qt.CheckState.Unchecked)
+        item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
     else:
         item.setText(first_column, str(propval))
 

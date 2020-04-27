@@ -236,7 +236,7 @@ follows a table listing dependencies and features
 | `grapheme`                                    | emoji | Adding emoji support to text rendering                    |
 | `cairosvg`, `numpy`, Python OpenCV 2          | video | To export video                                           |
 | `pillow`, `pypotrace>=0.2`, `numpy`, `scipy`  | trace | To convert raster images into vectors                     |
-| `PySide2`                                     | GUI   | Grafical user interface utilities                         |
+| `QScintilla`                                  | GUI   | Grafical user interface utilities                         |
 | `coverage`                                    |       | To show unit test coverage, used optionally by `test.sh`  |
 
 
