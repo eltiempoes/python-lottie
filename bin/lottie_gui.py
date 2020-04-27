@@ -145,15 +145,15 @@ class LottieViewerWindow(QMainWindow):
 
         self.dock_json = self._dock("Json", self.edit_json, Qt.RightDockWidgetArea, Qt.LeftDockWidgetArea)
         self.dock_json.hide()
-
-    def _init_code_editor(self):
-        self.lexer_svg = QsciLexerXML()
-        self.lexer_svg
+        self._json_dump = ""
 
     def _new_load(self, json_dict):
-        self._json_dump = json.dumps(json_dict, indent=" "*4)
         if not self.action_code_mode.isChecked():
-            self.edit_json.setText(self._json_dump)
+
+            json_dump = json.dumps(json_dict, indent=" "*4)
+            if json_dump != self._json_dump:
+                self._json_dump = json_dump
+                self.edit_json.setText(self._json_dump)
         return self._old_load(json_dict)
 
     def resizeEvent(self, ev):
@@ -339,7 +339,8 @@ class LottieViewerWindow(QMainWindow):
                 file.flush()
                 animation = self.importer.importer.process(file.name, **self.importer_options)
         else:
-            animation = objects.Animation.load(json.loads(self.edit_json.text()))
+            self._json_dump = self.edit_json.text()
+            animation = objects.Animation.load(json.loads(self._json_dump))
 
         self._clear()
         self._open_animation(animation)
@@ -350,6 +351,7 @@ class LottieViewerWindow(QMainWindow):
             return
 
         if self.action_code_mode.isChecked():
+            self._json_dump = self.edit_json.text()
             self.action_auto_refresh.setChecked(False)
             self.action_save.setEnabled(True)
             if not self.dock_json.isVisible():
@@ -357,6 +359,7 @@ class LottieViewerWindow(QMainWindow):
             self.edit_json.setLexer(getattr(self, "lexer_" + self.code_mode))
             self.edit_json.setText(self._code_dump)
         else:
+            self._code_dump = self.edit_json.text()
             self.edit_json.setLexer(self.lexer_json)
             self.edit_json.setText(self._json_dump)
 
