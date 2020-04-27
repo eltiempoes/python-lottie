@@ -6,6 +6,7 @@ import sys
 import json
 import signal
 import argparse
+import tempfile
 
 from PyQt5 import QtSvg
 from PyQt5.Qsci import *
@@ -43,20 +44,20 @@ class LottieViewerWindow(QMainWindow):
         file_menu = menu.addMenu("&File")
         file_toolbar = self.addToolBar("File")
         ks = QKeySequence
-        file_actions = [
+        for action in [
+            ("&Open...",    "document-open",    ks.Open,    self.dialog_open_file),
+            ("&Save",       "document-save",    ks.Save,    self.save_code, "action_save"),
+            ("Save &As...", "document-save-as", ks.SaveAs,  self.dialog_save_as),
+            ("&Refresh",    "document-revert",  ks.Refresh, self.reload_document),
+            ("A&uto Refresh", "view-refresh",   None,       None, "action_auto_refresh"),
+            ("&Validate TGS", "document-edit-verify", None, self.tgs_check),
+            ("&Quit",       "application-exit", ks.Quit,    self.close),
+        ]:
             self._make_action(file_menu, file_toolbar, *action)
-            for action in [
-                ("&Open...",    "document-open",    ks.Open,    self.dialog_open_file),
-                ("Save &As...", "document-save-as", ks.SaveAs,  self.dialog_save_as),
-                ("&Refresh",    "document-revert",  ks.Refresh, self.reload_document),
-                ("A&uto Refresh", "view-refresh",   None,       None),
-                ("&Validate TGS", "document-edit-verify", None, self.tgs_check),
-                ("&Quit",       "application-exit", ks.Quit,    self.close),
-            ]
-        ]
-        self.action_auto_refresh = file_actions[3]
+
         self.action_auto_refresh.setCheckable(True)
         self.action_auto_refresh.setChecked(True)
+        self.action_save.setEnabled(False)
 
         self.view_menu = menu.addMenu("&View")
 
@@ -85,17 +86,23 @@ class LottieViewerWindow(QMainWindow):
         self.widget_time.setEnabled(False)
         self._dock("Timeline", self.widget_time, Qt.BottomDockWidgetArea, Qt.TopDockWidgetArea)
 
-        self._init_editor()
+        self._init_json_editor()
         code_menu = menu.addMenu("&Code")
         code_toolbar = self.addToolBar("Code")
         toggle_action = self.dock_json.toggleViewAction()
         toggle_action.setIcon(QIcon.fromTheme("document-edit"))
         code_toolbar.addAction(toggle_action)
 
+        apply_key = QKeySequence("Ctrl+B", QKeySequence.PortableText)
         for action in [
-            ("&Apply",      "dialog-ok-apply",  None,       self.apply_json),
+            ("&Apply",  "system-run",   apply_key,  self.apply_json),
+            ("&Code",   "code-context", None,       self.toggle_code, "action_code_mode"),
         ]:
             self._make_action(code_menu, code_toolbar, *action)
+
+        self.action_code_mode.setCheckable(True)
+        self.action_code_mode.setEnabled(False)
+        self.code_mode = None
 
         self._old_load = objects.Animation.load
         objects.Animation.load = self._new_load
@@ -108,7 +115,7 @@ class LottieViewerWindow(QMainWindow):
 
         self.filename = ""
 
-    def _init_editor(self):
+    def _init_json_editor(self):
         self.edit_json = QsciScintilla()
         self.edit_json.setUtf8(True)
         self.edit_json.setIndentationGuides(True)
@@ -119,17 +126,34 @@ class LottieViewerWindow(QMainWindow):
         self.edit_json.setMarginType(0, QsciScintilla.NumberMargin)
         self.edit_json.setMarginWidth(0, "0000")
         self.edit_json.setFolding(QsciScintilla.BoxedTreeFoldStyle)
-        lexer = QsciLexerJSON()
-        font = QFont("monospace", 10)
-        font.setStyleHint(QFont.Monospace)
-        lexer.setDefaultFont(font)
-        self.edit_json.setFont(font)
-        self.edit_json.setLexer(lexer)
+
+        self.code_font = QFont("monospace", 10)
+        self.code_font.setStyleHint(QFont.Monospace)
+        self.edit_json.setFont(self.code_font)
+
+        self.lexer_svg = QsciLexerXML()
+        self.lexer_svg.setDefaultFont(self.code_font)
+
+        self.lexer_py = QsciLexerPython()
+        self.lexer_py.setDefaultFont(self.code_font)
+        self.lexer_py.setFont(self.code_font)
+
+        self.lexer_json = QsciLexerJSON()
+        self.lexer_json.setDefaultFont(self.code_font)
+
+        self.edit_json.setLexer(self.lexer_json)
+
         self.dock_json = self._dock("Json", self.edit_json, Qt.RightDockWidgetArea, Qt.LeftDockWidgetArea)
         self.dock_json.hide()
 
+    def _init_code_editor(self):
+        self.lexer_svg = QsciLexerXML()
+        self.lexer_svg
+
     def _new_load(self, json_dict):
-        self.edit_json.setText(json.dumps(json_dict, indent=" "*4))
+        self._json_dump = json.dumps(json_dict, indent=" "*4)
+        if not self.action_code_mode.isChecked():
+            self.edit_json.setText(self._json_dump)
         return self._old_load(json_dict)
 
     def resizeEvent(self, ev):
@@ -154,12 +178,16 @@ class LottieViewerWindow(QMainWindow):
         self.view_menu.addAction(dock.toggleViewAction())
         return dock
 
-    def _make_action(self, menu, toolbar, name, theme, key_sequence, trigger):
+    def _make_action(self, menu, toolbar, name, theme, key_sequence, trigger, attname=None):
         action = QAction(QIcon.fromTheme(theme), name, self)
         if key_sequence:
             action.setShortcut(key_sequence)
         if trigger:
             action.triggered.connect(trigger)
+
+        if attname:
+            setattr(self, attname, action)
+
         menu.addAction(action)
         toolbar.addAction(action)
         return action
@@ -200,6 +228,14 @@ class LottieViewerWindow(QMainWindow):
         self.importer_options = None
         self.filename = ""
         self.edit_json.setText("")
+        self.clear_code_mode()
+
+    def clear_code_mode(self):
+        self.code_mode = None
+        self.action_save.setEnabled(False)
+        self.action_code_mode.setEnabled(False)
+        self.action_code_mode.setChecked(False)
+        self.edit_json.setLexer(self.lexer_json)
 
     def _clear(self):
         self.widget_time.stop()
@@ -224,6 +260,15 @@ class LottieViewerWindow(QMainWindow):
         self.importer_options = options
         self.filename = file_name
         self.fs_watcher.addPath(self.filename)
+
+        ext = os.path.splitext(file_name)[1][1:]
+        if ext in ["svg", "py"]:
+            self.code_mode = ext
+            self.action_code_mode.setEnabled(True)
+            with open(file_name) as f:
+                self._code_dump = f.read()
+        elif ext == "json":
+            self.action_save.setEnabled(True)
 
     def _open_animation(self, animation):
         self.widget_time.set_min_max(animation.in_point, animation.out_point)
@@ -288,9 +333,36 @@ class LottieViewerWindow(QMainWindow):
             )
 
     def apply_json(self):
-        animation = objects.Animation.load(json.loads(self.edit_json.text()))
+        if self.code_mode and self.action_code_mode.isChecked():
+            with tempfile.NamedTemporaryFile("w") as file:
+                file.write(self.edit_json.text())
+                file.flush()
+                animation = self.importer.importer.process(file.name, **self.importer_options)
+        else:
+            animation = objects.Animation.load(json.loads(self.edit_json.text()))
+
         self._clear()
         self._open_animation(animation)
+
+    def toggle_code(self):
+        self.action_save.setEnabled(False)
+        if not self.animation or not self.code_mode:
+            return
+
+        if self.action_code_mode.isChecked():
+            self.action_auto_refresh.setChecked(False)
+            self.action_save.setEnabled(True)
+            if not self.dock_json.isVisible():
+                self.dock_json.show()
+            self.edit_json.setLexer(getattr(self, "lexer_" + self.code_mode))
+            self.edit_json.setText(self._code_dump)
+        else:
+            self.edit_json.setLexer(self.lexer_json)
+            self.edit_json.setText(self._json_dump)
+
+    def save_code(self):
+        with open(self.filename, "w") as outfile:
+            outfile.write(self.edit_json.text())
 
 
 parser = argparse.ArgumentParser(description="GUI viewer for lottie Animations")
