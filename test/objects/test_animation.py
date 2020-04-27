@@ -9,7 +9,6 @@ class TestAnimation(base.TestCase):
         self.assertDictEqual(
             an.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 60,
                 "fr": 60,
@@ -28,7 +27,6 @@ class TestAnimation(base.TestCase):
         self.assertDictEqual(
             an.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 60,
                 "fr": 60,
@@ -47,7 +45,6 @@ class TestAnimation(base.TestCase):
         self.assertDictEqual(
             an.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 180,
                 "fr": 60,
@@ -65,7 +62,6 @@ class TestAnimation(base.TestCase):
         self.assertDictEqual(
             an.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 60,
                 "fr": 24,
@@ -86,7 +82,6 @@ class TestAnimation(base.TestCase):
         self.assertDictEqual(
             an.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 60,
                 "fr": 60,
@@ -147,7 +142,6 @@ class TestAnimation(base.TestCase):
         self.assertDictEqual(
             an.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 60,
                 "fr": 60,
@@ -184,7 +178,6 @@ class TestAnimation(base.TestCase):
         self.assertDictEqual(
             an2.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 60,
                 "fr": 60,
@@ -227,7 +220,6 @@ class TestAnimation(base.TestCase):
         self.assertDictEqual(
             an2.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 60,
                 "fr": 60,
@@ -265,7 +257,6 @@ class TestAnimation(base.TestCase):
         self.assertEqual(
             an.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 60,
                 "fr": 60,
@@ -306,7 +297,6 @@ class TestAnimation(base.TestCase):
         self.assertEqual(
             an.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 60,
                 "fr": 60,
@@ -353,7 +343,6 @@ class TestAnimation(base.TestCase):
         self.assertEqual(
             an.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 60,
                 "fr": 60,
@@ -406,7 +395,6 @@ class TestAnimation(base.TestCase):
         self.assertEqual(
             an.to_dict(),
             {
-                "tgs": 1,
                 "ip": 0,
                 "op": 60,
                 "fr": 30,
