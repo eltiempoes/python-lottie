@@ -94,12 +94,6 @@ class TgsValidator(ObjectVisitor):
             Severity.Error
         )
         self._check(
-            o.tgs,
-            "Missing tgs attribute",
-            o,
-            Severity.Note
-        )
-        self._check(
             o.out_point <= 180,
             "Too many frames (%s), should be less than 180" % o.out_point,
             o,

@@ -21,7 +21,6 @@ class Animation(Composition):
     @see http://docs.aenhancers.com/items/compitem/
     """
     _props = [
-        LottieProp("tgs", "tgs", PseudoBool, False),
         LottieProp("version", "v", str, False),
         LottieProp("frame_rate", "fr", float, False),
         LottieProp("in_point", "ip", float, False),
@@ -41,8 +40,6 @@ class Animation(Composition):
 
     def __init__(self, n_frames=60, framerate=60):
         super().__init__()
-        ## Marks as telegram sticker
-        self.tgs = 1
         ## The time when the composition work area begins, in frames.
         self.in_point = 0
         ## The time when the composition work area ends.

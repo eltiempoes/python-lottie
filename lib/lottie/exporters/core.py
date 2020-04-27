@@ -27,7 +27,9 @@ def export_tgs(animation, file, sanitize=False, validate=False):
         animation.tgs_sanitize()
 
     with gzip.open(file, "wb") as gzfile:
-        export_lottie(animation, codecs.getwriter('utf-8')(gzfile))
+        lottie_dict = animation.to_dict()
+        lottie_dict["tgs"] = 1
+        json.dump(lottie_dict, codecs.getwriter('utf-8')(gzfile))
 
     if validate:
         validator = TgsValidator()
