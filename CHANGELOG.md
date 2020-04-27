@@ -1,5 +1,6 @@
 ## Unreleased
  * Support for all importers / exporters in lottie GUI
+ * JSON / Source editing in lottie GUI
 
 ## 0.6.1 - 2020-04-25
  * Made scripts more user friendly

@@ -143,9 +143,60 @@ class LottieViewerWindow(QMainWindow):
 
         self.edit_json.setLexer(self.lexer_json)
 
+        commands = self.edit_json.standardCommands()
+
+        def shortcut(key):
+            command = commands.boundTo(key)
+            if command is not None:
+                command.setKey(0)
+            return QShortcut(key, self.edit_json).activated
+
+        shortcut(Qt.ControlModifier | Qt.ShiftModifier | Qt.Key_Up).connect(lambda: self._edit_move_line(-1))
+        shortcut(Qt.ControlModifier | Qt.ShiftModifier | Qt.Key_Down).connect(lambda: self._edit_move_line(+1))
+
         self.dock_json = self._dock("Json", self.edit_json, Qt.RightDockWidgetArea, Qt.LeftDockWidgetArea)
         self.dock_json.hide()
         self._json_dump = ""
+
+    def _edit_move_line(self, down):
+        line_start, ls_col, line_end, le_col = self.edit_json.getSelection()
+        move_end = line_end
+
+        if line_start == -1:
+            line_start, ls_col = self.edit_json.getCursorPosition()
+            move_end = line_end = line_start
+            le_col = ls_col
+        elif le_col == 0:
+            move_end -= 1
+
+        lines = self.edit_json.text().splitlines()
+
+        if down == -1:
+            if line_start <= 0:
+                return
+            lines_before = lines[:line_start-1]
+            line_before = lines[line_start-1]
+            lines_moved = lines[line_start:move_end+1]
+            lines_after = lines[move_end+1:]
+
+            lines_rearranged = lines_before + lines_moved + [line_before] + lines_after
+        else:
+            if line_end >= len(lines) - 1:
+                return
+
+            lines_before = lines[:line_start]
+            lines_moved = lines[line_start:move_end+1]
+            line_after = lines[move_end+1]
+            lines_after = lines[move_end+2:]
+
+            lines_rearranged = lines_before + [line_after] + lines_moved + lines_after
+
+        self.edit_json.setText("\n".join(lines_rearranged))
+
+        if line_start == line_end and le_col == ls_col:
+            self.edit_json.setCursorPosition(line_end+down, le_col)
+        else:
+            self.edit_json.setSelection(line_start+down, ls_col, line_end+down, le_col)
 
     def _new_load(self, json_dict):
         if not self.action_code_mode.isChecked():
