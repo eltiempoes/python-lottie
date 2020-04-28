@@ -7,6 +7,7 @@ import json
 import signal
 import argparse
 import tempfile
+from xml.dom import minidom
 
 from PyQt5 import QtSvg
 from PyQt5.Qsci import *
@@ -272,11 +273,10 @@ class LottieViewerWindow(QMainWindow):
             self.edit_json.setSelection(line_start+down, ls_col, line_end+down, le_col)
 
     def _new_load(self, json_dict):
-        if not self.action_code_mode.isChecked():
-
-            json_dump = json.dumps(json_dict, indent=" "*4)
-            if json_dump != self._json_dump:
-                self._json_dump = json_dump
+        json_dump = json.dumps(json_dict, indent=" "*4)
+        if json_dump != self._json_dump:
+            self._json_dump = json_dump
+            if not self.action_code_mode.isChecked():
                 self.edit_json.setText(self._json_dump)
         return self._old_load(json_dict)
 
@@ -389,10 +389,17 @@ class LottieViewerWindow(QMainWindow):
         if ext in ["svg", "py"]:
             self.code_mode = ext
             self.action_code_mode.setEnabled(True)
-            with open(file_name) as f:
-                self._code_dump = f.read()
+            if ext == "svg":
+                self._code_dump = minidom.parse(file_name).toprettyxml(indent="  ")
+            else:
+                with open(file_name) as f:
+                    self._code_dump = f.read()
         elif ext == "json":
             self.action_save.setEnabled(True)
+
+        if self._json_dump == "":
+            self._json_dump = json.dumps(animation.to_dict(), indent="   ")
+            self.edit_json.setText(self._json_dump)
 
     def _open_animation(self, animation):
         self.widget_time.set_min_max(animation.in_point, animation.out_point)

@@ -470,17 +470,15 @@ class SvgParser(SvgHandler):
         link = element.attrib[self.qualified("xlink", "href")]
         if link.startswith("#"):
             id = link[1:]
-            if id in self.defs:
-                base = self.defs[id]
-            else:
-                base_element = self.document.find(".//*[@id='%s']" % id)
-                base = self.parse_shape(base_element, self.defs, parent_style)
+            base_element = self.document.find(".//*[@id='%s']" % id)
+            use_style = self.parse_style(element, parent_style)
             used = objects.Group()
-            used.add_shape(base.clone())
+            shape_parent.add_shape(used)
+            used.name = "use"
             used.transform.position.value.x = float(element.attrib.get("x", 0))
             used.transform.position.value.y = float(element.attrib.get("y", 0))
             self.parse_transform(element, used, used.transform)
-            shape_parent.shapes.insert(0, used)
+            self.parse_shape(base_element, used, use_style)
             return used
 
     def _parseshape_g(self, element, shape_parent, parent_style):
