@@ -26,6 +26,73 @@ from lottie.exporters.core import export_tgs
 from lottie.exporters.tgs_validator import TgsValidator
 
 
+
+#import inspect
+#class PyParser:
+    #def __init__(self, lexer):
+        #self.locals = {}
+        #self.filename = "unknown.py"
+        #self.module_name = "__parser__"
+        #self.lexer = lexer
+        #self.api = None
+
+    #def set_filename(self, filename):
+        #self.filename = filename
+        #self.module_name = os.path.splitext(os.path.basename(filename))[0]
+
+    #def parse(self, text):
+        #global_vars = {
+            #"__annotations__": {},
+            #"__builtins__": __builtins__,
+            #"__cached__": None,
+            #"__doc__": None,
+            #"__file__": self.filename,
+            #"__loader__": __loader__,
+            #"__name__": self.module_name,
+            #"__package__": None,
+            #"__spec__": None,
+        #}
+        #try:
+            #local_vars = {}
+            #exec(text, global_vars, local_vars)
+            #self.locals = local_vars
+        #finally:
+            #pass
+
+    #def recursive_completions(self, objprops, prefix, depth):
+        #for subkey, subobj in objprops:
+            #if "__" in subkey:
+                #continue
+
+            #yield prefix + subkey
+
+            #sub_objprops = inspect.getmembers(subobj)
+            #if depth > 0:
+                #for c in self.recursive_completions(sub_objprops, prefix + subkey + ".", depth-1):
+                    #yield c
+
+    #def completions(self, name, depth):
+        #keys = filter(bool, name.split("."))
+        #obj = self.locals
+        #for key in keys:
+            #obj = dict(inspect.getmembers(obj[key]))
+
+        #prefix = name + "." if name else ""
+        #if prefix.startswith("."):
+            #raise Exception()
+        #return self.recursive_completions(obj.items(), prefix, depth)
+
+    #def add_completions(self, depth=3):
+        #self.api = QsciAPIs(self.lexer)
+        #for word in self.completions("", depth):
+            #self.api.add(word)
+        #self.api.prepare()
+
+    #def refresh(self, text):
+        #self.parse(text)
+        #self.add_completions(1)
+
+
 class LottieViewerWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -140,6 +207,12 @@ class LottieViewerWindow(QMainWindow):
 
         self.lexer_json = QsciLexerJSON()
         self.lexer_json.setDefaultFont(self.code_font)
+
+        #self.completer_py = PyParser(self.lexer_py)
+        self.completer_py = QsciAPIs(self.lexer_py)
+        self.completer_py.prepare()
+        self.edit_json.setAutoCompletionThreshold(3)
+        self.edit_json.setAutoCompletionSource(QsciScintilla.AcsAll)
 
         self.edit_json.setLexer(self.lexer_json)
 
@@ -409,6 +482,8 @@ class LottieViewerWindow(QMainWindow):
                 self.dock_json.show()
             self.edit_json.setLexer(getattr(self, "lexer_" + self.code_mode))
             self.edit_json.setText(self._code_dump)
+            #if self.code_mode == "py":
+                #self.completer_py.refresh(self._code_dump)
         else:
             self._code_dump = self.edit_json.text()
             self.edit_json.setLexer(self.lexer_json)

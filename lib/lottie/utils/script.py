@@ -76,7 +76,7 @@ def script_main(animation, basename=None, path="/tmp", formats=["html"], verbosi
     Sets up a script to output an animation into various formats
     """
     caller = _get_caller()
-    if caller.__name__ == "__main__":
+    if caller and caller.__name__ == "__main__":
         parser = _get_parser(caller, basename, path, formats, verbosity)
         strip(animation)
         run(animation, parser.parse_args())

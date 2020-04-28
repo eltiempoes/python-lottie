@@ -1,6 +1,7 @@
 import threading
 from functools import reduce
 from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtCore import Qt
 
 from ..exporters.base import exporters
 from ..importers.base import importers
@@ -23,7 +24,7 @@ class GuiProgressReporter(IoProgressReporter):
         with self.lock:
             dialog = QtWidgets.QProgressDialog(parent)
             dialog.setCancelButton(None)
-            dialog.setWindowModality(QtGui.Qt.ApplicationModal)
+            dialog.setWindowModality(Qt.ApplicationModal)
             self.dialogs[self.id] = dialog
         return self.id
 
@@ -146,7 +147,7 @@ class GuiBasePorter:
     def prompt_options(self, parent):
         if self.needs_dialog:
             self.dialog.setParent(parent)
-            self.dialog.setWindowFlags(QtGui.Qt.Dialog)
+            self.dialog.setWindowFlags(Qt.Dialog)
             if self.dialog.exec_() != QtWidgets.QDialog.DialogCode.Accepted:
                 return None
 
