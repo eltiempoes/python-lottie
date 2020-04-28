@@ -352,6 +352,7 @@ class LottieViewerWindow(QMainWindow):
         self.importer_options = None
         self.filename = ""
         self.edit_json.setText("")
+        self._json_dump = ""
         self.clear_code_mode()
 
     def clear_code_mode(self):
