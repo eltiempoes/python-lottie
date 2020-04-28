@@ -5,6 +5,7 @@ import os
 import sys
 import json
 import signal
+import inspect
 import argparse
 import tempfile
 from xml.dom import minidom
@@ -20,78 +21,12 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "lib"
 ))
+import lottie
 from lottie import gui, objects
 from lottie import __version__
 from lottie.exporters.svg import export_svg
 from lottie.exporters.core import export_tgs
 from lottie.exporters.tgs_validator import TgsValidator
-
-
-
-#import inspect
-#class PyParser:
-    #def __init__(self, lexer):
-        #self.locals = {}
-        #self.filename = "unknown.py"
-        #self.module_name = "__parser__"
-        #self.lexer = lexer
-        #self.api = None
-
-    #def set_filename(self, filename):
-        #self.filename = filename
-        #self.module_name = os.path.splitext(os.path.basename(filename))[0]
-
-    #def parse(self, text):
-        #global_vars = {
-            #"__annotations__": {},
-            #"__builtins__": __builtins__,
-            #"__cached__": None,
-            #"__doc__": None,
-            #"__file__": self.filename,
-            #"__loader__": __loader__,
-            #"__name__": self.module_name,
-            #"__package__": None,
-            #"__spec__": None,
-        #}
-        #try:
-            #local_vars = {}
-            #exec(text, global_vars, local_vars)
-            #self.locals = local_vars
-        #finally:
-            #pass
-
-    #def recursive_completions(self, objprops, prefix, depth):
-        #for subkey, subobj in objprops:
-            #if "__" in subkey:
-                #continue
-
-            #yield prefix + subkey
-
-            #sub_objprops = inspect.getmembers(subobj)
-            #if depth > 0:
-                #for c in self.recursive_completions(sub_objprops, prefix + subkey + ".", depth-1):
-                    #yield c
-
-    #def completions(self, name, depth):
-        #keys = filter(bool, name.split("."))
-        #obj = self.locals
-        #for key in keys:
-            #obj = dict(inspect.getmembers(obj[key]))
-
-        #prefix = name + "." if name else ""
-        #if prefix.startswith("."):
-            #raise Exception()
-        #return self.recursive_completions(obj.items(), prefix, depth)
-
-    #def add_completions(self, depth=3):
-        #self.api = QsciAPIs(self.lexer)
-        #for word in self.completions("", depth):
-            #self.api.add(word)
-        #self.api.prepare()
-
-    #def refresh(self, text):
-        #self.parse(text)
-        #self.add_completions(1)
 
 
 class LottieViewerWindow(QMainWindow):
@@ -102,6 +37,14 @@ class LottieViewerWindow(QMainWindow):
         self._frame_cache = {}
         self._fu_gc = []
         self.setWindowTitle("Lottie Viewer")
+
+        #self.setDockNestingEnabled(True)
+        self.setDockOptions(
+            QMainWindow.AnimatedDocks |
+            QMainWindow.AllowNestedDocks |
+            QMainWindow.AllowTabbedDocks |
+            0
+        )
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -152,7 +95,7 @@ class LottieViewerWindow(QMainWindow):
         self.widget_time = gui.timeline_widget.TimelineWidget()
         self.widget_time.frame_changed.connect(self._update_frame)
         self.widget_time.setEnabled(False)
-        self._dock("Timeline", self.widget_time, Qt.BottomDockWidgetArea, Qt.TopDockWidgetArea)
+        self._dock("Timeline", self.widget_time, Qt.TopDockWidgetArea, Qt.TopDockWidgetArea)
 
         self._init_json_editor()
         code_menu = menu.addMenu("&Code")
@@ -167,6 +110,31 @@ class LottieViewerWindow(QMainWindow):
             ("&Code",   "code-context", None,       self.toggle_code, "action_code_mode"),
         ]:
             self._make_action(code_menu, code_toolbar, *action)
+
+        self.console = gui.console.Console()
+        self.console.set_font(self.code_font)
+        self.console.lines.setPlainText(inspect.cleandoc("""
+            Lottie Python Console
+            =====================
+
+            Available objects:
+                * lottie    - The python-lottie module
+                * document  - The currently open animation
+                * window    - The GUI window object
+                * refresh() - Reload the animation (use if you modify document)
+        """))
+        dock_console = self._dock(
+            "Console", self.console, Qt.BottomDockWidgetArea,
+            Qt.TopDockWidgetArea|Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea
+        )
+        dock_console.hide()
+
+        toggle_action = dock_console.toggleViewAction()
+        toggle_action.setIcon(QIcon.fromTheme("utilities-terminal"))
+        self.console.define("lottie", lottie)
+        self.console.define("window", self)
+        self.console.define("refresh", self._console_refresh)
+        code_toolbar.addAction(toggle_action)
 
         self.action_code_mode.setCheckable(True)
         self.action_code_mode.setEnabled(False)
@@ -273,26 +241,13 @@ class LottieViewerWindow(QMainWindow):
             self.edit_json.setSelection(line_start+down, ls_col, line_end+down, le_col)
 
     def _new_load(self, json_dict):
+        # This hack is to ensure we display the original JSON when available
         json_dump = json.dumps(json_dict, indent=" "*4)
         if json_dump != self._json_dump:
             self._json_dump = json_dump
             if not self.action_code_mode.isChecked():
                 self.edit_json.setText(self._json_dump)
         return self._old_load(json_dict)
-
-    def resizeEvent(self, ev):
-        super().resizeEvent(ev)
-        w = ev.size().width()
-        docks = []
-
-        if self.dock_tree.isVisible():
-            docks.append(self.dock_tree)
-
-        if self.dock_json.isVisible():
-            docks.append(self.dock_json)
-
-        if docks:
-            self.resizeDocks(docks, [w] * len(docks), Qt.Horizontal)
 
     def _dock(self, name, widget, start_area, other_areas):
         dock = QDockWidget(name, self)
@@ -365,6 +320,7 @@ class LottieViewerWindow(QMainWindow):
     def _clear(self):
         self.widget_time.stop()
         self.animation = None
+        self.console.define("document", None)
         self.widget_time.setEnabled(False)
         self.widget_time.stop()
         self._frame_cache = {}
@@ -411,6 +367,7 @@ class LottieViewerWindow(QMainWindow):
         gui.tree_view.lottie_to_tree(self.tree_widget, animation)
         self._update_frame()
         self.widget_time.setEnabled(True)
+        self.console.define("document", self.animation)
 
     def reload_document(self):
         if self.animation:
@@ -490,8 +447,6 @@ class LottieViewerWindow(QMainWindow):
                 self.dock_json.show()
             self.edit_json.setLexer(getattr(self, "lexer_" + self.code_mode))
             self.edit_json.setText(self._code_dump)
-            #if self.code_mode == "py":
-                #self.completer_py.refresh(self._code_dump)
         else:
             self._code_dump = self.edit_json.text()
             self.edit_json.setLexer(self.lexer_json)
@@ -500,6 +455,12 @@ class LottieViewerWindow(QMainWindow):
     def save_code(self):
         with open(self.filename, "w") as outfile:
             outfile.write(self.edit_json.text())
+
+    def _console_refresh(self):
+        self._json_dump = ""
+        animation = self.animation
+        self._clear()
+        self._open_animation(animation)
 
 
 parser = argparse.ArgumentParser(description="GUI viewer for lottie Animations")
