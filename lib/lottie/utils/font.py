@@ -360,13 +360,19 @@ class Font:
     def getBestCmap(self):
         return {}
 
-    @staticmethod
-    def glyph_name(codepoint):
+    def glyph_name(self, codepoint):
         if isinstance(codepoint, str):
             if len(codepoint) != 1:
                 return ""
             codepoint = ord(codepoint)
 
+        if codepoint in self.cmap:
+            return self.cmap[codepoint]
+
+        return self.calculated_glyph_name(codepoint)
+
+    @staticmethod
+    def calculated_glyph_name(codepoint):
         from fontTools import agl  # Adobe Glyph List
         if codepoint in agl.UV2AGL:
             return agl.UV2AGL[codepoint]
@@ -592,11 +598,12 @@ class FallbackFontRenderer(FontRenderer):
         if len(char) != 1:
             return None
 
-        name = Font.glyph_name(char)
+        codepoint = ord(char)
+        name = Font.calculated_glyph_name(codepoint)
         for i, font in enumerate(fonts.all(self.query.clone().char(char))):
             # For some reason fontconfig sometimes returns a font that doesn't
             # actually contain the glyph
-            if name in font.font.glyphset:
+            if name in font.font.glyphset or codepoint in font.cmap:
                 self._fallback[char] = font
                 return font
 
