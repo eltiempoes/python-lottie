@@ -24,6 +24,11 @@
       <description>[TGS] Lottie HTML Preview (*.html)</description>
       <exec>tgs-exporter.py</exec>
    </exporter>
+   <exporter>
+      <extension>lottie</extension>
+      <description>[TGS] dotLottie Archive (*.lottie)</description>
+      <exec>tgs-exporter.py</exec>
+   </exporter>
 
    <importer>
       <extension>tgs</extension>
@@ -39,6 +44,11 @@
    <importer>
       <extension>json</extension>
       <description>[TGS] Lottie JSON (*.json)</description>
+      <exec>tgs-exporter.py</exec>
+   </importer>
+   <importer>
+      <extension>lottie</extension>
+      <description>[TGS] dotLottie Archive (*.lottie)</description>
       <exec>tgs-exporter.py</exec>
    </importer>
 </plugin>
