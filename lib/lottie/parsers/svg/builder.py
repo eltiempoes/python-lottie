@@ -302,7 +302,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             return
 
         if group.stroke_above:
-            if "style" in fill_layer.attrib:
+            if fill_layer.attrib.get("style", ""):
                 fill_layer.attrib["style"] += ";"
             else:
                 fill_layer.attrib["style"] = ""
