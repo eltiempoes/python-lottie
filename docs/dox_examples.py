@@ -39,9 +39,9 @@ for example in examples:
 
     with open(os.path.join(doxpath, example + ".dox"), "w") as f:
         f.write("""/*!
-    \example {example}.py
+\example {example}.py
 
-    \htmlonly[block]
+\htmlonly[block]
 """.format(example=example))
 
         for obj in vars(module).values():

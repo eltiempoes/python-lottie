@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.join(
 ))
 from lottie.utils import script
 from lottie import objects
-from lottie.nvector import Point, Color, PolarVector
+from lottie.nvector import Point, PolarVector
 from lottie.utils import color
 
 

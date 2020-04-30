@@ -436,7 +436,7 @@ class GradientColors(LottieObject):
         self.count = len(stops)
 
     def _flatten_stops(self, stops):
-        flattened_colors = Color(*reduce(
+        flattened_colors = NVector(*reduce(
             lambda a, b: a + b,
             (
                 [off] + color.components[:3]
