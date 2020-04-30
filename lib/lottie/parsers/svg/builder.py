@@ -469,13 +469,20 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         path.attrib["d"] = d
         return path
 
+    def _bezier_tangent(self, tangent):
+        _tangent_threshold = 1
+        if tangent.length < _tangent_threshold:
+            return NVector(0, 0)
+        return tangent
+
     def _bezier_to_d(self, bez):
         d = "M %s,%s " % tuple(bez.vertices[0].components[:2])
         for i in range(1, len(bez.vertices)):
             qfrom = bez.vertices[i-1]
-            h1 = bez.out_tangents[i-1] + qfrom
+            h1 = self._bezier_tangent(bez.out_tangents[i-1]) + qfrom
             qto = bez.vertices[i]
-            h2 = bez.in_tangents[i] + qto
+            h2 = self._bezier_tangent(bez.in_tangents[i]) + qto
+
             d += "C %s,%s %s,%s %s,%s " % (
                 h1[0], h1[1],
                 h2[0], h2[1],
@@ -483,9 +490,9 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             )
         if bez.closed:
             qfrom = bez.vertices[-1]
-            h1 = bez.out_tangents[-1] + qfrom
+            h1 = self._bezier_tangent(bez.out_tangents[-1]) + qfrom
             qto = bez.vertices[0]
-            h2 = bez.in_tangents[0] + qto
+            h2 = self._bezier_tangent(bez.in_tangents[0]) + qto
             d += "C %s,%s %s,%s %s,%s Z" % (
                 h1[0], h1[1],
                 h2[0], h2[1],
