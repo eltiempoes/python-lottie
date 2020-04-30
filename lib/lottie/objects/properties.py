@@ -460,7 +460,7 @@ class GradientColors(LottieObject):
         return 1
 
     def _add_to_flattened(self, offset, color, flattened):
-        flat = [offset] + color[:3]
+        flat = [offset] + list(color[:3])
         rgb_size = 4 * self.count
 
         if len(flattened) == rgb_size:

@@ -147,15 +147,6 @@ class TgsValidator(ObjectVisitor):
             Severity.Warning
         )
 
-        for p in o.transform._props:
-            v = p.get(o.transform)
-            self._check(
-                not getattr(v, "animated", False),
-                "Layer transform animations don't work",
-                o,
-                Severity.Warning
-            )
-
     def _visit_precomplayer(self, o: layers.PreCompLayer):
         self._check(
             o.time_remapping is None,
