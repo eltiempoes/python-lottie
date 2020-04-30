@@ -119,7 +119,7 @@ class IoProgressReporter:
         sys.stderr.flush()
 
     def report_message(self, message):
-        sys.stderr.write(message + "\n")
+        sys.stderr.write("\r" + message + "\n")
         sys.stderr.flush()
 
 

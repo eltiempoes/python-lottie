@@ -45,7 +45,7 @@ def export_gif(animation, fp, dpi=96, skip_frames=5):
     _log_frame("GIF")
 
     io_progress().report_message("GIF Writing to file...")
-    duration = 1000 / animation.frame_rate
+    duration = 1000 / animation.frame_rate * skip_frames
     frames[0].save(
         fp,
         format='GIF',
