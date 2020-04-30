@@ -339,6 +339,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             if group.fill.fill_rule:
                 style["fill-rule"] = "evenodd" if group.fill.fill_rule == objects.FillRule.EvenOdd else "nonzero"
 
+        if group.lottie.hidden:
+            style["display"] = "none"
         #if group.stroke_above:
             #style.update(self._get_group_stroke(group))
 

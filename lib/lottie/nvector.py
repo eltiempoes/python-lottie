@@ -60,7 +60,7 @@ class NVector():
 
     def __getitem__(self, key):
         if isinstance(key, slice):
-            return type(self)(*self.components[key])
+            return NVector(*self.components[key])
         return self.components[key]
 
     def __setitem__(self, key, value):
