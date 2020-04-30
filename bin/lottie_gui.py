@@ -203,7 +203,17 @@ class LottieViewerWindow(QMainWindow):
         shortcut(Qt.ControlModifier | Qt.ShiftModifier | Qt.Key_Up).connect(lambda: self._edit_move_line(-1))
         shortcut(Qt.ControlModifier | Qt.ShiftModifier | Qt.Key_Down).connect(lambda: self._edit_move_line(+1))
 
-        self.dock_json = self._dock("Json", self.edit_json, Qt.RightDockWidgetArea, Qt.LeftDockWidgetArea)
+        wrapper = QWidget()
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        wrapper.setLayout(layout)
+        layout.addWidget(self.edit_json)
+        self.search_widget = gui.search_widget.SearchWidget(self.edit_json)
+        layout.addWidget(self.search_widget)
+        shortcut(Qt.ControlModifier | Qt.Key_F).connect(lambda: self.search_widget.start_search(False))
+        shortcut(Qt.ControlModifier | Qt.Key_R).connect(lambda: self.search_widget.start_search(True))
+
+        self.dock_json = self._dock("Json", wrapper, Qt.RightDockWidgetArea, Qt.LeftDockWidgetArea)
         self.dock_json.hide()
         self._json_dump = ""
 
