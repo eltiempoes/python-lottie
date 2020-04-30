@@ -61,10 +61,17 @@ class LottieViewerWindow(QMainWindow):
             ("Save &As...", "document-save-as", ks.SaveAs,  self.dialog_save_as),
             ("&Refresh",    "document-revert",  ks.Refresh, self.reload_document),
             ("A&uto Refresh", "view-refresh",   None,       None, "action_auto_refresh"),
-            ("&Validate TGS", "document-edit-verify", None, self.tgs_check),
             ("&Quit",       "application-exit", ks.Quit,    self.close),
         ]:
             self._make_action(file_menu, file_toolbar, *action)
+
+        document_menu = menu.addMenu("&Document")
+        document_toolbar = self.addToolBar("Document")
+        for action in [
+            ("&Sanitize TGS", "transform-scale",      None, self.tgs_sanitize),
+            ("&Validate TGS", "document-edit-verify", None, self.tgs_check),
+        ]:
+            self._make_action(document_menu, document_toolbar, *action)
 
         self.action_auto_refresh.setCheckable(True)
         self.action_auto_refresh.setChecked(True)
@@ -354,10 +361,6 @@ class LottieViewerWindow(QMainWindow):
         elif ext == "json":
             self.action_save.setEnabled(True)
 
-        if self._json_dump == "":
-            self._json_dump = json.dumps(animation.to_dict(), indent="   ")
-            self.edit_json.setText(self._json_dump)
-
     def _open_animation(self, animation):
         self.widget_time.set_min_max(animation.in_point, animation.out_point)
         self.widget_time.set_frame(animation.in_point)
@@ -368,6 +371,10 @@ class LottieViewerWindow(QMainWindow):
         self._update_frame()
         self.widget_time.setEnabled(True)
         self.console.define("document", self.animation)
+
+        if self._json_dump == "":
+            self._json_dump = json.dumps(animation.to_dict(), indent="   ")
+            self.edit_json.setText(self._json_dump)
 
     def reload_document(self):
         if self.animation:
@@ -420,6 +427,13 @@ class LottieViewerWindow(QMainWindow):
                 "No issues found",
                 QMessageBox.Ok
             )
+
+    def tgs_sanitize(self):
+        if not self.animation:
+            return
+
+        self.animation.tgs_sanitize()
+        self._console_refresh()
 
     def apply_json(self):
         if self.code_mode and self.action_code_mode.isChecked():

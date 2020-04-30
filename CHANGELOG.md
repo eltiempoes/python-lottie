@@ -1,5 +1,6 @@
 ## Unreleased
  * SVG exporter improvements
+ * Implemented Alpha/Luma mattes on SVG export
 
 ## 0.6.2 - 2020-04-30
  * Support for all importers / exporters in lottie GUI

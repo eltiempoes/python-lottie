@@ -123,6 +123,19 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         path.attrib["fill-opacity"] = str(mask.opacity.get_value(self.time) / 100)
         return mask_id
 
+    def _matte_source_to_def(self, layer_builder):
+        svgmask = ElementTree.SubElement(self.defs, "mask")
+        if not layer_builder.matte_id:
+            layer_builder.matte_id = self.gen_id()
+        svgmask.attrib["id"] = layer_builder.matte_id
+        matte_mode = layer_builder.matte_target.lottie.matte_mode
+
+        mask_type = "alpha"
+        if matte_mode == objects.MatteMode.Luma:
+            mask_type = "luminance"
+        svgmask.attrib["mask-type"] = mask_type
+        return svgmask
+
     def _on_masks(self, masks):
         if len(masks) == 1:
             return self._mask_to_def(masks[0])
@@ -150,10 +163,18 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             self._current_layer.pop()
             return None
 
+        if layer_builder.matte_target:
+            dom_parent = self._matte_source_to_def(layer_builder)
+
         g = self.group_from_lottie(lot, dom_parent, True)
 
         if lot.masks:
             g.attrib["mask"] = "url(#%s)" % self._on_masks(lot.masks)
+        elif layer_builder.matte_source:
+            matte_id = layer_builder.matte_source.matte_id
+            if not matte_id:
+                matte_id = layer_builder.matte_source.matte_id = self.gen_id()
+            g.attrib["mask"] = "url(#%s)" % matte_id
 
         if isinstance(lot, objects.PreCompLayer):
             self.precomp_times.append(PrecompTime(lot))

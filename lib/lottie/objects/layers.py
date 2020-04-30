@@ -28,7 +28,7 @@ class BlendMode(LottieEnum):
 
 
 ## \ingroup Lottie
-## \todo SVG masks, transparent gradients
+## \todo SVG masks
 class MatteMode(LottieEnum):
     Normal = 0
     Alpha = 1

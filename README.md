@@ -406,9 +406,9 @@ There are several things marked as unsupported in telegram animated stickers tha
 | Expansion                        | 👍                | 👍[^unsuported]  | ⛔️      |
 | Feather                          | 👍                | 👍[^unsuported]  | ⛔️      |
 | **Mattes**                       | **python-lottie** | **Telegram**     | **SVG** |
-| Alpha Matte                      | 👍                | ⛔️[^dok]         | ⛔️      |
+| Alpha Matte                      | 👍                | ⛔️[^dok]         | 👍      |
 | Alpha Inverted Matte             | 👍                | ⛔️[^dok]         | ⛔️      |
-| Luma Matte                       | 👍                | ⛔️[^dok]         | ⛔️      |
+| Luma Matte                       | 👍                | ⛔️[^dok]         | 👍      |
 | Luma Inverted Matte              | 👍                | ⛔️[^dok]         | ⛔️      |
 | **Merge Paths**                  | **python-lottie** | **Telegram**     | **SVG** |
 | Merge                            | ⛔️                | ⛔️[^untested]    | ⛔️      |

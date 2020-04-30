@@ -8,6 +8,9 @@ class RestructuredLayer:
         self.children_post = []
         self.structured = False
         self.shapegroup = None
+        self.matte_target = False
+        self.matte_source = None
+        self.matte_id = None
 
     def add(self, child):
         c = self.children_pre if self.structured else self.children_post
@@ -155,17 +158,27 @@ class AbstractBuilder:
     def restructure_layer_list(self, layer_list, merge_paths):
         layers = {}
         flat_layers = []
+        prev = None
         for layer in layer_list:
             laybuilder = RestructuredLayer(layer)
             flat_layers.append(laybuilder)
+
             if layer.index is not None:
                 layers[layer.index] = laybuilder
+
             if isinstance(layer, objects.ShapeLayer):
                 laybuilder.shapegroup = RestructuredShapeGroup(layer)
                 laybuilder.layer = True
                 for shape in layer.shapes:
                     self.restructure_shapegroup(shape, laybuilder.shapegroup, merge_paths)
                 laybuilder.shapegroup.finalize()
+
+            if layer.matte_mode not in {None, objects.MatteMode.Normal}:
+                laybuilder.matte_source = prev
+                if prev:
+                    prev.matte_target = laybuilder
+
+            prev = laybuilder
 
         top_layers = []
         for layer in flat_layers:
@@ -174,6 +187,7 @@ class AbstractBuilder:
                 layers[layer.lottie.parent_index].add(layer)
             else:
                 top_layers.insert(0, layer)
+
         return top_layers
 
     def restructure_shapegroup(self, shape, shape_group, merge_paths):
