@@ -1,4 +1,6 @@
 ## Unreleased
+
+## 0.6.2 - 2020-04-30
  * Support for all importers / exporters in lottie GUI
  * JSON / Source editing in lottie GUI
  * SVG importer improvements
