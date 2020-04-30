@@ -1,6 +1,7 @@
 import math
 from .base import LottieObject, LottieProp, LottieEnum, NVector
-from .properties import Value, MultiDimensional, GradientColors, ShapeProperty, Bezier
+from .properties import Value, MultiDimensional, GradientColors, ShapeProperty, Bezier, ColorValue
+from ..utils.color import Color
 from .helpers import Transform
 
 
@@ -489,7 +490,7 @@ class Fill(ShapeElement):
     """
     _props = [
         LottieProp("opacity", "o", Value, False),
-        LottieProp("color", "c", MultiDimensional, False),
+        LottieProp("color", "c", ColorValue, False),
         LottieProp("fill_rule", "r", FillRule, False),
     ]
     ## %Shape type.
@@ -500,7 +501,7 @@ class Fill(ShapeElement):
         ## Fill Opacity
         self.opacity = Value(100)
         ## Fill Color
-        self.color = MultiDimensional(color or NVector(1, 1, 1))
+        self.color = ColorValue(color or Color(1, 1, 1))
         ## Fill rule
         self.fill_rule = None
 
@@ -639,7 +640,7 @@ class Stroke(ShapeElement, BaseStroke):
         ShapeElement.__init__(self)
         BaseStroke.__init__(self, width)
         ## Stroke Color
-        self.color = MultiDimensional(color or NVector(0, 0, 0))
+        self.color = ColorValue(color or Color(0, 0, 0))
 
 
 ## \ingroup Lottie

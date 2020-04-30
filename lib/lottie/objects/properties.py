@@ -4,6 +4,7 @@ from .base import LottieObject, LottieProp, PseudoList, PseudoBool
 from . import easing
 from ..nvector import NVector
 from .bezier import Bezier
+from ..utils.color import Color
 
 
 class KeyframeBezier:
@@ -364,6 +365,19 @@ class MultiDimensional(AnimatableMixin, LottieObject):
         return 0
 
 
+class ColorValue(AnimatableMixin, LottieObject):
+    """!
+    An animatable property that holds a Color
+    """
+    keyframe_type = OffsetKeyframe
+    _props = [
+        LottieProp("value", "k", Color, False, lambda l: not l.get("a", None)),
+        LottieProp("property_index", "ix", int, False),
+        LottieProp("animated", "a", PseudoBool, False),
+        LottieProp("keyframes", "k", OffsetKeyframe, True, lambda l: l.get("a", None)),
+    ]
+
+
 ## \ingroup Lottie
 class GradientColors(LottieObject):
     """!
@@ -400,7 +414,7 @@ class GradientColors(LottieObject):
     @staticmethod
     def color_to_stops(self, colors):
         """
-        Converts a list of colors (NVector) to tuples (offset, color)
+        Converts a list of colors (Color) to tuples (offset, color)
         """
         return [
                 (i / (len(colors)-1), color)
@@ -409,7 +423,7 @@ class GradientColors(LottieObject):
 
     def set_stops(self, stops, keyframe=None):
         """!
-        \param stops iterable of (offset, NVector) tuples
+        \param stops iterable of (offset, Color) tuples
         \param keyframe keyframe index (or None if not animated)
         """
         flat = self._flatten_stops(stops)
@@ -422,7 +436,7 @@ class GradientColors(LottieObject):
         self.count = len(stops)
 
     def _flatten_stops(self, stops):
-        flattened_colors = NVector(*reduce(
+        flattened_colors = Color(*reduce(
             lambda a, b: a + b,
             (
                 [off] + color.components[:3]
@@ -479,7 +493,7 @@ class GradientColors(LottieObject):
     def add_keyframe(self, time, stops, ease=easing.Linear()):
         """!
         \param time   Frame time
-        \param stops  Iterable of (offset, NVector) tuples
+        \param stops  Iterable of (offset, Color) tuples
         \param ease   Easing function
         """
         self.colors.add_keyframe(time, self._flatten_stops(stops), ease)
@@ -495,12 +509,12 @@ class GradientColors(LottieObject):
         if len(colors) == 4 * self.count:
             for i in range(self.count):
                 off = i * 4
-                yield colors[off], NVector(*colors[off+1:off+4])
+                yield colors[off], Color(*colors[off+1:off+4])
         else:
             for i in range(self.count):
                 off = i * 4
                 aoff = self.count * 4 + i * 2 + 1
-                yield colors[off], NVector(colors[off+1], colors[off+2], colors[off+3], colors[aoff])
+                yield colors[off], Color(colors[off+1], colors[off+2], colors[off+3], colors[aoff])
 
     def stops_at(self, time):
         return self._stops_from_flat(self.colors.get_value(time))

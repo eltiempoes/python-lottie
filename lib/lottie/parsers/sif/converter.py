@@ -150,7 +150,7 @@ class Converter:
             shape.add_shape(objects.Rect(self.target_size/2, self.target_size))
 
         fill = objects.Fill()
-        fill.color = self._convert_vector(layer.color)
+        fill.color = self._convert_color(layer.color)
         fill.opacity = self._adjust_animated(
             self._convert_scalar(layer.amount),
             lambda x: x * 100
@@ -177,7 +177,7 @@ class Converter:
         self._set_name(shape, layer)
         shape.add_shape(converter(layer))
         stroke = objects.Stroke()
-        stroke.color = self._convert_vector(layer.color)
+        stroke.color = self._convert_color(layer.color)
         stroke.line_cap = self._convert_linecap(layer.start_tip)
         stroke.line_join = self._convert_cusp(layer.cusp_type)
         stroke.width = self._adjust_scalar(self._convert_scalar(layer.width))
@@ -257,6 +257,9 @@ class Converter:
         if isinstance(v, ast.SifRadialComposite):
             return [self._convert_scalar(v.radius), self._convert_scalar(v.theta)]
         return self._convert_vector(v)
+
+    #def _convert_color(self, v: ast.SifAstNode):
+        return self._convert_animatable(v, objects.ColorValue())
 
     def _convert_vector(self, v: ast.SifAstNode):
         return self._convert_animatable(v, objects.MultiDimensional())

@@ -11,13 +11,13 @@ sys.path.insert(0, os.path.join(
 from lottie.parsers.svg.importer import parse_color
 from lottie.parsers.svg.svgdata import color_table
 from lottie import NVector
-from lottie.utils.color import ColorMode, ManagedColor
+from lottie.utils.color import ColorMode, Color
 
 
 class ColorCompare:
     def __init__(self, name):
         self.name = name
-        rgb = ManagedColor(*parse_color(name)[:3])
+        rgb = Color(*parse_color(name)[:3])
         xyz = rgb.converted(ColorMode.XYZ)
         self.representations = {
             "RGB": rgb,
@@ -44,7 +44,7 @@ class ColorCompare:
 class SimilarColor:
     def __init__(self, name, rgbvec, space):
         self.name = name
-        self.rgb = ManagedColor(*rgbvec[:3])
+        self.rgb = Color(*rgbvec[:3])
         self.vec = self.rgb.converted(ColorMode[space]).vector
         self.space = space
 

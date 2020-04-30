@@ -1,8 +1,9 @@
 import math
+from .. import base
 from lottie.parsers.sif import api, builder, ast
 from lottie import objects
-from lottie.nvector import NVector, Color
-from .. import base
+from lottie.nvector import NVector
+from lottie.utils.color import Color
 
 
 class TestSifBuilder(base.TestCase):

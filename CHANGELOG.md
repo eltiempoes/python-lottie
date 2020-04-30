@@ -3,6 +3,8 @@
  * JSON / Source editing in lottie GUI
  * SVG importer improvements
  * Python console in lottie GUI
+ * SVG exporter improvements
+ * Used a more convenient class for color values
 
 ## 0.6.1 - 2020-04-25
  * Made scripts more user friendly

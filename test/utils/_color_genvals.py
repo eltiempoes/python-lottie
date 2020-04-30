@@ -1,36 +1,36 @@
 import sys
-from lottie.utils.color import ColorMode, ManagedColor
+from lottie.utils.color import ColorMode, Color
 
 colors = {
     "RGB": [
-        ManagedColor(1, 0, 0, ColorMode.RGB),
-        ManagedColor(0, 1, 0, ColorMode.RGB),
-        ManagedColor(0, 0, 1, ColorMode.RGB),
-        ManagedColor(1, 1, 1, ColorMode.RGB),
-        ManagedColor(0, 0, 0, ColorMode.RGB),
+        Color(1, 0, 0, ColorMode.RGB),
+        Color(0, 1, 0, ColorMode.RGB),
+        Color(0, 0, 1, ColorMode.RGB),
+        Color(1, 1, 1, ColorMode.RGB),
+        Color(0, 0, 0, ColorMode.RGB),
     ],
     "HSV": [
-        ManagedColor(1/3, 1, 1, ColorMode.HSV),
-        ManagedColor(0, 1, 1, ColorMode.HSV),
-        ManagedColor(0, 0, 0, ColorMode.HSV),
-        ManagedColor(0.5, 0, 1, ColorMode.HSV),
-        ManagedColor(0.5, 1, 1, ColorMode.HSV),
-        ManagedColor(0.5, 0, 0, ColorMode.HSV),
+        Color(1/3, 1, 1, ColorMode.HSV),
+        Color(0, 1, 1, ColorMode.HSV),
+        Color(0, 0, 0, ColorMode.HSV),
+        Color(0.5, 0, 1, ColorMode.HSV),
+        Color(0.5, 1, 1, ColorMode.HSV),
+        Color(0.5, 0, 0, ColorMode.HSV),
     ],
     "HSL": [
-        ManagedColor(1/3, 1, .5, ColorMode.HSL),
-        ManagedColor(0, 1, .5, ColorMode.HSL),
-        ManagedColor(0, 1, 1, ColorMode.HSL),
-        ManagedColor(0, 0, 0, ColorMode.HSL),
-        ManagedColor(0.5, 1, 1, ColorMode.HSL),
-        ManagedColor(0.5, 0, 1, ColorMode.HSL),
-        ManagedColor(0.5, 0, 0, ColorMode.HSL),
+        Color(1/3, 1, .5, ColorMode.HSL),
+        Color(0, 1, .5, ColorMode.HSL),
+        Color(0, 1, 1, ColorMode.HSL),
+        Color(0, 0, 0, ColorMode.HSL),
+        Color(0.5, 1, 1, ColorMode.HSL),
+        Color(0.5, 0, 1, ColorMode.HSL),
+        Color(0.5, 0, 0, ColorMode.HSL),
     ],
     "XYZ": [
-        ManagedColor(0.95047, 1, 1.08883, ColorMode.XYZ),
-        ManagedColor(0, 0, 0, ColorMode.XYZ),
-        ManagedColor(0.4124564, 0.2126729, 0.0193339, ColorMode.XYZ),
-        ManagedColor(0.2687201, 0.1176957, 0.9544423, ColorMode.XYZ),
+        Color(0.95047, 1, 1.08883, ColorMode.XYZ),
+        Color(0, 0, 0, ColorMode.XYZ),
+        Color(0.4124564, 0.2126729, 0.0193339, ColorMode.XYZ),
+        Color(0.2687201, 0.1176957, 0.9544423, ColorMode.XYZ),
     ],
 }
 

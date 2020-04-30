@@ -8,6 +8,8 @@ from .svgdata import color_table, css_atrrs
 from .handler import SvgHandler, NameMode
 from ...utils.ellipse import Ellipse
 from ...utils.transform import TransformMatrix
+from ...utils.color import Color
+
 try:
     from ...utils import font
     has_font = True
@@ -129,7 +131,7 @@ class SvgRadialGradient(SvgGradient):
         super().to_lottie(gradient_shape, shape, time)
 
 
-def parse_color(color, current_color=NVector(0, 0, 0, 1)):
+def parse_color(color, current_color=Color(0, 0, 0, 1)):
     """!
     Parses CSS colors
 
@@ -137,42 +139,42 @@ def parse_color(color, current_color=NVector(0, 0, 0, 1)):
     """
     # #fff
     if re.match(r"^#[0-9a-fA-F]{6}$", color):
-        return NVector(int(color[1:3], 16) / 0xff, int(color[3:5], 16) / 0xff, int(color[5:7], 16) / 0xff, 1)
+        return Color(int(color[1:3], 16) / 0xff, int(color[3:5], 16) / 0xff, int(color[5:7], 16) / 0xff, 1)
     # #112233
     if re.match(r"^#[0-9a-fA-F]{3}$", color):
-        return NVector(int(color[1], 16) / 0xf, int(color[2], 16) / 0xf, int(color[3], 16) / 0xf, 1)
+        return Color(int(color[1], 16) / 0xf, int(color[2], 16) / 0xf, int(color[3], 16) / 0xf, 1)
     # rgba(123, 123, 123, 0.7)
     match = re.match(r"^rgba\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9.eE]+)\s*\)$", color)
     if match:
-        return NVector(int(match[1])/255, int(match[2])/255, int(match[3])/255, float(match[4]))
+        return Color(int(match[1])/255, int(match[2])/255, int(match[3])/255, float(match[4]))
     # rgb(123, 123, 123)
     match = re.match(r"^rgb\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*\)$", color)
     if match:
-        return NVector(int(match[1])/255, int(match[2])/255, int(match[3])/255, 1)
+        return Color(int(match[1])/255, int(match[2])/255, int(match[3])/255, 1)
     # rgb(60%, 30%, 20%)
     match = re.match(r"^rgb\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*\)$", color)
     if match:
-        return NVector(int(match[1])/100, int(match[2])/100, int(match[3])/100, 1)
+        return Color(int(match[1])/100, int(match[2])/100, int(match[3])/100, 1)
     # rgba(60%, 30%, 20%, 0.7)
     match = re.match(r"^rgba\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
     if match:
-        return NVector(int(match[1])/100, int(match[2])/100, int(match[3])/100, float(match[4]))
+        return Color(int(match[1])/100, int(match[2])/100, int(match[3])/100, float(match[4]))
     # transparent
     if color == "transparent":
-        return NVector(0, 0, 0, 0)
+        return Color(0, 0, 0, 0)
     # hsl(60, 30%, 20%)
     match = re.match(r"^hsl\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*\)$", color)
     if match:
-        return NVector(*(colorsys.hls_to_rgb(int(match[1])/360, int(match[3])/100, int(match[2])/100) + (1,)))
+        return Color(*(colorsys.hls_to_rgb(int(match[1])/360, int(match[3])/100, int(match[2])/100) + (1,)))
     # hsla(60, 30%, 20%, 0.7)
     match = re.match(r"^hsla\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
     if match:
-        return NVector(*(colorsys.hls_to_rgb(int(match[1])/360, int(match[3])/100, int(match[2])/100) + (float(match[4]),)))
+        return Color(*(colorsys.hls_to_rgb(int(match[1])/360, int(match[3])/100, int(match[2])/100) + (float(match[4]),)))
     # currentColor
     if color in {"currentColor", "inherit"}:
-        return current_color
+        return current_color.clone()
     # red
-    return NVector(*color_table[color])
+    return Color(*color_table[color])
 
 
 class SvgDefsParent:
@@ -200,7 +202,7 @@ class SvgParser(SvgHandler):
     def __init__(self, name_mode=NameMode.Inkscape):
         self.init_etree()
         self.name_mode = name_mode
-        self.current_color = NVector(0, 0, 0, 1)
+        self.current_color = Color(0, 0, 0, 1)
         self.gradients = {}
         self.max_time = 0
         self.defs = SvgDefsParent()
@@ -412,7 +414,7 @@ class SvgParser(SvgHandler):
             else:
                 stroke = objects.Stroke()
                 color = self.parse_color(stroke_color)
-                stroke.color.value = color[:3]
+                stroke.color.value = color
                 opacity = color[3]
             group.add_shape(stroke)
 
@@ -456,7 +458,7 @@ class SvgParser(SvgHandler):
                 opacity = 1
             else:
                 color = self.parse_color(fill_color)
-                fill = objects.Fill(NVector(*color[:3]))
+                fill = objects.Fill(color)
                 opacity = color[3]
             opacity *= float(style.get("fill-opacity", 1))
             fill.opacity.value = opacity * 100

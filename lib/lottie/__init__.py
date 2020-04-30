@@ -2,6 +2,7 @@ import os
 import subprocess
 from . import objects, parsers, utils, exporters, nvector, importers
 from .nvector import *
+from .utils.color import Color
 
 try:
     from .version import __version__

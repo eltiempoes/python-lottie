@@ -1,13 +1,13 @@
 from .. import base
 from lottie import NVector
-from lottie.utils.color import ColorMode, ManagedColor
+from lottie.utils.color import ColorMode, Color
 
 
 class ConvertTestCase(base.TestCase):
     color_mode = ColorMode.RGB
 
     def color(self, *a):
-        return ManagedColor(*a, self.color_mode)
+        return Color(*a, mode=self.color_mode)
 
     def _veq(self, v1, v2, msg):
         if len(v1) != len(v2):
@@ -26,21 +26,21 @@ class ConvertTestCase(base.TestCase):
             )
         )
         self._veq(
-            conv.vector, NVector(*expect),
+            conv, NVector(*expect),
             "%s -> %s has the wrong result: %s (expected %s)" % (
-                self.color_mode, mode, conv.vector, expect
+                self.color_mode, mode, conv, expect
             )
         )
 
         conv.convert(self.color_mode)
         self.assertEqual(conv.mode, self.color_mode)
         if expect_rt is None:
-            expect_rt = color.vector
+            expect_rt = color
 
         self._veq(
-            conv.vector, expect_rt,
+            conv, expect_rt,
             "%s -> %s round trip failed: %s (expected %s)" % (
-                self.color_mode, mode, conv.vector, expect_rt
+                self.color_mode, mode, conv, expect_rt
             )
         )
 

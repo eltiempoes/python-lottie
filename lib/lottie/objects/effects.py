@@ -1,6 +1,7 @@
 from .base import LottieObject, LottieProp, PseudoBool
-from .properties import Value, MultiDimensional
+from .properties import Value, MultiDimensional, ColorValue
 from ..nvector import NVector
+from ..utils.color import Color
 
 
 #5: EffectsManager,
@@ -205,15 +206,15 @@ class EffectValueLayer(EffectValue):
 ## \ingroup Lottie
 class EffectValueColor(EffectValue):
     _props = [
-        LottieProp("value", "v", MultiDimensional, False),
+        LottieProp("value", "v", ColorValue, False),
     ]
     ## %Effect type.
     type = 2
 
-    def __init__(self, value=NVector(0, 0, 0)):
+    def __init__(self, value=Color(0, 0, 0)):
         EffectValue.__init__(self)
         ## Effect value.
-        self.value = MultiDimensional(value)
+        self.value = ColorValue(value)
 
 
 ## \ingroup Lottie

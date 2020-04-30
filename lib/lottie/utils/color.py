@@ -1,11 +1,11 @@
 import enum
 import math
 import colorsys
-from ..nvector import NVector, Color
+from ..nvector import NVector
 
 
-def from_uint8(r, g, b):
-    return Color(r, g, b) / 255
+def from_uint8(r, g, b, a=255):
+    return Color(r, g, b, a) / 255
 
 
 class ColorMode(enum.Enum):
@@ -340,6 +340,12 @@ class Conversion:
         if mode_from == mode_to:
             return tuple
 
+        if len(tuple) == 4:
+            alpha = tuple[3]
+            tuple = tuple[:3]
+        else:
+            alpha = None
+
         func = Conversion.conv_func(mode_from, mode_to)
         if func:
             return func(*tuple)
@@ -352,16 +358,20 @@ class Conversion:
                     raise ValueError("Missing definition for conversion from %s to %s" % (mode_from, step))
                 tuple = func(*tuple)
                 mode_from = step
+            if alpha is not None:
+                tuple += (alpha,)
             return tuple
 
         raise ValueError("No conversion path from %s to %s" % (mode_from, mode_to))
 
 
-class ManagedColor:
+class Color(NVector):
     Mode = ColorMode
 
-    def __init__(self, c1, c2, c3, mode=ColorMode.RGB):
-        self.vector = NVector(c1, c2, c3)
+    def __init__(self, c1=0, c2=0, c3=0, a=1, *, mode=ColorMode.RGB):
+        if isinstance(a, ColorMode):
+            raise TypeError("Please update the Color constructor")
+        super().__init__(c1, c2, c3, a)
         self._mode = mode
 
     @property
@@ -372,27 +382,23 @@ class ManagedColor:
         if v == self._mode:
             return self
 
-        self.vector = NVector(*Conversion.convert(self.vector, self._mode, v))
+        self.components = list(Conversion.convert(self.components, self._mode, v))
 
         self._mode = v
         return self
 
     def clone(self):
-        return ManagedColor(*self.vector, self._mode)
+        return Color(*self.components, mode=self._mode)
 
     def converted(self, mode):
         return self.clone().convert(mode)
 
-    def to_color(self):
-        return self.converted(ColorMode.RGB).vector
-
-    @classmethod
-    def from_color(cls, color):
-        return cls(*color[:3], ColorMode.RGB)
+    def to_rgb(self):
+        return self.converted(ColorMode.RGB)
 
     def __repr__(self):
-        return "<%s %s [%.3f, %.3f, %.3f]>" % (
-            (self.__class__.__name__, self.mode.name) + tuple(self.vector.components)
+        return "<%s %s [%.3f, %.3f, %.3f, %.3f]>" % (
+            (self.__class__.__name__, self.mode.name) + tuple(self.components)
         )
 
     def _attrindex(self, name):
@@ -404,7 +410,7 @@ class ManagedColor:
             comps = ({"h", "hue"}, {"s", "saturation"}, {"v", "value"})
         elif self._mode == ColorMode.HSL:
             comps = ({"h", "hue"}, {"s", "saturation"}, {"l", "lightness"})
-        elif self._mode == ColorMode.LCH_uv: #in (ColorMode.LCH_uv, ColorMode.LCH_ab):
+        elif self._mode == ColorMode.LCH_uv:  # in (ColorMode.LCH_uv, ColorMode.LCH_ab):
             comps = ({"l", "luma", "luminance"}, {"c", "choma"}, {"h", "hue"})
         elif self._mode == ColorMode.XYZ:
             comps = "xyz"
@@ -421,16 +427,16 @@ class ManagedColor:
         return None
 
     def __getattr__(self, name):
-        if name not in vars(self) and name not in {"_mode", "vector"}:
+        if name not in vars(self) and name not in {"_mode", "components"}:
             i = self._attrindex(name)
             if i is not None:
-                return self.vector[i]
-        return super().__getattr__(name)
+                return self.components[i]
+        raise AttributeError(name)
 
     def __setattr__(self, name, value):
-        if name not in vars(self) and name not in {"_mode", "vector"}:
+        if name not in vars(self) and name not in {"_mode", "components"}:
             i = self._attrindex(name)
             if i is not None:
-                self.vector[i] = value
+                self.components[i] = value
                 return
         return super().__setattr__(name, value)

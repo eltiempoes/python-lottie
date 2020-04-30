@@ -1,4 +1,3 @@
-from . import animation, ellipse, ik, linediff, restructure, script, stripper
 __all__ = ["animation", "ellipse", "ik", "linediff", "restructure", "script", "stripper"]
 
 try:

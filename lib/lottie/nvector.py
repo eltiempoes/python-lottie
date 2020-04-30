@@ -23,18 +23,18 @@ class NVector():
         return list(self.components)
 
     def __add__(self, other):
-        return NVector(*vop(operator.add, self.components, other.components))
+        return type(self)(*vop(operator.add, self.components, other.components))
 
     def __sub__(self, other):
-        return NVector(*vop(operator.sub, self.components, other.components))
+        return type(self)(*vop(operator.sub, self.components, other.components))
 
     def __mul__(self, scalar):
         if isinstance(scalar, NVector):
-            return NVector(*vop(operator.mul, self.components, scalar.components))
-        return NVector(*(c * scalar for c in self.components))
+            return type(self)(*vop(operator.mul, self.components, scalar.components))
+        return type(self)(*(c * scalar for c in self.components))
 
     def __truediv__(self, scalar):
-        return NVector(*(c / scalar for c in self.components))
+        return type(self)(*(c / scalar for c in self.components))
 
     def __iadd__(self, other):
         self.components = vop(operator.add, self.components, other.components)
@@ -56,9 +56,11 @@ class NVector():
         return self
 
     def __neg__(self):
-        return NVector(*(-c for c in self.components))
+        return type(self)(*(-c for c in self.components))
 
     def __getitem__(self, key):
+        if isinstance(key, slice):
+            return type(self)(*self.components[key])
         return self.components[key]
 
     def __setitem__(self, key, value):
@@ -68,7 +70,7 @@ class NVector():
         return self.components == other.components
 
     def __abs__(self):
-        return NVector(*(abs(c) for c in self.components))
+        return type(self)(*(abs(c) for c in self.components))
 
     @property
     def length(self):
@@ -108,7 +110,7 @@ class NVector():
         self.components[2] = v
 
     def element_scaled(self, other):
-        return NVector(*vop(operator.mul, self.components, other.components))
+        return type(self)(*vop(operator.mul, self.components, other.components))
 
     def cross(self, other):
         """
@@ -116,7 +118,7 @@ class NVector():
         """
         a = self
         b = other
-        return NVector(
+        return type(self)(
             a[1] * b[2] - a[2] * b[1],
             a[2] * b[0] - a[0] * b[2],
             a[0] * b[1] - a[1] * b[0],
@@ -140,10 +142,6 @@ def Size(x, y):
 
 def Point3D(x, y, z):
     return NVector(x, y, z)
-
-
-def Color(r, g, b):
-    return NVector(r, g, b)
 
 
 def PolarVector(length, theta):

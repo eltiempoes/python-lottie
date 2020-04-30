@@ -2,6 +2,7 @@ import enum
 import inspect
 import importlib
 from ..nvector import NVector
+from ..utils.color import Color
 
 
 class LottieBase:
@@ -161,6 +162,8 @@ class LottieProp:
                 return self.type.lottie_to_py(lottieval)
             elif self.type is NVector:
                 return NVector(*lottieval)
+            elif self.type is Color:
+                return Color(*lottieval)
             return self.type(lottieval)
         except Exception as e:
             raise TypeError("Could not load `%s` (%s) as %s:\n%s: %s" % (
