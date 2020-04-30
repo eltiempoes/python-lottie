@@ -85,6 +85,9 @@ class Animation(Composition):
             self.width = self.height = 512
 
             for layer in self.layers:
+                if layer.parent_index:
+                    continue
+
                 if layer.transform.scale.animated:
                     for kf in layer.transform.scale.keyframes:
                         if kf.start is not None:
@@ -93,6 +96,15 @@ class Animation(Composition):
                             kf.end *= scale
                 else:
                     layer.transform.scale.value *= scale
+
+                if layer.transform.position.animated:
+                    for kf in layer.transform.position.keyframes:
+                        if kf.start is not None:
+                            kf.start *= scale
+                        if kf.end is not None:
+                            kf.end *= scale
+                else:
+                    layer.transform.position.value *= scale
 
         if self.frame_rate < 45:
             self.frame_rate = 30
