@@ -153,26 +153,17 @@ class LottieProp:
         return self._load_scalar(lottieval)
 
     def _load_scalar(self, lottieval):
-        try:
-            if inspect.isclass(self.type) and issubclass(self.type, LottieBase):
-                return self.type.load(lottieval)
-            elif isinstance(self.type, type) and isinstance(lottieval, self.type):
-                return lottieval
-            elif isinstance(self.type, LottieValueConverter):
-                return self.type.lottie_to_py(lottieval)
-            elif self.type is NVector:
-                return NVector(*lottieval)
-            elif self.type is Color:
-                return Color(*lottieval)
-            return self.type(lottieval)
-        except Exception as e:
-            raise TypeError("Could not load `%s` (%s) as %s:\n%s: %s" % (
-                self.lottie,
-                self.name,
-                self.type.__name__,
-                e.__class__.__name__,
-                e
-            )) from e
+        if inspect.isclass(self.type) and issubclass(self.type, LottieBase):
+            return self.type.load(lottieval)
+        elif isinstance(self.type, type) and isinstance(lottieval, self.type):
+            return lottieval
+        elif isinstance(self.type, LottieValueConverter):
+            return self.type.lottie_to_py(lottieval)
+        elif self.type is NVector:
+            return NVector(*lottieval)
+        elif self.type is Color:
+            return Color(*lottieval)
+        return self.type(lottieval)
 
     def to_dict(self, obj):
         """!
@@ -188,29 +179,20 @@ class LottieProp:
         return val
 
     def _basic_to_dict(self, v):
-        try:
-            if isinstance(v, LottieBase):
-                return v.to_dict()
-            elif isinstance(v, NVector):
-                return list(map(self._basic_to_dict, v.components))
-            elif isinstance(v, list):
-                return list(map(self._basic_to_dict, v))
-            elif isinstance(v, (int, str, bool)):
-                return v
-            elif isinstance(v, float):
-                if v % 1 == 0:
-                    return int(v)
-                return v #round(v, 3)
-            else:
-                raise Exception("Unknown value %r" % v)
-        except Exception as e:
-            raise TypeError("Could not save `%s` (%s) as %s:\n%s: %s" % (
-                self.lottie,
-                self.name,
-                self.type.__name__,
-                e.__class__.__name__,
-                e
-            )) from e
+        if isinstance(v, LottieBase):
+            return v.to_dict()
+        elif isinstance(v, NVector):
+            return list(map(self._basic_to_dict, v.components))
+        elif isinstance(v, list):
+            return list(map(self._basic_to_dict, v))
+        elif isinstance(v, (int, str, bool)):
+            return v
+        elif isinstance(v, float):
+            if v % 1 == 0:
+                return int(v)
+            return v #round(v, 3)
+        else:
+            raise Exception("Unknown value %r" % v)
 
     def __repr__(self):
         return "<LottieProp %s:%s>" % (self.name, self.lottie)
