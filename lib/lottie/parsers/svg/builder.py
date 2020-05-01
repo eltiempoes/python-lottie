@@ -201,9 +201,9 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         if layer_builder.shapegroup:
             g.attrib["style"] = self.group_to_style(layer_builder.shapegroup)
             self._split_stroke(layer_builder.shapegroup, g, dom_parent)
-        if lot.hidden:
-            g.attrib.setdefault("style", "")
-            g.attrib["style"] += "display: none;"
+        #if lot.hidden:
+            #g.attrib.setdefault("style", "")
+            #g.attrib["style"] += "display: none;"
 
         return g
 

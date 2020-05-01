@@ -358,9 +358,6 @@ class AnimatableMixin:
         return new_kframes
 
 
-
-
-
 ## \ingroup Lottie
 class MultiDimensional(AnimatableMixin, LottieObject):
     """!

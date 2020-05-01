@@ -113,10 +113,11 @@ class Animation(Composition):
 
     def _fixup(self):
         super()._fixup()
-        for ass in self.assets:
-            if isinstance(ass, Precomp):
-                ass.animation = self
-                ass._fixup()
+        if self.assets:
+            for ass in self.assets:
+                if isinstance(ass, Precomp):
+                    ass.animation = self
+                    ass._fixup()
 
     def __str__(self):
         return self.name or super().__str__()
