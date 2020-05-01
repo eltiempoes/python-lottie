@@ -1,6 +1,6 @@
 import math
 from .base import LottieObject, LottieProp, LottieEnum
-from .properties import MultiDimensional, Value, NVector, ShapeProperty
+from .properties import MultiDimensional, Value, NVector, ShapeProperty, PositionValue
 
 
 ## \ingroup Lottie
@@ -10,7 +10,7 @@ class Transform(LottieObject):
     """
     _props = [
         LottieProp("anchor_point", "a", MultiDimensional, False),
-        LottieProp("position", "p", MultiDimensional, False),
+        LottieProp("position", "p", PositionValue, False),
         LottieProp("scale", "s", MultiDimensional, False),
         LottieProp("rotation", "r", Value, False),
         LottieProp("opacity", "o", Value, False),
@@ -25,7 +25,7 @@ class Transform(LottieObject):
         ## Transform Anchor Point
         self.anchor_point = MultiDimensional(NVector(0, 0))
         ## Transform Position
-        self.position = MultiDimensional(NVector(0, 0))
+        self.position = PositionValue(NVector(0, 0))
         ## Transform Scale
         self.scale = MultiDimensional(NVector(100, 100))
         ## Transform Rotation

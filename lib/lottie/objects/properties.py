@@ -333,6 +333,33 @@ class AnimatableMixin:
             return "animated"
         return str(self.value)
 
+    @classmethod
+    def merge_keyframes(cls, items, conversion):
+        """
+        @todo Remove similar functionality from SVG/sif parsers
+        """
+        keyframes = []
+        for animatable in items:
+            if animatable.animated:
+                keyframes.extend(animatable.keyframes)
+
+        # TODO properly interpolate tangents
+        new_kframes = []
+        for keyframe in sorted(keyframes, key=lambda kf: kf.time):
+            if new_kframes and new_kframes[-1].time == keyframe.time:
+                continue
+            kfcopy = keyframe.clone()
+            kfcopy.start = conversion(*(i.get_value(keyframe.time) for i in items))
+            new_kframes.append(kfcopy)
+
+        for i in range(0, len(new_kframes) - 1):
+            new_kframes[i].end = new_kframes[i+1].start
+
+        return new_kframes
+
+
+
+
 
 ## \ingroup Lottie
 class MultiDimensional(AnimatableMixin, LottieObject):
@@ -363,6 +390,43 @@ class MultiDimensional(AnimatableMixin, LottieObject):
             return self.keyframes[0].interpolated_tangent_angle(0, end)
 
         return 0
+
+
+class PositionValue(MultiDimensional):
+    _props = [
+        LottieProp("value", "k", NVector, False, lambda l: not l.get("a", None)),
+        LottieProp("property_index", "ix", int, False),
+        LottieProp("animated", "a", PseudoBool, False),
+        LottieProp("keyframes", "k", OffsetKeyframe, True, lambda l: l.get("a", None)),
+    ]
+
+    @classmethod
+    def load(cls, lottiedict):
+        obj = super().load(lottiedict)
+        if lottiedict.get("s", False):
+            cls._load_split(lottiedict, obj)
+
+        return obj
+
+    @classmethod
+    def _load_split(cls, lottiedict, obj):
+        components = [
+            Value.load(lottiedict.get("x", {})),
+            Value.load(lottiedict.get("y", {})),
+        ]
+        if "z" in lottiedict:
+            components.append(Value.load(lottiedict.get("z", {})))
+
+        has_anim = any(x for x in components if x.animated)
+        if not has_anim:
+            obj.value = NVector(*(a.value for a in components))
+            obj.animated = False
+            obj.keyframes = None
+            return
+
+        obj.animated = True
+        obj.value = None
+        obj.keyframes = cls.merge_keyframes(components, NVector)
 
 
 class ColorValue(AnimatableMixin, LottieObject):

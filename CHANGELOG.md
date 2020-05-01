@@ -2,6 +2,7 @@
  * SVG exporter improvements
  * Implemented Alpha/Luma mattes on SVG export
  * Find/replace in lottie gui code editor
+ * Properly parse transforms with xplit x/y
 
 ## 0.6.2 - 2020-04-30
  * Support for all importers / exporters in lottie GUI
