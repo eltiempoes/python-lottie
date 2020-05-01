@@ -34,7 +34,7 @@ upload: dist/$(PACKAGE_NAME)-$(VERSION).tar.gz
 docs: docs/html/index.html
 
 docs/Doxyfile: docs/Doxyfile.in setup.py
-	m4 -P -DM4_NAME="$(PACKAGE_NAME)" -DM4_VERSION="$(VERSION)" -DM4_DESCRIPTION="$(shell $(PYTHON) $(SETUP) --description)" $< >$@
+	m4 -P -DM4_NAME="python-$(PACKAGE_NAME)" -DM4_VERSION="$(VERSION)" -DM4_DESCRIPTION="$(shell $(PYTHON) $(SETUP) --description)" $< >$@
 
 docs/dox/lottie.dox: docs/dox_lottie.py
 docs/dox/lottie.dox: $(OBJECTS)
