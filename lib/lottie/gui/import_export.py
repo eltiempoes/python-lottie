@@ -58,7 +58,9 @@ class GuiProgressReporter(IoProgressReporter):
     def cleanup(self):
         with self.lock:
             id = threading.current_thread().ident
-            self.dialogs.pop(self.threads.pop(id)).hide()
+            dialog = self.dialogs.pop(self.threads.pop(id))
+            dialog.hide()
+            dialog.deleteLater()
 
 
 class GuiBasePorter:
@@ -99,6 +101,9 @@ class GuiBasePorter:
             getter = widget.isChecked
         elif option.kwargs.get("action") == "store_false":
             widget = QtWidgets.QCheckBox()
+            labtext = label.text()
+            if labtext.startswith("No "):
+                label.setText(labtext[3:])
             widget.setChecked(True)
             getter = widget.isChecked
         elif "choices" in option.kwargs:
@@ -187,7 +192,10 @@ class ExportThread(QtCore.QThread):
 
     def run(self):
         IoProgressReporter.instance.setup("Export to %s" % self.exporter.name, self.id)
-        self.exporter.process(self.animation, self.file_name, **self.options)
+        try:
+            self.exporter.process(self.animation, self.file_name, **self.options)
+        except:
+            IoProgressReporter.instance.report_message("Error on export")
         IoProgressReporter.instance.cleanup()
 
 

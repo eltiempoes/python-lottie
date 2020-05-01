@@ -8,6 +8,7 @@ import signal
 import inspect
 import argparse
 import tempfile
+import traceback
 from xml.dom import minidom
 
 from PyQt5 import QtSvg
@@ -376,7 +377,7 @@ class LottieViewerWindow(QMainWindow):
         self.widget_time.set_frame(animation.in_point)
         self.widget_time.fps = animation.frame_rate
         self.animation = animation
-        self.display.setFixedSize(self.animation.width, self.animation.height)
+        self.display.setFixedSize(int(self.animation.width), int(self.animation.height))
         gui.tree_view.lottie_to_tree(self.tree_widget, animation)
         self._update_frame()
         self.widget_time.setEnabled(True)
@@ -446,14 +447,19 @@ class LottieViewerWindow(QMainWindow):
         self._console_refresh()
 
     def apply_json(self):
-        if self.code_mode and self.action_code_mode.isChecked():
-            with tempfile.NamedTemporaryFile("w") as file:
-                file.write(self.edit_json.text())
-                file.flush()
-                animation = self.importer.importer.process(file.name, **self.importer_options)
-        else:
-            self._json_dump = self.edit_json.text()
-            animation = objects.Animation.load(json.loads(self._json_dump))
+        try:
+            if self.code_mode and self.action_code_mode.isChecked():
+                with tempfile.NamedTemporaryFile("w") as file:
+                    file.write(self.edit_json.text())
+                    file.flush()
+                    animation = self.importer.importer.process(file.name, **self.importer_options)
+            else:
+                self._json_dump = self.edit_json.text()
+                animation = objects.Animation.load(json.loads(self._json_dump))
+        except Exception:
+            traceback.print_exc()
+            QMessageBox.warning(self, "Error", "Applying changes failed")
+            return
 
         self._clear()
         self._open_animation(animation)
