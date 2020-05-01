@@ -238,9 +238,12 @@ class Converter:
 
     def _convert_animatable(self, v: ast.SifAstNode, lot: objects.properties.AnimatableMixin):
         if self._animated(v):
-            for kf in v.keyframes:
-                # TODO easing
-                lot.add_keyframe(self._time(kf.time), self._convert_ast_value(kf.value))
+            if len(v.keyframes) == 1:
+                lot.value = self._convert_ast_value(v.keyframes[0].value)
+            else:
+                for kf in v.keyframes:
+                    # TODO easing
+                    lot.add_keyframe(self._time(kf.time), self._convert_ast_value(kf.value))
         else:
             lot.value = self._convert_ast_value(v)
         return lot
