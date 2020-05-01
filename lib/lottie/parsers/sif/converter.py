@@ -258,7 +258,7 @@ class Converter:
             return [self._convert_scalar(v.radius), self._convert_scalar(v.theta)]
         return self._convert_vector(v)
 
-    #def _convert_color(self, v: ast.SifAstNode):
+    def _convert_color(self, v: ast.SifAstNode):
         return self._convert_animatable(v, objects.ColorValue())
 
     def _convert_vector(self, v: ast.SifAstNode):
