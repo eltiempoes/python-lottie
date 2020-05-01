@@ -100,6 +100,7 @@ class GuiBasePorter:
         elif option.kwargs.get("action") == "store_false":
             widget = QtWidgets.QCheckBox()
             widget.setChecked(True)
+            getter = widget.isChecked
         elif "choices" in option.kwargs:
             widget = QtWidgets.QComboBox()
             for choice in option.kwargs["choices"]:
@@ -215,15 +216,22 @@ def get_open_filename(parent, title, dirname):
 
 
 def get_save_filename(parent, title, dirname):
-    filters = ";;".join(ge.file_filter for ge in gui_exporters)
+    extensions = reduce(lambda a, b: a | b, (set(gi.exporter.extensions) for gi in gui_exporters))
+    all_files = "All Supported Files (%s)" % " ".join("*.%s" % ex for ex in extensions)
+    filters = all_files + ";;" + ";;".join(ge.file_filter for ge in gui_exporters)
     file_name, filter = QtWidgets.QFileDialog.getSaveFileName(
         parent, title, dirname, filters
     )
 
     if file_name:
-        for exporter in gui_exporters:
-            if exporter.file_filter == filter:
+        if filter == all_files:
+            exporter = gui_exporter_from_filename(file_name)
+            if exporter:
                 return file_name, exporter
+        else:
+            for exporter in gui_exporters:
+                if exporter.file_filter == filter:
+                    return file_name, exporter
 
     return None, None
 
@@ -238,5 +246,13 @@ def gui_importer_from_filename(filename):
     importer = importers.get_from_filename(filename)
     for gip in gui_importers:
         if gip.importer is importer:
+            return gip
+    return None
+
+
+def gui_exporter_from_filename(filename):
+    exporter = exporters.get_from_filename(filename)
+    for gip in gui_exporters:
+        if gip.exporter is exporter:
             return gip
     return None
