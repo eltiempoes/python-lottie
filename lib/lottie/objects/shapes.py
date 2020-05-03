@@ -789,3 +789,19 @@ class Merge(ShapeElement):
         ShapeElement.__init__(self)
         ## Merge Mode
         self.merge_mode = 1
+
+
+## \ingroup Lottie
+## \ingroup LottieCheck
+class Twist(ShapeElement):
+    _props = [
+        LottieProp("a", "a", Value, False),
+        LottieProp("c", "c", MultiDimensional, False),
+    ]
+    ## %Shape type.
+    type = "tw"
+
+    def __init__(self):
+        ShapeElement.__init__(self)
+        self.a = Value()
+        self.c = MultiDimensional()
