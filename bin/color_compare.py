@@ -32,10 +32,10 @@ class ColorCompare:
         return "<ColorCompare %s>" % self.name
 
     def dist(self, oth, space):
-        return (self.representations[space].vector - oth.representations[space].vector).length
+        return (self.representations[space] - oth.representations[space]).length
 
     def rep(self, space):
-        return self.representations[space].vector
+        return self.representations[space]
 
     def ansi_str(self, length):
         return color_str(self.rep("RGB"), length)
@@ -45,14 +45,14 @@ class SimilarColor:
     def __init__(self, name, rgbvec, space):
         self.name = name
         self.rgb = Color(*rgbvec[:3])
-        self.vec = self.rgb.converted(ColorMode[space]).vector
+        self.vec = self.rgb.converted(ColorMode[space])
         self.space = space
 
     def dist(self, colorcompare):
         return (self.vec - colorcompare.rep(self.space)).length
 
     def ansi_str(self, length):
-        return color_str(self.rgb.vector, length)
+        return color_str(self.rgb, length)
 
 
 def color_str(rgbvec, length):
@@ -72,7 +72,7 @@ def table_sep(length):
 
 
 def vfmt(vec):
-    return "%6.2f %6.2f %6.2f" % tuple(vec)
+    return "%6.2f %6.2f %6.2f" % tuple(vec[:3])
 
 
 spaces = ["RGB", "HSV", "XYZ", "LAB", "LUV", "LCH_uv"]
@@ -89,7 +89,7 @@ parser.add_argument(
 parser.add_argument(
     "--space", "-s",
     choices=spaces+["all"],
-    default="LAB",
+    default="LCH_uv",
     help="Color space for the distance"
 )
 parser.add_argument(
@@ -168,7 +168,7 @@ if __name__ == "__main__":
         table_row("", (c.ansi_str(itempad) for c in ns.colors))
     table_sep(len(ns.colors))
     for cs in ["RGB", "HSV", "XYZ", "LAB", "LUV", "LCH_uv"]:
-        table_row(cs, (vfmt(c.representations[cs].vector) for c in ns.colors))
+        table_row(cs, (vfmt(c.representations[cs]) for c in ns.colors))
     table_sep(len(ns.colors))
 
     if ns.space == "all":
