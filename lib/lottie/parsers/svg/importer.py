@@ -206,6 +206,7 @@ class SvgParser(SvgHandler):
         self.gradients = {}
         self.max_time = 0
         self.defs = SvgDefsParent()
+        self.dpi = 96
 
     def _get_name(self, element, inkscapequal):
         if self.name_mode == NameMode.Inkscape:
@@ -225,7 +226,7 @@ class SvgParser(SvgHandler):
 
         svg = etree.getroot()
 
-        self.dpi = float(svg.attrib.get(self.qualified("inkscape", "export-xdpi"), 96))
+        self._get_dpi(svg)
 
         if "width" in svg.attrib and "height" in svg.attrib:
             animation.width = int(round(self._parse_unit(svg.attrib["width"])))
@@ -243,24 +244,43 @@ class SvgParser(SvgHandler):
                     self._parseshape_g(frame, layer, {})
                     self.max_time += layer_frames
                     layer.out_point = self.max_time
-            animation.out_point = self.max_time
         else:
-            layer = objects.ShapeLayer()
-            animation.add_layer(layer)
-            self.parse_children(svg, layer, {})
-            if self.max_time:
-                animation.out_point = self.max_time
-                for layer in animation.layers:
-                    layer.out_point = self.max_time
+            self._svg_to_layer(animation, svg)
 
-        if "viewBox" in svg.attrib:
-            vbx, vby, vbw, vbh = map(float, svg.attrib["viewBox"].split())
-            if vbx != 0 or vby != 0 or vbw != animation.width or vbh != animation.height:
-                for layer in animation.layers:
-                    layer.transform.position.value = -NVector(vbx, vby)
-                    layer.transform.scale.value = NVector(animation.width / vbw, animation.height / vbh) * 100
+        if self.max_time:
+            animation.out_point = self.max_time
+
+        self._fix_viewbox(svg, (layer for layer in animation.layers if not layer.parent_index))
 
         return animation
+
+    def etree_to_layer(self, animation, etree):
+        svg = etree.getroot()
+        self._get_dpi(svg)
+        layer = self._svg_to_layer(animation, svg)
+        self._fix_viewbox(svg, [layer])
+        return layer
+
+    def _get_dpi(self, svg):
+        self.dpi = float(svg.attrib.get(self.qualified("inkscape", "export-xdpi"), self.dpi))
+
+    def _svg_to_layer(self, animation, svg):
+        self.animation = animation
+        layer = objects.ShapeLayer()
+        animation.add_layer(layer)
+        self.parse_children(svg, layer, self.parse_style(svg, {}))
+        if self.max_time:
+            for sublayer in layer.find_all(objects.Layer):
+                sublayer.out_point = self.max_time
+        return layer
+
+    def _fix_viewbox(self, svg, layers):
+        if "viewBox" in svg.attrib:
+            vbx, vby, vbw, vbh = map(float, svg.attrib["viewBox"].split())
+            if vbx != 0 or vby != 0 or vbw != self.animation.width or vbh != self.animation.height:
+                for layer in layers:
+                    layer.transform.position.value = -NVector(vbx, vby)
+                    layer.transform.scale.value = NVector(self.animation.width / vbw, self.animation.height / vbh) * 100
 
     def _parse_unit(self, value):
         if not isinstance(value, str):

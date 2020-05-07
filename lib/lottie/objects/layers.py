@@ -138,8 +138,11 @@ class Layer(LottieObject):
 
     @parent.setter
     def parent(self, layer):
-        self.parent_index = layer.index
-        layer._child_inout_auto(self)
+        if layer is None:
+            self.parent_index = None
+        else:
+            self.parent_index = layer.index
+            layer._child_inout_auto(self)
 
     @property
     def children(self):

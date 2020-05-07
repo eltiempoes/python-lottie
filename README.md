@@ -124,6 +124,7 @@ Here is a list of features of the lottie python framework:
 | WebM      | ⛔️        | ⛔️                | 👍        | 👍                |
 | HTML      | ⛔️        | ⛔️                | 👍        | 👍                |
 | Blender   | 👍[^blend]| 👍[^blend]        | ⛔️        | ⛔️                |
+| Krita     | 👍        | ⛔️                | ⛔️        | ⛔️                |
 
 [^frames]: Importing multiple images as frames
 
