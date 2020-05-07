@@ -328,6 +328,12 @@ http://mattia.basaglia.gitlab.io/python-lottie/downloads.html
 Here you can download packages for pip, blender, and inkscape before they are released.
 These packages always have the latest features but they might be unstable.
 
+### Issues
+
+You can report any issue in the tracker on gitlab:
+
+https://gitlab.com/mattia.basaglia/python-lottie/-/issues
+
 
 Supported After Effects Features
 --------------------------------
