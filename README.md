@@ -151,7 +151,7 @@ Installation
 ### Synfig
 
 There's a Synfig studio plugin to export telegram stickers.
-To install, just copy (or symlink) ./addons/synfig/tgs-exporter
+To install, just copy (or symlink) ./addons/synfig/pylot-exporter
 into the synfig plugin directory.
 You might have to copy ./lib/lottie in there as well.
 
