@@ -65,5 +65,10 @@ build_tags:
     only:
         - tags
 
+lint:
+    stage: test
+    script:
+        - flake8 lib/lottie
+
 # https://gitlab.com/mattia.basaglia/tgs/-/ci/lint
 

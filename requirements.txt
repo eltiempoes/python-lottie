@@ -20,3 +20,4 @@ QScintilla
 
 # Testing
 coverage
+flake8
