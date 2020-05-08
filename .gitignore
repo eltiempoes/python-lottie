@@ -11,6 +11,7 @@ docs/dox/lottie_class.dox
 docs/dox/scripts.dox
 docs/dox/downloads.dox
 docs/Doxyfile
+docs/json/
 twemoji/
 .version_full
 lib/lottie/version.py
