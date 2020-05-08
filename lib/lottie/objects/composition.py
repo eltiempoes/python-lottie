@@ -2,7 +2,7 @@ from .base import LottieObject, Index, LottieProp
 from .layers import Layer
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Composition(LottieObject):
     """!
     Base class for layer holders
@@ -26,7 +26,7 @@ class Composition(LottieObject):
     def add_layer(self, layer: Layer):
         """!
         @brief Appends a layer to the composition
-        \see insert_layer
+        @see insert_layer
         """
         return self.insert_layer(len(self.layers), layer)
 

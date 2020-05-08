@@ -2,7 +2,7 @@ from xml.dom import minidom
 import copy
 import enum
 
-from .core_nodes import XmlDescriptor, ObjectRegistry, XmlSimpleElement, ValueReference
+from .core_nodes import XmlDescriptor, XmlSimpleElement, ValueReference
 from .utils import *
 from lottie.nvector import NVector
 from lottie.parsers.sif.ast_impl.base import SifAstNode, SifValue
@@ -158,4 +158,3 @@ class XmlStaticListParam(XmlDynamicListParam):
 
     def _value_from_dom(self, element: minidom.Element, registry: ObjectRegistry):
         return self.type.value_from_xml_element(element, registry)
-

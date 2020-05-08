@@ -63,7 +63,7 @@ class Console(QWidget):
                 self.lines.appendPlainText(stdstreams)
             if value is not None:
                 self.lines.appendPlainText(repr(value))
-        except Exception as e:
+        except Exception:
             etype, value, tb = sys.exc_info()
             # Find how many frames to print to hide the current frame and above
             parent = inspect.currentframe().f_back
@@ -78,4 +78,3 @@ class Console(QWidget):
             self.lines.appendPlainText(file.getvalue())
 
         self.lines.verticalScrollBar().setValue(self.lines.verticalScrollBar().maximum())
-

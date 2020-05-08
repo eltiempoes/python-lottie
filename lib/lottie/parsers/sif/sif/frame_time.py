@@ -1,5 +1,6 @@
 import enum
 
+
 class FrameTime:
     class Unit(enum.Enum):
         Frame = "f"

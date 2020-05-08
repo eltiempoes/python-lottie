@@ -203,4 +203,3 @@ class TransformMatrix:
         return "matrix(%s, %s, %s, %s, %s, %s)" % (
             self.a, self.b, self.c, self.d, self.tx, self.ty
         )
-

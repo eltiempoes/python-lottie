@@ -19,7 +19,7 @@ class LottieBase:
     def load(cls, lottiedict):
         """!
         Loads from a JSON object
-        \returns An instance of the class
+        @returns An instance of the class
         """
         raise NotImplementedError
 
@@ -95,10 +95,10 @@ class LottieProp:
         ## Name of the Lottie JSON property
         self.lottie = lottie
         ## Type of the property
-        ## \see LottieValueConverter, PseudoBool
+        ## @see LottieValueConverter, PseudoBool
         self.type = type
         ## Whether the property is a list of self.type
-        ## \see PseudoList
+        ## @see PseudoList
         self.list = list
         ## Condition on when the property is loaded from the Lottie JSON
         self.cond = cond
@@ -120,7 +120,7 @@ class LottieProp:
     def load_from_parent(self, lottiedict):
         """!
         Returns the value for this property from a JSON dict representing the parent object
-        \returns The loaded value or \c None if the property is not in \p lottiedict
+        @returns The loaded value or @c None if the property is not in @p lottiedict
         """
         if self.lottie in lottiedict:
             return self.load(lottiedict[self.lottie])
@@ -137,7 +137,7 @@ class LottieProp:
     def load(self, lottieval):
         """!
         Loads the property from a JSON value
-        \returns the Python equivalent of the JSON value
+        @returns the Python equivalent of the JSON value
         """
         if self.list is PseudoList and isinstance(lottieval, list):
             return self._load_scalar(lottieval[0])
@@ -167,8 +167,8 @@ class LottieProp:
 
     def to_dict(self, obj):
         """!
-        Converts the value of the property as from \p obj into a JSON value
-        \param obj LottieObject with this property
+        Converts the value of the property as from @p obj into a JSON value
+        @param obj LottieObject with this property
         """
         val = self._basic_to_dict(self.get(obj))
         if self.list is PseudoList:

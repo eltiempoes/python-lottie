@@ -332,7 +332,6 @@ class Converter:
         return lot
 
     def _polygon(self, points, origin):
-        chunk_size = 5
         bezier = objects.Bezier()
         bezier.closed = True
         for point in points:

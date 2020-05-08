@@ -1,5 +1,6 @@
 from xml.dom import minidom
 import enum
+from uuid import uuid4
 
 from lottie.nvector import NVector
 from lottie.parsers.sif.xml.utils import xml_text, str_to_bool

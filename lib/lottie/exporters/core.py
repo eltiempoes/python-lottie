@@ -111,7 +111,7 @@ def export_embedded_html(animation, file):
 
 def export_linked_html(animation, file, path):
     with open_file(file) as fp:
-        out = HtmlOutput(animation, file)
+        out = HtmlOutput(animation, fp)
         out.html_begin()
         out.body_pre()
         file.write("path: %r" % path)

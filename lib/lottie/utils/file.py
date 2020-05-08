@@ -11,4 +11,3 @@ def open_file(file_or_name, mode="w"):
             obj.close()
     else:
         yield file_or_name
-

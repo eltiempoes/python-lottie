@@ -7,7 +7,7 @@ from .text import TextAnimatorData
 from .properties import Value
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class BlendMode(LottieEnum):
     Normal = 0
     Multiply = 1
@@ -27,8 +27,8 @@ class BlendMode(LottieEnum):
     Luminosity = 15
 
 
-## \ingroup Lottie
-## \todo SVG masks
+## @ingroup Lottie
+## @todo SVG masks
 class MatteMode(LottieEnum):
     Normal = 0
     Alpha = 1
@@ -37,7 +37,7 @@ class MatteMode(LottieEnum):
     InvertedLuma = 4
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Layer(LottieObject):
     _props = [
         LottieProp("threedimensional", "ddd", PseudoBool, False),
@@ -173,7 +173,7 @@ class Layer(LottieObject):
         )
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class NullLayer(Layer):
     """!
     Layer with no data, useful to group layers together
@@ -185,7 +185,7 @@ class NullLayer(Layer):
         Layer.__init__(self)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TextLayer(Layer):
     _props = [
         LottieProp("data", "t", TextAnimatorData, False),
@@ -199,7 +199,7 @@ class TextLayer(Layer):
         self.data = TextAnimatorData()
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class ShapeLayer(Layer):
     """!
     Layer containing ShapeElement objects
@@ -224,8 +224,8 @@ class ShapeLayer(Layer):
         return shape
 
 
-## \ingroup Lottie
-## \todo SIF I/O
+## @ingroup Lottie
+## @todo SIF I/O
 class ImageLayer(Layer):
     _props = [
         LottieProp("image_id", "refId", str, False),
@@ -239,7 +239,7 @@ class ImageLayer(Layer):
         self.image_id = image_id
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class PreCompLayer(Layer):
     _props = [
         LottieProp("reference_id", "refId", str, False),
@@ -262,7 +262,7 @@ class PreCompLayer(Layer):
         self.height = 512
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class SolidColorLayer(Layer):
     """!
     Layer with a solid color rectangle
@@ -277,8 +277,8 @@ class SolidColorLayer(Layer):
 
     def __init__(self, color="", width=512, height=512):
         Layer.__init__(self)
-        ## Color of the layer as a \c \#rrggbb hex
-        # \todo Convert NVector to string
+        ## Color of the layer as a @c \#rrggbb hex
+        # @todo Convert NVector to string
         self.color = color
         ## Height of the layer.
         self.height = height

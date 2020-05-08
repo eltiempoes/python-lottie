@@ -1,15 +1,16 @@
 import math
 
-from..nvector import NVector
+from ..nvector import NVector
 from ..objects.bezier import BezierPoint
 
-## \todo Just output a Bezier object
+
+## @todo Just output a Bezier object
 class Ellipse:
     def __init__(self, center, radii, xrot):
         """
-        \param center      2D vector, center of the ellipse
-        \param radii       2D vector, x/y radius of the ellipse
-        \param xrot        Angle between the main axis of the ellipse and the x axis (in radians)
+        @param center      2D vector, center of the ellipse
+        @param radii       2D vector, x/y radius of the ellipse
+        @param xrot        Angle between the main axis of the ellipse and the x axis (in radians)
         """
         self.center = center
         self.radii = radii

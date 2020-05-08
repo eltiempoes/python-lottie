@@ -43,7 +43,6 @@ class SearchWidget(QWidget):
         self.button_repl.clicked.connect(self.replace)
         layout_slider.addWidget(self.button_repl)
 
-
         self.button_case = QPushButton()
         self.button_case.setCheckable(True)
         self.button_case.setIcon(QIcon.fromTheme("format-text-superscript"))
@@ -80,7 +79,6 @@ class SearchWidget(QWidget):
         #self.button_selection.setVisible(show)
         self.line_replace.setVisible(show)
         self.button_repl.setVisible(show)
-
 
     def find(self, forward):
         func = self.target.findFirst if not self.button_selection.isChecked() else self.target.findFirstInSelection

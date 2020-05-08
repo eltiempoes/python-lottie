@@ -119,7 +119,7 @@ class BezierView:
         return BezierView(self.bezier, True)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Bezier(LottieObject):
     """!
     Single bezier curve
@@ -156,11 +156,11 @@ class Bezier(LottieObject):
     def insert_point(self, index, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
         """!
         Inserts a point at the given index
-        \param index    Index to insert the point at
-        \param pos      Point to add
-        \param inp      Tangent entering the point, as a vector relative to \p pos
-        \param outp     Tangent exiting the point, as a vector relative to \p pos
-        \returns \c self, for easy chaining
+        @param index    Index to insert the point at
+        @param pos      Point to add
+        @param inp      Tangent entering the point, as a vector relative to @p pos
+        @param outp     Tangent exiting the point, as a vector relative to @p pos
+        @returns @c self, for easy chaining
         """
         self.vertices.insert(index, pos)
         self.in_tangents.insert(index, inp.clone())
@@ -173,7 +173,7 @@ class Bezier(LottieObject):
     def add_point(self, pos, inp=NVector(0, 0), outp=NVector(0, 0)):
         """!
         Appends a point to the curve
-        \see insert_point
+        @see insert_point
         """
         self.insert_point(len(self.vertices), pos, inp, outp)
         return self
@@ -181,7 +181,7 @@ class Bezier(LottieObject):
     def add_smooth_point(self, pos, inp):
         """!
         Appends a point with symmetrical tangents
-        \see insert_point
+        @see insert_point
         """
         self.add_point(pos, inp, -inp)
         return self
@@ -189,15 +189,15 @@ class Bezier(LottieObject):
     def close(self, closed=True):
         """!
         Updates self.closed
-        \returns \c self, for easy chaining
+        @returns @c self, for easy chaining
         """
         self.closed = closed
         return self
 
     def point_at(self, t):
         """!
-        \param t    A value between 0 and 1, percentage along the length of the curve
-        \returns    The point at \p t in the curve
+        @param t    A value between 0 and 1, percentage along the length of the curve
+        @returns    The point at @p t in the curve
         """
         i, t = self._index_t(t)
         points = self._bezier_points(i, True)
@@ -243,8 +243,8 @@ class Bezier(LottieObject):
     def split_at(self, t):
         """!
         Get two pieces out of a Bezier curve
-        \param t    A value between 0 and 1, percentage along the length of the curve
-        \returns Two Bezier objects that correspond to self, but split at \p t
+        @param t    A value between 0 and 1, percentage along the length of the curve
+        @returns Two Bezier objects that correspond to self, but split at @p t
         """
         i, split1, split2 = self._split(t)
 
@@ -266,9 +266,9 @@ class Bezier(LottieObject):
     def segment(self, t1, t2):
         """!
         Splits a Bezier in two points and returns the segment between the
-        \param t1   A value between 0 and 1, percentage along the length of the curve
-        \param t2   A value between 0 and 1, percentage along the length of the curve
-        \returns Bezier object that correspond to the segment between \p t1 and \p t2
+        @param t1   A value between 0 and 1, percentage along the length of the curve
+        @param t2   A value between 0 and 1, percentage along the length of the curve
+        @returns Bezier object that correspond to the segment between @p t1 and @p t2
         """
         if self.closed and self.vertices and self.vertices[-1] != self.vertices[0]:
             copy = self.clone()
@@ -292,7 +292,7 @@ class Bezier(LottieObject):
     def split_self_multi(self, positions):
         """!
         Adds more points to the Bezier
-        \param positions    list of percentages along the curve
+        @param positions    list of percentages along the curve
         """
         if not len(positions):
             return
@@ -342,7 +342,7 @@ class Bezier(LottieObject):
 
     def split_self_chunks(self, n_chunks):
         """!
-        Adds points the Bezier, splitting it into \p n_chunks additional chunks.
+        Adds points the Bezier, splitting it into @p n_chunks additional chunks.
         """
         splits = [i/n_chunks for i in range(1, n_chunks)]
         return self.split_self_multi(splits)

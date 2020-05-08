@@ -11,7 +11,7 @@ from .base import exporter
 from ..parsers.baseporter import ExtraOption
 
 
-## \see http://www.fourcc.org/codecs.php
+## @see http://www.fourcc.org/codecs.php
 formats4cc = {
     "avi": cv2.VideoWriter_fourcc(*"XVID"),
     "mp4": cv2.VideoWriter_fourcc(*'MP4V'),

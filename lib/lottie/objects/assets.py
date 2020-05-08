@@ -9,7 +9,7 @@ from .shapes import ShapeElement
 from .composition import Composition
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Asset(LottieObject):
     @classmethod
     def _load_get_class(cls, lottiedict):
@@ -19,12 +19,12 @@ class Asset(LottieObject):
             return Precomp
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Image(Asset):
     """!
         External image
 
-        \see http://docs.aenhancers.com/sources/filesource/
+        @see http://docs.aenhancers.com/sources/filesource/
     """
     _props = [
         LottieProp("height", "h", float, False),
@@ -61,8 +61,8 @@ class Image(Asset):
 
     def load(self, file, format=None):
         """!
-        \param file     Filename, file object, or PIL.Image.Image to load
-        \param format   Format to store the image data as
+        @param file     Filename, file object, or PIL.Image.Image to load
+        @param format   Format to store the image data as
         """
         from PIL import Image
 
@@ -137,7 +137,7 @@ class Image(Asset):
         return None, None
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class CharacterData(LottieObject):
     """!
     Character shapes
@@ -150,7 +150,7 @@ class CharacterData(LottieObject):
         self.shapes = []
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Chars(LottieObject):
     """!
     Defines character shapes to avoid loading system fonts
@@ -183,7 +183,7 @@ class Chars(LottieObject):
         return self.data.shapes
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Precomp(Asset, Composition):
     _props = [
         LottieProp("id", "id", str, False),
@@ -202,7 +202,7 @@ class Precomp(Asset, Composition):
             self.animation.prepare_layer(layer)
 
     def set_timing(self, outpoint, inpoint=0, override=True):
-        for layer in layers:
+        for layer in self.layers:
             if override or layer.in_point is None:
                 layer.in_point = inpoint
             if override or layer.out_point is None:

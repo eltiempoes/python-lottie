@@ -31,7 +31,6 @@ class RestructuredShapeGroup:
         return not self.children
 
     def finalize(self, thresh=6):
-        subgroups = self.subgroups
         for g in self.subgroups:
             if g.layer:
                 self.layer = True

@@ -321,9 +321,9 @@ class SifBuilder(restructure.AbstractBuilder):
             else:
                 v = keyframe.start[0]
 
-            return v-1
+            return v - 1
 
-        setattr(dup, "from",  self.process_vector_ext(shape.copies.keyframes, getter))
+        setattr(dup, "from", self.process_vector_ext(shape.copies.keyframes, getter))
         dup.to.value = 0
         dup.step.value = -1
         return dup

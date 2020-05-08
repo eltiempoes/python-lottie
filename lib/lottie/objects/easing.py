@@ -2,7 +2,7 @@ import math
 from .base import LottieObject, LottieProp, PseudoList, PseudoBool
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class KeyframeBezierHandle(LottieObject):
     """!
     Bezier handle for keyframe interpolation

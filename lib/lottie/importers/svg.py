@@ -5,7 +5,8 @@ from ..parsers.tgs import open_maybe_gzipped
 
 
 @importer("SVG", ["svg", "svgz"], [
-    ExtraOption("layer_frames", type=int, default=0,
+    ExtraOption(
+        "layer_frames", type=int, default=0,
         help="If greater than 0, treats every layer in the SVG as a different animation frame,\n"
         "greater values increase the time each frames lasts for."),
     ExtraOption("n_frames", type=int, default=60),

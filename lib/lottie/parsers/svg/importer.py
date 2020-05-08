@@ -63,9 +63,9 @@ class SvgGradient:
 
     def to_lottie(self, gradient_shape, shape, time=0):
         """!
-        \param gradient_shape   Should be a GradientFill or GradientStroke
-        \param shape            ShapeElement to apply the gradient to
-        \param time             Time to fetch properties from \p shape
+        @param gradient_shape   Should be a GradientFill or GradientStroke
+        @param shape            ShapeElement to apply the gradient to
+        @param time             Time to fetch properties from @p shape
 
         """
         for off, col in self.colors:
@@ -665,7 +665,7 @@ class SvgParser(SvgHandler):
                 matrix.rotate(math.radians(ang))
                 matrix.translate(x, y)
             else:
-                matrix.rotate(math.radians(angle))
+                matrix.rotate(math.radians(ang))
         elif name == "skewX":
             matrix.skew(math.radians(params[0]), 0)
         elif name == "skewY":
@@ -731,7 +731,7 @@ class SvgParser(SvgHandler):
             grad.name = id
         return outgrad
 
-    ## \todo Parse single font property, fallback family etc
+    ## @todo Parse single font property, fallback family etc
     def _parse_text_style(self, style, font_style=None):
         if "font-family" in style:
             font_style.query.family(style["font-family"].strip("'\""))

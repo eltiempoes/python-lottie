@@ -102,7 +102,7 @@ class SystemFont:
 
 class FontQuery:
     """!
-    \see https://www.freedesktop.org/software/fontconfig/fontconfig-user.html#AEN21
+    @see https://www.freedesktop.org/software/fontconfig/fontconfig-user.html#AEN21
          https://manpages.ubuntu.com/manpages/cosmic/man1/fc-pattern.1.html
     """
     def __init__(self, str=""):
@@ -133,7 +133,7 @@ class FontQuery:
 
             Weight is different between CSS and fontconfig
             This creates some interpolations to ensure known values are translated properly
-            \see https://www.freedesktop.org/software/fontconfig/fontconfig-user.html#AEN178
+            @see https://www.freedesktop.org/software/fontconfig/fontconfig-user.html#AEN178
                  https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight#Common_weight_name_mapping
         """
         if weight < 200:

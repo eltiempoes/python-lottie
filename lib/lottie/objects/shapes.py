@@ -68,7 +68,7 @@ class BoundingBox:
         return NVector(self.width, self.height)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class ShapeElement(LottieObject):
     """!
     Base class for all elements of ShapeLayer and Group
@@ -95,7 +95,7 @@ class ShapeElement(LottieObject):
         self.property_index = None
         ## Hide element
         self.hidden = None
-        ## \todo figure out?
+        ## @todo figure out?
         self.bm = None
 
     def bounding_box(self, time=0):
@@ -122,7 +122,7 @@ class ShapeElement(LottieObject):
         return self.name or super().__str__()
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Shape(ShapeElement):
     """!
     Drawable shape
@@ -143,7 +143,7 @@ class Shape(ShapeElement):
         raise NotImplementedError()
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Rect(Shape):
     """!
     A simple rectangle shape
@@ -227,13 +227,13 @@ class Rect(Shape):
         return bezier
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class StarType(LottieEnum):
     Star = 1
     Polygon = 2
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Star(Shape):
     """!
     Star shape
@@ -329,7 +329,7 @@ class Star(Shape):
         return bezier
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Ellipse(Shape):
     """!
     Ellipse shape
@@ -392,7 +392,7 @@ class Ellipse(Shape):
         return bezier
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Path(Shape):
     """!
     Animatable Bezier curve
@@ -408,7 +408,7 @@ class Path(Shape):
         Shape.__init__(self)
         ## Shape's vertices
         self.shape = ShapeProperty(bezier or Bezier())
-        ## \todo Index?
+        ## @todo Index?
         self.index = None
 
     def bounding_box(self, time=0):
@@ -424,7 +424,7 @@ class Path(Shape):
         return self.clone()
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Group(ShapeElement):
     """!
     ShapeElement that can contain other shapes
@@ -477,13 +477,13 @@ class Group(ShapeElement):
         return shape
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class FillRule(LottieEnum):
     NonZero = 1
     EvenOdd = 2
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Fill(ShapeElement):
     """!
     Solid fill color
@@ -506,13 +506,13 @@ class Fill(ShapeElement):
         self.fill_rule = None
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class GradientType(LottieEnum):
     Linear = 1
     Radial = 2
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Gradient(LottieObject):
     _props = [
         LottieProp("start_point", "s", MultiDimensional, False),
@@ -540,7 +540,7 @@ class Gradient(LottieObject):
         self.colors = GradientColors(colors)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class GradientFill(ShapeElement, Gradient):
     """!
     Gradient fill
@@ -561,28 +561,28 @@ class GradientFill(ShapeElement, Gradient):
         self.fill_rule = None
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class LineJoin(LottieEnum):
     Miter = 1
     Round = 2
     Bevel = 3
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class LineCap(LottieEnum):
     Butt = 1
     Round = 2
     Square = 3
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class StrokeDashType(LottieEnum):
     Dash = "d"
     Gap = "g"
     Offset = "o"
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class StrokeDash(LottieObject):
     _props = [
         LottieProp("name", "nm", str, False),
@@ -599,7 +599,7 @@ class StrokeDash(LottieObject):
         return self.name or super().__str__()
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class BaseStroke(LottieObject):
     _props = [
         LottieProp("line_cap", "lc", LineCap, False),
@@ -625,7 +625,7 @@ class BaseStroke(LottieObject):
         self.dashes = None
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Stroke(ShapeElement, BaseStroke):
     """!
     Solid stroke
@@ -643,7 +643,7 @@ class Stroke(ShapeElement, BaseStroke):
         self.color = ColorValue(color or Color(0, 0, 0))
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class GradientStroke(ShapeElement, BaseStroke, Gradient):
     """!
     Gradient stroke
@@ -660,7 +660,7 @@ class GradientStroke(ShapeElement, BaseStroke, Gradient):
         return BoundingBox()
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TransformShape(ShapeElement, Transform):
     """!
     Group transform
@@ -674,13 +674,13 @@ class TransformShape(ShapeElement, Transform):
         self.anchor_point = MultiDimensional(NVector(0, 0))
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Composite(LottieEnum):
     Above = 1
     Below = 2
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class RepeaterTransform(Transform):
     _props = [
         LottieProp("start_opacity", "so", Value, False),
@@ -693,19 +693,19 @@ class RepeaterTransform(Transform):
         self.end_opacity = Value(100)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Modifier(ShapeElement):
     pass
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TrimMultipleShapes(LottieEnum):
     Simultaneously = 1
     Individually = 2
 
 
-## \ingroup Lottie
-## \todo Implement SIF Export
+## @ingroup Lottie
+## @todo Implement SIF Export
 class Trim(Modifier):
     """
     Trims shapes into a segment
@@ -727,11 +727,11 @@ class Trim(Modifier):
         self.end = Value(100)
         ## start/end offset, as an angle (0, 360)
         self.offset = Value(0)
-        ## \todo?
+        ## @todo?
         self.multiple = None
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Repeater(Modifier):
     """
     Duplicates previous shapes in a group
@@ -757,8 +757,8 @@ class Repeater(Modifier):
         self.transform = RepeaterTransform()
 
 
-## \ingroup Lottie
-## \todo Implement SIF Export
+## @ingroup Lottie
+## @todo Implement SIF Export
 class RoundedCorners(Modifier):
     """
     Rounds corners of other shapes
@@ -775,8 +775,8 @@ class RoundedCorners(Modifier):
         self.radius = Value()
 
 
-## \ingroup Lottie
-## \ingroup LottieCheck
+## @ingroup Lottie
+## @ingroup LottieCheck
 ## @note marked as unsupported by lottie
 class Merge(ShapeElement):
     _props = [
@@ -791,8 +791,8 @@ class Merge(ShapeElement):
         self.merge_mode = 1
 
 
-## \ingroup Lottie
-## \ingroup LottieCheck
+## @ingroup Lottie
+## @ingroup LottieCheck
 class Twist(ShapeElement):
     _props = [
         LottieProp("a", "a", Value, False),

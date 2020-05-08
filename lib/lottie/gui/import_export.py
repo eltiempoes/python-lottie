@@ -194,7 +194,7 @@ class ExportThread(QtCore.QThread):
         IoProgressReporter.instance.setup("Export to %s" % self.exporter.name, self.id)
         try:
             self.exporter.process(self.animation, self.file_name, **self.options)
-        except:
+        except Exception:
             IoProgressReporter.instance.report_message("Error on export")
         IoProgressReporter.instance.cleanup()
 

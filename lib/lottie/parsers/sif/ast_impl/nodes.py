@@ -107,14 +107,6 @@ class SifAnimatedFile(SifAstComplex):
     ]
 
 
-class SifAnimatedFile(SifAstComplex):
-    _tag = "animated_file"
-
-    _nodes = [
-        XmlAnimatable("filename", "string"),
-    ]
-
-
 class Accuracy(enum.Enum):
     Rough = 0
     Normal = 1
@@ -301,7 +293,6 @@ class SifPower(SifAstComplex):
         XmlAnimatable("epsilon", "real", 0.000001),
         XmlAnimatable("infinite", "real", 999999.),
     ]
-
 
 
 class SifBlineCalcTangent(SifAstComplex):

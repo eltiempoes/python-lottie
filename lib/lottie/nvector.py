@@ -114,7 +114,7 @@ class NVector():
 
     def cross(self, other):
         """
-        \pre len(self) == len(other) == 3
+        @pre len(self) == len(other) == 3
         """
         a = self
         b = other
@@ -127,7 +127,7 @@ class NVector():
     @property
     def polar_angle(self):
         """
-        \pre len(self) == 2
+        @pre len(self) == 2
         """
         return math.atan2(self.y, self.x)
 

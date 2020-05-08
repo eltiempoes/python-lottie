@@ -3,7 +3,7 @@ from .base import LottieObject, LottieProp, LottieEnum
 from .properties import MultiDimensional, Value, NVector, ShapeProperty, PositionValue
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Transform(LottieObject):
     """!
     Layer transform
@@ -78,11 +78,11 @@ class Transform(LottieObject):
         return mat
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class MaskMode(LottieEnum):
     """!
     How masks interact with each other
-    \see https://helpx.adobe.com/after-effects/using/alpha-channels-masks-mattes.html
+    @ee https://helpx.adobe.com/after-effects/using/alpha-channels-masks-mattes.html
     """
     No = "n"
     Add = "a"
@@ -96,8 +96,8 @@ class MaskMode(LottieEnum):
     Difference = "f"
 
 
-## \ingroup Lottie
-## \todo Implement SVG/SIF I/O
+## @ingroup Lottie
+## @todo Implement SVG/SIF I/O
 class Mask(LottieObject):
     _props = [
         LottieProp("inverted", "inv", bool, False),

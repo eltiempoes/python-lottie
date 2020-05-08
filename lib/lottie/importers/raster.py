@@ -58,7 +58,7 @@ def import_raster(filenames, n_colors, palette, mode, frame_delay=1,
     elif mode == "trace":
         from ..parsers.raster import QuanzationMode
         # TODO QuanzationMode for raster
-        cm = QuanzationMode.Nearest if ns.color_mode == "nearest" else QuanzationMode.Exact
+        cm = QuanzationMode.Nearest if color_mode == "nearest" else QuanzationMode.Exact
 
         return raster_to_animation(
             filenames, n_colors, frame_delay,
@@ -70,4 +70,3 @@ def import_raster(filenames, n_colors, palette, mode, frame_delay=1,
         return pixel_to_animation_paths(filenames, frame_delay, framerate)
     else:
         return pixel_to_animation(filenames, frame_delay, framerate)
-

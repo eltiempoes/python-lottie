@@ -1,7 +1,7 @@
 from .base import LottieEnum
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TestBased(LottieEnum):
     Characters = 1
     CharacterExcludingSpaces = 2
@@ -13,7 +13,7 @@ class TestBased(LottieEnum):
         return cls.Characters
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TextShape(LottieEnum):
     Square = 1
     RampUp = 2
@@ -27,7 +27,7 @@ class TextShape(LottieEnum):
         return cls.Square
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TextGrouping(LottieEnum):
     Characters = 1
     Word = 2

@@ -4,8 +4,8 @@ from ..nvector import NVector
 from .helpers import Transform
 
 
-## \ingroup Lottie
-## \ingroup LottieCheck
+## @ingroup Lottie
+## @ingroup LottieCheck
 class MaskedPath(LottieObject):
     _props = [
         LottieProp("mask", "m", float),
@@ -25,8 +25,8 @@ class MaskedPath(LottieObject):
         self.r = None
 
 
-## \ingroup Lottie
-## \ingroup LottieCheck
+## @ingroup Lottie
+## @ingroup LottieCheck
 class TextAnimatorDataProperty(Transform):
     _props = [
         LottieProp("rx", "rx", Value),
@@ -62,8 +62,8 @@ class TextAnimatorDataProperty(Transform):
         self.tracking = Value()
 
 
-## \ingroup Lottie
-## \ingroup LottieCheck
+## @ingroup Lottie
+## @ingroup LottieCheck
 class TextMoreOptions(LottieObject):
     _props = [
         LottieProp("alignment", "a", MultiDimensional),
@@ -75,14 +75,14 @@ class TextMoreOptions(LottieObject):
         self.g = None
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TextJustify(LottieEnum):
     Left = 0
     Right = 1
     Center = 2
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TextDocument(LottieObject):
     """!
     @see http://docs.aenhancers.com/other/textdocument/
@@ -114,7 +114,7 @@ class TextDocument(LottieObject):
         self.font_size = font_size
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TextDataKeyframe(LottieObject):
     _props = [
         LottieProp("start", "s", TextDocument),
@@ -128,7 +128,7 @@ class TextDataKeyframe(LottieObject):
         self.time = time
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TextData(LottieObject):
     _props = [
         LottieProp("keyframes", "k", TextDataKeyframe, True),
@@ -144,7 +144,7 @@ class TextData(LottieObject):
         return None
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TextAnimatorData(LottieObject):
     _props = [
         LottieProp("properties", "a", TextAnimatorDataProperty, True),
@@ -166,7 +166,7 @@ class TextAnimatorData(LottieObject):
         return self.data.get_value(time)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Font(LottieObject):
     _props = [
         LottieProp("ascent", "ascent", float),
@@ -182,7 +182,7 @@ class Font(LottieObject):
         self.name = name or "%s-%s" % (font_family, font_style)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class FontList(LottieObject):
     _props = [
         LottieProp("list", "list", Font, True),

@@ -1,5 +1,6 @@
 import enum
 
+
 class Smooth(enum.Enum):
     NearestNeighbour = 0
     Linear = 1

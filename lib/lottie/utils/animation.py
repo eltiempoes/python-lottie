@@ -34,7 +34,6 @@ def rot_shake(rotation_prop, angles, start_time, end_time, n_frames):
     frame_time = (end_time - start_time) / n_frames
     start = rotation_prop.get_value(start_time)
 
-    first = 0
     for i in range(0, n_frames):
         a = angles[i % len(angles)] * math.sin(i/n_frames * math.pi)
         rotation_prop.add_keyframe(start_time + i * frame_time, start + a)
@@ -262,14 +261,14 @@ class SineDisplacer(PointDisplacer):
         """!
         Displaces points as if they were following a sine wave
 
-        \param wavelength  Distance between consecutive peaks
-        \param amplitude   Distance from a peak to the original position
-        \param time_start  When the animation shall start
-        \param time_end    When the animation shall end
-        \param n_frames    Number of keyframes to add
-        \param speed       Number of peaks a point will go through in the given time
+        @param wavelength  Distance between consecutive peaks
+        @param amplitude   Distance from a peak to the original position
+        @param time_start  When the animation shall start
+        @param time_end    When the animation shall end
+        @param n_frames    Number of keyframes to add
+        @param speed       Number of peaks a point will go through in the given time
                            If negative, it will go the other way
-        \param axis        Wave peak direction
+        @param axis        Wave peak direction
         """
         super().__init__(time_start, time_end, n_frames)
 
@@ -297,14 +296,14 @@ class MultiSineDisplacer(PointDisplacer):
         """!
         Displaces points as if they were following a sine wave
 
-        \param waves       List of tuples (wavelength, amplitude)
-        \param time_start  When the animation shall start
-        \param time_end    When the animation shall end
-        \param n_frames    Number of keyframes to add
-        \param speed       Number of peaks a point will go through in the given time
+        @param waves       List of tuples (wavelength, amplitude)
+        @param time_start  When the animation shall start
+        @param time_end    When the animation shall end
+        @param n_frames    Number of keyframes to add
+        @param speed       Number of peaks a point will go through in the given time
                            If negative, it will go the other way
-        \param axis        Wave peak direction
-        \param amplitude_scale  Multiplies the resulting amplitude by this factor
+        @param axis        Wave peak direction
+        @param amplitude_scale  Multiplies the resulting amplitude by this factor
         """
         super().__init__(time_start, time_end, n_frames)
 
@@ -516,13 +515,13 @@ class FollowDisplacer(PointDisplacer):
         """!
         @brief Uses a custom offset function, and applies a falloff to the displacement
 
-        \param origin       Origin point for the falloff
-        \param range        Radius after which the points will not move
-        \param offset_func  Function returning an offset given a ratio of the time
-        \param time_start   When the animation shall start
-        \param time_end     When the animation shall end
-        \param n_frames     Number of frames in the animation
-        \param falloff_exp  Exponent for the falloff
+        @param origin       Origin point for the falloff
+        @param range        Radius after which the points will not move
+        @param offset_func  Function returning an offset given a ratio of the time
+        @param time_start   When the animation shall start
+        @param time_end     When the animation shall end
+        @param n_frames     Number of frames in the animation
+        @param falloff_exp  Exponent for the falloff
         """
         super().__init__(time_start, time_end, n_frames)
         self.origin = origin

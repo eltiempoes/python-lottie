@@ -113,7 +113,7 @@ class KeyframeBezier:
         return self._bezier_component(t, self.h1.y, self.h2.y)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Keyframe(LottieObject):
     _props = [
         LottieProp("time", "t", float, False),
@@ -124,8 +124,8 @@ class Keyframe(LottieObject):
 
     def __init__(self, time=0, easing_function=None):
         """!
-        \param time             Start time of keyframe segment
-        \param easing_function  Callable that performs the easing
+        @param time             Start time of keyframe segment
+        @param easing_function  Callable that performs the easing
         """
         ## Start time of keyframe segment.
         self.time = time
@@ -156,7 +156,7 @@ class Keyframe(LottieObject):
         return "%s %s" % (self.time, self.start)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class OffsetKeyframe(Keyframe):
     """!
     Keyframe for MultiDimensional values
@@ -165,7 +165,7 @@ class OffsetKeyframe(Keyframe):
     @parblock
     Imagine a quadratic bezier, with starting point at (0, 0) and end point at (1, 1).
 
-    \p out_value and \p in_value are the other two handles for a quadratic bezier,
+    @p out_value and @p in_value are the other two handles for a quadratic bezier,
     expressed as absoulte values in this 0-1 space.
 
     See also https://cubic-bezier.com/
@@ -252,11 +252,11 @@ class AnimatableMixin:
     def add_keyframe(self, time, value, interp=easing.Linear(), *args, **kwargs):
         """!
         @param time     The time this keyframe appears in
-        @param value    The value the property should have at \p time
+        @param value    The value the property should have at @p time
         @param interp   The easing callable used to update the tangents of the previous keyframe
         @param args     Extra arguments to pass the keyframe constructor
         @param kwargs   Extra arguments to pass the keyframe constructor
-        @note Always call add_keyframe with increasing \p time value
+        @note Always call add_keyframe with increasing @p time value
         """
         if not self.animated:
             self.value = None
@@ -358,7 +358,7 @@ class AnimatableMixin:
         return new_kframes
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class MultiDimensional(AnimatableMixin, LottieObject):
     """!
     An animatable property that holds a NVector
@@ -439,7 +439,7 @@ class ColorValue(AnimatableMixin, LottieObject):
     ]
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class GradientColors(LottieObject):
     """!
     Represents colors and offsets in a gradient
@@ -478,14 +478,14 @@ class GradientColors(LottieObject):
         Converts a list of colors (Color) to tuples (offset, color)
         """
         return [
-                (i / (len(colors)-1), color)
-                for i, color in enumerate(colors)
+            (i / (len(colors)-1), color)
+            for i, color in enumerate(colors)
         ]
 
     def set_stops(self, stops, keyframe=None):
         """!
-        \param stops iterable of (offset, Color) tuples
-        \param keyframe keyframe index (or None if not animated)
+        @param stops iterable of (offset, Color) tuples
+        @param keyframe keyframe index (or None if not animated)
         """
         flat = self._flatten_stops(stops)
         if self.colors.animated and keyframe is not None:
@@ -540,9 +540,9 @@ class GradientColors(LottieObject):
             if keyframe is None:
                 for kf in self.colors.keyframes:
                     if kf.start:
-                        kf.start += flat
+                        self._add_to_flattened(offset, color, kf.start.components)
                     if kf.end:
-                        kf.end += flat
+                        self._add_to_flattened(offset, color, kf.end.components)
             else:
                 if keyframe > 1:
                     self._add_to_flattened(offset, color, self.colors.keyframes[keyframe-1].end.components)
@@ -553,9 +553,9 @@ class GradientColors(LottieObject):
 
     def add_keyframe(self, time, stops, ease=easing.Linear()):
         """!
-        \param time   Frame time
-        \param stops  Iterable of (offset, Color) tuples
-        \param ease   Easing function
+        @param time   Frame time
+        @param stops  Iterable of (offset, Color) tuples
+        @param ease   Easing function
         """
         self.colors.add_keyframe(time, self._flatten_stops(stops), ease)
 
@@ -581,7 +581,7 @@ class GradientColors(LottieObject):
         return self._stops_from_flat(self.colors.get_value(time))
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Value(AnimatableMixin, LottieObject):
     """!
     An animatable property that holds a float
@@ -607,7 +607,7 @@ class Value(AnimatableMixin, LottieObject):
         return v
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class ShapePropKeyframe(Keyframe):
     """!
     Keyframe holding Bezier objects
@@ -645,7 +645,7 @@ class ShapePropKeyframe(Keyframe):
         return bez
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class ShapeProperty(AnimatableMixin, LottieObject):
     """!
     An animatable property that holds a Bezier

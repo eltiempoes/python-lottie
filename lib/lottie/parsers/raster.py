@@ -131,8 +131,6 @@ class Vectorizer:
         return layer
 
     def raster_to_shapes(self, group, mono_data):
-        bmp = potrace.Bitmap(mono_data)
-        path = bmp.trace()
         shapes = []
         for bezier in self.raster_to_bezier(mono_data):
             shape = group.insert_shape(0, objects.Path())

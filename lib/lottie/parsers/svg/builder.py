@@ -257,7 +257,6 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         return v
 
     def set_transform(self, dom, transform, auto_orient=False):
-        trans = []
         mat = transform.to_matrix(self.time, auto_orient)
         dom.attrib["transform"] = mat.to_css_2d()
 
@@ -577,7 +576,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
     def _build_rouded_corners_shape(self, shape, round_amount):
         if not isinstance(shape, objects.Shape):
             return [shape]
-        path = sh.to_bezier()
+        path = shape.to_bezier()
         bezier = path.shape.get_value(self.time).rounded(round_amount)
         path.shape.clear_animation(bezier)
         return [path]

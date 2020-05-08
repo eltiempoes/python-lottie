@@ -13,7 +13,7 @@ from .composition import Composition
 # Lottie objects that have not been tested
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Animation(Composition):
     """!
     Top level object, describing the animation

@@ -45,7 +45,7 @@ class EffectValue(LottieObject):
         return self.name or super().__str__()
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class Effect(LottieObject):
     """!
     Layer effect
@@ -111,7 +111,7 @@ class Effect(LottieObject):
         return self.name or super().__str__()
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class EffectValueAngle(EffectValue):
     _props = [
         LottieProp("value", "v", Value, False),
@@ -125,13 +125,13 @@ class EffectValueAngle(EffectValue):
         self.value = Value(angle)
 
 
-## \ingroup Lottie
-## \ingroup LottieCheck
+## @ingroup Lottie
+## @ingroup LottieCheck
 class EffectNoValue(EffectValue):
     _props = []
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class EffectValueSlider(EffectValue):
     _props = [
         LottieProp("value", "v", Value, False),
@@ -145,7 +145,7 @@ class EffectValueSlider(EffectValue):
         self.value = Value(value)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class EffectValueCheckbox(EffectValue):
     _props = [
         LottieProp("value", "v", Value, False),
@@ -159,7 +159,7 @@ class EffectValueCheckbox(EffectValue):
         self.value = Value(value)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class EffectValuePoint(EffectValue):
     _props = [
         LottieProp("value", "v", MultiDimensional, False),
@@ -173,8 +173,8 @@ class EffectValuePoint(EffectValue):
         self.value = MultiDimensional(value)
 
 
-## \ingroup Lottie
-## \ingroup LottieCheck
+## @ingroup Lottie
+## @ingroup LottieCheck
 class EffectValueDropDown(EffectValue):
     _props = [
         LottieProp("value", "v", Value, False),
@@ -188,8 +188,8 @@ class EffectValueDropDown(EffectValue):
         self.value = Value(value)
 
 
-## \ingroup Lottie
-## \ingroup LottieCheck
+## @ingroup Lottie
+## @ingroup LottieCheck
 class EffectValueLayer(EffectValue):
     _props = [
         LottieProp("value", "v", Value, False),
@@ -203,7 +203,7 @@ class EffectValueLayer(EffectValue):
         self.value = Value()
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class EffectValueColor(EffectValue):
     _props = [
         LottieProp("value", "v", ColorValue, False),
@@ -217,7 +217,7 @@ class EffectValueColor(EffectValue):
         self.value = ColorValue(value)
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class FillEffect(Effect):
     """!
     Replaces the whole layer with the given color
@@ -236,7 +236,7 @@ class FillEffect(Effect):
     type = 21
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class StrokeEffect(Effect):
     _effects = [
         ("00", EffectValueColor),
@@ -255,7 +255,7 @@ class StrokeEffect(Effect):
     type = 22
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TritoneEffect(Effect):
     """!
     Maps layers colors based on bright/mid/dark colors
@@ -270,8 +270,8 @@ class TritoneEffect(Effect):
 
 
 """
-## \ingroup Lottie
-## \ingroup LottieCheck
+## @ingroup Lottie
+## @ingroup LottieCheck
 class GroupEffect(Effect):
     _props = [
         LottieProp("enabled", "en", PseudoBool, False),
@@ -284,8 +284,8 @@ class GroupEffect(Effect):
 """
 
 
-## \ingroup Lottie
-## \ingroup LottieCheck
+## @ingroup Lottie
+## @ingroup LottieCheck
 class ProLevelsEffect(Effect):
     _effects = [
         ("00", EffectValueDropDown),
@@ -328,7 +328,7 @@ class ProLevelsEffect(Effect):
     type = 24
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class TintEffect(Effect):
     """!
     Colorizes the layer
@@ -343,7 +343,7 @@ class TintEffect(Effect):
     type = 20
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class DropShadowEffect(Effect):
     """!
     Adds a shadow to the layer
@@ -360,8 +360,8 @@ class DropShadowEffect(Effect):
     type = 25
 
 
-## \ingroup Lottie
-## \ingroup LottieCheck
+## @ingroup Lottie
+## @ingroup LottieCheck
 class Matte3Effect(Effect):
     _effects = [
         ("index", EffectValueSlider),
@@ -370,7 +370,7 @@ class Matte3Effect(Effect):
     type = 28
 
 
-## \ingroup Lottie
+## @ingroup Lottie
 class GaussianBlurEffect(Effect):
     """!
     Gaussian blur
@@ -384,8 +384,8 @@ class GaussianBlurEffect(Effect):
     type = 29
 
 
-## \ingroup Lottie
-## \todo check
+## @ingroup Lottie
+## @todo check
 class ChangeColorEffect(Effect):
     """!
     Gaussian blur
