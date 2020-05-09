@@ -1,4 +1,6 @@
 ## Unreleased
+
+## 0.6.3 - 2020-05-09
  * SVG exporter improvements
  * SVG importer improvements
  * Implemented Alpha/Luma mattes on SVG export
@@ -27,7 +29,6 @@
  * Renamed the project to Lottie
  * Renamed most of the code that referenced Tgs
 
-
 ## 0.5.4 - 2020-04-22
  * Implemented rendering of smooth spatial keyframes
  * Implemented rendering of auto-orient layers
@@ -52,7 +53,6 @@
  * Partial support for trim paths on SVG export
  * Added support for dotLottie
  * Fixed raster animation output of trimmed paths
-
 
 ## 0.5.1 - 2020-04-19
  * Added support for precomposition on SVG exporter
