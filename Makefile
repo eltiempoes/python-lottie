@@ -12,7 +12,7 @@ PACKAGE_NAME:=$(shell $(PYTHON) $(SETUP) --name)
 
 .SUFFIXES:
 
-.PHONY: all upload docs clean_pyc pypi blender inkscape release dist distclean synfig version next_version
+.PHONY: all upload docs clean_pyc pypi blender inkscape release dist distclean synfig version next_version lint
 
 
 all: pypi blender inkscape synfig
@@ -90,3 +90,6 @@ version: lib/lottie/version.py
 next_version: VERSION = $(shell echo 'x = "$(VERSION_BASE)".split("."); x[-1] = str(int(x[-1]) + 1); print(".".join(x))' | python)
 next_version:
 	echo $(VERSION) >version
+
+lint:
+	flake8 lib/$(PACKAGE_NAME)
