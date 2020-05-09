@@ -147,6 +147,13 @@ There is also the script `lottie_gui.py` which provides a graphical interface fo
 Installation
 ------------
 
+### Downloads
+
+The packages for the various applications listed below can be downloaded from here:
+
+* [Releases](https://gitlab.com/mattia.basaglia/python-lottie/-/releases)
+* [Development Snapshot](http://mattia.basaglia.gitlab.io/python-lottie/downloads.html)
+
 
 ### Synfig
 
@@ -154,8 +161,6 @@ There's a Synfig studio plugin to export telegram stickers.
 To install, just copy (or symlink) ./addons/synfig/pylot-exporter
 into the synfig plugin directory.
 You might have to copy ./lib/lottie in there as well.
-
-You can download a zipfile from http://mattia.basaglia.gitlab.io/python-lottie/downloads.html
 
 
 ### Inkscape
@@ -175,8 +180,6 @@ set the path on the import/export dialogues.
 
 See also https://inkscape.org/~mattia.basaglia/%E2%98%85tgslottie-importexport
 
-You can download a zipfile from http://mattia.basaglia.gitlab.io/python-lottie/downloads.html
-
 
 ### Blender
 
@@ -191,8 +194,6 @@ paths through the Blender Python console:
     import addon_utils; print(addon_utils.paths())
 
 You can also install the addon from Blender using the zipfile created by `make`.
-
-You can download a zipfile from http://mattia.basaglia.gitlab.io/python-lottie/downloads.html
 
 
 ### Pip
