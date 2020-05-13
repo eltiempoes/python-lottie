@@ -792,16 +792,16 @@ class Merge(ShapeElement):
 
 
 ## @ingroup Lottie
-## @ingroup LottieCheck
+## @note marked as unsupported by lottie
 class Twist(ShapeElement):
     _props = [
-        LottieProp("a", "a", Value, False),
-        LottieProp("c", "c", MultiDimensional, False),
+        LottieProp("angle", "a", Value, False),
+        LottieProp("center", "c", MultiDimensional, False),
     ]
     ## %Shape type.
     type = "tw"
 
     def __init__(self):
         ShapeElement.__init__(self)
-        self.a = Value()
-        self.c = MultiDimensional()
+        self.angle = Value(0)
+        self.center = MultiDimensional(NVector(0, 0))
