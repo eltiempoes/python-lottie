@@ -357,6 +357,27 @@ class AnimatableMixin:
 
         return new_kframes
 
+    @classmethod
+    def load(cls, lottiedict):
+        obj = super().load(lottiedict)
+        if "a" not in lottiedict:
+            obj.animated = prop_animated(lottiedict)
+        return obj
+
+
+def prop_animated(l):
+    if "a" in l:
+        return l["a"]
+    if "k" not in l:
+        return False
+    if isinstance(l["k"], list) and l["k"] and isinstance(l["k"][0], dict):
+        return True
+    return False
+
+
+def prop_not_animated(l):
+    return not prop_animated(l)
+
 
 ## @ingroup Lottie
 class MultiDimensional(AnimatableMixin, LottieObject):
@@ -365,10 +386,10 @@ class MultiDimensional(AnimatableMixin, LottieObject):
     """
     keyframe_type = OffsetKeyframe
     _props = [
-        LottieProp("value", "k", NVector, False, lambda l: not l.get("a", None)),
+        LottieProp("value", "k", NVector, False, prop_not_animated),
         LottieProp("property_index", "ix", int, False),
         LottieProp("animated", "a", PseudoBool, False),
-        LottieProp("keyframes", "k", OffsetKeyframe, True, lambda l: l.get("a", None)),
+        LottieProp("keyframes", "k", OffsetKeyframe, True, prop_animated),
     ]
 
     def get_tangent_angle(self, time=0):
@@ -391,10 +412,10 @@ class MultiDimensional(AnimatableMixin, LottieObject):
 
 class PositionValue(MultiDimensional):
     _props = [
-        LottieProp("value", "k", NVector, False, lambda l: not l.get("a", None)),
+        LottieProp("value", "k", NVector, False, prop_not_animated),
         LottieProp("property_index", "ix", int, False),
         LottieProp("animated", "a", PseudoBool, False),
-        LottieProp("keyframes", "k", OffsetKeyframe, True, lambda l: l.get("a", None)),
+        LottieProp("keyframes", "k", OffsetKeyframe, True, prop_animated),
     ]
 
     @classmethod
@@ -432,10 +453,10 @@ class ColorValue(AnimatableMixin, LottieObject):
     """
     keyframe_type = OffsetKeyframe
     _props = [
-        LottieProp("value", "k", Color, False, lambda l: not l.get("a", None)),
+        LottieProp("value", "k", Color, False, prop_not_animated),
         LottieProp("property_index", "ix", int, False),
         LottieProp("animated", "a", PseudoBool, False),
-        LottieProp("keyframes", "k", OffsetKeyframe, True, lambda l: l.get("a", None)),
+        LottieProp("keyframes", "k", OffsetKeyframe, True, prop_animated),
     ]
 
 
@@ -588,10 +609,10 @@ class Value(AnimatableMixin, LottieObject):
     """
     keyframe_type = OffsetKeyframe
     _props = [
-        LottieProp("value", "k", float, False, lambda l: not l.get("a", None)),
+        LottieProp("value", "k", float, False, prop_not_animated),
         LottieProp("property_index", "ix", int, False),
         LottieProp("animated", "a", PseudoBool, False),
-        LottieProp("keyframes", "k", keyframe_type, True, lambda l: l.get("a", None)),
+        LottieProp("keyframes", "k", keyframe_type, True, prop_animated),
     ]
 
     def __init__(self, value=0):
@@ -652,11 +673,11 @@ class ShapeProperty(AnimatableMixin, LottieObject):
     """
     keyframe_type = ShapePropKeyframe
     _props = [
-        LottieProp("value", "k", Bezier, False, lambda l: not l["a"]),
+        LottieProp("value", "k", Bezier, False, prop_not_animated),
         #LottieProp("expression", "x", str, False),
         LottieProp("property_index", "ix", float, False),
         LottieProp("animated", "a", PseudoBool, False),
-        LottieProp("keyframes", "k", keyframe_type, True, lambda l: l["a"]),
+        LottieProp("keyframes", "k", keyframe_type, True, prop_animated),
     ]
 
     def __init__(self, bezier=None):
