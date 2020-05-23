@@ -253,6 +253,8 @@ class Converter:
             return self._polar(v.radius.value, v.theta.value, 1)
         elif isinstance(v, ast.SifValue):
             return v.value
+        elif isinstance(v, ast.SifVectorComposite):
+            return NVector(v.x.value, v.y.value)
         else:
             return v
 

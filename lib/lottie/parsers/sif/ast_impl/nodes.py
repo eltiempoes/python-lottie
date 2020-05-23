@@ -19,9 +19,10 @@ class SifAstComplex(SifAstNode, metaclass=SifNodeMeta):
 
     @classmethod
     def from_dom(cls, xml: minidom.Element, param: TypeDescriptor, registry: ObjectRegistry):
-        instance = cls.get_class_from_dom(xml, param, registry)()
-        for node in cls._nodes:
-            node.from_xml(instance, xml, registry, param)
+        outcls = cls.get_class_from_dom(xml, param, registry)
+        instance = outcls()
+        for node in outcls._nodes:
+            node.from_xml(instance, xml, registry)
         return instance
 
     @classmethod
