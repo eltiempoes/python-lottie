@@ -401,7 +401,7 @@ class Color(NVector):
             (self.__class__.__name__, self.mode.name) + tuple(self.components)
         )
 
-    def _attrindex(self, name):
+    def component_names(self):
         comps = None
 
         if self._mode == ColorMode.RGB:
@@ -418,6 +418,11 @@ class Color(NVector):
             comps = "luv"
         elif self._mode == ColorMode.LAB:
             comps = "lab"
+
+        return comps
+
+    def _attrindex(self, name):
+        comps = self.component_names()
 
         if comps:
             for i, vals in enumerate(comps):
