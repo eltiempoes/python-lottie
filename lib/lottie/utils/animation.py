@@ -418,9 +418,19 @@ class DepthRotationDisplacer(PointDisplacer):
             axis = DepthRotationAxis.from_points(axis)
         self.axis = axis
         self.depth = depth
-        self.angle = angle
+        self._angle = angle
         self.anglestart = anglestart
+        self.ease = ease
         self._init_lerp(0, angle, ease)
+
+    @property
+    def angle(self):
+        return self._angle
+
+    @angle.setter
+    def angle(self, value):
+        self._angle = value
+        self._init_lerp(0, value, self.ease)
 
     def _on_displace(self, startpos, f):
         angle = self.anglestart + self._lerp_get(f)
