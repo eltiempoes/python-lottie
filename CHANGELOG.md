@@ -1,6 +1,7 @@
 ## Unreleased
  * Lottie parser improvements
  * Synfig importer improvements
+ * SVG exporter improvements
 
 ## 0.6.3 - 2020-05-09
  * SVG exporter improvements

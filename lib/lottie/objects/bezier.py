@@ -275,6 +275,12 @@ class Bezier(LottieObject):
             copy.add_point(self.vertices[0])
             copy.closed = False
             return copy.segment(t1, t2)
+
+        if t1 > 1:
+            t1 = 1
+        if t2 > 1:
+            t2 = 1
+
         if t1 > t2:
             t1, t2 = t2, t1
         elif t1 == t2:
