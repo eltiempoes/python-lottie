@@ -118,7 +118,7 @@ class AnimationWrapper:
     def __init__(self, object):
         self.object = object
         self.animation = {}
-        if object.animation_data:
+        if object.animation_data and object.animation_data.action:
             for fc in object.animation_data.action.fcurves:
                 if fc.data_path not in self.animation:
                     self.animation[fc.data_path] = [
