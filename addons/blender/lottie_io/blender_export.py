@@ -150,7 +150,7 @@ def context_to_tgs(context):
         animation = lottie.objects.Animation()
         animation.in_point = scene.frame_start
         animation.out_point = scene.frame_end
-        animation.framerate = scene.render.fps
+        animation.frame_rate = scene.render.fps
         animation.width = scene.render.resolution_x
         animation.height = scene.render.resolution_y
         animation.name = scene.name
