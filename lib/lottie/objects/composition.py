@@ -62,3 +62,19 @@ class Composition(LottieObject):
         c = super().clone()
         c._index_gen._i = self._index_gen._i
         return c
+
+    def remove_layer(self, layer: Layer):
+        """!
+        @brief Removes a layer (and all of its children) from this composition
+        @param layer    Layer to be removed
+        """
+        if layer.composition is not self:
+            return
+
+        children = list(layer.children)
+
+        layer.composition = None
+        self.layers.remove(layer)
+
+        for c in children:
+            self.remove_layer(c)

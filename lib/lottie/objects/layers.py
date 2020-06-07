@@ -172,6 +172,12 @@ class Layer(LottieObject):
             self.index if self.index is not None else ""
         )
 
+    def remove(self):
+        """!
+        @brief Removes this layer from the componsitin
+        """
+        self.composition.remove_layer(self)
+
 
 ## @ingroup Lottie
 class NullLayer(Layer):

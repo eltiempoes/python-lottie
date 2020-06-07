@@ -428,3 +428,28 @@ class TestAnimation(base.TestCase):
             }
         )
 
+    def test_remove_layer(self):
+        an = objects.Animation()
+        l0 = objects.layers.NullLayer()
+        l1 = objects.layers.NullLayer()
+        l2 = objects.layers.NullLayer()
+        l3 = objects.layers.NullLayer()
+
+        an.add_layer(l0)
+        an.add_layer(l1)
+        an.add_layer(l2)
+        an.add_layer(l3)
+
+        l2.parent = l1
+
+        self.assertIn(l0, an.layers)
+        self.assertIn(l1, an.layers)
+        self.assertIn(l2, an.layers)
+        self.assertIn(l3, an.layers)
+
+        an.remove_layer(l1)
+
+        self.assertIn(l0, an.layers)
+        self.assertNotIn(l1, an.layers)
+        self.assertNotIn(l2, an.layers)
+        self.assertIn(l3, an.layers)
