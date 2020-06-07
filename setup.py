@@ -65,6 +65,7 @@ setuptools.setup(
         os.path.join("bin", "lottie_diff.py"),
         os.path.join("bin", "lottie_fonts.py"),
         os.path.join("bin", "lottie_printcolor.py"),
+        os.path.join("bin", "lottie_diagnostic.py"),
     ],
     keywords="telegram stickers tgs lottie svg animation",
     # https://pypi.org/classifiers/
