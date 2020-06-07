@@ -118,7 +118,7 @@ class AnimationWrapper:
     def __init__(self, object):
         self.object = object
         self.animation = {}
-        if object.animation_data:
+        if object.animation_data and object.animation_data.action:
             for fc in object.animation_data.action.fcurves:
                 if fc.data_path not in self.animation:
                     self.animation[fc.data_path] = [
@@ -150,7 +150,7 @@ def context_to_tgs(context):
         animation = lottie.objects.Animation()
         animation.in_point = scene.frame_start
         animation.out_point = scene.frame_end
-        animation.framerate = scene.render.fps
+        animation.frame_rate = scene.render.fps
         animation.width = scene.render.resolution_x
         animation.height = scene.render.resolution_y
         animation.name = scene.name
