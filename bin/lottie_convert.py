@@ -82,6 +82,17 @@ group.add_argument(
          " * 2 truncate floats and names"
 )
 
+
+def print_dep_message(loader):
+    if not loader.failed_modules:
+        return
+
+    sys.stderr.write("Make sure you have the correct dependencies installed\n")
+
+    for failed, dep in loader.failed_modules.items():
+        sys.stderr.write("For %s install %s\n" % (failed, dep))
+
+
 if __name__ == "__main__":
     ns = parser.parse_args()
     if ns.infile == "-" and not ns.input_format:
@@ -105,6 +116,7 @@ if __name__ == "__main__":
                 break
     if not importer:
         sys.stderr.write("Unknown importer\n")
+        print_dep_message(importers)
         sys.exit(1)
 
     outfile = ns.outfile
@@ -118,6 +130,7 @@ if __name__ == "__main__":
 
     if not exporter:
         sys.stderr.write("Unknown exporter\n")
+        print_dep_message(exporters)
         sys.exit(1)
 
     i_options = {}

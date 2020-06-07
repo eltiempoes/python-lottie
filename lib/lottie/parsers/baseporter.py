@@ -62,8 +62,11 @@ class Loader:
         self._module_path = os.path.dirname(module_path)
         self._module_name = module_name.replace(".base", "")
         self._ie = ie
+        self._failed = {}
 
     def load_modules(self):
+        self._loaded = True
+
         for _, modname, _ in pkgutil.iter_modules([self._module_path]):
             if modname == "base":
                 continue
@@ -71,8 +74,15 @@ class Loader:
             full_modname = "." + modname
             try:
                 importlib.import_module(full_modname, self._module_name)
-            except ImportError:
-                pass
+            except ImportError as e:
+                self._failed[modname] = e.name
+
+    @property
+    def failed_modules(self):
+        if not self._loaded:
+            self.load_modules()
+
+        return self._failed
 
     @property
     def items(self):
