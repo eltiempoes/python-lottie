@@ -82,7 +82,7 @@ class Transform(LottieObject):
 class MaskMode(LottieEnum):
     """!
     How masks interact with each other
-    @ee https://helpx.adobe.com/after-effects/using/alpha-channels-masks-mattes.html
+    @see https://helpx.adobe.com/after-effects/using/alpha-channels-masks-mattes.html
     """
     No = "n"
     Add = "a"
