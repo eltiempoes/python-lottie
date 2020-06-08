@@ -65,8 +65,9 @@ def export_gif(animation, fp, dpi=96, skip_frames=5):
                      "for lossy 0 gives the smalles size\n" +
                      "for lossless 0 gives the largest file"),
     ExtraOption("method", type=int, default=0, help="Quality/speed trade-off (0=fast, 6=slower-better)"),
+    ExtraOption("skip_frames", type=int, default=1, help="Only renderer 1 out of these many frames"),
 ])
-def export_webp(animation, fp, dpi=96, lossless=False, quality=80, method=0):
+def export_webp(animation, fp, dpi=96, lossless=False, quality=80, method=0, skip_frames=1):
     """
     Export WebP
 
@@ -78,7 +79,7 @@ def export_webp(animation, fp, dpi=96, lossless=False, quality=80, method=0):
     start = int(animation.in_point)
     end = int(animation.out_point)
     frames = []
-    for i in range(start, end+1):
+    for i in range(start, end+1, skip_frames):
         _log_frame("WebP", i, end)
         file = io.BytesIO()
         export_png(animation, file, i, dpi)
@@ -88,7 +89,7 @@ def export_webp(animation, fp, dpi=96, lossless=False, quality=80, method=0):
     _log_frame("WebP")
 
     io_progress().report_message("WebP Writing to file...")
-    duration = int(round(1000 / animation.frame_rate))
+    duration = int(round(1000 / animation.frame_rate * skip_frames))
     frames[0].save(
         fp,
         format='WebP',
