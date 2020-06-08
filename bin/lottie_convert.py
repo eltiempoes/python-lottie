@@ -81,6 +81,12 @@ group.add_argument(
          " * 1 truncate floats\n" +
          " * 2 truncate floats and names"
 )
+group.add_argument(
+    "--fps",
+    default=None,
+    type=int,
+    help="If present, changes the output fps to match this value"
+)
 
 
 def print_dep_message(loader):
@@ -140,8 +146,13 @@ if __name__ == "__main__":
     o_options = exporter.argparse_options(ns)
 
     an = importer.process(infile, **i_options)
+
+    if ns.fps:
+        an.frame_rate = ns.fps
+
     if ns.optimize == 1:
         float_strip(an)
     elif ns.optimize >= 2:
         heavy_strip(an)
+
     exporter.process(an, outfile, **o_options)
