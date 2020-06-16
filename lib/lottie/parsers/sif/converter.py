@@ -34,6 +34,7 @@ class Converter:
         self.view_p2 = NVector(canvas.view_box[2], canvas.view_box[3])
         self.target_size = NVector(canvas.width, canvas.height)
         self.shape_layer = self.animation.add_layer(objects.ShapeLayer())
+        self.gamma = NVector(canvas.gamma_r, canvas.gamma_g, canvas.gamma_b)
         self._process_layers(canvas.layers, self.shape_layer)
         return self.animation
 
@@ -41,6 +42,8 @@ class Converter:
         return self.canvas.time_to_frames(t)
 
     def _process_layers(self, layers, parent):
+        old_gamma = self.gamma
+
         for layer in reversed(layers):
             if not layer.active:
                 continue
@@ -67,6 +70,10 @@ class Converter:
             elif isinstance(layer, api.TextLayer):
                 if has_font:
                     parent.add_shape(self._convert_fill(layer, self._convert_text))
+            elif isinstance(layer, api.ColorCorrectLayer):
+                self.gamma = self.gamma * NVector(layer.gamma.value, layer.gamma.value, layer.gamma.value)
+
+        self.gamma = old_gamma
 
     def _convert_group(self, layer: api.GroupLayer):
         shape = objects.Group()
@@ -264,13 +271,22 @@ class Converter:
         return self._convert_vector(v)
 
     def _convert_color(self, v: ast.SifAstNode):
-        return self._convert_animatable(v, objects.ColorValue())
+        return self._adjust_animated(
+            self._convert_animatable(v, objects.ColorValue()),
+            self._color_gamma
+        )
 
     def _convert_vector(self, v: ast.SifAstNode):
         return self._convert_animatable(v, objects.MultiDimensional())
 
     def _convert_scalar(self, v: ast.SifAstNode):
         return self._convert_animatable(v, objects.Value())
+
+    def _color_gamma(self, color):
+        color = color.clone()
+        for i in range(3):
+            color[i] = color[i] ** (1/self.gamma[i])
+        return color
 
     def _adjust_animated(self, lottieval, transform):
         if lottieval.animated:
@@ -356,7 +372,9 @@ class Converter:
             ]
         animated = any(x.animated for x in animatables)
         if not animated:
-            lot.shape.value = self._bezier(closed, [x.value for x in animatables[1:]], animatables[0].value, layer.bline.points)
+            lot.shape.value = self._bezier(
+                closed, [x.value for x in animatables[1:]], animatables[0].value, layer.bline.points
+            )
         else:
             for values in self._mix_animations(*animatables):
                 time = values[0]
@@ -473,7 +491,7 @@ class Converter:
 
     def _flatten_gradient_colors(self, stops):
         return [
-            (stop.pos, stop.color)
+            (stop.pos, self._color_gamma(stop.color))
             for stop in stops
         ]
 
