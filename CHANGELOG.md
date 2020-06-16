@@ -1,7 +1,13 @@
 ## Unreleased
+
+## 0.6.4 - 2020-06-16
  * Lottie parser improvements
  * Synfig importer improvements
  * SVG exporter improvements
+ * Blender addon improvements
+ * New script to show missing optional dependencies
+ * Speed change on conversion
+ * WebP exporter improvements
 
 ## 0.6.3 - 2020-05-09
  * SVG exporter improvements
