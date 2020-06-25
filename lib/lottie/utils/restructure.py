@@ -209,6 +209,7 @@ class AbstractBuilder:
         elif isinstance(shape, (objects.Group)):
             subgroup = RestructuredShapeGroup(shape)
             shape_group.add(subgroup)
+            merge_paths = self.merge_paths and not any(isinstance(p, objects.Group) for p in shape.shapes)
             for subshape in shape.shapes:
                 self.restructure_shapegroup(subshape, subgroup, merge_paths)
             subgroup.finalize()
@@ -222,7 +223,7 @@ class AbstractBuilder:
             if self._custom_object_supported(shape):
                 shape_group.add(shape)
             else:
-                self.restructure_shapegroup(shape.wrapped, shape_group, merge_paths)
+                self.restructure_shapegroup(shape.wrapped, shape_group, self.merge_paths)
 
     def _custom_object_supported(self, shape):
         return False

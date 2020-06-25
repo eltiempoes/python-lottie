@@ -88,6 +88,8 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
             return None
 
         idn = self.set_clean_id(dom, n)
+        if inkscape_qual is None:
+            inkscape_qual = self.qualified("inkscape", "label")
         if inkscape_qual:
             dom.attrib[inkscape_qual] = n
         return idn
@@ -402,7 +404,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         g = ElementTree.SubElement(dom_parent, "g")
         if layer and self.name_mode == NameMode.Inkscape:
             g.attrib[self.qualified("inkscape", "groupmode")] = "layer"
-        self.set_id(g, lottie, self.qualified("inkscape", "label"), force=True)
+        self.set_id(g, lottie, force=True)
         self.set_transform(g, lottie.transform, getattr(lottie, "auto_orient", False))
         return g
 

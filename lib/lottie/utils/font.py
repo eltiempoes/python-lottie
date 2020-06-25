@@ -288,13 +288,11 @@ def collect_kerning_pairs(font):
 
     gpos_table = font["GPOS"].table
 
-    unique_kern_lookups = []
+    unique_kern_lookups = set()
     for item in gpos_table.FeatureList.FeatureRecord:
         if item.FeatureTag == "kern":
             feature = item.Feature
-            for featLookupItem in feature.LookupListIndex:
-                if featLookupItem not in unique_kern_lookups:
-                    unique_kern_lookups.append(featLookupItem)
+            unique_kern_lookups |= set(feature.LookupListIndex)
 
     kerning_pairs = {}
     for kern_lookup_index in sorted(unique_kern_lookups):
@@ -332,6 +330,20 @@ def collect_kerning_pairs(font):
 
                         kerning_pairs[(firstGlyphsList[ps_index], secondGlyph)] = kernValue
     return kerning_pairs
+
+
+class GlyphMetrics:
+    def __init__(self, glyph, lsb, aw, xmin, xmax):
+        self.glyph = glyph
+        self.lsb = lsb
+        self.advance = aw
+        self.xmin = xmin
+        self.xmax = xmax
+        self.width = xmax - xmin
+        self.advance = xmax
+
+    def draw(self, pen):
+        return self.glyph.draw(pen)
 
 
 class Font:
@@ -395,13 +407,17 @@ class Font:
 
     def glyph(self, glyph_name):
         if isinstance(self.wrapped, fontTools.ttLib.TTFont):
-            return self.glyphset[glyph_name]
+            glyph = self.glyphset[glyph_name]
+            return GlyphMetrics(glyph, glyph.lsb, glyph.width, glyph._glyph.xMin, glyph._glyph.xMax)
         elif isinstance(self.wrapped, fontTools.t1Lib.T1Font):
             glyph = self.glyphset[glyph_name]
+            bounds_pen = ControlBoundsPen(self.glyphset)
+            glyph.draw(bounds_pen)
             if not hasattr(glyph, "width"):
-                glyph.draw(ControlBoundsPen(self.glyphset))
-            glyph.lsb = 0
-            return glyph
+                advance = bounds_pen.bounds[2]
+            else:
+                advance = glyph.width
+            return GlyphMetrics(glyph, bounds[0], advance, bounds[0], bounds[2])
 
     def __contains__(self, key):
         if isinstance(self.wrapped, fontTools.t1Lib.T1Font):
@@ -436,12 +452,6 @@ class FontRenderer:
         - Group shape
         """
 
-    def glyph_group(self, name):
-        group = Group()
-        group.name = name
-        group.shapes = self.glyph_shapes(name) + group.shapes
-        return group
-
     def glyph_name(self, ch):
         return self.font.glyph_name(ch)
 
@@ -452,15 +462,15 @@ class FontRenderer:
         return self.font.yMax() * self.scale(size)
 
     def ex(self, size):
-        return self.font.glyph("x").width * self.scale(size)
+        return self.font.glyph("x").advance * self.scale(size)
 
-    def glyph_beziers(self, name, offset=NVector(0, 0)):
+    def glyph_beziers(self, glyph, offset=NVector(0, 0)):
         pen = BezierPen(self.font.glyphset, offset)
-        self.font.glyphset[name].draw(pen)
+        glyph.draw(pen)
         return pen.beziers
 
-    def glyph_shapes(self, name, offset=NVector(0, 0)):
-        beziers = self.glyph_beziers(name, offset)
+    def glyph_shapes(self, glyph, offset=NVector(0, 0)):
+        beziers = self.glyph_beziers(glyph, offset)
         return [
             Path(bez)
             for bez in beziers
@@ -468,27 +478,31 @@ class FontRenderer:
 
     def _on_character(self, ch, size, pos, scale, line, use_kerning, chars, i):
         chname = self.glyph_name(ch)
+
         if chname in self.font.glyphset:
             glyphdata = self.font.glyph(chname)
-            #next_x = pos.x + glyphdata.width * scale
-            pos.x += glyphdata.lsb * scale
-            glyph_shapes = self.glyph_shapes(chname, pos / scale)
-            glyph_shape_group = line.add_shape(Group()) if len(glyph_shapes) > 1 else line
+            #pos.x += glyphdata.lsb * scale
+            glyph_shapes = self.glyph_shapes(glyphdata, pos / scale)
+
+            if len(glyph_shapes) > 1:
+                glyph_shape_group = line.add_shape(Group())
+                glyph_shape = glyph_shape_group
+            else:
+                glyph_shape_group = line
+                glyph_shape = glyph_shapes[0]
 
             for sh in glyph_shapes:
                 sh.shape.value.scale(scale)
                 glyph_shape_group.add_shape(sh)
 
-            if len(glyph_shapes) > 1:
-                glyph_shape_group.name = ch
-            elif len(glyph_shapes) == 1:
-                sh.name = ch
+            glyph_shape.name = ch
 
             kerning = 0
             if use_kerning and i < len(chars) - 1:
                 nextcname = chars[i+1]
                 kerning = self.kerning(chname, nextcname)
-            pos.x += (glyphdata.width - glyphdata.lsb + kerning) * scale
+
+            pos.x += (glyphdata.advance + kerning) * scale
             return True
         return False
 
@@ -515,6 +529,7 @@ class FontRenderer:
         line = Group()
         group.add_shape(line)
         #group.transform.scale.value = NVector(100, 100) * scale
+
         chars = self.text_to_chars(text)
         for i, ch in enumerate(chars):
             if ch == "\n":
@@ -527,7 +542,7 @@ class FontRenderer:
             elif ch == "\t":
                 chname = self.glyph_name(ch)
                 if chname in self.font.glyphset:
-                    width = self.font.glyph(chname).width
+                    width = self.font.glyph(chname).advance
                 else:
                     width = self.ex(size)
                 pos.x += width * scale * self.tab_width
