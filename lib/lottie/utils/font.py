@@ -760,10 +760,11 @@ class FontStyle:
     def render(self, text, pos=NVector(0, 0)):
         group = self._renderer.render(text, self.size, self.position+pos, self.use_kerning)
         for subg in group.shapes[:-1]:
+            width = subg.next_x - self.position.x - pos.x
             if self.justify == TextJustify.Center:
-                subg.transform.position.value.x -= subg.next_x / 2
+                subg.transform.position.value.x -= width / 2
             elif self.justify == TextJustify.Right:
-                subg.transform.position.value.x -= subg.next_x
+                subg.transform.position.value.x -= width
         return group
 
     def clone(self):

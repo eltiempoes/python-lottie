@@ -772,6 +772,15 @@ class SvgParser(SvgHandler):
             elif fz.isnumeric():
                 font_style.size = float(fz)
 
+        if "text-align" in style:
+            ta = style["text-align"]
+            if ta in ("left", "start"):
+                font_style.justify = font.TextJustify.Left
+            elif ta == "center":
+                font_style.justify = font.TextJustify.Center
+            elif ta in ("right", "end"):
+                font_style.justify = font.TextJustify.Right
+
     def _parse_text_elem(self, element, style, group, parent_style, font_style):
         self._parse_text_style(style, font_style)
 
@@ -812,6 +821,7 @@ class SvgParser(SvgHandler):
         self.apply_common_style(style, group.transform)
         self.apply_visibility(style, group)
         group.name = self._get_id(element)
+
         if has_font:
             if font_style is None:
                 font_style = font.FontStyle("", 64)
@@ -820,22 +830,23 @@ class SvgParser(SvgHandler):
         style.setdefault("fill", "none")
         self._add_style_shapes(style, group)
 
-        if element.tag == self.qualified("svg", "text"):
-            dx = 0
-            dy = 0
+        ## @todo text-anchor when it doesn't match text-align
+        #if element.tag == self.qualified("svg", "text"):
+            #dx = 0
+            #dy = 0
 
-            ta = style.get("text-anchor", style.get("text-align", ""))
-            if ta == "middle":
-                dx -= group.bounding_box().width / 2
-            elif ta == "end":
-                dx -= group.bounding_box().width
+            #ta = style.get("text-anchor", style.get("text-align", ""))
+            #if ta == "middle":
+                #dx -= group.bounding_box().width / 2
+            #elif ta == "end":
+                #dx -= group.bounding_box().width
 
-            if dx or dy:
-                ng = objects.Group()
-                ng.add_shape(group)
-                group.transform.position.value.x += dx
-                group.transform.position.value.y += dy
-                group = ng
+            #if dx or dy:
+                #ng = objects.Group()
+                #ng.add_shape(group)
+                #group.transform.position.value.x += dx
+                #group.transform.position.value.y += dy
+                #group = ng
 
         shape_parent.shapes.insert(0, group)
         self.parse_transform(element, group, group.transform)
