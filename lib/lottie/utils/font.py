@@ -408,7 +408,10 @@ class Font:
     def glyph(self, glyph_name):
         if isinstance(self.wrapped, fontTools.ttLib.TTFont):
             glyph = self.glyphset[glyph_name]
-            return GlyphMetrics(glyph, glyph.lsb, glyph.width, glyph._glyph.xMin, glyph._glyph.xMax)
+
+            xmin = getattr(glyph._glyph, "xMin", glyph.lsb)
+            xmax = getattr(glyph._glyph, "xMax", glyph.width)
+            return GlyphMetrics(glyph, glyph.lsb, glyph.width, xmin, xmax)
         elif isinstance(self.wrapped, fontTools.t1Lib.T1Font):
             glyph = self.glyphset[glyph_name]
             bounds_pen = ControlBoundsPen(self.glyphset)
@@ -484,18 +487,19 @@ class FontRenderer:
             #pos.x += glyphdata.lsb * scale
             glyph_shapes = self.glyph_shapes(glyphdata, pos / scale)
 
-            if len(glyph_shapes) > 1:
-                glyph_shape_group = line.add_shape(Group())
-                glyph_shape = glyph_shape_group
-            else:
-                glyph_shape_group = line
-                glyph_shape = glyph_shapes[0]
+            if glyph_shapes:
+                if len(glyph_shapes) > 1:
+                    glyph_shape_group = line.add_shape(Group())
+                    glyph_shape = glyph_shape_group
+                else:
+                    glyph_shape_group = line
+                    glyph_shape = glyph_shapes[0]
 
-            for sh in glyph_shapes:
-                sh.shape.value.scale(scale)
-                glyph_shape_group.add_shape(sh)
+                for sh in glyph_shapes:
+                    sh.shape.value.scale(scale)
+                    glyph_shape_group.add_shape(sh)
 
-            glyph_shape.name = ch
+                glyph_shape.name = ch
 
             kerning = 0
             if use_kerning and i < len(chars) - 1:
