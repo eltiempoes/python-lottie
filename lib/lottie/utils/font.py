@@ -790,6 +790,7 @@ class FontShape(CustomObject):
         LottieProp("size", "_size", float),
         LottieProp("justify", "_justify", TextJustify),
         LottieProp("text", "_text", str),
+        LottieProp("position", "_position", NVector),
     ]
     wrapped_lottie = Group
 
@@ -811,6 +812,7 @@ class FontShape(CustomObject):
     query = _propfac("query")
     size = _propfac("size")
     justify = _propfac("justify")
+    position = _propfac("position")
 
     @property
     def query_string(self):

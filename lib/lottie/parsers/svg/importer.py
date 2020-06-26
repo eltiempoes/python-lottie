@@ -801,12 +801,12 @@ class SvgParser(SvgHandler):
         for child in element:
             if child.tag == self.qualified("svg", "tspan"):
                 child_style = font_style.clone()
-                child_style.position = childpos
+                child_style.position = childpos.clone()
                 fs = self._parseshape_text(child, group, parent_style, child_style)
                 childpos.x = fs.next_x
             if child.tail:
                 child_style = font_style.clone()
-                child_style.position = childpos
+                child_style.position = childpos.clone()
                 fs = font.FontShape(child.tail, child_style)
                 fs.refresh()
                 group.add_shape(fs)
