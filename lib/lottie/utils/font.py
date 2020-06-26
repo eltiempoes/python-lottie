@@ -415,9 +415,10 @@ class Font:
         elif isinstance(self.wrapped, fontTools.t1Lib.T1Font):
             glyph = self.glyphset[glyph_name]
             bounds_pen = ControlBoundsPen(self.glyphset)
+            bounds = bounds_pen.bounds
             glyph.draw(bounds_pen)
             if not hasattr(glyph, "width"):
-                advance = bounds_pen.bounds[2]
+                advance = bounds[2]
             else:
                 advance = glyph.width
             return GlyphMetrics(glyph, bounds[0], advance, bounds[0], bounds[2])
