@@ -3,6 +3,7 @@
  * SVG importer improvements
  * SVG exporter improvements
  * GIF exporter improvements
+ * Fixed blender addon packaging issues
 
 ## 0.6.4 - 2020-06-16
  * Lottie parser improvements
