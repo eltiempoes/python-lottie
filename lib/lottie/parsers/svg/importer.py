@@ -413,7 +413,7 @@ class SvgParser(SvgHandler):
         group = objects.Group()
         self.apply_common_style(style, group.transform)
         self.apply_visibility(style, group)
-        group.name = self._get_id(element)
+        group.name = self._get_name(element, self.qualified("inkscape", "label"))
 
         shape_parent.shapes.insert(0, group)
         for shape in shapes:
