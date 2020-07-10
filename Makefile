@@ -68,6 +68,7 @@ clean_pyc:
 
 
 dist/$(PACKAGE_NAME)-blender-$(VERSION).zip: $(wildcard addons/blender/lottie_io/*.py) $(SRC)
+	addons/update_version.py
 	cd addons/blender && find -L -name '*.py' | xargs zip --filesync ../../$@
 
 dist/$(PACKAGE_NAME)-synfig-$(VERSION).zip: $(wildcard addons/synfig/*) $(SRC)
