@@ -112,4 +112,3 @@ class Split:
         t = keyframe.out_value
         self.in_ease(keyframe)
         keyframe.out_value = t
-
