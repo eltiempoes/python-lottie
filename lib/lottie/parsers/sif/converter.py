@@ -1,5 +1,6 @@
 import math
 from ... import objects
+from ...objects import easing
 from . import api, ast
 from ... import NVector, PolarVector
 
@@ -243,14 +244,32 @@ class Converter:
             lottieval.add_keyframe(0, v)
             lottieval.add_keyframe(self.animation.out_point, v)
 
+    def _convert_easing_part(self, interp: api.Interpolation):
+        if interp == api.Interpolation.Linear:
+            return easing.Linear()
+        return easing.Sigmoid()
+
+    def _convert_easing(self, start: api.Interpolation, end: api.Interpolation):
+        if api.Interpolation.Constant in (start, end):
+            return easing.Jump()
+        if start == end:
+            return self._convert_easing_part(start)
+        return easing.Split(self._convert_easing_part(start), self._convert_easing_part(end))
+
     def _convert_animatable(self, v: ast.SifAstNode, lot: objects.properties.AnimatableMixin):
         if self._animated(v):
             if len(v.keyframes) == 1:
                 lot.value = self._convert_ast_value(v.keyframes[0].value)
             else:
-                for kf in v.keyframes:
-                    # TODO easing
-                    lot.add_keyframe(self._time(kf.time), self._convert_ast_value(kf.value))
+                for i, kf in enumerate(v.keyframes):
+                    if i+1 < len(v.keyframes):
+                        start = kf.after
+                        end = v.keyframes[i+1].before
+                        ease = self._convert_easing(start, end)
+                    else:
+                        ease = easing.Linear()
+
+                    lot.add_keyframe(self._time(kf.time), self._convert_ast_value(kf.value), ease)
         else:
             lot.value = self._convert_ast_value(v)
         return lot

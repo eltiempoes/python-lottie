@@ -96,3 +96,20 @@ class Sigmoid:
             1 - self.delay,
             1
         )
+
+
+class Split:
+    """
+    Uses different easing methods for in/out
+    """
+
+    def __init__(self, out_ease, in_ease):
+        self.out_ease = out_ease
+        self.in_ease = in_ease
+
+    def __call__(self, keyframe):
+        self.out_ease(keyframe)
+        t = keyframe.out_value
+        self.in_ease(keyframe)
+        keyframe.out_value = t
+
