@@ -26,7 +26,7 @@ except ImportError:
             __version__ = "unknown"
 
 
-version_tuple = tuple(map(int, __version__.split("+")[0].split(".")))
+version_tuple = tuple(map(int, __version__.split("+")[0].split("."))) if __version__ != "unknown" else (0, 0, 0)
 
 
 __all__ = ["objects", "parsers", "utils", "exporters", "nvector", "NVector", "Point", "Color", "importers"]
