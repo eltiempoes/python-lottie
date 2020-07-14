@@ -1,6 +1,7 @@
 ## Unreleased
  * Synfig importer improvements
  * SVG exporter improvements
+ * GIF exporter made to render every frame by default
 
 ## 0.6.5 - 2020-07-10
  * Text rendering improvements

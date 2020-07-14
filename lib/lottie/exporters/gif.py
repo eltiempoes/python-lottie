@@ -25,9 +25,9 @@ def _log_frame(fmt, frame_no=None, end=None):
 
 
 @exporter("GIF", ["gif"], [
-    ExtraOption("skip_frames", type=int, default=5, help="Only renderer 1 out of these many frames"),
+    ExtraOption("skip_frames", type=int, default=1, help="Only renderer 1 out of these many frames"),
 ])
-def export_gif(animation, fp, dpi=96, skip_frames=5):
+def export_gif(animation, fp, dpi=96, skip_frames=1):
     """
     Gif export
 
