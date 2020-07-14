@@ -492,7 +492,7 @@ class SvgBuilder(SvgHandler, restructure.AbstractBuilder):
         return path
 
     def _bezier_tangent(self, tangent):
-        _tangent_threshold = 1
+        _tangent_threshold = 0.5
         if tangent.length < _tangent_threshold:
             return NVector(0, 0)
         return tangent
