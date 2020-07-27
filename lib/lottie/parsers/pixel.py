@@ -205,7 +205,10 @@ def _vectorizing_func(filenames, frame_delay, framerate, callback):
             raster.seek = lambda x: None
         for frame in range(raster.n_frames):
             raster.seek(frame)
-            callback(animation, raster, nframes + frame)
+            new_im = Image.new("RGBA", raster.size)
+            new_im.paste(raster)
+            callback(animation, new_im, nframes + frame)
+            new_im.close()
         nframes += raster.n_frames
 
     animation.out_point = frame_delay * nframes
