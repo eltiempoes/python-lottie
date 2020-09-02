@@ -13,11 +13,11 @@ from .bezier import Bezier
 from .composition import Composition
 
 __all__ = [
-    "animation", "base", "effects", "enums", "helpers", "layers", "shapes", "assets"
+    "animation", "base", "effects", "enums", "helpers", "layers", "shapes", "assets",
     "easing", "text", "bezier",
     "Animation",
-    "NullLayer", "TextLayer", "ShapeLayer", "ImageLayer", "PreCompLayer", "SolidLayer",
-    "Rect", "Fill", "Trim", "Repeater", "GFill", "Stroke", "RoundedCorners", "Path",
-    "TransformShape", "Group", "Star", "Ellipse", "Merge", "GStroke",
+    "NullLayer", "TextLayer", "ShapeLayer", "ImageLayer", "PreCompLayer", "SolidColorLayer",
+    "Rect", "Fill", "Trim", "Repeater", "GradientFill", "Stroke", "RoundedCorners", "Path",
+    "TransformShape", "Group", "Star", "Ellipse", "Merge", "GradientStroke",
     "Bezier", "Precomp", "Composition",
 ]
