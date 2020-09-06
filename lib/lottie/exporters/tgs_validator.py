@@ -97,8 +97,8 @@ class TgsValidator(ObjectVisitor):
             Severity.Error
         )
         self._check(
-            o.out_point <= 180,
-            "Too many frames (%s), should be less than 180" % o.out_point,
+            (o.out_point-o.in_point) <= 180,
+            "Too many frames (%s), should be less than 180" % (o.out_point-o.in_point),
             o,
             Severity.Error
         )
