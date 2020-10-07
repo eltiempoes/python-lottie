@@ -30,8 +30,8 @@ bl_info = {
     "version": (0, 6, 4),
     "blender": (2, 80, 0),
     "location": "File > Export",
-    "wiki_url": "https://mattia.basaglia.gitlab.io/python-lottie/index.html",
-    "tracker_url": "https://gitlab.com/mattia.basaglia/python-lottie/issues",
+    "wiki_url": "https://mattbas.gitlab.io/python-lottie/index.html",
+    "tracker_url": "https://gitlab.com/mattbas/python-lottie/issues",
     "category": "Import-Export",
 }
 

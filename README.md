@@ -81,8 +81,8 @@ If you want to see the same warnings for an existing tgs file use `tgs_check.py`
 
 ### Creating animations from scratch
 
-See the examples at http://mattia.basaglia.gitlab.io/python-lottie/examples.html
-and read the available lottie objects at http://mattia.basaglia.gitlab.io/python-lottie/group__Lottie.html#details
+See the examples at https://mattbas.gitlab.io/python-lottie/examples.html
+and read the available lottie objects at https://mattbas.gitlab.io/python-lottie/group__Lottie.html#details
 
 
 Features
@@ -136,7 +136,7 @@ Scripts
 -------
 
 python-lottie provides several scripts to convert or manage lottie animations.
-For full documentation see http://mattia.basaglia.gitlab.io/python-lottie/scripts.html
+For full documentation see https://mattbas.gitlab.io/python-lottie/scripts.html
 
 The main one is `lottie_convert.py`, which can be used to convert between the supported formats.
 
@@ -151,8 +151,8 @@ Installation
 
 The packages for the various applications listed below can be downloaded from here:
 
-* [Releases](https://gitlab.com/mattia.basaglia/python-lottie/-/releases)
-* [Development Snapshot](http://mattia.basaglia.gitlab.io/python-lottie/downloads.html)
+* [Releases](https://gitlab.com/mattbas/python-lottie/-/releases)
+* [Development Snapshot](https://mattbas.gitlab.io/python-lottie/downloads.html)
 
 
 ### Synfig
@@ -204,7 +204,7 @@ You can install from pypi:
 
 from git:
 
-    pip install git+https://gitlab.com/mattia.basaglia/python-lottie.git@master
+    pip install git+https://gitlab.com/mattbas/python-lottie.git@master
 
 for the source directory:
 
@@ -268,7 +268,7 @@ I had to reverse engineer the format because Telegram couldn't be bothered
 providing the specs.
 
 A TGS file is a gzip compressed JSON, the JSON data is described here:
-https://mattia.basaglia.gitlab.io/python-lottie/group__Lottie.html#lottie_json
+https://mattbas.gitlab.io/python-lottie/group__Lottie.html#lottie_json
 
 ### Making your own exporters converters
 
@@ -284,7 +284,7 @@ output the correct json. Eg:
     json.dump(foo.to_dict(), output_file)
 
 I'm also creating a proper documentation for the format, see:
-https://mattia.basaglia.gitlab.io/tgs/group__Lottie.html#details
+https://mattbas.gitlab.io/tgs/group__Lottie.html#details
 
 #### TGS changes
 
@@ -313,11 +313,11 @@ Links
 
 ### Documentation
 
-http://mattia.basaglia.gitlab.io/python-lottie/index.html
+https://mattbas.gitlab.io/python-lottie/index.html
 
 ### Code
 
-https://gitlab.com/mattia.basaglia/python-lottie/
+https://gitlab.com/mattbas/python-lottie/
 
 ### Chat
 
@@ -325,7 +325,7 @@ https://t.me/tgs_stuff
 
 ### Download
 
-http://mattia.basaglia.gitlab.io/python-lottie/downloads.html
+https://mattbas.gitlab.io/python-lottie/downloads.html
 
 Here you can download packages for pip, blender, and inkscape before they are released.
 These packages always have the latest features but they might be unstable.
@@ -334,7 +334,7 @@ These packages always have the latest features but they might be unstable.
 
 You can report any issue in the tracker on gitlab:
 
-https://gitlab.com/mattia.basaglia/python-lottie/-/issues
+https://gitlab.com/mattbas/python-lottie/-/issues
 
 
 Supported After Effects Features

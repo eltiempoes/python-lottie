@@ -153,6 +153,8 @@ class LottieProp:
         return self._load_scalar(lottieval)
 
     def _load_scalar(self, lottieval):
+        if lottieval is None:
+            return None
         if inspect.isclass(self.type) and issubclass(self.type, LottieBase):
             return self.type.load(lottieval)
         elif isinstance(self.type, type) and isinstance(lottieval, self.type):

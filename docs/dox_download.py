@@ -18,11 +18,11 @@ ns = parser.parse_args()
 ctx = {
     "commit": ns.version_suf,
     "fullversion": ns.version,
-    "url_base": "https://gitlab.com/mattia.basaglia/python-lottie/-/jobs/artifacts/%s/raw/dist" % ref
+    "url_base": "https://gitlab.com/mattbas/python-lottie/-/jobs/artifacts/%s/raw/dist" % ref
 }
 
 
-#https://gitlab.com/mattia.basaglia/python-lottie/-/jobs/artifacts/master/raw/dist/lottie-synfig-0.4.0+dev891144d.zip?job=build
+#https://gitlab.com/mattbas/python-lottie/-/jobs/artifacts/master/raw/dist/lottie-synfig-0.4.0+dev891144d.zip?job=build
 with open(doxfile, "w") as outf:
     outf.write("""
 /**
