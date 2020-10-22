@@ -194,6 +194,7 @@ class Font(LottieObject):
         self.weight = None
         self.origin = None
 
+
 ## @ingroup Lottie
 class FontList(LottieObject):
     _props = [
