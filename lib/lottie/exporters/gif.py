@@ -107,7 +107,7 @@ def export_webp(animation, fp, dpi=96, lossless=False, quality=80, method=0, ski
 @exporter("TIFF", ["tiff"])
 def export_tiff(animation, fp, dpi=96):
     """
-    Export Animated PNG
+    Export TIFF
     """
     start = int(animation.in_point)
     end = int(animation.out_point)
