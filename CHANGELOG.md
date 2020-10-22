@@ -1,4 +1,5 @@
 ## Unreleased
+ * Improved text layer support
 
 ## 0.6.6 - 2020-10-07
  * Synfig importer improvements

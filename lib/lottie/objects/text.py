@@ -167,12 +167,22 @@ class TextAnimatorData(LottieObject):
 
 
 ## @ingroup Lottie
+class FontPathOrigin(LottieEnum):
+    CssUrl = 1
+    ScriptUrl = 2
+    FontUrl = 3
+
+
+## @ingroup Lottie
 class Font(LottieObject):
     _props = [
         LottieProp("ascent", "ascent", float),
         LottieProp("font_family", "fFamily", str),
         LottieProp("name", "fName", str),
         LottieProp("font_style", "fStyle", str),
+        LottieProp("path", "fPath", str),
+        LottieProp("weight", "fWeight", str),
+        LottieProp("origin", "origin", FontPathOrigin),
     ]
 
     def __init__(self, font_family="sans", font_style="Regular", name=None):
@@ -180,7 +190,9 @@ class Font(LottieObject):
         self.font_family = font_family
         self.font_style = font_style
         self.name = name or "%s-%s" % (font_family, font_style)
-
+        self.path = None
+        self.weight = None
+        self.origin = None
 
 ## @ingroup Lottie
 class FontList(LottieObject):
