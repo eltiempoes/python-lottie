@@ -62,7 +62,7 @@ def export_gif(animation, fp, dpi=96, skip_frames=1):
     ExtraOption("lossless", action="store_true", help="If present, use lossless compression"),
     ExtraOption("quality", type=int, default=80,
                 help="Compression effort between 0 and 100\n" +
-                     "for lossy 0 gives the smalles size\n" +
+                     "for lossy 0 gives the smallest size\n" +
                      "for lossless 0 gives the largest file"),
     ExtraOption("method", type=int, default=0, help="Quality/speed trade-off (0=fast, 6=slower-better)"),
     ExtraOption("skip_frames", type=int, default=1, help="Only renderer 1 out of these many frames"),

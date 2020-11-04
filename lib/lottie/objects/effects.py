@@ -112,20 +112,6 @@ class Effect(LottieObject):
 
 
 ## @ingroup Lottie
-class EffectValueAngle(EffectValue):
-    _props = [
-        LottieProp("value", "v", Value, False),
-    ]
-    ## %Effect type.
-    type = 1
-
-    def __init__(self, angle=0):
-        EffectValue.__init__(self)
-        ## Effect value.
-        self.value = Value(angle)
-
-
-## @ingroup Lottie
 ## @ingroup LottieCheck
 class EffectNoValue(EffectValue):
     _props = []
@@ -146,17 +132,31 @@ class EffectValueSlider(EffectValue):
 
 
 ## @ingroup Lottie
-class EffectValueCheckbox(EffectValue):
+class EffectValueAngle(EffectValue):
     _props = [
         LottieProp("value", "v", Value, False),
     ]
     ## %Effect type.
-    type = 4
+    type = 1
 
-    def __init__(self, value=0):
+    def __init__(self, angle=0):
         EffectValue.__init__(self)
         ## Effect value.
-        self.value = Value(value)
+        self.value = Value(angle)
+
+
+## @ingroup Lottie
+class EffectValueColor(EffectValue):
+    _props = [
+        LottieProp("value", "v", ColorValue, False),
+    ]
+    ## %Effect type.
+    type = 2
+
+    def __init__(self, value=Color(0, 0, 0)):
+        EffectValue.__init__(self)
+        ## Effect value.
+        self.value = ColorValue(value)
 
 
 ## @ingroup Lottie
@@ -171,6 +171,36 @@ class EffectValuePoint(EffectValue):
         EffectValue.__init__(self)
         ## Effect value.
         self.value = MultiDimensional(value)
+
+
+## @ingroup Lottie
+class EffectValueCheckbox(EffectValue):
+    _props = [
+        LottieProp("value", "v", Value, False),
+    ]
+    ## %Effect type.
+    type = 4
+
+    def __init__(self, value=0):
+        EffectValue.__init__(self)
+        ## Effect value.
+        self.value = Value(value)
+
+
+## @ingroup Lottie
+## @ingroup LottieCheck
+## Lottie-web ignores these
+class IgnoredValue(EffectValue):
+    _props = [
+        LottieProp("value", "v", float, False),
+    ]
+    ## %Effect type.
+    type = 6
+
+    def __init__(self, value=0):
+        EffectValue.__init__(self)
+        ## Effect value.
+        self.value = value
 
 
 ## @ingroup Lottie
@@ -201,20 +231,6 @@ class EffectValueLayer(EffectValue):
         EffectValue.__init__(self)
         ## Effect value.
         self.value = Value()
-
-
-## @ingroup Lottie
-class EffectValueColor(EffectValue):
-    _props = [
-        LottieProp("value", "v", ColorValue, False),
-    ]
-    ## %Effect type.
-    type = 2
-
-    def __init__(self, value=Color(0, 0, 0)):
-        EffectValue.__init__(self)
-        ## Effect value.
-        self.value = ColorValue(value)
 
 
 ## @ingroup Lottie
@@ -384,22 +400,42 @@ class GaussianBlurEffect(Effect):
     type = 29
 
 
+#class ChangeColorEffect(Effect):
+    #"""!
+    #Gaussian blur
+    #"""
+    #_effects = [
+        #("view", EffectValueDropDown),
+        #("hue", EffectValueSlider),
+        #("lightness", EffectValueSlider),
+        #("saturation", EffectValueSlider),
+        #("color_to_change", EffectValueColor),
+        #("tolerance", EffectValueSlider),
+        #("softness", EffectValueSlider),
+        #("match", EffectValueDropDown),
+        #("invert_mask", EffectValueDropDown),
+    #]
+    ### %Effect type.
+    #type = 29
+
+
 ## @ingroup Lottie
-## @todo check
-class ChangeColorEffect(Effect):
+class ChangeToColorEffect(Effect):
     """!
-    Gaussian blur
+    Change to color
     """
     _effects = [
-        ("view", EffectValueDropDown),
+        ("from_color", EffectValueColor),
+        ("to_color", EffectValueColor),
+        ("change", EffectValueDropDown),
+        ("change_by", EffectValueDropDown),
+        ("tolerance", IgnoredValue),
         ("hue", EffectValueSlider),
         ("lightness", EffectValueSlider),
         ("saturation", EffectValueSlider),
-        ("color_to_change", EffectValueColor),
-        ("tolerance", EffectValueSlider),
+        ("saturation_", IgnoredValue),
         ("softness", EffectValueSlider),
-        ("match", EffectValueDropDown),
-        ("invert_mask", EffectValueDropDown),
+        ("view_correction", EffectValueDropDown),
     ]
     ## %Effect type.
-    type = 29
+    type = 5
