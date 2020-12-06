@@ -62,6 +62,7 @@ class Layer(LottieObject):
         LottieProp("has_masks", "hasMask", bool, False),
         LottieProp("masks", "masksProperties", Mask, True),
         LottieProp("effects", "ef", Effect, True),
+        LottieProp("matte_target", "td", int, False),
     ]
     ## %Layer type.
     ## @see https://github.com/bodymovin/bodymovin-extension/blob/master/bundle/jsx/enums/layerTypes.jsx
@@ -113,6 +114,7 @@ class Layer(LottieObject):
         self.blend_mode = BlendMode.Normal
         ## Matte mode, the layer will inherit the transparency from the layer above
         self.matte_mode = None
+        self.matte_target = None
         ## Composition owning the layer, set by add_layer
         self.composition = None
 

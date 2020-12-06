@@ -86,6 +86,8 @@ class TextJustify(LottieEnum):
 class TextDocument(LottieObject):
     """!
     @see http://docs.aenhancers.com/other/textdocument/
+
+    Note that for multi-line text, lines are separated by \\r
     """
     _props = [
         LottieProp("font_family", "f", str),
