@@ -63,7 +63,9 @@ class SifBuilder(restructure.AbstractBuilder):
         if not layer_builder.lottie.name:
             layer.desc = layer_builder.lottie.__class__.__name__
 
-        bm = getattr(layer_builder.lottie, "blend_mode", objects.BlendMode.Normal)
+        bm = getattr(layer_builder.lottie, "blend_mode", None)
+        if bm is None:
+            bm = objects.BlendMode.Normal
         layer.blend_method = blend_modes[bm]
 
         layer.time_drilation = getattr(layer_builder.lottie, "stretch", 1) or 1
