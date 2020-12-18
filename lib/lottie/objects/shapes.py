@@ -476,6 +476,23 @@ class Group(ShapeElement):
         self.shapes.insert(index, shape)
         return shape
 
+    @classmethod
+    def load(cls, lottiedict):
+        object = ShapeElement.load(lottiedict)
+
+        shapes = []
+        transform = None
+        for obj in object.shapes:
+            if isinstance(obj, TransformShape):
+                if not transform:
+                    transform = obj
+            else:
+                shapes.append(obj)
+
+        object.shapes = shapes
+        object.shapes.append(transform)
+        return object
+
 
 ## @ingroup Lottie
 class FillRule(LottieEnum):
