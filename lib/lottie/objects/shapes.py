@@ -78,7 +78,7 @@ class ShapeElement(LottieObject):
         LottieProp("hidden", "hd", bool, False),
         LottieProp("name", "nm", str, False),
         LottieProp("type", "ty", str, False),
-        LottieProp("property_index", "ix", int, False),
+        LottieProp("property_index", "cix", int, False),
         LottieProp("bm", "bm", int, False),
     ]
     ## %Shape type.
