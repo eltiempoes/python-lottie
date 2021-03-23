@@ -1,5 +1,8 @@
 ## Unreleased
+
+## 0.6.7 - 2021-03-23
  * Improved text layer support
+ * Fixed effect parsing
 
 ## 0.6.6 - 2020-10-07
  * Synfig importer improvements
