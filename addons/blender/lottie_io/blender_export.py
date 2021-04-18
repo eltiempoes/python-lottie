@@ -342,7 +342,7 @@ def gpencil_to_shape(obj, parent, ro):
                 gstroke = gframe.add_shape(lottie.objects.Group())
 
                 path = gstroke.add_shape(lottie.objects.Path())
-                path.shape.value.closed = stroke.draw_cyclic
+                path.shape.value.closed = stroke.use_cyclic
                 pressure = 0
                 for p in stroke.points:
                     add_point_to_poly(path.shape.value, p, ro, obj)
