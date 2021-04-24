@@ -170,6 +170,7 @@ class TextAnimatorData(LottieObject):
 
 ## @ingroup Lottie
 class FontPathOrigin(LottieEnum):
+    Unknown = 0
     CssUrl = 1
     ScriptUrl = 2
     FontUrl = 3

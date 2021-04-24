@@ -316,6 +316,8 @@ class AnimatableMixin:
     def to_dict(self):
         d = super().to_dict()
         if self.animated:
+            if "k" not in d:
+                return d
             last = d["k"][-1]
             last.pop("i", None)
             last.pop("o", None)

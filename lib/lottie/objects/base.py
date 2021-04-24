@@ -146,10 +146,10 @@ class LottieProp:
                 #for it in lottieval
             #]
         elif self.list is True:
-            return [
+            return list(filter(lambda x: x is not None, (
                 self._load_scalar(it)
                 for it in lottieval
-            ]
+            )))
         return self._load_scalar(lottieval)
 
     def _load_scalar(self, lottieval):
@@ -165,6 +165,8 @@ class LottieProp:
             return NVector(*lottieval)
         elif self.type is Color:
             return Color(*lottieval)
+        if isinstance(lottieval, list) and lottieval:
+            lottieval = lottieval[0]
         return self.type(lottieval)
 
     def to_dict(self, obj):
@@ -234,6 +236,8 @@ class LottieObject(LottieBase, metaclass=LottieObjectMeta):
     def load(cls, lottiedict):
         if "__pyclass" in lottiedict:
             return CustomObject.load(lottiedict)
+        if not lottiedict:
+            return None
         cls = cls._load_get_class(lottiedict)
         obj = cls()
         for prop in cls._props:
