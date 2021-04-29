@@ -19,7 +19,10 @@ class Strip(ObjectVisitor):
     def visit_property(self, object, property, value):
         if isinstance(value, Bezier):
             for l in ["vertices", "in_tangents", "out_tangents"]:
-                setattr(value, l, [self.nvector(NVector(p.x, p.y)) for p in getattr(value, l)])
+                try:
+                    setattr(value, l, [self.nvector(NVector(p.x, p.y)) for p in getattr(value, l)])
+                except:
+                    print("An exception occurred")
         elif property.lottie in self.remove_attributes:
             property.set(object, None)
         elif isinstance(value, float):
