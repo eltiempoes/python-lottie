@@ -134,7 +134,7 @@ class Shape(ShapeElement):
     def __init__(self):
         ShapeElement.__init__(self)
         ## After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.
-        self.direction = 0
+        self.direction = 1
 
     def to_bezier(self):
         """!
