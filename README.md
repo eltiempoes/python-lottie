@@ -1,11 +1,10 @@
-Python Lottie
-=============
+# Python Lottie
 
 A Python framework to work with Lottie files and Telegram animated stickers.
 
+(Repo forked from https://gitlab.com/mattbas/python-lottie.git)
 
-Quick start
------------
+## Quick start
 
 This section describes some common things you might want to do without having
 to read the whole README
